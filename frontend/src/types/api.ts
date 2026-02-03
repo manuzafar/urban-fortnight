@@ -1,0 +1,483 @@
+/**
+ * API Types for Product Discovery Multi-Agent System
+ */
+
+// Session status enum
+export type SessionStatus = 'pending' | 'in_progress' | 'completed' | 'failed';
+
+// Priority levels
+export type Priority = 'critical' | 'high' | 'medium' | 'low';
+
+// T-shirt sizing
+export type StorySize = 'XS' | 'S' | 'M' | 'L' | 'XL';
+
+// Risk levels
+export type RiskLevel = 'high' | 'medium' | 'low';
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// API Request/Response Types
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DiscoveryRequest {
+  product_idea: string;
+  industry?: string;
+  target_market?: string;
+  constraints?: string[];
+  additional_context?: string;
+}
+
+export interface DiscoveryResponse {
+  session_id: string;
+  status: SessionStatus;
+  message: string;
+  created_at: string;
+}
+
+export interface SessionStatusResponse {
+  session_id: string;
+  status: SessionStatus;
+  current_agent: string | null;
+  iteration: number;
+  progress_percentage: number;
+  inception_pack: InceptionPack | null;
+  error_message: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Inception Pack Types
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface InceptionPack {
+  executive_summary: ExecutiveSummary;
+  customer_research: CustomerResearch;
+  business_case: BusinessCase;
+  product_requirements_document: ProductRequirementsDocument | null;
+  technical_architecture: TechnicalArchitecture;
+  quality_assessment: QualityAssessment;
+  metadata: InceptionPackMetadata;
+}
+
+export interface InceptionPackMetadata {
+  session_id: string;
+  generated_at: string;
+  version: string;
+  generator: string;
+  iterations: number;
+  total_tokens_used: number;
+  total_duration_seconds: number;
+  quality_score: number | null;
+  quality_passed: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Executive Summary
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface ExecutiveSummary {
+  product_name: string;
+  tagline: string;
+  problem_statement: string;
+  solution_overview: string;
+  value_proposition: string;
+  target_users: string[];
+  key_differentiators: string[];
+  success_metrics: string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Customer Research (Evidence-Based Reality Investigation)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Evidence tiers for research insights
+export type EvidenceTier = 'E1' | 'E2' | 'E3' | 'E4';
+
+export interface ResearchScope {
+  segments_examined: string[];
+  observation_context: string;
+  known_gaps: string[];
+  confidence_level: 'high' | 'medium' | 'low';
+}
+
+export interface JobToBeDone {
+  trigger_situation: string;
+  underlying_goal: string;
+  success_definition: string;
+}
+
+export interface CurrentBehaviour {
+  existing_solutions: string[];
+  tools_and_workarounds: string[];
+  friction_points: string[];
+  why_problem_persists: string;
+}
+
+export interface PainSignal {
+  description: string;
+  evidence_tier: EvidenceTier;
+  evidence_detail: string;
+  impact: string;
+  severity: Priority;
+  challenges_solution: boolean;
+}
+
+export interface UncomfortableInsight {
+  insight: string;
+  evidence_tier: EvidenceTier;
+  implication: string;
+}
+
+export interface CustomerIndifference {
+  assumed_need: string;
+  reality: string;
+  evidence_tier: EvidenceTier;
+}
+
+export interface OpenQuestion {
+  question: string;
+  why_it_matters: string;
+  validation_needed: string;
+}
+
+export interface CompetitorReality {
+  name: string;
+  how_they_solve_it: string;
+  why_they_havent_won: string;
+  switching_barriers: string;
+}
+
+export interface CompetitiveLandscape {
+  competitors: CompetitorReality[];
+  market_position: string;
+}
+
+export interface MarketTrend {
+  trend: string;
+  helps_or_hurts: 'helps' | 'hurts' | 'neutral';
+  evidence_tier: EvidenceTier;
+}
+
+export interface MarketContext {
+  total_addressable_market: string;
+  serviceable_addressable_market: string;
+  serviceable_obtainable_market: string;
+  uncertainty_factors: string[];
+  market_trends: MarketTrend[];
+}
+
+export interface ResearchQualityCheck {
+  could_kill_idea: boolean;
+  skeptic_would_trust: boolean;
+  assumptions_separated: boolean;
+  self_critique: string;
+}
+
+export interface CustomerResearch {
+  // New evidence-based format
+  research_scope?: ResearchScope;
+  job_to_be_done?: JobToBeDone;
+  current_behaviour?: CurrentBehaviour;
+  pain_signals?: PainSignal[];
+  uncomfortable_insights?: UncomfortableInsight[];
+  what_customers_dont_care_about?: CustomerIndifference[];
+  open_questions?: OpenQuestion[];
+  competitive_landscape?: CompetitiveLandscape;
+  market_context?: MarketContext;
+  research_quality_check?: ResearchQualityCheck;
+
+  // Legacy format (backward compatibility)
+  user_personas?: UserPersona[];
+  pain_points?: PainPoint[];
+  market_segments?: MarketSegment[];
+  total_addressable_market?: string;
+  serviceable_addressable_market?: string;
+  serviceable_obtainable_market?: string;
+  competitors?: Competitor[];
+  market_trends?: string[];
+  validation_assumptions?: string[];
+}
+
+// Legacy types for backward compatibility
+export interface UserPersona {
+  name: string;
+  role: string;
+  demographics: string;
+  goals: string[];
+  frustrations: string[];
+  behaviors: string[];
+  tech_savviness: string;
+  quote: string;
+}
+
+export interface PainPoint {
+  description: string;
+  severity: Priority;
+  current_workaround: string | null;
+}
+
+export interface MarketSegment {
+  name: string;
+  size_estimate: string;
+  characteristics: string[];
+  willingness_to_pay: string;
+}
+
+export interface Competitor {
+  name: string;
+  strengths: string[];
+  weaknesses: string[];
+  market_position: string;
+  pricing_model: string | null;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Business Case
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface LeanCanvas {
+  problem: string[];
+  solution: string[];
+  unique_value_proposition: string;
+  unfair_advantage: string;
+  customer_segments: string[];
+  key_metrics: string[];
+  channels: string[];
+  cost_structure: string[];
+  revenue_streams: string[];
+}
+
+export interface RevenueStream {
+  name: string;
+  description: string;
+  pricing_model: string;
+  estimated_contribution: string;
+}
+
+export interface CostStructure {
+  category: string;
+  description: string;
+  estimated_amount: string;
+  frequency: string;
+}
+
+export interface BusinessCase {
+  lean_canvas: LeanCanvas;
+  revenue_streams: RevenueStream[];
+  cost_structure: CostStructure[];
+  break_even_analysis: string;
+  year_1_projection: string;
+  year_3_projection: string;
+  funding_requirement: string;
+  roi_analysis: string;
+  go_to_market_strategy: string;
+  key_partnerships: string[];
+  risks_and_mitigations: Array<{ risk: string; mitigation: string }>;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Product Requirements Document
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface AcceptanceCriteria {
+  given: string;
+  when: string;
+  then: string;
+}
+
+export interface UserStory {
+  id: string;
+  epic_id?: string;
+  title: string;
+  description: string;
+  // New format fields
+  acceptance_criteria: string[] | AcceptanceCriteria[];
+  priority: Priority;
+  story_points?: number;
+  // Old format fields (optional for backwards compatibility)
+  as_a?: string;
+  i_want?: string;
+  so_that?: string;
+  size?: StorySize;
+  dependencies?: string[];
+  notes?: string | null;
+}
+
+export interface Epic {
+  id: string;
+  title: string;
+  description: string;
+  priority?: Priority;
+  business_value?: string;
+  stories: UserStory[];
+}
+
+export interface FunctionalRequirement {
+  id: string;
+  title: string;
+  description: string;
+  priority: Priority;
+  rationale: string;
+  acceptance_criteria: string[];
+}
+
+export interface NonFunctionalRequirement {
+  id: string;
+  category: string;
+  title: string;
+  description: string;
+  metric: string;
+  target: string;
+  priority: Priority;
+}
+
+export interface DataEntity {
+  name: string;
+  description: string;
+  attributes: Array<{ name: string; type: string; description: string }>;
+  relationships: string[];
+}
+
+export interface DataModel {
+  entities: DataEntity[];
+  description: string;
+}
+
+export interface ReleasePhase {
+  phase: string;
+  description: string;
+  features: string[];
+  success_criteria: string[];
+}
+
+export interface Risk {
+  id: string;
+  description: string;
+  likelihood: RiskLevel;
+  impact: RiskLevel;
+  mitigation: string;
+}
+
+export interface ProductOverview {
+  name: string;
+  vision: string;
+  problem_statement?: string;
+  objectives: string[];
+  success_metrics?: string[];
+}
+
+export interface PRDScope {
+  in_scope: string[];
+  out_of_scope: string[];
+  assumptions?: string[];
+}
+
+export interface PRDStatistics {
+  total_epics: number;
+  total_stories: number;
+  total_story_points: number;
+  total_functional_requirements: number;
+  total_non_functional_requirements: number;
+  priority_distribution: {
+    critical: number;
+    high: number;
+    medium: number;
+    low: number;
+  };
+}
+
+export interface ProductRequirementsDocument {
+  version?: string;
+  formatted_at?: string;
+  quality_score?: number;
+  iterations_required?: number;
+  // New format
+  product_overview?: ProductOverview;
+  scope?: PRDScope;
+  statistics?: PRDStatistics;
+  // Old format (backwards compatibility)
+  last_updated?: string;
+  overview?: string;
+  objectives?: string[];
+  scope_in?: string[];
+  scope_out?: string[];
+  user_personas?: string[];
+  // Common fields
+  epics: Epic[];
+  functional_requirements: FunctionalRequirement[];
+  non_functional_requirements: NonFunctionalRequirement[];
+  data_model?: DataModel;
+  integration_requirements?: string[] | Array<{ name: string; description: string; type: string }>;
+  constraints?: string[];
+  assumptions?: string[];
+  release_plan?: ReleasePhase[] | { phases: Array<{ name: string; description: string; features: string[]; success_criteria: string[] }> };
+  risks?: Risk[];
+  risks_and_mitigations?: Risk[];
+  open_questions?: string[];
+  glossary?: Record<string, string>;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Technical Architecture
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface TechnologyChoice {
+  category: string;
+  technology: string;
+  rationale: string;
+  alternatives_considered: string[];
+}
+
+export interface SystemComponent {
+  name: string;
+  description: string;
+  responsibilities: string[];
+  technologies: string[];
+  interfaces: string[];
+}
+
+export interface IntegrationPoint {
+  name: string;
+  type: string;
+  description: string;
+  authentication: string;
+  data_flow: string;
+}
+
+export interface TechnicalArchitecture {
+  architecture_style: string;
+  architecture_diagram_description: string;
+  technology_stack: TechnologyChoice[];
+  system_components: SystemComponent[];
+  integration_points: IntegrationPoint[];
+  data_storage: string;
+  security_architecture: string;
+  scalability_approach: string;
+  deployment_strategy: string;
+  infrastructure_requirements: string[];
+  development_approach: string;
+  technical_risks: Array<{ risk: string; mitigation: string }>;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Quality Assessment
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SectionScore {
+  section: string;
+  score: number;
+  feedback: string;
+  suggestions: string[];
+}
+
+export interface QualityAssessment {
+  overall_score: number;
+  passed: boolean;
+  iteration: number;
+  section_scores: SectionScore[];
+  strengths: string[];
+  weaknesses: string[];
+  critical_gaps: string[];
+  recommendations: string[];
+  ready_for_delivery: boolean;
+}
