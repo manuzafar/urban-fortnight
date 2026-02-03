@@ -4,9 +4,4 @@ dockerfilePath = "Dockerfile"
 
 [deploy]
 healthcheckPath = "/"
-healthcheckTimeout = 100
-numReplicas = 1
-
-[[deploy.ports]]
-port = 80
-protocol = "TCP"
+healthcheckTimeout = 120

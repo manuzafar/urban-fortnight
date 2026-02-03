@@ -14,23 +14,21 @@ ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
-# Production stage with nginx
-FROM nginx:alpine
+# Production stage - use node to serve
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install serve globally
+RUN npm install -g serve@14
 
 # Copy built files
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist ./dist
 
-# Create nginx config for SPA routing on port 80
-RUN printf 'server {\n\
-    listen 80;\n\
-    listen [::]:80;\n\
-    root /usr/share/nginx/html;\n\
-    index index.html;\n\
-    location / {\n\
-        try_files $uri $uri/ /index.html;\n\
-    }\n\
-}\n' > /etc/nginx/conf.d/default.conf
+# Railway provides PORT env variable
+ENV PORT=3000
 
-EXPOSE 80
+EXPOSE 3000
 
-CMD ["nginx", "-g", "daemon off;"]
+# Use exec form with shell to expand PORT variable
+CMD sh -c "serve -s dist -l tcp://0.0.0.0:$PORT"
