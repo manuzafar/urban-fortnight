@@ -111,7 +111,7 @@ Inception is an AI-powered product discovery system that transforms raw product 
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/urban-fortnight.git
+   git clone https://github.com/manuzafar/urban-fortnight.git
    cd urban-fortnight
    ```
 
@@ -153,6 +153,33 @@ Inception is an AI-powered product discovery system that transforms raw product 
 3. **Open your browser**
    - Frontend: http://localhost:5173
    - API Docs: http://localhost:8000/docs
+
+### Deploy to Railway
+
+Deploy the full stack to [Railway](https://railway.app) with two services:
+
+1. **Create a new Railway project**
+   - Go to [railway.app](https://railway.app) and create a new project
+   - Connect your GitHub repository
+
+2. **Deploy the Backend**
+   - Click "New Service" → "GitHub Repo"
+   - Select this repository
+   - Set **Root Directory** to `backend`
+   - Add environment variables:
+     - `GOOGLE_API_KEY` = your Gemini API key
+     - `APP_ENV` = production
+     - `CORS_ORIGINS` = your frontend Railway URL (add after frontend deploys)
+
+3. **Deploy the Frontend**
+   - Click "New Service" → "GitHub Repo"
+   - Select this repository
+   - Set **Root Directory** to `frontend`
+   - Add environment variable:
+     - `VITE_API_URL` = your backend Railway URL (e.g., `https://your-backend.up.railway.app`)
+
+4. **Update CORS**
+   - After both services deploy, update the backend's `CORS_ORIGINS` to include the frontend URL
 
 ## Usage
 
