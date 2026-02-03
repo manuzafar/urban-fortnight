@@ -20,18 +20,17 @@ FROM nginx:alpine
 # Copy built files
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Create nginx config template
-RUN echo 'server { \
-    listen PORT_PLACEHOLDER; \
-    listen [::]:PORT_PLACEHOLDER; \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    location / { \
-        try_files $uri $uri/ /index.html; \
-    } \
-}' > /etc/nginx/conf.d/default.conf.template
+# Create nginx config for SPA routing on port 80
+RUN printf 'server {\n\
+    listen 80;\n\
+    listen [::]:80;\n\
+    root /usr/share/nginx/html;\n\
+    index index.html;\n\
+    location / {\n\
+        try_files $uri $uri/ /index.html;\n\
+    }\n\
+}\n' > /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
-# Replace PORT placeholder and start nginx
-CMD sh -c "sed 's/PORT_PLACEHOLDER/'\"${PORT:-80}\"'/g' /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
+CMD ["nginx", "-g", "daemon off;"]
