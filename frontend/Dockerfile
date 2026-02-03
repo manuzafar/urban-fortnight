@@ -14,15 +14,24 @@ ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
-# Production stage
-FROM node:20-alpine AS runner
+# Production stage with nginx
+FROM nginx:alpine
 
-WORKDIR /app
+# Copy built files
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-RUN npm install -g serve
+# Create nginx config template
+RUN echo 'server { \
+    listen PORT_PLACEHOLDER; \
+    listen [::]:PORT_PLACEHOLDER; \
+    root /usr/share/nginx/html; \
+    index index.html; \
+    location / { \
+        try_files $uri $uri/ /index.html; \
+    } \
+}' > /etc/nginx/conf.d/default.conf.template
 
-COPY --from=builder /app/dist ./dist
+EXPOSE 80
 
-EXPOSE 3000
-
-CMD ["sh", "-c", "serve -s dist -l tcp://0.0.0.0:${PORT:-3000}"]
+# Replace PORT placeholder and start nginx
+CMD sh -c "sed 's/PORT_PLACEHOLDER/'\"${PORT:-80}\"'/g' /etc/nginx/conf.d/default.conf.template > /etc/nginx/conf.d/default.conf && nginx -g 'daemon off;'"
