@@ -10,7 +10,7 @@ export function LandingPage({ onStartDiscovery }: LandingPageProps) {
         <div className="hero-badge-premium">
           <div className="badge-glow"></div>
           <span className="status-dot-premium"></span>
-          <span>5 AI Agents • Live & Ready</span>
+          <span>6 AI Agents • Live & Ready</span>
           <div className="badge-shimmer"></div>
         </div>
 
@@ -168,7 +168,7 @@ export function LandingPage({ onStartDiscovery }: LandingPageProps) {
               </div>
               <div className="stat-divider"></div>
               <div className="inline-stat">
-                <div className="stat-number">5</div>
+                <div className="stat-number">6</div>
                 <div className="stat-text">AI Agents</div>
               </div>
               <div className="stat-divider"></div>
