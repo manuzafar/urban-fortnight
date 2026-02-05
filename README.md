@@ -1,7 +1,7 @@
-# Seedform - Multi-Agent Product Discovery System
+# Seedcraft - Multi-Agent Product Discovery System
 
 <p align="center">
-  <img src="docs/logo.svg" alt="Seedform Logo" width="120" height="120">
+  <img src="docs/logo.svg" alt="Seedcraft Logo" width="120" height="120">
 </p>
 
 <p align="center">
@@ -21,7 +21,7 @@
 
 ## Overview
 
-Seedform is an AI-powered product discovery system that compresses weeks of discovery work into a single, structured inception pack. It uses a multi-agent architecture built on **LangGraph** and powered by **Google Gemini**, orchestrating 6 specialized agents that each produce a section of the final deliverable.
+Seedcraft is an AI-powered product discovery system that compresses weeks of discovery work into a single, structured inception pack. It uses a multi-agent architecture built on **LangGraph** and powered by **Google Gemini**, orchestrating 6 specialized agents that each produce a section of the final deliverable.
 
 The system follows a **hypothesis-first** approach: all outputs are framed as testable hypotheses requiring customer validation, not as market truths.
 

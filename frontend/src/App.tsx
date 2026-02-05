@@ -87,7 +87,7 @@ function App() {
           <div className="header-inner">
             <div className="brand" onClick={handleNewDiscovery} style={{ cursor: 'pointer' }}>
               <div className="logo"></div>
-              <span>Seedform</span>
+              <span>Seedcraft</span>
             </div>
             <nav className="nav">
               {isHealthy !== null && (
