@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
-import { AlertCircle, LogOut } from 'lucide-react';
+import { AlertCircle, LogOut, History } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
 import { LandingPage } from './components/LandingPage';
 import { DiscoveryForm } from './components/DiscoveryForm';
 import { ProgressTracker } from './components/ProgressTracker';
 import { InceptionPackViewer } from './components/InceptionPackViewer';
+import { SessionHistory } from './components/SessionHistory';
 import {
   startDiscovery,
   getSessionStatus,
@@ -16,7 +17,7 @@ import {
 import type { DiscoveryRequest, SessionStatusResponse, InceptionPack } from './types/api';
 import './App.css';
 
-type AppState = 'landing' | 'form' | 'progress' | 'result';
+type AppState = 'landing' | 'form' | 'progress' | 'result' | 'sessions';
 
 function App() {
   const { user, session, isLoading: authLoading, signInWithGoogle, signOut } = useAuth();
@@ -111,6 +112,11 @@ function App() {
     setAppState('form');
   }, [user, signInWithGoogle]);
 
+  const handleViewSessionPack = useCallback((pack: InceptionPack) => {
+    setInceptionPack(pack);
+    setAppState('result');
+  }, []);
+
   const handleSignOut = useCallback(async () => {
     await signOut();
     handleNewDiscovery();
@@ -118,8 +124,8 @@ function App() {
 
   return (
     <div className="app">
-      {/* Header - only show on landing and form pages */}
-      {(appState === 'landing' || appState === 'form') && (
+      {/* Header - show on landing, form, and sessions pages */}
+      {(appState === 'landing' || appState === 'form' || appState === 'sessions') && (
         <header className="app-header">
           <div className="header-inner">
             <div className="brand" onClick={handleNewDiscovery} style={{ cursor: 'pointer' }}>
@@ -140,19 +146,25 @@ function App() {
                 GitHub
               </a>
               {user ? (
-                <div className="user-menu">
-                  {user.user_metadata?.avatar_url && (
-                    <img
-                      src={user.user_metadata.avatar_url}
-                      alt=""
-                      className="user-avatar"
-                    />
-                  )}
-                  <span className="user-name">{user.user_metadata?.full_name || user.email}</span>
-                  <button className="nav-pill sign-out-btn" onClick={handleSignOut} title="Sign out">
-                    <LogOut size={14} />
+                <>
+                  <button className="nav-pill" onClick={() => setAppState('sessions')}>
+                    <History size={14} />
+                    <span>My Sessions</span>
                   </button>
-                </div>
+                  <div className="user-menu">
+                    {user.user_metadata?.avatar_url && (
+                      <img
+                        src={user.user_metadata.avatar_url}
+                        alt=""
+                        className="user-avatar"
+                      />
+                    )}
+                    <span className="user-name">{user.user_metadata?.full_name || user.email}</span>
+                    <button className="nav-pill sign-out-btn" onClick={handleSignOut} title="Sign out">
+                      <LogOut size={14} />
+                    </button>
+                  </div>
+                </>
               ) : null}
               {appState === 'landing' && (
                 <button className="btn-start" onClick={handleGoToForm}>
@@ -187,6 +199,10 @@ function App() {
 
         {appState === 'progress' && sessionData && (
           <ProgressTracker session={sessionData} onCancel={handleNewDiscovery} />
+        )}
+
+        {appState === 'sessions' && (
+          <SessionHistory onBack={handleNewDiscovery} onViewPack={handleViewSessionPack} />
         )}
 
         {appState === 'result' && inceptionPack && (

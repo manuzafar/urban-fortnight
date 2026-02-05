@@ -6,6 +6,7 @@ import type {
   DiscoveryRequest,
   DiscoveryResponse,
   SessionStatusResponse,
+  SessionListResponse,
   InceptionPack,
 } from '../types/api';
 
@@ -127,10 +128,7 @@ export async function deleteSession(sessionId: string): Promise<void> {
 /**
  * List all active sessions
  */
-export async function listSessions(): Promise<{
-  count: number;
-  sessions: string[];
-}> {
+export async function listSessions(): Promise<SessionListResponse> {
   return fetchApi('/api/discovery/sessions');
 }
 

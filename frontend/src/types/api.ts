@@ -15,6 +15,24 @@ export type StorySize = 'XS' | 'S' | 'M' | 'L' | 'XL';
 export type RiskLevel = 'high' | 'medium' | 'low';
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// Session List Types
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface SessionSummary {
+  id: string;
+  status: SessionStatus;
+  product_idea: string;
+  progress_percentage: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SessionListResponse {
+  count: number;
+  sessions: SessionSummary[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // API Request/Response Types
 // ═══════════════════════════════════════════════════════════════════════════════
 
