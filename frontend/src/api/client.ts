@@ -11,6 +11,17 @@ import type {
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+// Module-level auth token, set by App.tsx when session changes
+let _authToken: string | null = null;
+
+/**
+ * Set the auth token for API requests.
+ * Called from App.tsx whenever the Supabase session changes.
+ */
+export function setAuthToken(token: string | null) {
+  _authToken = token;
+}
+
 /**
  * Custom error class for API errors
  */
@@ -35,12 +46,18 @@ async function fetchApi<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
 
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(options.headers as Record<string, string>),
+  };
+
+  if (_authToken) {
+    headers['Authorization'] = `Bearer ${_authToken}`;
+  }
+
   const response = await fetch(url, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+    headers,
   });
 
   if (!response.ok) {

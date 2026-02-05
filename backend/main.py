@@ -18,7 +18,7 @@ from datetime import datetime
 from typing import Any
 
 import structlog
-from fastapi import BackgroundTasks, FastAPI, HTTPException, status
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -38,8 +38,9 @@ from utils.helpers import (
     sanitize_input,
     sanitize_constraints,
     build_inception_pack,
-    SessionStore,
 )
+from utils.auth import get_current_user_id
+from utils.db import SupabaseSessionStore
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # INITIALIZATION
@@ -49,8 +50,8 @@ from utils.helpers import (
 setup_logging()
 logger = structlog.get_logger(__name__)
 
-# In-memory session store
-session_store = SessionStore()
+# Persistent session store (Supabase PostgreSQL)
+session_store = SupabaseSessionStore()
 
 
 @asynccontextmanager
@@ -88,11 +89,11 @@ app = FastAPI(
     redoc_url="/redoc" if settings.is_development else None,
 )
 
-# CORS middleware - allow all origins for deployment flexibility
+# CORS middleware - explicit origins required for credentials
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=False,
+    allow_origins=settings.cors_origins_list,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -128,6 +129,7 @@ async def global_exception_handler(request, exc):
 
 async def run_discovery_task(
     session_id: str,
+    user_id: str,
     product_idea: str,
     industry: str | None,
     target_market: str | None,
@@ -137,28 +139,28 @@ async def run_discovery_task(
     """
     Background task to run the discovery workflow.
 
-    Updates session store with progress and final results.
+    Updates Supabase DB with progress and final results.
 
     Args:
         session_id: Unique session identifier.
+        user_id: Supabase user ID who owns this session.
         product_idea: The product idea to analyze.
         industry: Optional industry context.
         target_market: Optional target market.
         constraints: Optional constraints.
         additional_context: Optional additional context.
     """
-    logger.info("discovery_task_started", session_id=session_id)
+    logger.info("discovery_task_started", session_id=session_id, user_id=user_id)
 
     try:
         # Update status to in progress
-        session_store.update(
+        session_store.update_status(
             session_id,
             {
                 "status": SessionStatus.IN_PROGRESS,
                 "current_agent": "Customer Research Agent",
                 "iteration": 1,
                 "progress_percentage": 0,
-                "updated_at": datetime.utcnow().isoformat(),
             },
         )
 
@@ -175,17 +177,18 @@ async def run_discovery_task(
         # Build the inception pack
         inception_pack = build_inception_pack(final_state)
 
-        # Update session with results
-        session_store.update(
+        # Save inception pack to separate table
+        session_store.save_inception_pack(session_id, user_id, inception_pack)
+
+        # Update session status
+        session_store.update_status(
             session_id,
             {
                 "status": final_state.get("status", SessionStatus.COMPLETED),
                 "current_agent": "Complete",
                 "iteration": final_state.get("iteration", 1),
                 "progress_percentage": 100,
-                "inception_pack": inception_pack,
                 "errors": final_state.get("errors", []),
-                "updated_at": datetime.utcnow().isoformat(),
             },
         )
 
@@ -205,12 +208,11 @@ async def run_discovery_task(
         )
 
         # Update session with error
-        session_store.update(
+        session_store.update_status(
             session_id,
             {
                 "status": SessionStatus.FAILED,
                 "error_message": str(e),
-                "updated_at": datetime.utcnow().isoformat(),
             },
         )
 
@@ -233,7 +235,7 @@ async def health_check() -> dict[str, Any]:
         "timestamp": datetime.utcnow().isoformat(),
         "version": "1.0.0",
         "environment": settings.app_env,
-        "active_sessions": session_store.count(),
+        "active_sessions": session_store.count_active(),
     }
 
 
@@ -251,16 +253,18 @@ async def health_check() -> dict[str, Any]:
 async def start_discovery(
     request: DiscoveryRequest,
     background_tasks: BackgroundTasks,
+    user_id: str = Depends(get_current_user_id),
 ) -> DiscoveryResponse:
     """
     Start a new product discovery session.
 
     Creates a new session and launches the discovery workflow
-    as a background task.
+    as a background task. Requires authentication.
 
     Args:
         request: Discovery request with product idea and context.
         background_tasks: FastAPI background tasks handler.
+        user_id: Authenticated user ID from JWT.
 
     Returns:
         DiscoveryResponse: Session ID and initial status.
@@ -270,7 +274,7 @@ async def start_discovery(
     """
     # Check session limit
     max_sessions = settings.max_concurrent_sessions
-    if max_sessions > 0 and session_store.count() >= max_sessions:
+    if max_sessions > 0 and session_store.count_active() >= max_sessions:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail=f"Maximum concurrent sessions ({max_sessions}) reached. Please try again later.",
@@ -288,11 +292,12 @@ async def start_discovery(
         sanitize_input(request.additional_context) if request.additional_context else None
     )
 
-    # Create session
+    # Create session in database
     created_at = datetime.utcnow()
     session_store.create(
         session_id,
-        {
+        user_id=user_id,
+        data={
             "status": SessionStatus.PENDING,
             "product_idea": product_idea,
             "industry": industry,
@@ -302,11 +307,8 @@ async def start_discovery(
             "current_agent": None,
             "iteration": 1,
             "progress_percentage": 0,
-            "inception_pack": None,
             "error_message": None,
             "errors": [],
-            "created_at": created_at.isoformat(),
-            "updated_at": created_at.isoformat(),
         },
     )
 
@@ -321,6 +323,7 @@ async def start_discovery(
     background_tasks.add_task(
         run_discovery_task,
         session_id=session_id,
+        user_id=user_id,
         product_idea=product_idea,
         industry=industry,
         target_market=target_market,
@@ -346,48 +349,47 @@ async def start_discovery(
         "When completed, includes the full inception pack."
     ),
 )
-async def get_session_status(session_id: str) -> SessionStatusResponse:
+async def get_session_status(
+    session_id: str,
+    user_id: str = Depends(get_current_user_id),
+) -> SessionStatusResponse:
     """
-    Get the status of a discovery session.
+    Get the status of a discovery session. Requires authentication.
 
     Args:
         session_id: The session ID to look up.
+        user_id: Authenticated user ID from JWT.
 
     Returns:
         SessionStatusResponse: Current session status and results.
 
     Raises:
-        HTTPException: If session not found.
+        HTTPException: If session not found or not owned by user.
     """
     session_data = session_store.get(session_id)
 
-    if not session_data:
+    if not session_data or session_data.get("user_id") != user_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Session '{session_id}' not found or has expired.",
+            detail=f"Session '{session_id}' not found.",
         )
-
-    # Parse datetime strings back to datetime objects
-    created_at_str = session_data.get("created_at")
-    updated_at_str = session_data.get("updated_at")
-
-    created_at = datetime.fromisoformat(created_at_str) if created_at_str else datetime.utcnow()
-    updated_at = datetime.fromisoformat(updated_at_str) if updated_at_str else datetime.utcnow()
 
     # Build response
     response_data = {
-        "session_id": session_id,
+        "session_id": session_data["id"],
         "status": session_data.get("status", SessionStatus.PENDING),
         "current_agent": session_data.get("current_agent"),
         "iteration": session_data.get("iteration", 1),
         "progress_percentage": session_data.get("progress_percentage", 0),
-        "created_at": created_at,
-        "updated_at": updated_at,
+        "created_at": session_data["created_at"],
+        "updated_at": session_data["updated_at"],
     }
 
-    # Add inception pack if completed
+    # Fetch inception pack from separate table if completed
     if session_data.get("status") == SessionStatus.COMPLETED:
-        response_data["inception_pack"] = session_data.get("inception_pack")
+        pack = session_store.get_inception_pack(session_id)
+        if pack:
+            response_data["inception_pack"] = pack
 
     # Add error message if failed
     if session_data.get("status") == SessionStatus.FAILED:
@@ -402,26 +404,30 @@ async def get_session_status(session_id: str) -> SessionStatusResponse:
     summary="Get inception pack only",
     description="Retrieves just the inception pack for a completed session.",
 )
-async def get_inception_pack(session_id: str) -> dict[str, Any]:
+async def get_inception_pack(
+    session_id: str,
+    user_id: str = Depends(get_current_user_id),
+) -> dict[str, Any]:
     """
-    Get the inception pack for a completed session.
+    Get the inception pack for a completed session. Requires authentication.
 
     Args:
         session_id: The session ID to look up.
+        user_id: Authenticated user ID from JWT.
 
     Returns:
         dict: The complete inception pack.
 
     Raises:
-        HTTPException: If session not found or not completed.
+        HTTPException: If session not found, not owned by user, or not completed.
     """
-    session_data = session_store.get(session_id)
-
-    if not session_data:
+    if not session_store.verify_ownership(session_id, user_id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Session '{session_id}' not found or has expired.",
+            detail=f"Session '{session_id}' not found.",
         )
+
+    session_data = session_store.get(session_id)
 
     if session_data.get("status") != SessionStatus.COMPLETED:
         raise HTTPException(
@@ -429,7 +435,7 @@ async def get_inception_pack(session_id: str) -> dict[str, Any]:
             detail=f"Session is not completed. Current status: {session_data.get('status')}",
         )
 
-    inception_pack = session_data.get("inception_pack")
+    inception_pack = session_store.get_inception_pack(session_id)
     if not inception_pack:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -446,42 +452,52 @@ async def get_inception_pack(session_id: str) -> dict[str, Any]:
     summary="Delete a discovery session",
     description="Deletes a discovery session and its data.",
 )
-async def delete_session(session_id: str) -> None:
+async def delete_session(
+    session_id: str,
+    user_id: str = Depends(get_current_user_id),
+) -> None:
     """
-    Delete a discovery session.
+    Delete a discovery session. Requires authentication.
 
     Args:
         session_id: The session ID to delete.
+        user_id: Authenticated user ID from JWT.
 
     Raises:
-        HTTPException: If session not found.
+        HTTPException: If session not found or not owned by user.
     """
-    if not session_store.delete(session_id):
+    if not session_store.verify_ownership(session_id, user_id):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Session '{session_id}' not found.",
         )
 
-    logger.info("session_deleted", session_id=session_id)
+    session_store.delete(session_id)
+    logger.info("session_deleted", session_id=session_id, user_id=user_id)
 
 
 @app.get(
     "/api/discovery/sessions",
     tags=["Discovery"],
-    summary="List active sessions",
-    description="Lists all active discovery sessions (admin endpoint).",
+    summary="List user's sessions",
+    description="Lists all discovery sessions for the authenticated user.",
 )
-async def list_sessions() -> dict[str, Any]:
+async def list_sessions(
+    user_id: str = Depends(get_current_user_id),
+) -> dict[str, Any]:
     """
-    List all active sessions.
+    List all sessions for the authenticated user.
+
+    Args:
+        user_id: Authenticated user ID from JWT.
 
     Returns:
-        dict: List of active session IDs and count.
+        dict: List of user's sessions and count.
     """
-    session_ids = session_store.get_all_session_ids()
+    sessions = session_store.get_user_sessions(user_id)
     return {
-        "count": len(session_ids),
-        "sessions": session_ids,
+        "count": len(sessions),
+        "sessions": sessions,
     }
 
 

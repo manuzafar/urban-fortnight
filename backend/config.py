@@ -52,6 +52,24 @@ class Settings(BaseSettings):
     )
 
     # ═══════════════════════════════════════════════════════════════════════
+    # SUPABASE
+    # ═══════════════════════════════════════════════════════════════════════
+    supabase_url: str = Field(
+        default="",
+        description="Supabase project URL",
+    )
+
+    supabase_service_key: str = Field(
+        default="",
+        description="Supabase service role key (private, backend only)",
+    )
+
+    supabase_jwt_secret: str = Field(
+        default="",
+        description="Supabase JWT secret for token verification",
+    )
+
+    # ═══════════════════════════════════════════════════════════════════════
     # GOOGLE GEMINI API
     # ═══════════════════════════════════════════════════════════════════════
     google_api_key: str = Field(

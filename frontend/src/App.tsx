@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, LogOut } from 'lucide-react';
+import { useAuth } from './hooks/useAuth';
 import { LandingPage } from './components/LandingPage';
 import { DiscoveryForm } from './components/DiscoveryForm';
 import { ProgressTracker } from './components/ProgressTracker';
@@ -9,6 +10,7 @@ import {
   getSessionStatus,
   pollSessionStatus,
   checkHealth,
+  setAuthToken,
   ApiError,
 } from './api/client';
 import type { DiscoveryRequest, SessionStatusResponse, InceptionPack } from './types/api';
@@ -17,12 +19,30 @@ import './App.css';
 type AppState = 'landing' | 'form' | 'progress' | 'result';
 
 function App() {
+  const { user, session, isLoading: authLoading, signInWithGoogle, signOut } = useAuth();
   const [appState, setAppState] = useState<AppState>('landing');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [session, setSession] = useState<SessionStatusResponse | null>(null);
+  const [sessionData, setSessionData] = useState<SessionStatusResponse | null>(null);
   const [inceptionPack, setInceptionPack] = useState<InceptionPack | null>(null);
   const [isHealthy, setIsHealthy] = useState<boolean | null>(null);
+
+  // Sync auth token to API client whenever session changes
+  useEffect(() => {
+    setAuthToken(session?.access_token ?? null);
+  }, [session]);
+
+  // Handle OAuth redirect: check if user was trying to go to form before login
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) return;
+
+    const pending = sessionStorage.getItem('seedcraft_pending_action');
+    if (pending === 'form') {
+      sessionStorage.removeItem('seedcraft_pending_action');
+      setAppState('form');
+    }
+  }, [user, authLoading]);
 
   // Check backend health on mount
   useEffect(() => {
@@ -40,12 +60,12 @@ function App() {
 
       // Get initial status
       const status = await getSessionStatus(response.session_id);
-      setSession(status);
+      setSessionData(status);
       setAppState('progress');
 
       // Start polling
       const stopPolling = pollSessionStatus(response.session_id, (updatedStatus) => {
-        setSession(updatedStatus);
+        setSessionData(updatedStatus);
 
         if (updatedStatus.status === 'completed' && updatedStatus.inception_pack) {
           setInceptionPack(updatedStatus.inception_pack as InceptionPack);
@@ -59,6 +79,12 @@ function App() {
       return () => stopPolling();
     } catch (err) {
       if (err instanceof ApiError) {
+        if (err.status === 401) {
+          // Token expired or invalid — re-trigger login
+          sessionStorage.setItem('seedcraft_pending_action', 'form');
+          await signInWithGoogle();
+          return;
+        }
         setError(err.message);
       } else {
         setError('Failed to start discovery. Please try again.');
@@ -66,18 +92,29 @@ function App() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [signInWithGoogle]);
 
   const handleNewDiscovery = useCallback(() => {
     setAppState('landing');
-    setSession(null);
+    setSessionData(null);
     setInceptionPack(null);
     setError(null);
   }, []);
 
   const handleGoToForm = useCallback(() => {
+    if (!user) {
+      // Not logged in — store intent and trigger Google SSO
+      sessionStorage.setItem('seedcraft_pending_action', 'form');
+      signInWithGoogle();
+      return;
+    }
     setAppState('form');
-  }, []);
+  }, [user, signInWithGoogle]);
+
+  const handleSignOut = useCallback(async () => {
+    await signOut();
+    handleNewDiscovery();
+  }, [signOut, handleNewDiscovery]);
 
   return (
     <div className="app">
@@ -102,6 +139,21 @@ function App() {
               <a href="https://github.com/manuzafar/urban-fortnight" target="_blank" rel="noopener noreferrer" className="nav-pill">
                 GitHub
               </a>
+              {user ? (
+                <div className="user-menu">
+                  {user.user_metadata?.avatar_url && (
+                    <img
+                      src={user.user_metadata.avatar_url}
+                      alt=""
+                      className="user-avatar"
+                    />
+                  )}
+                  <span className="user-name">{user.user_metadata?.full_name || user.email}</span>
+                  <button className="nav-pill sign-out-btn" onClick={handleSignOut} title="Sign out">
+                    <LogOut size={14} />
+                  </button>
+                </div>
+              ) : null}
               {appState === 'landing' && (
                 <button className="btn-start" onClick={handleGoToForm}>
                   Start Discovery
@@ -133,8 +185,8 @@ function App() {
           <DiscoveryForm onSubmit={handleStartDiscovery} isLoading={isLoading} onBack={handleNewDiscovery} />
         )}
 
-        {appState === 'progress' && session && (
-          <ProgressTracker session={session} onCancel={handleNewDiscovery} />
+        {appState === 'progress' && sessionData && (
+          <ProgressTracker session={sessionData} onCancel={handleNewDiscovery} />
         )}
 
         {appState === 'result' && inceptionPack && (
