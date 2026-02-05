@@ -359,6 +359,19 @@ describe('SessionHistory', () => {
     });
   });
 
+  it('shows "Unknown date" for invalid date strings', async () => {
+    mockedApi.listSessions.mockResolvedValue({
+      count: 1,
+      sessions: [makeSession({ created_at: 'not-a-date' })],
+    });
+    render(<SessionHistory onBack={onBack} onViewPack={onViewPack} />);
+
+    await waitFor(() => {
+      const dateEl = document.querySelector('.session-card-date');
+      expect(dateEl?.textContent).toContain('Unknown date');
+    });
+  });
+
   // ─── Status badge CSS classes ───────────────────────────────────────
   it('applies correct CSS class per status', async () => {
     const sessions = [

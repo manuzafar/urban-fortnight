@@ -23,13 +23,15 @@ const STATUS_CLASSES: Record<SessionStatus, string> = {
 };
 
 function formatDate(iso: string): string {
+  const date = new Date(iso);
+  if (isNaN(date.getTime())) return 'Unknown date';
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
     hour: 'numeric',
     minute: '2-digit',
-  }).format(new Date(iso));
+  }).format(date);
 }
 
 export function SessionHistory({ onBack, onViewPack }: SessionHistoryProps) {
