@@ -1644,6 +1644,21 @@ function QualityTab({
         )}
       </div>
 
+      {criticalGaps.length > 0 && (
+        <div className="pack-section content-section" style={{ background: 'rgba(239, 168, 68, 0.06)', border: '1px solid rgba(239, 168, 68, 0.2)' }}>
+          <div className="section-header">
+            <h3 className="section-title" style={{ color: 'var(--color-warn)' }}>Critical Gaps</h3>
+          </div>
+          <div className="section-content">
+            <ul style={{ listStyleType: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              {criticalGaps.map((g, i) => (
+                <li key={i} style={{ padding: '0.75rem', background: 'rgba(0, 0, 0, 0.2)', borderRadius: '6px', borderLeft: '3px solid var(--color-warn)' }}>{g}</li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+
       {recommendations.length > 0 && (
         <div className="pack-section content-section">
           <div className="section-header">
