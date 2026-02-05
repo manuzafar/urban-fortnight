@@ -274,7 +274,7 @@ async def prepare_revision_node(state: DiscoveryState) -> DiscoveryState:
         session_id=state["session_id"],
         previous_iteration=current_iteration,
         new_iteration=new_iteration,
-        quality_score=state.get("quality_assessment", {}).get("overall_score"),
+        quality_score=(state.get("quality_assessment") or {}).get("overall_score"),
     )
 
     # Increment iteration
@@ -314,7 +314,7 @@ async def finalize_node(state: DiscoveryState) -> DiscoveryState:
         iteration=state.get("iteration", 1),
         total_tokens=state.get("total_tokens_used", 0),
         total_duration=round(state.get("total_duration_seconds", 0), 2),
-        quality_score=state.get("quality_assessment", {}).get("overall_score"),
+        quality_score=(state.get("quality_assessment") or {}).get("overall_score"),
         quality_passed=state.get("quality_passed", False),
     )
 
