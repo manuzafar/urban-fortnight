@@ -40,13 +40,21 @@ function getPhaseIndex(agentName: string | null): number {
 
 export function ProgressTracker({ session, onCancel }: ProgressTrackerProps) {
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [currentActivityMessage, setCurrentActivityMessage] = useState('');
-  const [, setMessageIndex] = useState(0);
-  const [perceivedProgress, setPerceivedProgress] = useState(0);
+  const [messageIndex, setMessageIndex] = useState(0);
+  const [fakeProgress, setFakeProgress] = useState(0);
 
   const currentPhaseIndex = getPhaseIndex(session.current_agent);
   const isComplete = session.status === 'completed';
   const isFailed = session.status === 'failed';
+
+  // Derive activity message from phase and index
+  const phaseMessages = ACTIVITY_MESSAGES.find(pm => pm.phase === currentPhaseIndex);
+  const phaseMessageList = phaseMessages?.messages || ACTIVITY_MESSAGES[0].messages;
+  const currentActivityMessage = phaseMessageList[messageIndex % phaseMessageList.length];
+
+  // Derive perceived progress: use actual when >= 5%, otherwise use fake timer-based progress
+  const actualProgress = session.progress_percentage;
+  const perceivedProgress = actualProgress >= 5 ? actualProgress : fakeProgress;
 
   // Timer for elapsed time
   useEffect(() => {
@@ -62,49 +70,30 @@ export function ProgressTracker({ session, onCancel }: ProgressTrackerProps) {
     return () => clearInterval(interval);
   }, [session.created_at, session.status]);
 
-  // Dynamic activity messages that rotate every 3 seconds
+  // Rotate activity messages every 3 seconds
   useEffect(() => {
     if (isComplete || isFailed) return;
 
-    const phaseMessages = ACTIVITY_MESSAGES.find(pm => pm.phase === currentPhaseIndex);
-    const messages = phaseMessages?.messages || ACTIVITY_MESSAGES[0].messages;
-
-    // Set initial message
-    setCurrentActivityMessage(messages[0]);
-
-    // Rotate messages every 3 seconds
     const interval = setInterval(() => {
-      setMessageIndex(prev => {
-        const next = (prev + 1) % messages.length;
-        setCurrentActivityMessage(messages[next]);
-        return next;
-      });
+      setMessageIndex(prev => prev + 1);
     }, 3000);
 
     return () => clearInterval(interval);
   }, [currentPhaseIndex, isComplete, isFailed]);
 
-  // Perceived progress - shows gradual movement even when actual progress is stuck
+  // Fake progress - shows gradual movement when actual progress is low
   useEffect(() => {
-    if (isComplete || isFailed) return;
+    if (isComplete || isFailed || actualProgress >= 5) return;
 
-    const actualProgress = session.progress_percentage;
+    const interval = setInterval(() => {
+      setFakeProgress(prev => {
+        if (prev >= 8) return 8;
+        return prev + 0.5;
+      });
+    }, 2000);
 
-    // If actual progress is 0 or very low, show fake progress
-    if (actualProgress < 5) {
-      // Gradually increase perceived progress up to 8% over time
-      const interval = setInterval(() => {
-        setPerceivedProgress(prev => {
-          if (prev >= 8) return 8;
-          return prev + 0.5;
-        });
-      }, 2000);
-      return () => clearInterval(interval);
-    } else {
-      // Once actual progress kicks in, smoothly transition
-      setPerceivedProgress(actualProgress);
-    }
-  }, [session.progress_percentage, isComplete, isFailed]);
+    return () => clearInterval(interval);
+  }, [actualProgress, isComplete, isFailed]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);

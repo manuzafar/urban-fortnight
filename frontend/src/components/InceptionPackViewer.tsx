@@ -165,9 +165,8 @@ export function InceptionPackViewer({ pack, onNewDiscovery }: InceptionPackViewe
 // Tab Components
 // ═══════════════════════════════════════════════════════════════════════════════
 
-function ExecutiveSummaryTab({ summary }: { summary: InceptionPack['executive_summary'] }) {
-  // Helper to render a stat card
-  const StatCard = ({ label, value, accent }: { label: string; value: string; accent?: boolean }) => (
+function StatCard({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
+  return (
     <div style={{
       padding: '1rem',
       background: accent ? 'rgba(68, 209, 123, 0.08)' : 'rgba(255, 255, 255, 0.03)',
@@ -178,7 +177,9 @@ function ExecutiveSummaryTab({ summary }: { summary: InceptionPack['executive_su
       <div style={{ fontSize: '0.95rem', color: accent ? '#44d17b' : 'var(--color-text)', fontWeight: 500 }}>{value}</div>
     </div>
   );
+}
 
+function ExecutiveSummaryTab({ summary }: { summary: InceptionPack['executive_summary'] }) {
   return (
     <div>
       {/* Recommendation Banner */}
