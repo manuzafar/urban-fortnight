@@ -144,8 +144,8 @@ export function InceptionPackViewer({ pack, onNewDiscovery }: InceptionPackViewe
           <div style={{ marginTop: '2rem', padding: '1rem', background: 'rgba(255, 255, 255, 0.03)', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.875rem', color: 'rgba(255, 255, 255, 0.7)' }}>
               <Star size={16} style={{ color: '#ffcf5a' }} />
-              <span>Quality: {((pack.quality_assessment.overall_score || 0) * 100).toFixed(0)}%</span>
-              {pack.quality_assessment.passed && <CheckCircle2 size={16} style={{ color: '#44d17b' }} />}
+              <span>Quality: {((pack.quality_assessment?.overall_score || 0) * 100).toFixed(0)}%</span>
+              {pack.quality_assessment?.passed && <CheckCircle2 size={16} style={{ color: '#44d17b' }} />}
             </div>
           </div>
         </aside>
@@ -1518,6 +1518,16 @@ function QualityTab({
   quality: InceptionPack['quality_assessment'];
   metadata: InceptionPack['metadata'];
 }) {
+  const overallScore = quality?.overall_score || 0;
+  const passed = quality?.passed ?? false;
+  const iteration = quality?.iteration ?? 1;
+  const readyForDelivery = quality?.ready_for_delivery ?? false;
+  const sectionScores = quality?.section_scores || [];
+  const strengths = quality?.strengths || [];
+  const weaknesses = quality?.weaknesses || [];
+  const recommendations = quality?.recommendations || [];
+  const criticalGaps = quality?.critical_gaps || [];
+
   return (
     <div>
       <div className="pack-section content-section">
@@ -1530,7 +1540,7 @@ function QualityTab({
               width: '140px',
               height: '140px',
               borderRadius: '50%',
-              background: `conic-gradient(var(--color-accent) ${(quality.overall_score || 0) * 360}deg, rgba(255, 255, 255, 0.1) 0deg)`,
+              background: `conic-gradient(var(--color-accent) ${overallScore * 360}deg, rgba(255, 255, 255, 0.1) 0deg)`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -1546,12 +1556,12 @@ function QualityTab({
                 alignItems: 'center',
                 justifyContent: 'center'
               }}>
-                <span style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-text)' }}>{((quality.overall_score || 0) * 100).toFixed(0)}%</span>
+                <span style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--color-text)' }}>{(overallScore * 100).toFixed(0)}%</span>
                 <span style={{ fontSize: '0.75rem', color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Quality</span>
               </div>
             </div>
             <div style={{ flex: 1 }}>
-              {quality.passed ? (
+              {passed ? (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '1rem', background: 'rgba(68, 209, 123, 0.1)', border: '1px solid rgba(68, 209, 123, 0.3)', borderRadius: '8px', marginBottom: '1rem' }}>
                   <CheckCircle2 size={24} style={{ color: 'var(--color-good)' }} />
                   <span style={{ fontWeight: 700, fontSize: '1.125rem', color: 'var(--color-good)' }}>Quality Check Passed</span>
@@ -1562,8 +1572,8 @@ function QualityTab({
                   <span style={{ fontWeight: 700, fontSize: '1.125rem', color: 'var(--color-error)' }}>Below Threshold</span>
                 </div>
               )}
-              <p style={{ marginBottom: '0.5rem', color: 'var(--color-muted)' }}>Iteration: <strong style={{ color: 'var(--color-text)' }}>{quality.iteration}</strong></p>
-              {quality.ready_for_delivery && (
+              <p style={{ marginBottom: '0.5rem', color: 'var(--color-muted)' }}>Iteration: <strong style={{ color: 'var(--color-text)' }}>{iteration}</strong></p>
+              {readyForDelivery && (
                 <span style={{ display: 'inline-block', padding: '0.5rem 1rem', borderRadius: '8px', background: 'var(--color-accent)', color: 'white', fontWeight: 700, fontSize: '0.875rem' }}>Ready for Delivery</span>
               )}
             </div>
@@ -1571,24 +1581,25 @@ function QualityTab({
         </div>
       </div>
 
+      {sectionScores.length > 0 && (
       <div className="pack-section content-section">
         <div className="section-header">
           <h3 className="section-title">Section Scores</h3>
         </div>
         <div className="section-content">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            {quality.section_scores.map((section, i) => (
+            {sectionScores.map((section, i) => (
               <div key={i}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
                   <span style={{ fontWeight: 600, color: 'var(--color-text)' }}>{section.section}</span>
-                  <span style={{ fontWeight: 700, color: section.score >= 0.8 ? 'var(--color-good)' : section.score >= 0.6 ? 'var(--color-warn)' : 'var(--color-error)' }}>{(section.score * 100).toFixed(0)}%</span>
+                  <span style={{ fontWeight: 700, color: (section.score || 0) >= 0.8 ? 'var(--color-good)' : (section.score || 0) >= 0.6 ? 'var(--color-warn)' : 'var(--color-error)' }}>{((section.score || 0) * 100).toFixed(0)}%</span>
                 </div>
                 <div style={{ width: '100%', height: '8px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '4px', overflow: 'hidden', marginBottom: '0.5rem' }}>
                   <div
                     style={{
-                      width: `${section.score * 100}%`,
+                      width: `${(section.score || 0) * 100}%`,
                       height: '100%',
-                      background: section.score >= 0.8 ? 'var(--color-good)' : section.score >= 0.6 ? 'var(--color-warn)' : 'var(--color-error)',
+                      background: (section.score || 0) >= 0.8 ? 'var(--color-good)' : (section.score || 0) >= 0.6 ? 'var(--color-warn)' : 'var(--color-error)',
                       transition: 'width 0.3s ease'
                     }}
                   />
@@ -1599,29 +1610,32 @@ function QualityTab({
           </div>
         </div>
       </div>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+        {strengths.length > 0 && (
         <div className="pack-section content-section" style={{ background: 'rgba(68, 209, 123, 0.06)', border: '1px solid rgba(68, 209, 123, 0.2)' }}>
           <div className="section-header">
             <h3 className="section-title" style={{ color: 'var(--color-good)' }}>Strengths</h3>
           </div>
           <div className="section-content">
             <ul style={{ listStyleType: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {quality.strengths.map((s, i) => (
+              {strengths.map((s, i) => (
                 <li key={i} style={{ padding: '0.75rem', background: 'rgba(0, 0, 0, 0.2)', borderRadius: '6px', borderLeft: '3px solid var(--color-good)' }}>{s}</li>
               ))}
             </ul>
           </div>
         </div>
+        )}
 
-        {quality.weaknesses.length > 0 && (
+        {weaknesses.length > 0 && (
           <div className="pack-section content-section" style={{ background: 'rgba(239, 68, 68, 0.06)', border: '1px solid rgba(239, 68, 68, 0.2)' }}>
             <div className="section-header">
               <h3 className="section-title" style={{ color: 'var(--color-error)' }}>Areas for Improvement</h3>
             </div>
             <div className="section-content">
               <ul style={{ listStyleType: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {quality.weaknesses.map((w, i) => (
+                {weaknesses.map((w, i) => (
                   <li key={i} style={{ padding: '0.75rem', background: 'rgba(0, 0, 0, 0.2)', borderRadius: '6px', borderLeft: '3px solid var(--color-error)' }}>{w}</li>
                 ))}
               </ul>
@@ -1630,14 +1644,14 @@ function QualityTab({
         )}
       </div>
 
-      {quality.recommendations.length > 0 && (
+      {recommendations.length > 0 && (
         <div className="pack-section content-section">
           <div className="section-header">
             <h3 className="section-title">Recommendations</h3>
           </div>
           <div className="section-content">
             <ul style={{ listStyleType: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {quality.recommendations.map((r, i) => (
+              {recommendations.map((r, i) => (
                 <li key={i} style={{ padding: '0.75rem 0.75rem 0.75rem 1rem', background: 'rgba(109, 94, 252, 0.08)', border: '1px solid rgba(109, 94, 252, 0.2)', borderRadius: '6px', borderLeft: '3px solid var(--color-accent)' }}>{r}</li>
               ))}
             </ul>
@@ -1655,23 +1669,23 @@ function QualityTab({
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
             <div style={{ padding: '1rem', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', textAlign: 'center' }}>
               <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>Session ID</span>
-              <span style={{ display: 'block', fontWeight: 600, color: 'var(--color-text)', fontFamily: 'monospace', fontSize: '0.875rem' }}>{metadata.session_id}</span>
+              <span style={{ display: 'block', fontWeight: 600, color: 'var(--color-text)', fontFamily: 'monospace', fontSize: '0.875rem' }}>{metadata?.session_id || 'N/A'}</span>
             </div>
             <div style={{ padding: '1rem', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', textAlign: 'center' }}>
               <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>Generated At</span>
-              <span style={{ display: 'block', fontWeight: 600, color: 'var(--color-text)', fontSize: '0.875rem' }}>{new Date(metadata.generated_at).toLocaleString()}</span>
+              <span style={{ display: 'block', fontWeight: 600, color: 'var(--color-text)', fontSize: '0.875rem' }}>{metadata?.generated_at ? new Date(metadata.generated_at).toLocaleString() : 'N/A'}</span>
             </div>
             <div style={{ padding: '1rem', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', textAlign: 'center' }}>
               <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>Duration</span>
-              <span style={{ display: 'block', fontWeight: 700, color: 'var(--color-text)', fontSize: '1.5rem' }}>{Math.round(metadata.total_duration_seconds)}s</span>
+              <span style={{ display: 'block', fontWeight: 700, color: 'var(--color-text)', fontSize: '1.5rem' }}>{Math.round(metadata?.total_duration_seconds || 0)}s</span>
             </div>
             <div style={{ padding: '1rem', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', textAlign: 'center' }}>
               <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>Iterations</span>
-              <span style={{ display: 'block', fontWeight: 700, color: 'var(--color-accent-2)', fontSize: '1.5rem' }}>{metadata.iterations}</span>
+              <span style={{ display: 'block', fontWeight: 700, color: 'var(--color-accent-2)', fontSize: '1.5rem' }}>{metadata?.iterations || 1}</span>
             </div>
             <div style={{ padding: '1rem', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px', textAlign: 'center' }}>
               <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--color-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.5rem' }}>Tokens Used</span>
-              <span style={{ display: 'block', fontWeight: 700, color: 'var(--color-good)', fontSize: '1.5rem' }}>{metadata.total_tokens_used.toLocaleString()}</span>
+              <span style={{ display: 'block', fontWeight: 700, color: 'var(--color-good)', fontSize: '1.5rem' }}>{(metadata?.total_tokens_used || 0).toLocaleString()}</span>
             </div>
           </div>
         </div>
