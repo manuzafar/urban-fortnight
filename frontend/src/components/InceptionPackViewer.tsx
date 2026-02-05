@@ -1406,6 +1406,19 @@ function ArchitectureTab({ architecture }: { architecture: InceptionPack['techni
         </div>
       )}
 
+      {architecture.sequence_diagram_mermaid && (
+        <div className="pack-section content-section">
+          <div className="section-header">
+            <h3 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Cpu size={18} /> Sequence Diagram — Primary User Flow
+            </h3>
+          </div>
+          <div className="section-content">
+            <MermaidDiagram chart={architecture.sequence_diagram_mermaid} />
+          </div>
+        </div>
+      )}
+
       <div className="pack-section content-section">
         <div className="section-header">
           <h3 className="section-title">Technology Stack</h3>

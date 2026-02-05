@@ -1188,6 +1188,47 @@ graph TB
     CORE --> WORKER
 ```
 
+### 2c. Sequence Diagram (Mermaid)
+Generate a Mermaid.js sequence diagram showing the primary user flow through the system.
+Pick the most important user journey (e.g. user registration, placing an order, submitting a request) and show how the request flows between components.
+
+The diagram MUST follow these rules:
+- Use "sequenceDiagram" as the diagram type
+- Include 4-8 participants (actors and systems)
+- Use "participant" to declare each system component, "actor" for users
+- Show the request/response flow with arrows: ->> for requests, -->> for responses
+- Use "activate" and "deactivate" to show processing time on key services
+- Use "alt" / "else" blocks for conditional flows (e.g. success vs error)
+- Use "Note over" for important annotations
+- Keep labels short and readable
+- Do NOT use special characters or quotes inside labels
+
+Example format:
+```
+sequenceDiagram
+    actor User
+    participant WEB as Web App
+    participant API as API Gateway
+    participant AUTH as Auth Service
+    participant DB as Database
+
+    User->>WEB: Submit login form
+    WEB->>API: POST /auth/login
+    API->>AUTH: Validate credentials
+    activate AUTH
+    AUTH->>DB: Query user record
+    DB-->>AUTH: User data
+    AUTH-->>API: JWT token
+    deactivate AUTH
+    alt Success
+        API-->>WEB: 200 OK + token
+        WEB-->>User: Redirect to dashboard
+    else Invalid credentials
+        API-->>WEB: 401 Unauthorized
+        WEB-->>User: Show error message
+    end
+```
+
 ### 3. Technology Stack (6-10 technology choices)
 For each technology choice, provide:
 - Category: Frontend, Backend, Database, Cache, Queue, etc.
@@ -1283,6 +1324,7 @@ You MUST respond with ONLY a valid JSON object. No markdown, no explanations, no
   "architecture_style": "string - chosen pattern with justification",
   "architecture_diagram_description": "string - detailed architecture description",
   "architecture_diagram_mermaid": "string - valid Mermaid.js flowchart syntax starting with graph TB",
+  "sequence_diagram_mermaid": "string - valid Mermaid.js sequence diagram syntax starting with sequenceDiagram",
   "technology_stack": [
     {{
       "category": "string - Frontend/Backend/Database/etc.",

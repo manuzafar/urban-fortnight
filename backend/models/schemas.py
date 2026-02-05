@@ -718,6 +718,10 @@ class TechnicalArchitecture(BaseModel):
         default="",
         description="Mermaid.js diagram syntax for the system architecture"
     )
+    sequence_diagram_mermaid: str = Field(
+        default="",
+        description="Mermaid.js sequence diagram showing key user flow interactions"
+    )
     technology_stack: list[TechnologyChoice] = Field(..., min_length=3, description="Tech stack")
     system_components: list[SystemComponent] = Field(..., min_length=2, description="Components")
     integration_points: list[IntegrationPoint] = Field(default_factory=list, description="Integrations")
