@@ -714,6 +714,10 @@ class TechnicalArchitecture(BaseModel):
 
     architecture_style: str = Field(..., description="Architecture pattern")
     architecture_diagram_description: str = Field(..., description="Architecture description")
+    architecture_diagram_mermaid: str = Field(
+        default="",
+        description="Mermaid.js diagram syntax for the system architecture"
+    )
     technology_stack: list[TechnologyChoice] = Field(..., min_length=3, description="Tech stack")
     system_components: list[SystemComponent] = Field(..., min_length=2, description="Components")
     integration_points: list[IntegrationPoint] = Field(default_factory=list, description="Integrations")

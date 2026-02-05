@@ -1148,6 +1148,46 @@ Provide a detailed text description of the system architecture:
 - External system interactions
 - This should be detailed enough to create an architecture diagram
 
+### 2b. Architecture Diagram (Mermaid)
+Generate a Mermaid.js flowchart diagram showing the system architecture visually.
+The diagram MUST follow these rules:
+- Use "graph TB" (top-to-bottom) direction
+- Use subgraph blocks to group related components (e.g. "Digital Channels", "Core Systems", "Integration Layer", "Data Layer", "External Services")
+- Show all major components as nodes with short readable labels
+- Show data flow with arrows between components
+- Include databases using cylinder notation [(Database)]
+- Keep node IDs as simple uppercase identifiers (e.g. APP, WEB, API, DB)
+- Do NOT use special characters, quotes, or parentheses inside node labels except for cylinder notation
+- Keep it to 10-20 nodes maximum for readability
+
+Example format:
+```
+graph TB
+    subgraph Digital Channels
+        APP[Mobile App]
+        WEB[Web Portal]
+    end
+    subgraph Integration Layer
+        API[API Gateway]
+        AUTH[Auth Service]
+    end
+    subgraph Core Systems
+        CORE[Core Platform]
+        WORKER[Background Jobs]
+    end
+    subgraph Data Layer
+        DB[(Primary DB)]
+        CACHE[(Redis Cache)]
+    end
+    APP --> API
+    WEB --> API
+    API --> AUTH
+    API --> CORE
+    CORE --> DB
+    CORE --> CACHE
+    CORE --> WORKER
+```
+
 ### 3. Technology Stack (6-10 technology choices)
 For each technology choice, provide:
 - Category: Frontend, Backend, Database, Cache, Queue, etc.
@@ -1242,6 +1282,7 @@ You MUST respond with ONLY a valid JSON object. No markdown, no explanations, no
 {{
   "architecture_style": "string - chosen pattern with justification",
   "architecture_diagram_description": "string - detailed architecture description",
+  "architecture_diagram_mermaid": "string - valid Mermaid.js flowchart syntax starting with graph TB",
   "technology_stack": [
     {{
       "category": "string - Frontend/Backend/Database/etc.",

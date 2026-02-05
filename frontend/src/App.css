@@ -1922,6 +1922,47 @@ body {
   font-size: 0.9375rem;
 }
 
+/* Mermaid Diagram */
+.mermaid-diagram-container {
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(109, 94, 252, 0.2);
+  border-radius: 12px;
+  overflow-x: auto;
+}
+
+.mermaid-rendered {
+  display: flex;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.mermaid-rendered svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.mermaid-error {
+  padding: 1rem;
+  color: var(--color-muted);
+}
+
+.mermaid-error p {
+  margin-bottom: 0.75rem;
+  color: var(--color-warning);
+  font-weight: 600;
+}
+
+.mermaid-raw {
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  font-size: 0.8125rem;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  color: var(--color-muted);
+}
+
 .section-content h1,
 .section-content h2,
 .section-content h3,

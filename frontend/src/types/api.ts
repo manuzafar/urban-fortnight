@@ -478,6 +478,7 @@ export interface IntegrationPoint {
 export interface TechnicalArchitecture {
   architecture_style: string;
   architecture_diagram_description: string;
+  architecture_diagram_mermaid?: string;
   technology_stack: TechnologyChoice[];
   system_components: SystemComponent[];
   integration_points: IntegrationPoint[];

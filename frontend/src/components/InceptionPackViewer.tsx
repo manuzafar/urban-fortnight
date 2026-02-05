@@ -19,6 +19,7 @@ import {
   Rocket,
 } from 'lucide-react';
 import type { InceptionPack, Epic, UserStory, AcceptanceCriteria, LegalRegulatoryReview } from '../types/api';
+import { MermaidDiagram } from './MermaidDiagram';
 
 interface InceptionPackViewerProps {
   pack: InceptionPack;
@@ -1390,6 +1391,19 @@ function ArchitectureTab({ architecture }: { architecture: InceptionPack['techni
           <p>{architecture.architecture_diagram_description}</p>
         </div>
       </div>
+
+      {architecture.architecture_diagram_mermaid && (
+        <div className="pack-section content-section">
+          <div className="section-header">
+            <h3 className="section-title" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Cpu size={18} /> System Architecture Diagram
+            </h3>
+          </div>
+          <div className="section-content">
+            <MermaidDiagram chart={architecture.architecture_diagram_mermaid} />
+          </div>
+        </div>
+      )}
 
       <div className="pack-section content-section">
         <div className="section-header">
