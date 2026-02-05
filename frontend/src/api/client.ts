@@ -129,7 +129,44 @@ export async function deleteSession(sessionId: string): Promise<void> {
  * List all active sessions
  */
 export async function listSessions(): Promise<SessionListResponse> {
-  return fetchApi('/api/discovery/sessions');
+  const raw = await fetchApi<{ count: number; sessions: (string | SessionListResponse['sessions'][number])[] }>('/api/discovery/sessions');
+
+  // Backend may return plain ID strings (old format) or full objects (new format).
+  // Normalise to full objects by fetching details for any string entries.
+  if (raw.sessions.length === 0 || typeof raw.sessions[0] !== 'string') {
+    return raw as SessionListResponse;
+  }
+
+  const ids = raw.sessions as string[];
+  const detailed = await Promise.all(
+    ids.map(async (id) => {
+      try {
+        const s = await getSessionStatus(id);
+        // product_idea is not in SessionStatusResponse, so derive a title:
+        // use the product name from the inception pack, or fall back to the session ID.
+        const packName = s.inception_pack?.executive_summary?.product_name;
+        return {
+          id: s.session_id,
+          status: s.status,
+          product_idea: packName || s.session_id,
+          progress_percentage: s.progress_percentage,
+          created_at: s.created_at,
+          updated_at: s.updated_at,
+        };
+      } catch {
+        return {
+          id,
+          status: 'pending' as const,
+          product_idea: id,
+          progress_percentage: 0,
+          created_at: '',
+          updated_at: '',
+        };
+      }
+    }),
+  );
+
+  return { count: detailed.length, sessions: detailed };
 }
 
 /**

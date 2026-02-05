@@ -71,6 +71,77 @@ describe('API client', () => {
       );
     });
 
+    it('normalises old format (string IDs) by fetching each session', async () => {
+      // First call: listSessions returns string IDs
+      // Subsequent calls: getSessionStatus for each ID
+      let callCount = 0;
+      globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+        callCount++;
+        if (callCount === 1) {
+          // /api/discovery/sessions — old format
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ count: 2, sessions: ['sess-a', 'sess-b'] }),
+          });
+        }
+        // /api/discovery/session/{id} — status responses
+        const id = url.includes('sess-a') ? 'sess-a' : 'sess-b';
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({
+            session_id: id,
+            status: id === 'sess-a' ? 'completed' : 'in_progress',
+            current_agent: null,
+            iteration: 1,
+            progress_percentage: id === 'sess-a' ? 100 : 40,
+            inception_pack: id === 'sess-a'
+              ? { executive_summary: { product_name: 'Cool Product' } }
+              : null,
+            error_message: null,
+            created_at: '2025-06-01T12:00:00Z',
+            updated_at: '2025-06-01T13:00:00Z',
+          }),
+        });
+      });
+
+      const result = await listSessions();
+
+      expect(result.count).toBe(2);
+      expect(result.sessions[0].id).toBe('sess-a');
+      expect(result.sessions[0].product_idea).toBe('Cool Product');
+      expect(result.sessions[0].status).toBe('completed');
+      expect(result.sessions[1].id).toBe('sess-b');
+      expect(result.sessions[1].product_idea).toBe('sess-b'); // falls back to ID
+      expect(result.sessions[1].progress_percentage).toBe(40);
+    });
+
+    it('handles fetch failure for individual sessions in old format', async () => {
+      let callCount = 0;
+      globalThis.fetch = vi.fn().mockImplementation(() => {
+        callCount++;
+        if (callCount === 1) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ count: 1, sessions: ['sess-fail'] }),
+          });
+        }
+        // Session detail fetch fails
+        return Promise.resolve({
+          ok: false,
+          status: 500,
+          statusText: 'Internal Server Error',
+          json: () => Promise.resolve({ detail: 'Server error' }),
+        });
+      });
+
+      const result = await listSessions();
+
+      expect(result.count).toBe(1);
+      expect(result.sessions[0].id).toBe('sess-fail');
+      expect(result.sessions[0].product_idea).toBe('sess-fail');
+      expect(result.sessions[0].status).toBe('pending');
+    });
+
     it('throws on non-ok response', async () => {
       globalThis.fetch = vi.fn().mockResolvedValue({
         ok: false,
