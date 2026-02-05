@@ -183,6 +183,154 @@ async def call_llm(
         }
 
 
+@retry(
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=30),
+    retry=retry_if_exception_type((LLMError, ConnectionError, TimeoutError)),
+    before_sleep=lambda retry_state: logger.warning(
+        "llm_grounded_retry",
+        attempt=retry_state.attempt_number,
+        wait=retry_state.next_action.sleep,
+    ),
+)
+async def call_llm_with_grounding(
+    prompt: str,
+    agent_name: str,
+) -> dict[str, Any]:
+    """
+    Call the Gemini LLM with Google Search grounding enabled.
+
+    Used for agents that benefit from real-world data (Customer Research,
+    Business Strategy, Legal & Regulatory). Grounding enables the LLM to
+    access current information from Google Search to validate market data,
+    competitor info, regulations, and industry trends.
+
+    Args:
+        prompt: The formatted prompt to send to the LLM.
+        agent_name: Name of the calling agent for logging.
+
+    Returns:
+        dict containing:
+            - success: bool indicating if the call succeeded
+            - data: parsed JSON response (if successful)
+            - raw_response: raw text response
+            - error: error message (if failed)
+            - tokens_used: approximate token count
+            - duration_seconds: time taken for the call
+            - grounded: bool indicating grounding was used
+
+    Raises:
+        LLMError: If the API call fails after retries.
+        JSONParseError: If the response cannot be parsed as JSON.
+    """
+    # Check if grounding is enabled globally
+    if not settings.llm_enable_grounding:
+        logger.info("grounding_disabled_fallback", agent=agent_name)
+        result = await call_llm(prompt, agent_name)
+        result["grounded"] = False
+        return result
+
+    start_time = time.time()
+    logger.info("llm_grounded_call_start", agent=agent_name)
+
+    raw_text = ""
+
+    try:
+        client = get_client()
+
+        # Configure with Google Search grounding tool
+        # Note: Grounding does NOT support response_mime_type="application/json"
+        # (controlled generation). We rely on parse_json_response to extract JSON.
+        grounding_tool = types.Tool(
+            google_search=types.GoogleSearch()
+        )
+
+        config = types.GenerateContentConfig(
+            temperature=settings.llm_temperature,
+            max_output_tokens=settings.llm_max_tokens,
+            # Cannot use response_mime_type with grounding - Gemini API limitation
+            tools=[grounding_tool],
+        )
+
+        # Make the API call with grounding
+        response = await client.aio.models.generate_content(
+            model=settings.llm_model,
+            contents=prompt,
+            config=config,
+        )
+
+        duration = time.time() - start_time
+
+        # Extract text from response
+        raw_text = response.text
+
+        # Parse JSON from response
+        parsed_data = parse_json_response(raw_text, agent_name)
+
+        # Estimate token usage
+        tokens_used = estimate_tokens(prompt, raw_text)
+
+        logger.info(
+            "llm_grounded_call_success",
+            agent=agent_name,
+            duration=round(duration, 2),
+            tokens=tokens_used,
+        )
+
+        return {
+            "success": True,
+            "data": parsed_data,
+            "raw_response": raw_text,
+            "error": None,
+            "tokens_used": tokens_used,
+            "duration_seconds": duration,
+            "grounded": True,
+        }
+
+    except json.JSONDecodeError as e:
+        duration = time.time() - start_time
+        error_msg = f"Failed to parse JSON response: {str(e)}"
+        logger.error("llm_grounded_json_parse_error", agent=agent_name, error=error_msg)
+
+        return {
+            "success": False,
+            "data": None,
+            "raw_response": raw_text,
+            "error": error_msg,
+            "tokens_used": 0,
+            "duration_seconds": duration,
+            "grounded": True,
+        }
+
+    except Exception as e:
+        duration = time.time() - start_time
+        error_msg = f"Grounded LLM call failed: {str(e)}"
+        logger.warning("llm_grounded_call_failed", agent=agent_name, error=error_msg)
+
+        # Fallback to non-grounded call
+        logger.info("grounding_fallback_to_standard", agent=agent_name)
+        try:
+            result = await call_llm(prompt, agent_name)
+            result["grounded"] = False
+            return result
+        except Exception as fallback_error:
+            logger.error(
+                "llm_grounded_fallback_failed",
+                agent=agent_name,
+                error=str(fallback_error),
+                exc_info=True,
+            )
+            return {
+                "success": False,
+                "data": None,
+                "raw_response": raw_text,
+                "error": f"Both grounded and fallback calls failed: {error_msg}",
+                "tokens_used": 0,
+                "duration_seconds": duration,
+                "grounded": False,
+            }
+
+
 def parse_json_response(text: str, agent_name: str) -> dict[str, Any]:
     """
     Parse JSON from LLM response text.

@@ -114,6 +114,11 @@ class Settings(BaseSettings):
         description="Request timeout in seconds",
     )
 
+    llm_enable_grounding: bool = Field(
+        default=True,
+        description="Enable Google Search grounding for supported agents",
+    )
+
     # ═══════════════════════════════════════════════════════════════════════
     # AGENT ORCHESTRATION
     # ═══════════════════════════════════════════════════════════════════════

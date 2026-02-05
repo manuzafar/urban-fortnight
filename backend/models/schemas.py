@@ -158,27 +158,49 @@ class SessionStatusResponse(BaseModel):
 
 class ExecutiveSummary(BaseModel):
     """
-    High-level executive summary of the product concept.
+    Comprehensive executive summary with data points senior executives need.
 
-    Attributes:
-        product_name: Proposed name for the product.
-        tagline: One-line product description.
-        problem_statement: The problem being solved.
-        solution_overview: High-level solution description.
-        value_proposition: Core value proposition.
-        target_users: Primary target user segments.
-        key_differentiators: What makes this product unique.
-        success_metrics: How success will be measured.
+    This summary synthesizes all agent outputs into a decision-ready brief
+    that covers market opportunity, financials, risks, and strategic positioning.
     """
 
+    # Product Identity
     product_name: str = Field(..., description="Proposed product name")
     tagline: str = Field(..., max_length=150, description="One-line product description")
+
+    # Problem & Solution
     problem_statement: str = Field(..., description="The problem being solved")
     solution_overview: str = Field(..., description="High-level solution description")
     value_proposition: str = Field(..., description="Core value proposition")
-    target_users: list[str] = Field(..., min_length=1, description="Primary target user segments")
-    key_differentiators: list[str] = Field(..., min_length=1, description="Unique differentiators")
-    success_metrics: list[str] = Field(..., min_length=1, description="Key success metrics")
+
+    # Target Market
+    target_users: list[str] = Field(..., min_length=1, description="Specific target user segments with descriptions")
+    target_market_size: str = Field(..., description="TAM/SAM/SOM summary with numbers")
+
+    # Competitive Position
+    key_differentiators: list[str] = Field(..., min_length=1, description="Unique differentiators vs competition")
+    competitive_landscape: str = Field(..., description="Key competitors and our positioning")
+
+    # Financial Summary
+    funding_required: str = Field(..., description="Initial investment required")
+    revenue_model: str = Field(..., description="How the product will make money")
+    financial_projections: str = Field(..., description="Year 1 and Year 3 revenue/profit projections")
+    break_even_timeline: str = Field(..., description="Expected break-even point")
+    expected_roi: str = Field(..., description="3-year ROI projection")
+
+    # Risk & Compliance
+    top_risks: list[str] = Field(..., min_length=1, max_length=5, description="Top 3-5 risks with brief mitigations")
+    regulatory_summary: str = Field(..., description="Key compliance requirements and timeline")
+
+    # Go-to-Market
+    gtm_strategy: str = Field(..., description="Go-to-market approach summary")
+    key_milestones: list[str] = Field(..., min_length=1, description="Critical milestones for first 12 months")
+
+    # Success Metrics
+    success_metrics: list[str] = Field(..., min_length=1, description="Key KPIs to track")
+
+    # Recommendation
+    recommendation: str = Field(..., description="Clear recommendation: proceed, pivot, or stop - with rationale")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -301,10 +323,11 @@ class ResearchQualityCheck(BaseModel):
 
 class CustomerResearch(BaseModel):
     """
-    Evidence-based customer research - designed to surface uncomfortable truths.
+    AI-generated market hypotheses designed to surface uncomfortable questions.
 
-    This is NOT marketing validation. This is reality investigation.
-    The goal is to find reasons the product might fail, not just succeed.
+    IMPORTANT: These are hypotheses requiring validation through customer interviews.
+    This is NOT validated research. This is hypothesis generation for testing.
+    The goal is to identify assumptions that need customer confirmation.
     """
 
     research_scope: ResearchScope = Field(..., description="Scope and limitations")
@@ -317,6 +340,10 @@ class CustomerResearch(BaseModel):
     competitive_landscape: CompetitiveLandscape = Field(..., description="Competitive reality check")
     market_context: MarketContext = Field(..., description="Market sizing with uncertainty")
     research_quality_check: ResearchQualityCheck = Field(..., description="Self-critique")
+    validation_reminder: str = Field(
+        default="These findings are AI-generated hypotheses. Schedule customer interviews to validate.",
+        description="Reminder that these are hypotheses requiring customer validation"
+    )
 
 
 # Legacy models for backward compatibility
@@ -700,6 +727,147 @@ class TechnicalArchitecture(BaseModel):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# LEGAL & REGULATORY REVIEW
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class Regulation(BaseModel):
+    """A specific regulation or legal requirement."""
+
+    name: str = Field(..., description="Regulation name (e.g., GDPR, HIPAA, SOC 2)")
+    description: str = Field(..., description="What this regulation requires")
+    applicability: str = Field(..., description="Why this applies to the product")
+    compliance_requirements: list[str] = Field(
+        ..., min_length=1, description="Specific compliance requirements"
+    )
+    impact_level: RiskLevel = Field(..., description="Impact on product development")
+    estimated_compliance_timeline: str = Field(
+        ..., description="Time needed to achieve compliance"
+    )
+    estimated_compliance_cost: str = Field(..., description="Estimated cost range")
+
+
+class LicenseRequirement(BaseModel):
+    """Licensing or certification requirement."""
+
+    license_type: str = Field(..., description="Type of license or certification")
+    issuing_authority: str = Field(..., description="Who issues this license")
+    requirements: list[str] = Field(..., min_length=1, description="Requirements to obtain")
+    timeline: str = Field(..., description="Time to obtain")
+    cost: str = Field(..., description="Estimated cost")
+    renewal_requirements: str = Field(..., description="Renewal process and frequency")
+
+
+class LegalRisk(BaseModel):
+    """Identified legal risk."""
+
+    risk_category: str = Field(..., description="Category (e.g., Liability, IP, Privacy)")
+    description: str = Field(..., description="Description of the legal risk")
+    severity: RiskLevel = Field(..., description="Risk severity")
+    likelihood: str = Field(..., description="Likelihood (High/Medium/Low)")
+    mitigation_strategies: list[str] = Field(
+        ..., min_length=1, description="How to mitigate this risk"
+    )
+    legal_counsel_recommended: bool = Field(
+        ..., description="Whether specialized legal counsel is recommended"
+    )
+
+
+class DataProtectionRequirement(BaseModel):
+    """Data protection and privacy requirement."""
+
+    regulation: str = Field(..., description="Regulation name (GDPR, CCPA, etc.)")
+    data_types_covered: list[str] = Field(..., min_length=1, description="Types of data covered")
+    key_obligations: list[str] = Field(..., min_length=1, description="Key obligations")
+    user_rights: list[str] = Field(..., min_length=1, description="User rights that must be supported")
+    penalties_for_non_compliance: str = Field(..., description="Potential penalties")
+    implementation_requirements: list[str] = Field(
+        ..., min_length=1, description="Implementation requirements"
+    )
+
+
+class IntellectualPropertyConsideration(BaseModel):
+    """Intellectual property considerations."""
+
+    ip_type: str = Field(..., description="Type (Patent, Trademark, Copyright, Trade Secret)")
+    description: str = Field(..., description="Description of IP consideration")
+    action_required: str = Field(..., description="Required action")
+    priority: Priority = Field(..., description="Priority level")
+    estimated_cost: str = Field(..., description="Estimated cost")
+
+
+class OverallRiskAssessment(BaseModel):
+    """Overall legal and regulatory risk assessment."""
+
+    risk_level: RiskLevel = Field(..., description="Overall risk level")
+    key_concerns: list[str] = Field(..., min_length=1, description="Top legal concerns")
+    blocking_issues: list[str] = Field(
+        default_factory=list, description="Issues that could block product launch"
+    )
+    recommended_timeline_buffer: str = Field(
+        ..., description="Additional timeline buffer for legal compliance"
+    )
+    recommended_budget_allocation: str = Field(
+        ..., description="Recommended budget for legal/compliance"
+    )
+
+
+class LegalRegulatoryReview(BaseModel):
+    """
+    Legal and regulatory review of the product idea.
+
+    This comprehensive analysis stress tests the product against legal and
+    regulatory requirements, helping teams understand compliance obligations
+    and potential legal risks before building.
+
+    Attributes:
+        executive_summary: High-level summary of legal/regulatory landscape.
+        applicable_regulations: Regulations that apply to this product.
+        licensing_requirements: Required licenses and certifications.
+        data_protection_requirements: Data protection and privacy requirements.
+        legal_risks: Identified legal risks and mitigations.
+        intellectual_property: IP considerations and recommendations.
+        industry_specific_considerations: Industry-specific legal notes.
+        international_considerations: Cross-border legal considerations.
+        recommended_legal_structure: Recommended business legal structure.
+        ongoing_compliance_requirements: Ongoing compliance obligations.
+        overall_risk_assessment: Overall risk assessment.
+        next_steps: Recommended next steps for legal compliance.
+    """
+
+    executive_summary: str = Field(
+        ..., description="High-level summary of legal/regulatory landscape"
+    )
+    applicable_regulations: list[Regulation] = Field(
+        ..., min_length=0, description="Applicable regulations"
+    )
+    licensing_requirements: list[LicenseRequirement] = Field(
+        default_factory=list, description="Required licenses and certifications"
+    )
+    data_protection_requirements: list[DataProtectionRequirement] = Field(
+        default_factory=list, description="Data protection requirements"
+    )
+    legal_risks: list[LegalRisk] = Field(..., min_length=1, description="Legal risks identified")
+    intellectual_property: list[IntellectualPropertyConsideration] = Field(
+        default_factory=list, description="IP considerations"
+    )
+    industry_specific_considerations: list[str] = Field(
+        default_factory=list, description="Industry-specific legal notes"
+    )
+    international_considerations: list[str] = Field(
+        default_factory=list, description="Cross-border legal considerations"
+    )
+    recommended_legal_structure: str = Field(
+        ..., description="Recommended business legal structure"
+    )
+    ongoing_compliance_requirements: list[str] = Field(
+        ..., min_length=1, description="Ongoing compliance obligations"
+    )
+    overall_risk_assessment: OverallRiskAssessment = Field(..., description="Overall risk assessment")
+    next_steps: list[str] = Field(..., min_length=3, description="Recommended next steps")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # QUALITY ASSESSMENT
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -758,6 +926,7 @@ class InceptionPack(BaseModel):
         business_case: Business case and financials.
         product_requirements_document: Complete PRD.
         technical_architecture: Technical architecture.
+        legal_regulatory_review: Legal and regulatory compliance review.
         quality_assessment: Quality assessment.
         metadata: Generation metadata.
     """
@@ -767,6 +936,9 @@ class InceptionPack(BaseModel):
     business_case: BusinessCase = Field(..., description="Business case")
     product_requirements_document: ProductRequirementsDocument = Field(..., description="PRD")
     technical_architecture: TechnicalArchitecture = Field(..., description="Technical architecture")
+    legal_regulatory_review: LegalRegulatoryReview = Field(
+        ..., description="Legal and regulatory review"
+    )
     quality_assessment: QualityAssessment = Field(..., description="Quality assessment")
     metadata: dict[str, str] = Field(
         default_factory=lambda: {

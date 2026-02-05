@@ -1,12 +1,13 @@
 """
 LangGraph Orchestrator for the Product Discovery Multi-Agent System.
 
-This module defines the workflow that coordinates all 5 agents:
+This module defines the workflow that coordinates all 6 agents:
 1. Customer Research Agent
 2. Business Strategy Agent
 3. Product Requirements Agent
 4. Technical Architect Agent
-5. Critique Agent
+5. Legal & Regulatory Review Agent
+6. Critique Agent
 
 The workflow includes a conditional revision loop that can iterate
 up to 3 times if quality thresholds are not met.
@@ -28,6 +29,7 @@ from agents.prd_subgraph import run_prd_subworkflow
 from agents.prompts import EXECUTIVE_SUMMARY_PROMPT, format_prompt
 from agents.state import DiscoveryState, create_initial_state, get_progress_percentage
 from agents.technical_architect import run_technical_architect_agent
+from agents.legal_regulatory import run_legal_regulatory_agent
 from config import settings
 from models.schemas import ExecutiveSummary, SessionStatus
 
@@ -141,6 +143,25 @@ async def technical_architect_node(state: DiscoveryState) -> DiscoveryState:
     return await run_technical_architect_agent(state)
 
 
+async def legal_regulatory_node(state: DiscoveryState) -> DiscoveryState:
+    """
+    Node wrapper for Legal & Regulatory Review Agent.
+
+    Args:
+        state: Current workflow state.
+
+    Returns:
+        DiscoveryState: Updated state after agent execution.
+    """
+    logger.info(
+        "node_start",
+        node="legal_regulatory",
+        session_id=state["session_id"],
+        iteration=state.get("iteration", 1),
+    )
+    return await run_legal_regulatory_agent(state)
+
+
 async def critique_node(state: DiscoveryState) -> DiscoveryState:
     """
     Node wrapper for Critique Agent.
@@ -190,6 +211,7 @@ async def executive_summary_node(state: DiscoveryState) -> DiscoveryState:
         business_case=json.dumps(state.get("business_case", {}), indent=2),
         product_requirements=json.dumps(state.get("product_requirements", {}), indent=2),
         technical_architecture=json.dumps(state.get("technical_architecture", {}), indent=2),
+        legal_regulatory_review=json.dumps(state.get("legal_regulatory_review", {}), indent=2),
     )
 
     # Call LLM for synthesis
@@ -265,6 +287,7 @@ async def prepare_revision_node(state: DiscoveryState) -> DiscoveryState:
     state["business_case"] = None
     state["product_requirements"] = None
     state["technical_architecture"] = None
+    state["legal_regulatory_review"] = None
     # Keep quality_assessment for reference
     # Keep critique_feedback for agents to use
 
@@ -347,7 +370,7 @@ def build_discovery_graph() -> StateGraph:
     Build the LangGraph workflow for product discovery.
 
     The workflow follows this pattern:
-    1. Customer Research → Business Strategy → Product Requirements → Technical Architect
+    1. Customer Research → Business Strategy → Product Requirements → Technical Architect → Legal & Regulatory Review
     2. Critique evaluates all outputs
     3. If quality < threshold and iterations < max: loop back to step 1
     4. Otherwise: generate executive summary and finalize
@@ -363,6 +386,7 @@ def build_discovery_graph() -> StateGraph:
     workflow.add_node("business_strategy", business_strategy_node)
     workflow.add_node("product_requirements", product_requirements_node)
     workflow.add_node("technical_architect", technical_architect_node)
+    workflow.add_node("legal_regulatory", legal_regulatory_node)
     workflow.add_node("critique", critique_node)
     workflow.add_node("prepare_revision", prepare_revision_node)
     workflow.add_node("executive_summary", executive_summary_node)
@@ -375,7 +399,8 @@ def build_discovery_graph() -> StateGraph:
     workflow.add_edge("customer_research", "business_strategy")
     workflow.add_edge("business_strategy", "product_requirements")
     workflow.add_edge("product_requirements", "technical_architect")
-    workflow.add_edge("technical_architect", "critique")
+    workflow.add_edge("technical_architect", "legal_regulatory")
+    workflow.add_edge("legal_regulatory", "critique")
 
     # Add conditional edge after critique
     workflow.add_conditional_edges(
@@ -541,37 +566,80 @@ async def get_workflow_state(session_id: str) -> DiscoveryState | None:
 
 def _create_fallback_summary(state: DiscoveryState) -> dict:
     """
-    Create a minimal executive summary when LLM synthesis fails.
+    Create a fallback executive summary when LLM synthesis fails.
+
+    Extracts available data from other agent outputs to provide
+    a meaningful summary even when synthesis fails.
 
     Args:
         state: Current workflow state.
 
     Returns:
-        dict: Minimal executive summary.
+        dict: Executive summary with available data.
     """
     product_idea = state.get("product_idea", "Unknown Product")
 
-    # Extract info from other sections if available (handle None values)
+    # Extract from customer research
     customer_research = state.get("customer_research") or {}
-    # New format uses job_to_be_done, legacy uses user_personas
     job_to_be_done = customer_research.get("job_to_be_done") or {}
-    target_users = [job_to_be_done.get("actor", "Target Users")] if job_to_be_done else ["Target Users"]
+    market_context = customer_research.get("market_context") or {}
+    competitive_landscape = customer_research.get("competitive_landscape") or {}
+    pain_signals = customer_research.get("pain_signals") or []
 
+    # Extract from business case
     business_case = state.get("business_case") or {}
     lean_canvas = business_case.get("lean_canvas") or {}
-    uvp = lean_canvas.get("unique_value_proposition") or "Innovative solution"
+    revenue_streams = business_case.get("revenue_streams") or []
+    risks = business_case.get("risks_and_mitigations") or []
+
+    # Extract from legal review
+    legal_review = state.get("legal_regulatory_review") or {}
+    risk_assessment = legal_review.get("overall_risk_assessment") or {}
+    regulations = legal_review.get("applicable_regulations") or []
+
+    # Build target users from research
+    research_scope = customer_research.get("research_scope") or {}
+    segments = research_scope.get("segments_examined") or []
+    target_users = segments if segments else [job_to_be_done.get("underlying_goal", "Target market segment")]
+
+    # Build competitors list
+    competitors = competitive_landscape.get("competitors") or []
+    competitor_names = [c.get("name", "Competitor") for c in competitors[:3]]
+    competitive_summary = f"Competing against {', '.join(competitor_names)}" if competitor_names else "Competitive analysis pending"
+
+    # Build financial summary
+    funding = business_case.get("funding_requirement") or "Funding requirements to be determined"
+    roi = business_case.get("roi_analysis") or "ROI analysis pending"
+    break_even = business_case.get("break_even_analysis") or "Break-even analysis pending"
+
+    # Build risk summary
+    top_risks = [f"Risk: {r.get('risk', 'Unknown')} | Mitigation: {r.get('mitigation', 'TBD')}" for r in risks[:3]]
+    if not top_risks:
+        top_risks = ["Risk assessment pending"]
+
+    # Build regulatory summary
+    reg_names = [r.get("name", "Unknown") for r in regulations[:3]]
+    regulatory_summary = f"Key regulations: {', '.join(reg_names)}" if reg_names else "Regulatory review pending"
 
     return {
         "product_name": product_idea.split()[0] if product_idea else "Product",
-        "tagline": f"Innovative solution for {product_idea[:50]}",
-        "problem_statement": lean_canvas.get("problem", ["Problem to be solved"])[0]
-        if lean_canvas.get("problem")
-        else "Problem to be solved",
-        "solution_overview": lean_canvas.get("solution", ["Solution overview"])[0]
-        if lean_canvas.get("solution")
-        else "Solution overview",
-        "value_proposition": uvp,
-        "target_users": target_users,
-        "key_differentiators": ["Innovation", "User-focused design"],
-        "success_metrics": ["User adoption", "Customer satisfaction", "Revenue growth"],
+        "tagline": f"Innovative solution for {product_idea[:100]}",
+        "problem_statement": lean_canvas.get("problem", ["Problem to be defined"])[0] if lean_canvas.get("problem") else "Problem to be defined",
+        "solution_overview": lean_canvas.get("solution", ["Solution to be defined"])[0] if lean_canvas.get("solution") else "Solution to be defined",
+        "value_proposition": lean_canvas.get("unique_value_proposition") or "Value proposition to be defined",
+        "target_users": target_users if target_users else ["Target users to be identified"],
+        "target_market_size": f"TAM: {market_context.get('total_addressable_market', 'TBD')}, SAM: {market_context.get('serviceable_addressable_market', 'TBD')}, SOM: {market_context.get('serviceable_obtainable_market', 'TBD')}",
+        "key_differentiators": lean_canvas.get("unfair_advantage", "To be determined").split(", ") if isinstance(lean_canvas.get("unfair_advantage"), str) else ["Differentiation to be defined"],
+        "competitive_landscape": competitive_summary,
+        "funding_required": funding,
+        "revenue_model": revenue_streams[0].get("pricing_model", "Revenue model TBD") if revenue_streams else "Revenue model TBD",
+        "financial_projections": f"Year 1: {business_case.get('year_1_projection', 'TBD')} | Year 3: {business_case.get('year_3_projection', 'TBD')}",
+        "break_even_timeline": break_even,
+        "expected_roi": roi,
+        "top_risks": top_risks,
+        "regulatory_summary": regulatory_summary,
+        "gtm_strategy": business_case.get("go_to_market_strategy") or "GTM strategy to be defined",
+        "key_milestones": ["Q1: MVP development", "Q2: Beta launch", "Q3-Q4: Market expansion"],
+        "success_metrics": lean_canvas.get("key_metrics", ["Metrics to be defined"]) if lean_canvas.get("key_metrics") else ["Metrics to be defined"],
+        "recommendation": f"PROCEED WITH CONDITIONS - Complete analysis required. Risk level: {risk_assessment.get('risk_level', 'Unknown')}",
     }

@@ -55,6 +55,7 @@ export interface InceptionPack {
   business_case: BusinessCase;
   product_requirements_document: ProductRequirementsDocument | null;
   technical_architecture: TechnicalArchitecture;
+  legal_regulatory_review: LegalRegulatoryReview;
   quality_assessment: QualityAssessment;
   metadata: InceptionPackMetadata;
 }
@@ -76,14 +77,43 @@ export interface InceptionPackMetadata {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export interface ExecutiveSummary {
+  // Product Identity
   product_name: string;
   tagline: string;
+
+  // Problem & Solution
   problem_statement: string;
   solution_overview: string;
   value_proposition: string;
+
+  // Target Market
   target_users: string[];
+  target_market_size: string;
+
+  // Competitive Position
   key_differentiators: string[];
+  competitive_landscape: string;
+
+  // Financial Summary
+  funding_required: string;
+  revenue_model: string;
+  financial_projections: string;
+  break_even_timeline: string;
+  expected_roi: string;
+
+  // Risk & Compliance
+  top_risks: string[];
+  regulatory_summary: string;
+
+  // Go-to-Market
+  gtm_strategy: string;
+  key_milestones: string[];
+
+  // Success Metrics
   success_metrics: string[];
+
+  // Recommendation
+  recommendation: string;
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -185,6 +215,7 @@ export interface CustomerResearch {
   competitive_landscape?: CompetitiveLandscape;
   market_context?: MarketContext;
   research_quality_check?: ResearchQualityCheck;
+  validation_reminder?: string;
 
   // Legacy format (backward compatibility)
   user_personas?: UserPersona[];
@@ -457,6 +488,78 @@ export interface TechnicalArchitecture {
   infrastructure_requirements: string[];
   development_approach: string;
   technical_risks: Array<{ risk: string; mitigation: string }>;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Legal & Regulatory Review
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface Regulation {
+  name: string;
+  description: string;
+  applicability: string;
+  compliance_requirements: string[];
+  impact_level: RiskLevel;
+  estimated_compliance_timeline: string;
+  estimated_compliance_cost: string;
+}
+
+export interface LicenseRequirement {
+  license_type: string;
+  issuing_authority: string;
+  requirements: string[];
+  timeline: string;
+  cost: string;
+  renewal_requirements: string;
+}
+
+export interface DataProtectionRequirement {
+  regulation: string;
+  data_types_covered: string[];
+  key_obligations: string[];
+  user_rights: string[];
+  penalties_for_non_compliance: string;
+  implementation_requirements: string[];
+}
+
+export interface LegalRisk {
+  risk_category: string;
+  description: string;
+  severity: RiskLevel;
+  likelihood: string;
+  mitigation_strategies: string[];
+  legal_counsel_recommended: boolean;
+}
+
+export interface IntellectualPropertyConsideration {
+  ip_type: string;
+  description: string;
+  action_required: string;
+  priority: Priority;
+  estimated_cost: string;
+}
+
+export interface OverallRiskAssessment {
+  risk_level: RiskLevel;
+  key_concerns: string[];
+  blocking_issues: string[];
+  recommended_timeline_buffer: string;
+  recommended_budget_allocation: string;
+}
+
+export interface LegalRegulatoryReview {
+  executive_summary: string;
+  applicable_regulations: Regulation[];
+  licensing_requirements: LicenseRequirement[];
+  data_protection_requirements: DataProtectionRequirement[];
+  legal_risks: LegalRisk[];
+  intellectual_property: IntellectualPropertyConsideration[];
+  industry_specific_considerations: string[];
+  international_considerations: string[];
+  recommended_legal_structure: string;
+  ongoing_compliance_requirements: string[];
+  overall_risk_assessment: OverallRiskAssessment;
+  next_steps: string[];
 }
 
 // ═══════════════════════════════════════════════════════════════════════════════

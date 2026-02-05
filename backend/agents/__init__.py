@@ -22,6 +22,7 @@ from agents.prompts import (
     BUSINESS_STRATEGY_PROMPT,
     PRODUCT_REQUIREMENTS_PROMPT,
     TECHNICAL_ARCHITECT_PROMPT,
+    LEGAL_REGULATORY_PROMPT,
     CRITIQUE_PROMPT,
     EXECUTIVE_SUMMARY_PROMPT,
     format_prompt,
@@ -50,6 +51,10 @@ from agents.technical_architect import (
     run_technical_architect_agent,
     get_technical_architecture_summary,
 )
+from agents.legal_regulatory import (
+    run_legal_regulatory_agent,
+    get_legal_regulatory_summary,
+)
 from agents.critique import (
     run_critique_agent,
     should_revise,
@@ -75,6 +80,7 @@ __all__ = [
     "BUSINESS_STRATEGY_PROMPT",
     "PRODUCT_REQUIREMENTS_PROMPT",
     "TECHNICAL_ARCHITECT_PROMPT",
+    "LEGAL_REGULATORY_PROMPT",
     "CRITIQUE_PROMPT",
     "EXECUTIVE_SUMMARY_PROMPT",
     "format_prompt",
@@ -94,6 +100,8 @@ __all__ = [
     "get_story_priority_distribution",
     "run_technical_architect_agent",
     "get_technical_architecture_summary",
+    "run_legal_regulatory_agent",
+    "get_legal_regulatory_summary",
     "run_critique_agent",
     "should_revise",
     "get_quality_summary",

@@ -205,17 +205,18 @@ def build_inception_pack(state: dict[str, Any]) -> dict[str, Any]:
         "business_case": state.get("business_case", {}),
         "product_requirements_document": state.get("product_requirements", {}),
         "technical_architecture": state.get("technical_architecture", {}),
+        "legal_regulatory_review": state.get("legal_regulatory_review", {}),
         "quality_assessment": state.get("quality_assessment") or {},
         "metadata": {
             "session_id": state.get("session_id", "unknown"),
             "generated_at": datetime.utcnow().isoformat(),
             "version": "1.0",
             "generator": "Product Discovery Multi-Agent System",
-            "iterations": state.get("iteration", 1),
-            "total_tokens_used": state.get("total_tokens_used", 0),
-            "total_duration_seconds": round(state.get("total_duration_seconds", 0) or 0, 2),
-            "quality_score": (state.get("quality_assessment") or {}).get("overall_score"),
-            "quality_passed": state.get("quality_passed", False),
+            "iterations": str(state.get("iteration", 1)),
+            "total_tokens_used": str(state.get("total_tokens_used", 0)),
+            "total_duration_seconds": str(round(state.get("total_duration_seconds", 0) or 0, 2)),
+            "quality_score": str((state.get("quality_assessment") or {}).get("overall_score", 0.0)),
+            "quality_passed": str(state.get("quality_passed", False)),
         },
     }
 

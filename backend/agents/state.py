@@ -18,6 +18,7 @@ from models.schemas import (
     BusinessCase,
     ProductRequirementsDocument,
     TechnicalArchitecture,
+    LegalRegulatoryReview,
     QualityAssessment,
     SessionStatus,
 )
@@ -53,6 +54,7 @@ class CritiqueFeedback(TypedDict, total=False):
         business_strategy_feedback: Feedback for business strategy agent.
         product_requirements_feedback: Feedback for PRD agent.
         technical_architecture_feedback: Feedback for technical architect agent.
+        legal_regulatory_feedback: Feedback for legal & regulatory review agent.
         priority_improvements: Ordered list of most important improvements.
     """
 
@@ -60,6 +62,7 @@ class CritiqueFeedback(TypedDict, total=False):
     business_strategy_feedback: list[str]
     product_requirements_feedback: list[str]
     technical_architecture_feedback: list[str]
+    legal_regulatory_feedback: list[str]
     priority_improvements: list[str]
 
 
@@ -91,6 +94,7 @@ class DiscoveryState(TypedDict, total=False):
         business_case: Output from Business Strategy Agent.
         product_requirements: Output from Product Requirements Agent.
         technical_architecture: Output from Technical Architect Agent.
+        legal_regulatory_review: Output from Legal & Regulatory Review Agent.
         quality_assessment: Output from Critique Agent.
 
     Feedback Fields (for revision loops):
@@ -135,6 +139,7 @@ class DiscoveryState(TypedDict, total=False):
     business_case: Optional[dict[str, Any]]  # BusinessCase
     product_requirements: Optional[dict[str, Any]]  # ProductRequirementsDocument
     technical_architecture: Optional[dict[str, Any]]  # TechnicalArchitecture
+    legal_regulatory_review: Optional[dict[str, Any]]  # LegalRegulatoryReview
     quality_assessment: Optional[dict[str, Any]]  # QualityAssessment
 
     # ═══════════════════════════════════════════════════════════════════════════
@@ -209,6 +214,7 @@ def create_initial_state(
         business_case=None,
         product_requirements=None,
         technical_architecture=None,
+        legal_regulatory_review=None,
         quality_assessment=None,
         # PRD sub-workflow fields
         prd_iteration=0,
@@ -239,10 +245,11 @@ def get_progress_percentage(state: DiscoveryState) -> int:
         int: Progress percentage (0-100).
     """
     agent_weights = {
-        "customer_research": 20,
-        "business_case": 20,
-        "product_requirements": 25,  # PRD is weighted higher
-        "technical_architecture": 20,
+        "customer_research": 15,
+        "business_case": 15,
+        "product_requirements": 20,  # PRD is weighted higher
+        "technical_architecture": 15,
+        "legal_regulatory_review": 20,  # Legal review is critical
         "quality_assessment": 15,
     }
 
@@ -272,6 +279,8 @@ def get_current_agent_name(state: DiscoveryState) -> str:
         return "Product Requirements Agent"
     elif state.get("technical_architecture") is None:
         return "Technical Architect Agent"
+    elif state.get("legal_regulatory_review") is None:
+        return "Legal & Regulatory Review Agent"
     elif state.get("quality_assessment") is None:
         return "Critique Agent"
     else:

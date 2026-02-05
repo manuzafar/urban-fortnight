@@ -1,9 +1,9 @@
 """
-Customer Research Agent for the Product Discovery Multi-Agent System.
+Market Hypothesis Generator for the Product Discovery Multi-Agent System.
 
-This agent analyzes the product idea to identify target users, pain points,
-market segments, and competitive landscape. It produces the foundation
-for all subsequent agents.
+This agent generates hypotheses about target users, pain points,
+market segments, and competitive landscape. These are AI-generated
+assumptions that require validation through customer interviews.
 """
 
 import json
@@ -12,14 +12,14 @@ from datetime import datetime
 import structlog
 from pydantic import ValidationError
 
-from agents.base_agent import call_llm, extract_feedback_for_agent
+from agents.base_agent import call_llm_with_grounding, extract_feedback_for_agent
 from agents.prompts import CUSTOMER_RESEARCH_PROMPT, format_prompt
 from agents.state import DiscoveryState
 from models.schemas import CustomerResearch, SessionStatus
 
 logger = structlog.get_logger(__name__)
 
-AGENT_NAME = "Customer Research Agent"
+AGENT_NAME = "Market Hypothesis Generator"
 
 
 async def run_customer_research_agent(state: DiscoveryState) -> DiscoveryState:
@@ -69,8 +69,8 @@ async def run_customer_research_agent(state: DiscoveryState) -> DiscoveryState:
         iteration=state.get("iteration", 1),
     )
 
-    # Call the LLM
-    result = await call_llm(prompt, AGENT_NAME)
+    # Call the LLM with Google Search grounding for real-world market data
+    result = await call_llm_with_grounding(prompt, AGENT_NAME)
 
     # Store raw agent output
     if "agent_outputs" not in state:

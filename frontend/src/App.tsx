@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Github, AlertCircle } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
+import { LandingPage } from './components/LandingPage';
 import { DiscoveryForm } from './components/DiscoveryForm';
 import { ProgressTracker } from './components/ProgressTracker';
 import { InceptionPackViewer } from './components/InceptionPackViewer';
@@ -13,62 +14,10 @@ import {
 import type { DiscoveryRequest, SessionStatusResponse, InceptionPack } from './types/api';
 import './App.css';
 
-type AppState = 'form' | 'progress' | 'result';
-
-// Custom Logo Component - Unique Product Discovery Icon
-function ProductDiscoveryLogo({ size = 32 }: { size?: number }) {
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 48 48"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="product-logo"
-    >
-      {/* Outer ring - represents discovery/exploration */}
-      <circle cx="24" cy="24" r="22" stroke="url(#logoGradient)" strokeWidth="2.5" strokeDasharray="4 2" />
-
-      {/* Inner hexagon - represents product structure */}
-      <path
-        d="M24 6L38.5 15V33L24 42L9.5 33V15L24 6Z"
-        fill="url(#hexGradient)"
-        stroke="url(#logoGradient)"
-        strokeWidth="1.5"
-      />
-
-      {/* Lightbulb/idea element in center */}
-      <path
-        d="M24 14C20 14 17 17 17 21C17 24 19 26 20 27.5V30C20 31 21 32 22 32H26C27 32 28 31 28 30V27.5C29 26 31 24 31 21C31 17 28 14 24 14Z"
-        fill="white"
-        fillOpacity="0.9"
-      />
-      <rect x="21" y="33" width="6" height="2" rx="1" fill="white" fillOpacity="0.7" />
-
-      {/* Spark elements */}
-      <circle cx="24" cy="20" r="2" fill="url(#sparkGradient)" />
-      <path d="M36 10L38 8M10 38L12 36M38 38L36 36M10 10L12 12" stroke="url(#logoGradient)" strokeWidth="1.5" strokeLinecap="round" />
-
-      <defs>
-        <linearGradient id="logoGradient" x1="0" y1="0" x2="48" y2="48">
-          <stop offset="0%" stopColor="#818cf8" />
-          <stop offset="100%" stopColor="#6366f1" />
-        </linearGradient>
-        <linearGradient id="hexGradient" x1="9.5" y1="6" x2="38.5" y2="42">
-          <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
-          <stop offset="100%" stopColor="#4f46e5" stopOpacity="0.5" />
-        </linearGradient>
-        <radialGradient id="sparkGradient" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#fbbf24" />
-          <stop offset="100%" stopColor="#f59e0b" />
-        </radialGradient>
-      </defs>
-    </svg>
-  );
-}
+type AppState = 'landing' | 'form' | 'progress' | 'result';
 
 function App() {
-  const [appState, setAppState] = useState<AppState>('form');
+  const [appState, setAppState] = useState<AppState>('landing');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [session, setSession] = useState<SessionStatusResponse | null>(null);
@@ -120,45 +69,54 @@ function App() {
   }, []);
 
   const handleNewDiscovery = useCallback(() => {
-    setAppState('form');
+    setAppState('landing');
     setSession(null);
     setInceptionPack(null);
     setError(null);
   }, []);
 
+  const handleGoToForm = useCallback(() => {
+    setAppState('form');
+  }, []);
+
   return (
     <div className="app">
-      {/* Minimal top bar */}
-      <header className="app-topbar">
-        <div className="topbar-left">
-          <ProductDiscoveryLogo size={28} />
-          <span className="app-name">Inception</span>
-        </div>
-        <div className="topbar-right">
-          {isHealthy !== null && (
-            <span className={`health-dot ${isHealthy ? 'healthy' : 'unhealthy'}`} title={isHealthy ? 'API Connected' : 'API Offline'} />
-          )}
-          <a
-            href="http://localhost:8000/docs"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="topbar-link"
-          >
-            API
-          </a>
-          <a
-            href="https://github.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="topbar-link"
-          >
-            <Github size={18} />
-          </a>
-        </div>
-      </header>
+      {/* Header - only show on landing and form pages */}
+      {(appState === 'landing' || appState === 'form') && (
+        <header className="app-header">
+          <div className="header-inner">
+            <div className="brand" onClick={handleNewDiscovery} style={{ cursor: 'pointer' }}>
+              <div className="logo"></div>
+              <span>Seedform</span>
+            </div>
+            <nav className="nav">
+              {isHealthy !== null && (
+                <a href="#" className="nav-pill">
+                  <span className={`status-dot ${isHealthy ? '' : 'unhealthy'}`}></span>
+                  <span>{isHealthy ? 'System healthy' : 'System offline'}</span>
+                </a>
+              )}
+              <a href="http://localhost:8000/docs" target="_blank" rel="noopener noreferrer" className="nav-pill">
+                Docs
+              </a>
+              <a href="https://github.com/manuzafar/urban-fortnight" target="_blank" rel="noopener noreferrer" className="nav-pill">
+                GitHub
+              </a>
+              {appState === 'landing' && (
+                <button className="btn-start" onClick={handleGoToForm}>
+                  Start Discovery
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <path d="M6 12l4-4-4-4"/>
+                  </svg>
+                </button>
+              )}
+            </nav>
+          </div>
+        </header>
+      )}
 
-      {/* Main centered content area */}
-      <main className="app-centered-main">
+      {/* Main content area */}
+      <main className="app-main">
         {error && (
           <div className="error-toast">
             <AlertCircle size={18} />
@@ -167,34 +125,35 @@ function App() {
           </div>
         )}
 
+        {appState === 'landing' && (
+          <LandingPage onStartDiscovery={handleGoToForm} />
+        )}
+
         {appState === 'form' && (
-          <div className="centered-form-container">
-            <div className="welcome-section">
-              <ProductDiscoveryLogo size={64} />
-              <h1>What would you like to build?</h1>
-              <p>Describe your product idea and I'll generate a complete inception pack with customer research, business strategy, PRD, and technical architecture.</p>
-            </div>
-            <DiscoveryForm onSubmit={handleStartDiscovery} isLoading={isLoading} />
-          </div>
+          <DiscoveryForm onSubmit={handleStartDiscovery} isLoading={isLoading} onBack={handleNewDiscovery} />
         )}
 
         {appState === 'progress' && session && (
-          <div className="centered-progress-container">
-            <ProgressTracker session={session} onCancel={handleNewDiscovery} />
-          </div>
+          <ProgressTracker session={session} onCancel={handleNewDiscovery} />
         )}
 
         {appState === 'result' && inceptionPack && (
-          <div className="result-container">
-            <InceptionPackViewer pack={inceptionPack} onNewDiscovery={handleNewDiscovery} />
-          </div>
+          <InceptionPackViewer pack={inceptionPack} onNewDiscovery={handleNewDiscovery} />
         )}
       </main>
 
-      {/* Minimal footer */}
-      <footer className="app-minimal-footer">
-        <span>Powered by Multi-Agent AI</span>
-      </footer>
+      {/* Footer - only show on landing page */}
+      {appState === 'landing' && (
+        <footer className="app-footer">
+          <div className="footer-links">
+            <a href="http://localhost:8000/docs" target="_blank" rel="noopener noreferrer" className="footer-link">Documentation</a>
+            <a href="http://localhost:8000/docs" target="_blank" rel="noopener noreferrer" className="footer-link">API Reference</a>
+            <a href="https://github.com/manuzafar/urban-fortnight" target="_blank" rel="noopener noreferrer" className="footer-link">GitHub</a>
+            <a href="https://github.com/manuzafar/urban-fortnight/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer" className="footer-link">Contributing</a>
+          </div>
+          <p className="footer-text">Made with ❤️ using Multi-Agent AI</p>
+        </footer>
+      )}
     </div>
   );
 }

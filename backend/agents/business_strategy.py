@@ -11,7 +11,7 @@ from datetime import datetime
 import structlog
 from pydantic import ValidationError
 
-from agents.base_agent import call_llm, extract_feedback_for_agent
+from agents.base_agent import call_llm_with_grounding, extract_feedback_for_agent
 from agents.customer_research import get_customer_research_summary
 from agents.prompts import BUSINESS_STRATEGY_PROMPT, format_prompt
 from agents.state import DiscoveryState
@@ -74,8 +74,8 @@ async def run_business_strategy_agent(state: DiscoveryState) -> DiscoveryState:
         iteration=state.get("iteration", 1),
     )
 
-    # Call the LLM
-    result = await call_llm(prompt, AGENT_NAME)
+    # Call the LLM with Google Search grounding for industry benchmarks and pricing data
+    result = await call_llm_with_grounding(prompt, AGENT_NAME)
 
     # Store raw agent output
     if "agent_outputs" not in state:

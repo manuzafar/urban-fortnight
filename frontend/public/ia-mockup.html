@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Discovery - Information Architecture Mockup</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: #0a0a0f;
+      color: #e0e0e0;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      margin-bottom: 2rem;
+    }
+
+    .product-name {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+
+    .product-tagline {
+      color: #888;
+      font-size: 0.9rem;
+    }
+
+    /* Recommendation Badge */
+    .recommendation-badge {
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .recommendation-badge.proceed {
+      background: rgba(68, 209, 123, 0.15);
+      border: 1px solid rgba(68, 209, 123, 0.4);
+      color: #44d17b;
+    }
+
+    .recommendation-badge.pivot {
+      background: rgba(255, 207, 90, 0.15);
+      border: 1px solid rgba(255, 207, 90, 0.4);
+      color: #ffcf5a;
+    }
+
+    .recommendation-badge.stop {
+      background: rgba(255, 90, 90, 0.15);
+      border: 1px solid rgba(255, 90, 90, 0.4);
+      color: #ff5a5a;
+    }
+
+    /* Level Labels */
+    .level-label {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background: rgba(139, 124, 255, 0.2);
+      border: 1px solid rgba(139, 124, 255, 0.4);
+      color: #8b7cff;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Decision Dashboard - Level 1 */
+    .decision-dashboard {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .dashboard-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+
+    .dashboard-card h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #888;
+      margin-bottom: 1rem;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    /* Validation Progress */
+    .validation-progress {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .progress-bar-container {
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 1rem 0;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #ff5a5a 0%, #ffcf5a 50%, #44d17b 100%);
+      width: 12%;
+      border-radius: 4px;
+    }
+
+    /* Priority Actions */
+    .priority-actions {
+      background: rgba(255, 207, 90, 0.05);
+      border: 1px solid rgba(255, 207, 90, 0.2);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+
+    .priority-actions h3 {
+      color: #ffcf5a;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 1rem;
+    }
+
+    .action-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .action-item:last-child {
+      border-bottom: none;
+    }
+
+    .action-checkbox {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #ffcf5a;
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .action-text {
+      flex: 1;
+    }
+
+    .action-test {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 0.25rem;
+    }
+
+    /* Section Divider */
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      margin: 3rem 0;
+    }
+
+    /* Narrative Sections - Level 2 */
+    .narrative-section {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 2rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .section-header:hover {
+      background: rgba(255,255,255,0.02);
+    }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .section-title h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .section-number {
+      width: 32px;
+      height: 32px;
+      background: rgba(139, 124, 255, 0.2);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: #8b7cff;
+    }
+
+    .section-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .section-badge {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .section-badge.hypotheses {
+      background: rgba(255, 207, 90, 0.15);
+      color: #ffcf5a;
+    }
+
+    .section-badge.risks {
+      background: rgba(255, 90, 90, 0.15);
+      color: #ff5a5a;
+    }
+
+    .section-badge.items {
+      background: rgba(100, 150, 255, 0.15);
+      color: #6496ff;
+    }
+
+    .expand-icon {
+      font-size: 1.5rem;
+      color: #888;
+      transition: transform 0.3s;
+    }
+
+    .narrative-section.expanded .expand-icon {
+      transform: rotate(180deg);
+    }
+
+    /* Section Content */
+    .section-content {
+      display: none;
+      padding: 0 2rem 2rem 2rem;
+    }
+
+    .narrative-section.expanded .section-content {
+      display: block;
+    }
+
+    /* Subsections - Level 3 */
+    .subsection {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+
+    .subsection-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      cursor: pointer;
+    }
+
+    .subsection-header:hover {
+      background: rgba(255,255,255,0.02);
+    }
+
+    .subsection-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 500;
+    }
+
+    .subsection-icon {
+      font-size: 1.1rem;
+    }
+
+    /* Validation Badges */
+    .validation-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+
+    .validation-badge.validated {
+      background: rgba(68, 209, 123, 0.15);
+      color: #44d17b;
+    }
+
+    .validation-badge.grounded {
+      background: rgba(100, 150, 255, 0.15);
+      color: #6496ff;
+    }
+
+    .validation-badge.unvalidated {
+      background: rgba(255, 207, 90, 0.15);
+      color: #ffcf5a;
+    }
+
+    .validation-badge.invalidated {
+      background: rgba(255, 90, 90, 0.15);
+      color: #ff5a5a;
+    }
+
+    .validation-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .validation-badge.validated .validation-dot { background: #44d17b; }
+    .validation-badge.grounded .validation-dot { background: #6496ff; }
+    .validation-badge.unvalidated .validation-dot { background: #ffcf5a; }
+    .validation-badge.invalidated .validation-dot { background: #ff5a5a; }
+
+    /* Subsection Content */
+    .subsection-content {
+      display: none;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      background: rgba(0,0,0,0.2);
+    }
+
+    .subsection.expanded .subsection-content {
+      display: block;
+    }
+
+    /* Detail Items */
+    .detail-item {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .detail-item:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      font-size: 0.75rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 0.25rem;
+    }
+
+    .detail-value {
+      color: #e0e0e0;
+    }
+
+    /* Info Cards in Subsections */
+    .info-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .info-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+
+    .info-card-title {
+      font-weight: 500;
+      color: #fff;
+    }
+
+    .info-card-body {
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    /* Assumption Card */
+    .assumption-card {
+      background: rgba(255, 207, 90, 0.05);
+      border: 1px solid rgba(255, 207, 90, 0.15);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .assumption-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+
+    .assumption-id {
+      font-size: 0.7rem;
+      color: #ffcf5a;
+      font-weight: 600;
+    }
+
+    .assumption-impact {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      background: rgba(255, 90, 90, 0.2);
+      color: #ff5a5a;
+    }
+
+    .assumption-statement {
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .assumption-test {
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    .assumption-test strong {
+      color: #aaa;
+    }
+
+    /* Risk Card */
+    .risk-card {
+      background: rgba(255, 90, 90, 0.05);
+      border: 1px solid rgba(255, 90, 90, 0.15);
+      border-radius: 8px;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .risk-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .risk-title {
+      font-weight: 500;
+    }
+
+    .risk-probability {
+      font-size: 0.75rem;
+      color: #ff5a5a;
+    }
+
+    .risk-description {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-bottom: 0.5rem;
+    }
+
+    .risk-warning {
+      font-size: 0.8rem;
+      color: #ffcf5a;
+    }
+
+    /* Milestone Timeline */
+    .milestone-timeline {
+      position: relative;
+      padding-left: 1.5rem;
+    }
+
+    .milestone-timeline::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .milestone-item {
+      position: relative;
+      padding-bottom: 1.5rem;
+    }
+
+    .milestone-item::before {
+      content: '';
+      position: absolute;
+      left: -1.5rem;
+      top: 0.5rem;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #8b7cff;
+      border: 2px solid #0a0a0f;
+    }
+
+    .milestone-quarter {
+      font-size: 0.75rem;
+      color: #8b7cff;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .milestone-title {
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .milestone-details {
+      font-size: 0.85rem;
+      color: #888;
+    }
+
+    /* Legend */
+    .legend {
+      display: flex;
+      gap: 2rem;
+      padding: 1rem 1.5rem;
+      background: rgba(255,255,255,0.02);
+      border-radius: 8px;
+      margin-bottom: 2rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    /* CTA Button */
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      background: linear-gradient(135deg, #8b7cff, #6b5ce7);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    .cta-button:hover {
+      opacity: 0.9;
+    }
+
+    /* Structure Diagram */
+    .structure-diagram {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-top: 3rem;
+    }
+
+    .structure-diagram h2 {
+      margin-bottom: 1.5rem;
+      color: #8b7cff;
+    }
+
+    .tree {
+      font-family: 'Monaco', 'Menlo', monospace;
+      font-size: 0.85rem;
+      line-height: 1.8;
+      color: #aaa;
+    }
+
+    .tree .level-1 { color: #8b7cff; font-weight: 600; }
+    .tree .level-2 { color: #6496ff; }
+    .tree .level-3 { color: #44d17b; }
+    .tree .level-4 { color: #888; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div>
+        <div class="product-name">InventoryAI</div>
+        <div class="product-tagline">AI-powered inventory management for small retailers</div>
+      </div>
+      <div class="recommendation-badge proceed">
+        PROCEED WITH VALIDATION
+      </div>
+    </header>
+
+    <!-- LEVEL 1: Decision Dashboard -->
+    <div class="level-label">Level 1: Decision Dashboard</div>
+
+    <div class="decision-dashboard">
+      <div class="dashboard-grid">
+        <!-- The Opportunity -->
+        <div class="dashboard-card">
+          <h3>The Opportunity</h3>
+          <div class="stat-value">$2.4B</div>
+          <div class="stat-label">Total Addressable Market</div>
+          <div style="margin-top: 1rem; font-size: 0.85rem; color: #888;">
+            2.5M small retailers in US struggling with inventory waste
+          </div>
+        </div>
+
+        <!-- The Risks -->
+        <div class="dashboard-card">
+          <h3>The Risks</h3>
+          <div class="stat-value" style="color: #ffcf5a;">3 Critical</div>
+          <div class="stat-label">Assumptions Unvalidated</div>
+          <div style="margin-top: 1rem; font-size: 0.85rem; color: #888;">
+            Pricing, switching cost, and offline requirement need testing
+          </div>
+        </div>
+
+        <!-- The Ask -->
+        <div class="dashboard-card">
+          <h3>The Ask</h3>
+          <div class="stat-value">$500K</div>
+          <div class="stat-label">Funding Required</div>
+          <div style="margin-top: 1rem; font-size: 0.85rem; color: #888;">
+            18 months to break-even at 2,500 customers
+          </div>
+        </div>
+      </div>
+
+      <!-- Validation Progress -->
+      <div class="validation-progress">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-weight: 500;">Validation Progress</span>
+          <span style="color: #ffcf5a; font-weight: 600;">12% Complete</span>
+        </div>
+        <div class="progress-bar-container">
+          <div class="progress-bar"></div>
+        </div>
+        <div style="font-size: 0.85rem; color: #888;">
+          2 of 17 critical assumptions validated through customer interviews
+        </div>
+      </div>
+
+      <!-- Priority Actions -->
+      <div class="priority-actions">
+        <h3>Top 3 Things to Validate This Week</h3>
+        <div class="action-item">
+          <div class="action-checkbox"></div>
+          <div class="action-text">
+            <div>Customers will pay $79/month for inventory management</div>
+            <div class="action-test">Test: Landing page with pricing to measure signup intent</div>
+          </div>
+        </div>
+        <div class="action-item">
+          <div class="action-checkbox"></div>
+          <div class="action-text">
+            <div>Problem is severe enough to justify switching from spreadsheets</div>
+            <div class="action-test">Test: 5 customer interviews about current pain and switching willingness</div>
+          </div>
+        </div>
+        <div class="action-item">
+          <div class="action-checkbox"></div>
+          <div class="action-text">
+            <div>Offline functionality is a must-have, not nice-to-have</div>
+            <div class="action-test">Test: Survey of 50 target retailers about connectivity constraints</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Legend -->
+    <div class="legend">
+      <div class="legend-item">
+        <span class="validation-badge validated"><span class="validation-dot"></span></span>
+        Validated (customer confirmed)
+      </div>
+      <div class="legend-item">
+        <span class="validation-badge grounded"><span class="validation-dot"></span></span>
+        Grounded (search data)
+      </div>
+      <div class="legend-item">
+        <span class="validation-badge unvalidated"><span class="validation-dot"></span></span>
+        Unvalidated (hypothesis)
+      </div>
+      <div class="legend-item">
+        <span class="validation-badge invalidated"><span class="validation-dot"></span></span>
+        Invalidated (disproven)
+      </div>
+    </div>
+
+    <!-- LEVEL 2: Narrative Sections -->
+    <div class="level-label">Level 2: Narrative Sections</div>
+
+    <!-- Section 1: The Opportunity -->
+    <div class="narrative-section expanded">
+      <div class="section-header" onclick="this.parentElement.classList.toggle('expanded')">
+        <div class="section-title">
+          <div class="section-number">1</div>
+          <h2>The Opportunity</h2>
+        </div>
+        <div class="section-meta">
+          <span class="section-badge hypotheses">4 hypotheses</span>
+          <span class="expand-icon">&#9662;</span>
+        </div>
+      </div>
+
+      <div class="section-content">
+        <div class="level-label">Level 3: Subsections</div>
+
+        <!-- Subsection: Problem Hypothesis -->
+        <div class="subsection expanded">
+          <div class="subsection-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <div class="subsection-title">
+              <span class="subsection-icon">&#128308;</span>
+              Problem Hypothesis
+            </div>
+            <span class="validation-badge unvalidated"><span class="validation-dot"></span> Unvalidated</span>
+          </div>
+          <div class="subsection-content">
+            <div class="info-card">
+              <div class="info-card-header">
+                <span class="info-card-title">Core Problem Statement</span>
+              </div>
+              <div class="info-card-body">
+                Small retailers lose 15-20% of inventory value annually due to poor tracking, leading to stockouts (lost sales) and overstock (waste/markdowns).
+              </div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Trigger Situation</div>
+              <div class="detail-value">Running out of a key product unexpectedly or discovering expired inventory during a rush period</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Underlying Goal</div>
+              <div class="detail-value">Know exactly what to order and when, without spending hours on spreadsheets</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Evidence Tier</div>
+              <div class="detail-value">E3 (Industry reports) + E4 (Hypothesis)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subsection: Customer Hypothesis -->
+        <div class="subsection">
+          <div class="subsection-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <div class="subsection-title">
+              <span class="subsection-icon">&#128101;</span>
+              Customer Hypothesis
+            </div>
+            <span class="validation-badge unvalidated"><span class="validation-dot"></span> Unvalidated</span>
+          </div>
+          <div class="subsection-content">
+            <div class="detail-item">
+              <div class="detail-label">Primary Segment</div>
+              <div class="detail-value">Small retail businesses (1-50 employees) in grocery and convenience stores</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Estimated Size</div>
+              <div class="detail-value">~2.5M businesses in the US</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Key Characteristics</div>
+              <div class="detail-value">Owner-operated, limited tech budget, often poor connectivity, high SKU count relative to staff</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subsection: Market Size -->
+        <div class="subsection">
+          <div class="subsection-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <div class="subsection-title">
+              <span class="subsection-icon">&#128200;</span>
+              Market Size
+            </div>
+            <span class="validation-badge grounded"><span class="validation-dot"></span> Grounded</span>
+          </div>
+          <div class="subsection-content">
+            <div class="detail-item">
+              <div class="detail-label">TAM (Total Addressable Market)</div>
+              <div class="detail-value">$2.4B - All small retail inventory management software spend in US</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">SAM (Serviceable Addressable Market)</div>
+              <div class="detail-value">$840M - Grocery and convenience stores subset</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">SOM (Serviceable Obtainable Market)</div>
+              <div class="detail-value">$42M - Realistic Year 3 capture at 5% market share</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Data Sources</div>
+              <div class="detail-value">IBISWorld, Grand View Research, Census Bureau (via Google Search grounding)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subsection: Competitive Landscape -->
+        <div class="subsection">
+          <div class="subsection-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <div class="subsection-title">
+              <span class="subsection-icon">&#9876;</span>
+              Competitive Landscape
+            </div>
+            <span class="validation-badge grounded"><span class="validation-dot"></span> Grounded</span>
+          </div>
+          <div class="subsection-content">
+            <div class="info-card">
+              <div class="info-card-header">
+                <span class="info-card-title">Square for Retail</span>
+                <span class="validation-badge grounded"><span class="validation-dot"></span></span>
+              </div>
+              <div class="info-card-body">
+                Strong POS integration but inventory features are basic. Targets larger retailers. $60/mo+
+              </div>
+            </div>
+            <div class="info-card">
+              <div class="info-card-header">
+                <span class="info-card-title">Lightspeed</span>
+                <span class="validation-badge grounded"><span class="validation-dot"></span></span>
+              </div>
+              <div class="info-card-body">
+                Comprehensive but complex and expensive. Poor offline support. $89/mo+
+              </div>
+            </div>
+            <div class="info-card">
+              <div class="info-card-header">
+                <span class="info-card-title">Spreadsheets (Excel/Sheets)</span>
+                <span class="validation-badge grounded"><span class="validation-dot"></span></span>
+              </div>
+              <div class="info-card-body">
+                Free but manual, error-prone, no predictions. Used by 60% of target segment.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: The Risks -->
+    <div class="narrative-section expanded">
+      <div class="section-header" onclick="this.parentElement.classList.toggle('expanded')">
+        <div class="section-title">
+          <div class="section-number">2</div>
+          <h2>The Risks</h2>
+        </div>
+        <div class="section-meta">
+          <span class="section-badge risks">12 risk items</span>
+          <span class="expand-icon">&#9662;</span>
+        </div>
+      </div>
+
+      <div class="section-content">
+        <!-- Subsection: Critical Assumptions -->
+        <div class="subsection expanded">
+          <div class="subsection-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <div class="subsection-title">
+              <span class="subsection-icon">&#9888;</span>
+              Critical Assumptions (Ranked)
+            </div>
+            <span style="color: #ffcf5a; font-size: 0.8rem;">3 unvalidated</span>
+          </div>
+          <div class="subsection-content">
+            <div class="assumption-card">
+              <div class="assumption-header">
+                <span class="assumption-id">ASMP-001</span>
+                <span class="assumption-impact">HIGH IMPACT</span>
+              </div>
+              <div class="assumption-statement">Small retailers will pay $79/month for AI inventory management</div>
+              <div class="assumption-test">
+                <strong>Test:</strong> Landing page with pricing, target 100 signups in 2 weeks<br>
+                <strong>Success criteria:</strong> 5%+ conversion rate from visitor to signup
+              </div>
+            </div>
+            <div class="assumption-card">
+              <div class="assumption-header">
+                <span class="assumption-id">ASMP-002</span>
+                <span class="assumption-impact">HIGH IMPACT</span>
+              </div>
+              <div class="assumption-statement">The pain of inventory waste is severe enough to justify switching from free spreadsheets</div>
+              <div class="assumption-test">
+                <strong>Test:</strong> 10 customer interviews with current spreadsheet users<br>
+                <strong>Success criteria:</strong> 7+ out of 10 express strong willingness to pay
+              </div>
+            </div>
+            <div class="assumption-card">
+              <div class="assumption-header">
+                <span class="assumption-id">ASMP-003</span>
+                <span class="assumption-impact">MEDIUM IMPACT</span>
+              </div>
+              <div class="assumption-statement">Offline functionality is a must-have for target segment</div>
+              <div class="assumption-test">
+                <strong>Test:</strong> Survey 50 retailers about connectivity<br>
+                <strong>Success criteria:</strong> 60%+ report unreliable internet
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subsection: Pre-Mortem Analysis -->
+        <div class="subsection">
+          <div class="subsection-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <div class="subsection-title">
+              <span class="subsection-icon">&#128128;</span>
+              Pre-Mortem Analysis
+            </div>
+            <span style="color: #ff5a5a; font-size: 0.8rem;">5 failure scenarios</span>
+          </div>
+          <div class="subsection-content">
+            <div class="risk-card">
+              <div class="risk-header">
+                <span class="risk-title">Price Sensitivity Kills Adoption</span>
+                <span class="risk-probability">40% probability</span>
+              </div>
+              <div class="risk-description">
+                Target customers are extremely price-sensitive. $79/mo may be too high for businesses with thin margins. Competitors offering free tiers capture market.
+              </div>
+              <div class="risk-warning">
+                Kill criteria: If landing page test shows less than 2% conversion at $79
+              </div>
+            </div>
+            <div class="risk-card">
+              <div class="risk-header">
+                <span class="risk-title">Spreadsheet Inertia Too Strong</span>
+                <span class="risk-probability">35% probability</span>
+              </div>
+              <div class="risk-description">
+                Users have built workflows around spreadsheets over years. Switching cost (learning, data migration, habit change) exceeds perceived benefit.
+              </div>
+              <div class="risk-warning">
+                Kill criteria: If 8+ of 10 interviewees say they would not switch even with proven ROI
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subsection: Legal & Regulatory -->
+        <div class="subsection">
+          <div class="subsection-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <div class="subsection-title">
+              <span class="subsection-icon">&#9878;</span>
+              Legal & Regulatory Risks
+            </div>
+            <span class="validation-badge grounded"><span class="validation-dot"></span> Grounded</span>
+          </div>
+          <div class="subsection-content">
+            <div class="info-card">
+              <div class="info-card-header">
+                <span class="info-card-title">CCPA Compliance (California)</span>
+                <span class="validation-badge grounded"><span class="validation-dot"></span></span>
+              </div>
+              <div class="info-card-body">
+                Required if serving California retailers. 3-6 months implementation, ~$30K cost. Not a blocker.
+              </div>
+            </div>
+            <div class="info-card">
+              <div class="info-card-header">
+                <span class="info-card-title">SOC 2 Certification</span>
+                <span class="validation-badge grounded"><span class="validation-dot"></span></span>
+              </div>
+              <div class="info-card-body">
+                Recommended for enterprise sales. 6-9 months, $50-100K. Can defer to Year 2.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subsection: Open Questions -->
+        <div class="subsection">
+          <div class="subsection-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <div class="subsection-title">
+              <span class="subsection-icon">&#10067;</span>
+              Open Questions
+            </div>
+            <span style="color: #888; font-size: 0.8rem;">4 unknowns</span>
+          </div>
+          <div class="subsection-content">
+            <div class="detail-item">
+              <div class="detail-label">Question 1</div>
+              <div class="detail-value">How do retailers currently handle POS integration? Is this a must-have or nice-to-have?</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Question 2</div>
+              <div class="detail-value">What is the typical decision-making process? Owner only, or does staff influence software purchases?</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Question 3</div>
+              <div class="detail-value">How accurate do AI predictions need to be before users trust them over their own judgment?</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: The Solution -->
+    <div class="narrative-section">
+      <div class="section-header" onclick="this.parentElement.classList.toggle('expanded')">
+        <div class="section-title">
+          <div class="section-number">3</div>
+          <h2>The Solution</h2>
+        </div>
+        <div class="section-meta">
+          <span class="section-badge items">4 sections</span>
+          <span class="expand-icon">&#9662;</span>
+        </div>
+      </div>
+
+      <div class="section-content">
+        <!-- Subsection: Product Concept -->
+        <div class="subsection">
+          <div class="subsection-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <div class="subsection-title">
+              <span class="subsection-icon">&#128161;</span>
+              Product Concept
+            </div>
+            <span class="validation-badge unvalidated"><span class="validation-dot"></span> Unvalidated</span>
+          </div>
+          <div class="subsection-content">
+            <p style="color: #888; margin-bottom: 1rem;">Core value proposition and MVP scope</p>
+            <button class="cta-button">View Full PRD Summary &#8594;</button>
+          </div>
+        </div>
+
+        <!-- Subsection: Business Model -->
+        <div class="subsection">
+          <div class="subsection-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <div class="subsection-title">
+              <span class="subsection-icon">&#128176;</span>
+              Business Model
+            </div>
+            <span class="validation-badge unvalidated"><span class="validation-dot"></span> Unvalidated</span>
+          </div>
+          <div class="subsection-content">
+            <p style="color: #888; margin-bottom: 1rem;">Revenue streams, pricing, unit economics</p>
+            <button class="cta-button">View Full Business Case &#8594;</button>
+          </div>
+        </div>
+
+        <!-- Subsection: Technical Approach -->
+        <div class="subsection">
+          <div class="subsection-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <div class="subsection-title">
+              <span class="subsection-icon">&#9881;</span>
+              Technical Approach
+            </div>
+            <span class="validation-badge unvalidated"><span class="validation-dot"></span> Unvalidated</span>
+          </div>
+          <div class="subsection-content">
+            <p style="color: #888; margin-bottom: 1rem;">Architecture, tech stack, infrastructure</p>
+            <button class="cta-button">View Full Architecture &#8594;</button>
+          </div>
+        </div>
+
+        <!-- Subsection: Full PRD -->
+        <div class="subsection">
+          <div class="subsection-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <div class="subsection-title">
+              <span class="subsection-icon">&#128203;</span>
+              Full PRD
+            </div>
+            <span style="color: #888; font-size: 0.8rem;">12 epics, 47 stories</span>
+          </div>
+          <div class="subsection-content">
+            <p style="color: #888; margin-bottom: 1rem;">Complete product requirements with epics, user stories, and acceptance criteria</p>
+            <button class="cta-button">View Full PRD &#8594;</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4: The Path Forward -->
+    <div class="narrative-section">
+      <div class="section-header" onclick="this.parentElement.classList.toggle('expanded')">
+        <div class="section-title">
+          <div class="section-number">4</div>
+          <h2>The Path Forward</h2>
+        </div>
+        <div class="section-meta">
+          <span class="section-badge items">Action plan</span>
+          <span class="expand-icon">&#9662;</span>
+        </div>
+      </div>
+
+      <div class="section-content">
+        <!-- Subsection: Recommendation -->
+        <div class="subsection expanded">
+          <div class="subsection-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <div class="subsection-title">
+              <span class="subsection-icon">&#9989;</span>
+              Recommendation & Rationale
+            </div>
+          </div>
+          <div class="subsection-content">
+            <div style="background: rgba(68, 209, 123, 0.1); border: 1px solid rgba(68, 209, 123, 0.3); border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+              <div style="font-weight: 600; color: #44d17b; margin-bottom: 0.5rem;">PROCEED WITH VALIDATION</div>
+              <div style="color: #aaa;">
+                Market opportunity is real (grounded), competitive gap exists, and business model is viable. However, 3 critical assumptions about pricing, switching behavior, and offline requirements must be validated before significant investment.
+              </div>
+            </div>
+            <div style="font-weight: 500; margin-bottom: 0.5rem;">If you only do one thing:</div>
+            <div style="color: #ffcf5a;">Run 10 customer interviews this week to validate pricing willingness</div>
+          </div>
+        </div>
+
+        <!-- Subsection: Validation Plan -->
+        <div class="subsection">
+          <div class="subsection-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <div class="subsection-title">
+              <span class="subsection-icon">&#128221;</span>
+              Validation Plan
+            </div>
+            <span style="color: #888; font-size: 0.8rem;">3 experiments</span>
+          </div>
+          <div class="subsection-content">
+            <p style="color: #888; margin-bottom: 1rem;">Interview guides and experiment designs for validating critical assumptions</p>
+            <button class="cta-button">View Interview Guides &#8594;</button>
+          </div>
+        </div>
+
+        <!-- Subsection: Roadmap -->
+        <div class="subsection">
+          <div class="subsection-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <div class="subsection-title">
+              <span class="subsection-icon">&#128197;</span>
+              Roadmap & Milestones
+            </div>
+            <span style="color: #888; font-size: 0.8rem;">12 months</span>
+          </div>
+          <div class="subsection-content">
+            <div class="milestone-timeline">
+              <div class="milestone-item">
+                <div class="milestone-quarter">Q1 2026</div>
+                <div class="milestone-title">Validation & MVP</div>
+                <div class="milestone-details">Complete customer validation, build core inventory tracking MVP</div>
+              </div>
+              <div class="milestone-item">
+                <div class="milestone-quarter">Q2 2026</div>
+                <div class="milestone-title">Beta Launch</div>
+                <div class="milestone-details">50 pilot customers, iterate based on feedback</div>
+              </div>
+              <div class="milestone-item">
+                <div class="milestone-quarter">Q3-Q4 2026</div>
+                <div class="milestone-title">Regional Launch</div>
+                <div class="milestone-details">Texas and California markets, target 500 paying customers</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subsection: Investment -->
+        <div class="subsection">
+          <div class="subsection-header" onclick="this.parentElement.classList.toggle('expanded')">
+            <div class="subsection-title">
+              <span class="subsection-icon">&#128178;</span>
+              Investment & Returns
+            </div>
+          </div>
+          <div class="subsection-content">
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+              <div class="info-card">
+                <div class="detail-label">Funding Required</div>
+                <div style="font-size: 1.25rem; font-weight: 600; color: #fff;">$500K</div>
+              </div>
+              <div class="info-card">
+                <div class="detail-label">Break-even</div>
+                <div style="font-size: 1.25rem; font-weight: 600; color: #fff;">Month 18</div>
+              </div>
+              <div class="info-card">
+                <div class="detail-label">3-Year ROI</div>
+                <div style="font-size: 1.25rem; font-weight: 600; color: #44d17b;">340%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Full Structure Diagram -->
+    <div class="structure-diagram">
+      <h2>Complete Information Architecture</h2>
+      <div class="tree">
+<span class="level-1">DECISION DASHBOARD (Level 1)</span>
+├── The Opportunity (summary stats)
+├── The Risks (summary stats)
+├── The Ask (summary stats)
+├── Validation Progress Bar
+└── Top 3 Actions This Week
+
+<span class="level-1">THE OPPORTUNITY (Level 2 - Section 1)</span>
+├── <span class="level-2">Problem Hypothesis</span>
+│   ├── <span class="level-3">Core problem statement</span>
+│   ├── <span class="level-3">Trigger situation</span>
+│   ├── <span class="level-3">Underlying goal</span>
+│   └── <span class="level-4">Evidence tier + validation status</span>
+├── <span class="level-2">Customer Hypothesis</span>
+│   ├── <span class="level-3">Primary segment</span>
+│   ├── <span class="level-3">Segment size</span>
+│   └── <span class="level-4">Evidence tier + validation status</span>
+├── <span class="level-2">Market Size</span>
+│   ├── <span class="level-3">TAM / SAM / SOM</span>
+│   ├── <span class="level-3">Methodology</span>
+│   └── <span class="level-4">Data sources (grounded)</span>
+└── <span class="level-2">Competitive Landscape</span>
+    ├── <span class="level-3">Competitor cards</span>
+    └── <span class="level-4">Positioning analysis</span>
+
+<span class="level-1">THE RISKS (Level 2 - Section 2)</span>
+├── <span class="level-2">Critical Assumptions (Ranked)</span>
+│   ├── <span class="level-3">Assumption statement</span>
+│   ├── <span class="level-3">Impact if wrong</span>
+│   ├── <span class="level-3">Test design</span>
+│   └── <span class="level-4">Success criteria</span>
+├── <span class="level-2">Pre-Mortem Analysis</span>
+│   ├── <span class="level-3">Failure scenario</span>
+│   ├── <span class="level-3">Probability</span>
+│   ├── <span class="level-3">Early warning signs</span>
+│   └── <span class="level-4">Kill criteria</span>
+├── <span class="level-2">Legal & Regulatory Risks</span>
+│   ├── <span class="level-3">Regulation cards</span>
+│   ├── <span class="level-3">Compliance timeline</span>
+│   └── <span class="level-4">Cost estimates</span>
+└── <span class="level-2">Open Questions</span>
+    ├── <span class="level-3">Question</span>
+    └── <span class="level-4">Why it matters</span>
+
+<span class="level-1">THE SOLUTION (Level 2 - Section 3)</span>
+├── <span class="level-2">Product Concept</span>
+│   ├── <span class="level-3">Value proposition</span>
+│   ├── <span class="level-3">MVP scope</span>
+│   └── <span class="level-4">Link to full PRD</span>
+├── <span class="level-2">Business Model</span>
+│   ├── <span class="level-3">Revenue streams</span>
+│   ├── <span class="level-3">Pricing tiers</span>
+│   └── <span class="level-4">Link to full business case</span>
+├── <span class="level-2">Technical Approach</span>
+│   ├── <span class="level-3">Architecture style</span>
+│   ├── <span class="level-3">Key technology choices</span>
+│   └── <span class="level-4">Link to full architecture</span>
+└── <span class="level-2">Full PRD</span>
+    ├── <span class="level-3">Epics</span>
+    ├── <span class="level-3">User stories</span>
+    └── <span class="level-4">Acceptance criteria</span>
+
+<span class="level-1">THE PATH FORWARD (Level 2 - Section 4)</span>
+├── <span class="level-2">Recommendation & Rationale</span>
+│   ├── <span class="level-3">Decision: Proceed / Pivot / Stop</span>
+│   ├── <span class="level-3">Rationale</span>
+│   └── <span class="level-4">"If you only do one thing..."</span>
+├── <span class="level-2">Validation Plan</span>
+│   ├── <span class="level-3">Interview guides</span>
+│   ├── <span class="level-3">Experiment designs</span>
+│   └── <span class="level-4">Success criteria</span>
+├── <span class="level-2">Roadmap & Milestones</span>
+│   ├── <span class="level-3">Timeline visualization</span>
+│   └── <span class="level-4">Key milestones</span>
+└── <span class="level-2">Investment & Returns</span>
+    ├── <span class="level-3">Funding breakdown</span>
+    ├── <span class="level-3">Break-even analysis</span>
+    └── <span class="level-4">ROI projections</span>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Simple toggle for sections (already handled by onclick in HTML)
+  </script>
+</body>
+</html>

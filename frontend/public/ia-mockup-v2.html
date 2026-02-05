@@ -1,0 +1,1078 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product Discovery - IA Mockup v2 (Left Nav + Horizontal Tabs)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: #0a0a0f;
+      color: #e0e0e0;
+      line-height: 1.6;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Layout */
+    .app-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      flex-shrink: 0;
+    }
+
+    .product-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .product-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #8b7cff, #6b5ce7);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: white;
+    }
+
+    .product-name {
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .product-tagline {
+      color: #666;
+      font-size: 0.85rem;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .recommendation-badge {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.8rem;
+    }
+
+    .recommendation-badge.proceed {
+      background: rgba(68, 209, 123, 0.15);
+      border: 1px solid rgba(68, 209, 123, 0.4);
+      color: #44d17b;
+    }
+
+    .btn-secondary {
+      padding: 0.5rem 1rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      color: #aaa;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.08);
+    }
+
+    /* Main Layout */
+    .main-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Left Navigation (Level 2) */
+    .left-nav {
+      width: 220px;
+      background: rgba(255,255,255,0.02);
+      border-right: 1px solid rgba(255,255,255,0.08);
+      padding: 1.5rem 0;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .nav-section {
+      padding: 0 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .nav-section-label {
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #555;
+      padding: 0 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+      margin-bottom: 0.25rem;
+    }
+
+    .nav-item:hover {
+      background: rgba(255,255,255,0.05);
+    }
+
+    .nav-item.active {
+      background: rgba(139, 124, 255, 0.15);
+      color: #a89eff;
+    }
+
+    .nav-item-icon {
+      width: 20px;
+      text-align: center;
+      font-size: 1rem;
+    }
+
+    .nav-item-label {
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    .nav-item-badge {
+      margin-left: auto;
+      font-size: 0.7rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 10px;
+      background: rgba(255, 207, 90, 0.2);
+      color: #ffcf5a;
+    }
+
+    .nav-item-badge.risk {
+      background: rgba(255, 90, 90, 0.2);
+      color: #ff5a5a;
+    }
+
+    /* Validation Progress in Nav */
+    .nav-progress {
+      margin-top: auto;
+      padding: 1rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .progress-label {
+      font-size: 0.75rem;
+      color: #666;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .progress-bar-bg {
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 12%;
+      background: linear-gradient(90deg, #ffcf5a, #44d17b);
+      border-radius: 2px;
+    }
+
+    /* Content Area */
+    .content-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Horizontal Tabs (Level 3) */
+    .horizontal-tabs {
+      display: flex;
+      gap: 0.25rem;
+      padding: 1rem 2rem 0 2rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+
+    .tab-item {
+      padding: 0.75rem 1.25rem;
+      font-size: 0.85rem;
+      color: #888;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .tab-item:hover {
+      color: #bbb;
+    }
+
+    .tab-item.active {
+      color: #fff;
+      border-bottom-color: #8b7cff;
+    }
+
+    .tab-badge {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .tab-badge.validated { background: #44d17b; }
+    .tab-badge.grounded { background: #6496ff; }
+    .tab-badge.unvalidated { background: #ffcf5a; }
+
+    /* Scrollable Content */
+    .content-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 2rem;
+    }
+
+    /* Content Sections */
+    .content-header {
+      margin-bottom: 2rem;
+    }
+
+    .content-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+
+    .content-description {
+      color: #888;
+      font-size: 0.95rem;
+    }
+
+    /* Cards */
+    .card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .card-body {
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+
+    /* Validation Badge */
+    .validation-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.25rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+
+    .validation-badge.validated {
+      background: rgba(68, 209, 123, 0.15);
+      color: #44d17b;
+    }
+
+    .validation-badge.grounded {
+      background: rgba(100, 150, 255, 0.15);
+      color: #6496ff;
+    }
+
+    .validation-badge.unvalidated {
+      background: rgba(255, 207, 90, 0.15);
+      color: #ffcf5a;
+    }
+
+    .validation-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .validation-badge.validated .validation-dot { background: #44d17b; }
+    .validation-badge.grounded .validation-dot { background: #6496ff; }
+    .validation-badge.unvalidated .validation-dot { background: #ffcf5a; }
+
+    /* Detail Items */
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .detail-item {
+      padding: 1rem;
+      background: rgba(255,255,255,0.02);
+      border-radius: 8px;
+    }
+
+    .detail-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #666;
+      margin-bottom: 0.35rem;
+    }
+
+    .detail-value {
+      font-size: 0.95rem;
+    }
+
+    /* Stats Row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 1.25rem;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .stat-value.highlight {
+      color: #44d17b;
+    }
+
+    .stat-value.warning {
+      color: #ffcf5a;
+    }
+
+    .stat-label {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 0.25rem;
+    }
+
+    /* Priority Actions */
+    .priority-box {
+      background: rgba(255, 207, 90, 0.08);
+      border: 1px solid rgba(255, 207, 90, 0.2);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+
+    .priority-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #ffcf5a;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .priority-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .priority-item:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
+
+    .priority-checkbox {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #ffcf5a;
+      border-radius: 4px;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .priority-text {
+      font-size: 0.9rem;
+    }
+
+    .priority-subtext {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 0.25rem;
+    }
+
+    /* Assumption Card */
+    .assumption-card {
+      background: rgba(255, 207, 90, 0.05);
+      border: 1px solid rgba(255, 207, 90, 0.15);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .assumption-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+    }
+
+    .assumption-id {
+      font-size: 0.7rem;
+      color: #ffcf5a;
+      font-weight: 600;
+    }
+
+    .assumption-impact {
+      font-size: 0.65rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      background: rgba(255, 90, 90, 0.2);
+      color: #ff5a5a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .assumption-statement {
+      font-weight: 500;
+      margin-bottom: 0.75rem;
+      font-size: 0.95rem;
+    }
+
+    .assumption-test {
+      font-size: 0.85rem;
+      color: #888;
+      padding: 0.75rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: 6px;
+    }
+
+    .assumption-test strong {
+      color: #aaa;
+    }
+
+    /* Risk Card */
+    .risk-card {
+      background: rgba(255, 90, 90, 0.05);
+      border: 1px solid rgba(255, 90, 90, 0.15);
+      border-radius: 10px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .risk-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .risk-title {
+      font-weight: 500;
+    }
+
+    .risk-probability {
+      font-size: 0.75rem;
+      color: #ff5a5a;
+    }
+
+    .risk-body {
+      font-size: 0.9rem;
+      color: #aaa;
+      margin-bottom: 0.75rem;
+    }
+
+    .risk-warning {
+      font-size: 0.8rem;
+      color: #ffcf5a;
+      padding: 0.5rem 0.75rem;
+      background: rgba(255, 207, 90, 0.1);
+      border-radius: 6px;
+    }
+
+    /* Info Box */
+    .info-box {
+      background: rgba(100, 150, 255, 0.08);
+      border: 1px solid rgba(100, 150, 255, 0.2);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .info-box-title {
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .info-box-body {
+      font-size: 0.9rem;
+      color: #aaa;
+    }
+
+    /* CTA Button */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.25rem;
+      background: linear-gradient(135deg, #8b7cff, #6b5ce7);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 500;
+      font-size: 0.9rem;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    /* Recommendation Box */
+    .recommendation-box {
+      background: rgba(68, 209, 123, 0.1);
+      border: 1px solid rgba(68, 209, 123, 0.3);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .recommendation-box.caution {
+      background: rgba(255, 207, 90, 0.1);
+      border-color: rgba(255, 207, 90, 0.3);
+    }
+
+    .recommendation-decision {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #44d17b;
+      margin-bottom: 0.5rem;
+    }
+
+    .recommendation-box.caution .recommendation-decision {
+      color: #ffcf5a;
+    }
+
+    .recommendation-rationale {
+      color: #aaa;
+      font-size: 0.95rem;
+    }
+
+    /* Empty State for Overview Cards */
+    .overview-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .overview-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 1.5rem;
+    }
+
+    .overview-card-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .overview-card-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+    }
+
+    .overview-card-icon.opportunity { background: rgba(68, 209, 123, 0.15); }
+    .overview-card-icon.risks { background: rgba(255, 90, 90, 0.15); }
+    .overview-card-icon.solution { background: rgba(100, 150, 255, 0.15); }
+    .overview-card-icon.path { background: rgba(139, 124, 255, 0.15); }
+
+    .overview-card-title {
+      font-weight: 600;
+    }
+
+    .overview-card-stat {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+
+    .overview-card-label {
+      font-size: 0.85rem;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="header">
+      <div class="product-info">
+        <div class="product-logo">IA</div>
+        <div>
+          <div class="product-name">InventoryAI</div>
+          <div class="product-tagline">AI-powered inventory management for small retailers</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn-secondary">Download JSON</button>
+        <button class="btn-secondary">New Discovery</button>
+        <div class="recommendation-badge proceed">PROCEED WITH VALIDATION</div>
+      </div>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+      <!-- Left Navigation (Level 2) -->
+      <nav class="left-nav">
+        <div class="nav-section">
+          <div class="nav-section-label">Dashboard</div>
+          <div class="nav-item active" onclick="showSection('overview')">
+            <span class="nav-item-icon">&#9673;</span>
+            <span class="nav-item-label">Overview</span>
+          </div>
+        </div>
+
+        <div class="nav-section">
+          <div class="nav-section-label">Analysis</div>
+          <div class="nav-item" onclick="showSection('opportunity')">
+            <span class="nav-item-icon">&#127919;</span>
+            <span class="nav-item-label">The Opportunity</span>
+            <span class="nav-item-badge">4</span>
+          </div>
+          <div class="nav-item" onclick="showSection('risks')">
+            <span class="nav-item-icon">&#9888;</span>
+            <span class="nav-item-label">The Risks</span>
+            <span class="nav-item-badge risk">12</span>
+          </div>
+          <div class="nav-item" onclick="showSection('solution')">
+            <span class="nav-item-icon">&#128161;</span>
+            <span class="nav-item-label">The Solution</span>
+          </div>
+          <div class="nav-item" onclick="showSection('path')">
+            <span class="nav-item-icon">&#128640;</span>
+            <span class="nav-item-label">The Path Forward</span>
+          </div>
+        </div>
+
+        <!-- Validation Progress -->
+        <div class="nav-progress">
+          <div class="progress-label">
+            <span>Validation</span>
+            <span style="color: #ffcf5a;">12%</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill"></div>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Content Area -->
+      <div class="content-area">
+        <!-- OVERVIEW SECTION -->
+        <div id="section-overview" class="section-content">
+          <div class="horizontal-tabs">
+            <div class="tab-item active">Dashboard</div>
+          </div>
+          <div class="content-scroll">
+            <div class="content-header">
+              <div class="content-title">Decision Dashboard</div>
+              <div class="content-description">At-a-glance summary for quick decision making</div>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="stats-row">
+              <div class="stat-card">
+                <div class="stat-value highlight">$2.4B</div>
+                <div class="stat-label">Total Addressable Market</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value warning">3</div>
+                <div class="stat-label">Critical Assumptions Unvalidated</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-value">$500K</div>
+                <div class="stat-label">Funding Required</div>
+              </div>
+            </div>
+
+            <!-- Overview Grid -->
+            <div class="overview-grid">
+              <div class="overview-card">
+                <div class="overview-card-header">
+                  <div class="overview-card-icon opportunity">&#127919;</div>
+                  <div class="overview-card-title">The Opportunity</div>
+                </div>
+                <div class="overview-card-stat" style="color: #44d17b;">Strong</div>
+                <div class="overview-card-label">2.5M retailers, clear pain point, fragmented competition</div>
+              </div>
+              <div class="overview-card">
+                <div class="overview-card-header">
+                  <div class="overview-card-icon risks">&#9888;</div>
+                  <div class="overview-card-title">The Risks</div>
+                </div>
+                <div class="overview-card-stat" style="color: #ffcf5a;">Medium</div>
+                <div class="overview-card-label">3 critical assumptions need validation before committing</div>
+              </div>
+              <div class="overview-card">
+                <div class="overview-card-header">
+                  <div class="overview-card-icon solution">&#128161;</div>
+                  <div class="overview-card-title">The Solution</div>
+                </div>
+                <div class="overview-card-stat">Defined</div>
+                <div class="overview-card-label">12 epics, 47 user stories, architecture designed</div>
+              </div>
+              <div class="overview-card">
+                <div class="overview-card-header">
+                  <div class="overview-card-icon path">&#128640;</div>
+                  <div class="overview-card-title">The Path Forward</div>
+                </div>
+                <div class="overview-card-stat" style="color: #44d17b;">Clear</div>
+                <div class="overview-card-label">18 months to break-even, 340% 3-year ROI</div>
+              </div>
+            </div>
+
+            <!-- Priority Actions -->
+            <div class="priority-box">
+              <div class="priority-title">
+                <span>&#9888;</span> Top 3 Things to Validate This Week
+              </div>
+              <div class="priority-item">
+                <div class="priority-checkbox"></div>
+                <div>
+                  <div class="priority-text">Customers will pay $79/month for inventory management</div>
+                  <div class="priority-subtext">Test: Landing page with pricing to measure signup intent</div>
+                </div>
+              </div>
+              <div class="priority-item">
+                <div class="priority-checkbox"></div>
+                <div>
+                  <div class="priority-text">Problem is severe enough to justify switching from spreadsheets</div>
+                  <div class="priority-subtext">Test: 5 customer interviews about current pain</div>
+                </div>
+              </div>
+              <div class="priority-item">
+                <div class="priority-checkbox"></div>
+                <div>
+                  <div class="priority-text">Offline functionality is a must-have requirement</div>
+                  <div class="priority-subtext">Test: Survey 50 retailers about connectivity constraints</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- THE OPPORTUNITY SECTION -->
+        <div id="section-opportunity" class="section-content" style="display: none;">
+          <div class="horizontal-tabs">
+            <div class="tab-item active" onclick="showSubsection('opportunity', 'problem')">
+              <span class="tab-badge unvalidated"></span>
+              Problem
+            </div>
+            <div class="tab-item" onclick="showSubsection('opportunity', 'customer')">
+              <span class="tab-badge unvalidated"></span>
+              Customer
+            </div>
+            <div class="tab-item" onclick="showSubsection('opportunity', 'market')">
+              <span class="tab-badge grounded"></span>
+              Market Size
+            </div>
+            <div class="tab-item" onclick="showSubsection('opportunity', 'competition')">
+              <span class="tab-badge grounded"></span>
+              Competition
+            </div>
+          </div>
+          <div class="content-scroll">
+            <div class="content-header">
+              <div class="content-title">Problem Hypothesis</div>
+              <div class="content-description">The core problem we believe exists in the market</div>
+            </div>
+
+            <!-- Validation Warning -->
+            <div style="background: rgba(255, 207, 90, 0.1); border: 1px solid rgba(255, 207, 90, 0.2); border-radius: 10px; padding: 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem;">
+              <span style="font-size: 1.25rem;">&#9888;</span>
+              <div>
+                <div style="font-weight: 500; color: #ffcf5a;">This is a hypothesis, not validated research</div>
+                <div style="font-size: 0.85rem; color: #888;">Schedule customer interviews to validate these assumptions</div>
+              </div>
+              <button class="btn-primary" style="margin-left: auto;">Generate Interview Guide</button>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Core Problem Statement</span>
+                <span class="validation-badge unvalidated"><span class="validation-dot"></span> Unvalidated</span>
+              </div>
+              <div class="card-body">
+                Small retailers lose 15-20% of inventory value annually due to poor tracking, leading to stockouts (lost sales) and overstock (waste/markdowns). This costs the average store $15,000-$30,000 per year.
+              </div>
+            </div>
+
+            <div class="detail-grid">
+              <div class="detail-item">
+                <div class="detail-label">Trigger Situation</div>
+                <div class="detail-value">Running out of a key product unexpectedly or discovering expired inventory during a rush period</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Underlying Goal</div>
+                <div class="detail-value">Know exactly what to order and when, without spending hours on spreadsheets</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Success Definition</div>
+                <div class="detail-value">Never run out of top sellers, reduce waste by 50%, save 5+ hours per week</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Evidence Tier</div>
+                <div class="detail-value">E3 (Industry reports) + E4 (Hypothesis)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- THE RISKS SECTION -->
+        <div id="section-risks" class="section-content" style="display: none;">
+          <div class="horizontal-tabs">
+            <div class="tab-item active" onclick="showSubsection('risks', 'assumptions')">
+              <span class="tab-badge unvalidated"></span>
+              Assumptions
+            </div>
+            <div class="tab-item" onclick="showSubsection('risks', 'premortem')">
+              Pre-Mortem
+            </div>
+            <div class="tab-item" onclick="showSubsection('risks', 'legal')">
+              <span class="tab-badge grounded"></span>
+              Legal & Regulatory
+            </div>
+            <div class="tab-item" onclick="showSubsection('risks', 'questions')">
+              Open Questions
+            </div>
+          </div>
+          <div class="content-scroll">
+            <div class="content-header">
+              <div class="content-title">Critical Assumptions</div>
+              <div class="content-description">Ranked by impact if wrong. Validate these before significant investment.</div>
+            </div>
+
+            <div class="assumption-card">
+              <div class="assumption-header">
+                <span class="assumption-id">ASMP-001</span>
+                <span class="assumption-impact">High Impact</span>
+              </div>
+              <div class="assumption-statement">Small retailers will pay $79/month for AI inventory management</div>
+              <div class="assumption-test">
+                <strong>Test:</strong> Landing page with pricing, target 100 signups in 2 weeks<br>
+                <strong>Success criteria:</strong> 5%+ conversion rate from visitor to signup
+              </div>
+            </div>
+
+            <div class="assumption-card">
+              <div class="assumption-header">
+                <span class="assumption-id">ASMP-002</span>
+                <span class="assumption-impact">High Impact</span>
+              </div>
+              <div class="assumption-statement">The pain of inventory waste is severe enough to justify switching from free spreadsheets</div>
+              <div class="assumption-test">
+                <strong>Test:</strong> 10 customer interviews with current spreadsheet users<br>
+                <strong>Success criteria:</strong> 7+ out of 10 express strong willingness to pay
+              </div>
+            </div>
+
+            <div class="assumption-card">
+              <div class="assumption-header">
+                <span class="assumption-id">ASMP-003</span>
+                <span class="assumption-impact">Medium Impact</span>
+              </div>
+              <div class="assumption-statement">Offline functionality is a must-have for target segment</div>
+              <div class="assumption-test">
+                <strong>Test:</strong> Survey 50 retailers about connectivity<br>
+                <strong>Success criteria:</strong> 60%+ report unreliable internet
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- THE SOLUTION SECTION -->
+        <div id="section-solution" class="section-content" style="display: none;">
+          <div class="horizontal-tabs">
+            <div class="tab-item active">
+              Product Concept
+            </div>
+            <div class="tab-item">
+              Business Model
+            </div>
+            <div class="tab-item">
+              Technical Architecture
+            </div>
+            <div class="tab-item">
+              Full PRD
+            </div>
+          </div>
+          <div class="content-scroll">
+            <div class="content-header">
+              <div class="content-title">Product Concept</div>
+              <div class="content-description">Core value proposition and MVP scope</div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <span class="card-title">Value Proposition</span>
+              </div>
+              <div class="card-body" style="font-size: 1.1rem; color: #8b7cff;">
+                AI-powered inventory management that's simple, affordable, and works offline. Know what to order before you run out.
+              </div>
+            </div>
+
+            <div class="detail-grid">
+              <div class="detail-item">
+                <div class="detail-label">MVP Features</div>
+                <div class="detail-value">Inventory tracking, AI reorder predictions, low-stock alerts, offline mode</div>
+              </div>
+              <div class="detail-item">
+                <div class="detail-label">Out of Scope (V1)</div>
+                <div class="detail-value">POS integration, multi-location, advanced analytics, supplier management</div>
+              </div>
+            </div>
+
+            <div style="margin-top: 2rem;">
+              <button class="btn-primary">View Full PRD (12 epics, 47 stories) &#8594;</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- THE PATH FORWARD SECTION -->
+        <div id="section-path" class="section-content" style="display: none;">
+          <div class="horizontal-tabs">
+            <div class="tab-item active">
+              Recommendation
+            </div>
+            <div class="tab-item">
+              Validation Plan
+            </div>
+            <div class="tab-item">
+              Roadmap
+            </div>
+            <div class="tab-item">
+              Investment
+            </div>
+          </div>
+          <div class="content-scroll">
+            <div class="content-header">
+              <div class="content-title">Recommendation</div>
+              <div class="content-description">Based on the complete analysis</div>
+            </div>
+
+            <div class="recommendation-box">
+              <div class="recommendation-decision">PROCEED WITH VALIDATION</div>
+              <div class="recommendation-rationale">
+                Market opportunity is real (grounded by search data), competitive gap exists, and business model is viable. However, 3 critical assumptions about pricing, switching behavior, and offline requirements must be validated before significant investment.
+              </div>
+            </div>
+
+            <div class="info-box">
+              <div class="info-box-title">
+                <span>&#128161;</span> If you only do one thing
+              </div>
+              <div class="info-box-body" style="color: #ffcf5a; font-weight: 500;">
+                Run 10 customer interviews this week to validate pricing willingness and switching intent.
+              </div>
+            </div>
+
+            <div style="margin-top: 2rem;">
+              <button class="btn-primary">Generate Interview Guide &#8594;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showSection(sectionId) {
+      // Hide all sections
+      document.querySelectorAll('.section-content').forEach(el => {
+        el.style.display = 'none';
+      });
+
+      // Show selected section
+      document.getElementById('section-' + sectionId).style.display = 'flex';
+      document.getElementById('section-' + sectionId).style.flexDirection = 'column';
+
+      // Update nav active state
+      document.querySelectorAll('.nav-item').forEach(el => {
+        el.classList.remove('active');
+      });
+      event.currentTarget.classList.add('active');
+    }
+
+    function showSubsection(section, subsection) {
+      // Update tab active state
+      const tabs = event.currentTarget.parentElement.querySelectorAll('.tab-item');
+      tabs.forEach(tab => tab.classList.remove('active'));
+      event.currentTarget.classList.add('active');
+
+      // In a real implementation, this would swap the content
+      // For this mockup, we just show the tab is selected
+    }
+  </script>
+</body>
+</html>
