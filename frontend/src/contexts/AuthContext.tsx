@@ -30,10 +30,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signInWithGoogle = async () => {
+    // In development, always redirect to localhost to avoid OAuth redirect issues
+    const redirectUrl = import.meta.env.DEV
+      ? 'http://localhost:5174'
+      : window.location.origin;
+
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin,
+        redirectTo: redirectUrl,
       },
     });
   };

@@ -318,28 +318,38 @@ export function useSSE(
       }
     };
 
+    // Helper to safely handle SSE events (some may not be MessageEvents)
+    const safeEventHandler = (eventType: string) => (e: Event) => {
+      const messageEvent = e as MessageEvent;
+      // Only process if it's a MessageEvent with data
+      if (messageEvent.data !== undefined && messageEvent.data !== null) {
+        handleEvent(eventType, messageEvent.data);
+      }
+    };
+
     // Listen to all event types
-    eventSource.addEventListener('agent_start', (e) => handleEvent('agent_start', (e as MessageEvent).data));
-    eventSource.addEventListener('insight', (e) => handleEvent('insight', (e as MessageEvent).data));
-    eventSource.addEventListener('agent_complete', (e) => handleEvent('agent_complete', (e as MessageEvent).data));
-    eventSource.addEventListener('progress', (e) => handleEvent('progress', (e as MessageEvent).data));
-    eventSource.addEventListener('error', (e) => handleEvent('error', (e as MessageEvent).data));
-    eventSource.addEventListener('done', (e) => handleEvent('done', (e as MessageEvent).data));
-    eventSource.addEventListener('heartbeat', (e) => handleEvent('heartbeat', (e as MessageEvent).data));
+    eventSource.addEventListener('agent_start', safeEventHandler('agent_start'));
+    eventSource.addEventListener('insight', safeEventHandler('insight'));
+    eventSource.addEventListener('agent_complete', safeEventHandler('agent_complete'));
+    eventSource.addEventListener('progress', safeEventHandler('progress'));
+    // Note: 'error' is a reserved EventSource event - use 'workflow_error' for custom errors
+    eventSource.addEventListener('workflow_error', safeEventHandler('error'));
+    eventSource.addEventListener('done', safeEventHandler('done'));
+    eventSource.addEventListener('heartbeat', safeEventHandler('heartbeat'));
 
     // Enhanced event types
-    eventSource.addEventListener('plan_ready', (e) => handleEvent('plan_ready', (e as MessageEvent).data));
-    eventSource.addEventListener('competitor', (e) => handleEvent('competitor', (e as MessageEvent).data));
-    eventSource.addEventListener('market_data', (e) => handleEvent('market_data', (e as MessageEvent).data));
-    eventSource.addEventListener('risk', (e) => handleEvent('risk', (e as MessageEvent).data));
-    eventSource.addEventListener('financial', (e) => handleEvent('financial', (e as MessageEvent).data));
-    eventSource.addEventListener('diagram', (e) => handleEvent('diagram', (e as MessageEvent).data));
-    eventSource.addEventListener('citation', (e) => handleEvent('citation', (e as MessageEvent).data));
-    eventSource.addEventListener('decision', (e) => handleEvent('decision', (e as MessageEvent).data));
+    eventSource.addEventListener('plan_ready', safeEventHandler('plan_ready'));
+    eventSource.addEventListener('competitor', safeEventHandler('competitor'));
+    eventSource.addEventListener('market_data', safeEventHandler('market_data'));
+    eventSource.addEventListener('risk', safeEventHandler('risk'));
+    eventSource.addEventListener('financial', safeEventHandler('financial'));
+    eventSource.addEventListener('diagram', safeEventHandler('diagram'));
+    eventSource.addEventListener('citation', safeEventHandler('citation'));
+    eventSource.addEventListener('decision', safeEventHandler('decision'));
 
     // Also handle generic message events (fallback for unhandled types)
     eventSource.onmessage = (e) => {
-      if (e.data) {
+      if (e.data !== undefined && e.data !== null) {
         handleEvent('message', e.data);
       }
     };

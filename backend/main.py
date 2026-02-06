@@ -13,6 +13,7 @@ Endpoints:
 """
 
 import asyncio
+import json
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Any
@@ -640,7 +641,12 @@ async def stream_session(
         async def completed_stream():
             yield {
                 "event": "done",
-                "data": f'{{"session_id": "{session_id}", "status": "completed"}}',
+                "data": json.dumps({
+                    "type": "done",
+                    "agent": None,
+                    "data": {"session_id": session_id, "status": "completed"},
+                    "timestamp": datetime.utcnow().isoformat(),
+                }),
             }
 
         return EventSourceResponse(completed_stream())
@@ -648,20 +654,42 @@ async def stream_session(
     # If session failed, send error and done
     if session_data.get("status") == SessionStatus.FAILED:
         async def failed_stream():
-            error_msg = session_data.get("error_message", "Unknown error")
+            error_msg = session_data.get("error_message") or "Unknown error"
             yield {
-                "event": "error",
-                "data": f'{{"message": "{error_msg}"}}',
+                "event": "workflow_error",
+                "data": json.dumps({
+                    "type": "workflow_error",
+                    "agent": None,
+                    "data": {"message": error_msg},
+                    "timestamp": datetime.utcnow().isoformat(),
+                }),
             }
             yield {
                 "event": "done",
-                "data": f'{{"session_id": "{session_id}", "status": "failed"}}',
+                "data": json.dumps({
+                    "type": "done",
+                    "agent": None,
+                    "data": {"session_id": session_id, "status": "failed"},
+                    "timestamp": datetime.utcnow().isoformat(),
+                }),
             }
 
         return EventSourceResponse(failed_stream())
 
     # Stream events for in-progress sessions
     async def event_stream():
+        # Send an immediate heartbeat to establish the connection
+        # This prevents browser timeout while waiting for the first real event
+        yield {
+            "event": "heartbeat",
+            "data": json.dumps({
+                "type": "heartbeat",
+                "agent": None,
+                "data": {"timestamp": datetime.utcnow().isoformat(), "session_id": session_id},
+                "timestamp": datetime.utcnow().isoformat(),
+            }),
+        }
+
         async for event_str in stream_session_events(session_id):
             # Parse the SSE format to extract event and data
             lines = event_str.strip().split("\n")

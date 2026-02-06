@@ -22,7 +22,7 @@ class StreamEventType(str, Enum):
     INSIGHT = "insight"  # Key finding discovered
     AGENT_COMPLETE = "agent_complete"  # Agent finished
     PROGRESS = "progress"  # Progress percentage update
-    ERROR = "error"  # Error occurred
+    ERROR = "workflow_error"  # Error occurred (avoid 'error' which is reserved by EventSource)
     DONE = "done"  # Session complete
     HEARTBEAT = "heartbeat"  # Keep-alive signal
 
