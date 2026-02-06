@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>Transform product ideas into decision-ready inception packs using 7 specialized AI agents with intelligent multi-model routing</strong>
+  <strong>Transform product ideas into decision-ready inception packs using 12+ specialized AI agents with swarm architecture and cross-run learning</strong>
 </p>
 
 <p align="center">
@@ -21,36 +21,51 @@
 
 ## Overview
 
-Seedcraft is an AI-powered product discovery system that compresses weeks of discovery work into a single, structured inception pack. It uses a multi-agent architecture built on **LangGraph** and powered by **Google Gemini**, orchestrating 7 specialized agents with intelligent model routing (Flash for speed, Pro for reasoning).
+Seedcraft is an AI-powered product discovery system that compresses weeks of discovery work into a single, structured inception pack. It uses a **swarm-based multi-agent architecture** built on **LangGraph** and powered by **Google Gemini**, orchestrating 12+ specialized agents organized into three parallel swarms with a Facilitator agent for coordination.
 
-The system follows a **hypothesis-first** approach: all outputs are framed as testable hypotheses requiring customer validation, not as market truths.
+The system features:
+- **Swarm Architecture**: Agents run in parallel within Discovery, Strategy, and Delivery swarms
+- **Cross-Run Learning**: High-quality outputs are stored with embeddings for future retrieval
+- **Contradiction Detection**: Facilitator agent detects and resolves inconsistencies between agent outputs
+- **Hypothesis-First Approach**: All outputs are framed as testable hypotheses requiring customer validation
 
 ### What You Get
 
-A complete inception pack containing 8 sections:
+A complete inception pack containing 10+ sections produced by three parallel swarms:
 
-| # | Section | Agent | Model | Description |
-|---|---------|-------|-------|-------------|
-| 00 | **Research Plan** | Planning Agent | Flash | Domain classification, competitor list, regulatory focus |
-| 01 | **Executive Summary** | Synthesizer | Flash | Decision brief with key decisions requiring executive action |
-| 02 | **Market Hypotheses** | Market Hypothesis Generator | Flash | Evidence-tiered research with competitive positioning data |
-| 03 | **Business Strategy** | Business Strategist | Pro | Lean Canvas, financials with chart-ready projections |
-| 04 | **Product Requirements** | PRD Generator + Critic + Formatter | Mixed | Epics, user stories, acceptance criteria (quality-assured) |
-| 05 | **Technical Architecture** | Technical Architect | Flash | System design with Mermaid diagrams |
-| 06 | **Legal & Regulatory** | Legal & Regulatory Analyst | Pro | Specific regulations by name, penalties, compliance timeline |
-| 07 | **Quality Assessment** | Critique Agent | Pro | Calibrated scoring with mandatory deductions |
+| Swarm | Agents | Output Sections |
+|-------|--------|-----------------|
+| **Discovery** | Customer Research, Competitive Intelligence, Persona Development | Market Hypotheses, Competitive Analysis, Detailed Personas |
+| **Strategy** | Business Strategy, GTM Strategy, Financial Modeling | Lean Canvas, Go-to-Market Plan, Financial Projections |
+| **Delivery** | PRD Generator, Technical Architect, Legal & Regulatory, Risk Assessment | PRD, Architecture, Legal Review, Risk Matrix |
+
+**Additional Components:**
+| Component | Agent | Description |
+|-----------|-------|-------------|
+| Research Plan | Planning Agent | Domain classification, competitor list, regulatory focus |
+| Executive Summary | Synthesizer | Decision brief with key decisions requiring executive action |
+| Quality Assessment | Critique Agent | Calibrated scoring with mandatory deductions |
+| Coordination | Facilitator Agent | Contradiction detection, conflict resolution, synthesis |
 
 ---
 
 ## Features
 
-### Intelligent Multi-Agent Orchestration
-- **7 Specialized AI Agents** coordinated via LangGraph StateGraph
+### Swarm-Based Multi-Agent Architecture
+- **12+ Specialized AI Agents** organized into three parallel swarms
+- **Facilitator Agent** coordinates swarms, detects contradictions, resolves conflicts
+- **Parallel Execution**: Agents within each swarm run concurrently via `asyncio.gather`
 - **Planning Agent** runs first to classify domain and create targeted research plan
 - **Multi-Model Routing**: Gemini Flash for speed, Gemini Pro for deep reasoning
 - **Targeted Revision**: On quality failure, only failing agents re-run (not full pipeline)
 - **PRD Quality Loop** with automatic revision cycles (Generator -> Critic -> Formatter)
 - **Calibrated Critique** with mandatory deductions preventing score inflation
+
+### Cross-Run Learning
+- **Memory Pipeline**: High-quality outputs (score >= 0.8) are stored with embeddings
+- **Vector Similarity Search**: Uses pgvector to find similar past examples
+- **Memory-Augmented Agents**: Relevant examples injected into prompts for improved output
+- **Gemini Embeddings**: Uses `text-embedding-004` for 768-dimensional vectors
 
 ### Structured Search Grounding
 Three agents use **Google Search grounding** with mandatory search protocols:
@@ -99,7 +114,7 @@ Enhanced SSE events for granular progress tracking:
 
 ## Architecture
 
-### System Overview
+### Swarm Architecture Overview
 
 ```
 +---------------------------------------------------------------+
@@ -116,62 +131,105 @@ Enhanced SSE events for granular progress tracking:
 +---------------------------------------------------------------+
 |                     Backend (FastAPI)                           |
 |  +----------------------------------------------------------+ |
-|  |               LangGraph Orchestrator                      | |
-|  |                                                           | |
-|  |  +-----------+                                            | |
-|  |  |  Planner  |  Creates research plan, identifies domain  | |
-|  |  |  [Flash]  |  competitors, regulations, benchmarks      | |
-|  |  +-----+-----+                                            | |
-|  |        |                                                  | |
-|  |        v                                                  | |
-|  |  +------------+    +------------+    +--------------+     | |
-|  |  | Customer   |--->| Business   |--->|     PRD      |     | |
-|  |  | Research   |    | Strategy   |    |  Sub-Graph   |     | |
-|  |  | [Flash]    |    | [Pro]      |    | (3 agents)   |     | |
-|  |  +------------+    +------------+    +--------------+     | |
-|  |                                             |             | |
-|  |  +------------+    +------------+    +------v-------+     | |
-|  |  | Executive  |<---| Critique   |<--+| Technical   |     | |
-|  |  |  Summary   |    |   [Pro]    |   || Architect   |     | |
-|  |  | [Flash]    |    +-----+------+   || [Flash]     |     | |
-|  |  +------------+          |          |+--------------+     | |
-|  |                          |          |                     | |
-|  |                    Score < 0.7?     |  +--------------+   | |
-|  |                    Targeted   <-----+--| Legal &      |   | |
-|  |                    Revision           | Regulatory   |   | |
-|  |                    (failing agent     | [Pro]        |   | |
-|  |                     onwards only)     +--------------+   | |
+|  |                   FACILITATOR AGENT                       | |
+|  |         (Coordinates swarms, detects contradictions)      | |
+|  +---------------------------+------------------------------+ |
+|                              |                                 |
+|  +---------------------------v------------------------------+ |
+|  |                    PLANNING PHASE                         | |
+|  |  +-------------+                                          | |
+|  |  |   Planner   |  Domain, competitors, regulations        | |
+|  |  +-------------+                                          | |
+|  +----------------------------------------------------------+ |
+|                              |                                 |
+|  +---------------------------v------------------------------+ |
+|  |                   DISCOVERY SWARM (Parallel)              | |
+|  |  +----------------+ +---------------------+ +------------+ |
+|  |  |   Customer     | |   Competitive       | |  Persona   | |
+|  |  |   Research     | |   Intelligence      | |Development | |
+|  |  +----------------+ +---------------------+ +------------+ |
+|  +----------------------------------------------------------+ |
+|                              |                                 |
+|                    Contradiction Check                         |
+|                              |                                 |
+|  +---------------------------v------------------------------+ |
+|  |                   STRATEGY SWARM (Parallel)               | |
+|  |  +----------------+ +---------------------+ +------------+ |
+|  |  |   Business     | |      GTM            | | Financial  | |
+|  |  |   Strategy     | |    Strategy         | |  Modeling  | |
+|  |  +----------------+ +---------------------+ +------------+ |
+|  +----------------------------------------------------------+ |
+|                              |                                 |
+|                    Contradiction Check                         |
+|                              |                                 |
+|  +---------------------------v------------------------------+ |
+|  |                   DELIVERY SWARM (Parallel)               | |
+|  |  +--------+ +----------+ +-------+ +------------------+   | |
+|  |  |  PRD   | | Tech     | | Legal | |      Risk        |   | |
+|  |  |  Loop  | | Architect| |       | |   Assessment     |   | |
+|  |  +--------+ +----------+ +-------+ +------------------+   | |
+|  +----------------------------------------------------------+ |
+|                              |                                 |
+|  +---------------------------v------------------------------+ |
+|  |                   QUALITY & SYNTHESIS                     | |
+|  |  +-------------+    +-------------------+                 | |
+|  |  |  Critique   |--->| Executive Summary |                 | |
+|  |  +-------------+    +-------------------+                 | |
 |  +----------------------------------------------------------+ |
 +---------------------------------------------------------------+
                               |
-                    +---------+---------+
-                    |  Google Gemini    |
-                    |  Flash + Pro +    |
-                    |  Search Grounding |
-                    +------------------+
+              +---------------+---------------+
+              |                               |
+    +---------v---------+          +----------v----------+
+    |   Google Gemini   |          |   Memory Pipeline   |
+    |  Flash + Pro +    |          | (pgvector + Gemini  |
+    |  Search Grounding |          |    Embeddings)      |
+    +-------------------+          +---------------------+
 ```
 
-### Agent Pipeline
+### Swarm Execution Flow
 
-1. **Planning Agent** [Flash] -- Analyzes product idea, classifies domain (B2B SaaS, Consumer, Healthcare, etc.), identifies specific competitors, regulatory domains, and financial benchmarks.
+#### 1. Facilitator Agent
+The central coordinator that:
+- Dispatches swarms in dependency order
+- Detects contradictions between agent outputs
+- Resolves conflicts by re-running specific agents with context
+- Synthesizes final outputs
 
-2. **Customer Research Agent** [Flash + Grounding] -- Analyzes target market, pain signals, competitors. Mandatory searches for market size, competitor pricing, pain point surveys. Outputs include competitive positioning chart data.
+#### 2. Planning Phase
+**Planning Agent** [Flash] -- Analyzes product idea, classifies domain (B2B SaaS, Consumer, Healthcare, etc.), identifies specific competitors, regulatory domains, and financial benchmarks.
 
-3. **Business Strategy Agent** [Pro + Grounding] -- Builds Lean Canvas, revenue model, financial projections. Mandatory searches for pricing benchmarks, revenue multiples, CAC/LTV. Outputs include chart-ready monthly projections.
+#### 3. Discovery Swarm (Parallel)
+Three agents run concurrently:
+- **Customer Research** [Flash + Grounding] -- Market analysis, pain signals, competitive positioning chart data
+- **Competitive Intelligence** [Flash + Grounding] -- Deep competitor profiles, market share, competitive moats
+- **Persona Development** [Flash] -- Detailed user personas with psychographics, jobs-to-be-done
 
-4. **PRD Sub-Graph** -- Three-agent loop:
-   - PRD Generator [Flash] creates epics, stories, and requirements
-   - PRD Critic [Pro] scores and provides feedback
-   - If score < 0.75, revises (up to 3 iterations)
-   - PRD Formatter [Flash] produces the final structured document
+#### 4. Strategy Swarm (Parallel)
+Three agents run concurrently:
+- **Business Strategy** [Pro + Grounding] -- Lean Canvas, revenue model, strategic recommendations
+- **GTM Strategy** [Pro] -- Go-to-market plan, launch strategy, channel analysis
+- **Financial Modeling** [Pro] -- Detailed financial projections, unit economics, break-even analysis
 
-5. **Technical Architect** [Flash] -- Designs system architecture, tech stack, deployment. Generates Mermaid diagrams for architecture and sequence flows.
+#### 5. Delivery Swarm (Parallel)
+Four agents run concurrently:
+- **PRD Sub-Graph** -- Generator -> Critic -> Formatter loop with quality assurance
+- **Technical Architect** [Flash] -- System design with Mermaid diagrams
+- **Legal & Regulatory** [Pro + Grounding] -- Compliance review with specific regulations
+- **Risk Assessment** [Flash] -- Risk matrix with likelihood/impact scoring
 
-6. **Legal & Regulatory Analyst** [Pro + Grounding] -- Reviews compliance with mandatory searches for specific regulations, penalty ranges, certification timelines.
+#### 6. Quality & Synthesis
+- **Critique Agent** [Pro] -- Cross-validates with calibrated scoring
+- **Executive Summary Generator** [Flash] -- Decision brief with key decisions
 
-7. **Critique Agent** [Pro] -- Cross-validates with calibrated scoring. Mandatory deductions prevent score inflation (e.g., -0.05 for unsourced market claims).
+### Contradiction Detection
 
-8. **Executive Summary Generator** [Flash] -- Synthesizes all outputs into decision brief with 3-5 key decisions requiring executive action.
+The Facilitator detects inconsistencies between agent outputs:
+- **Market Size**: Compares TAM estimates across Customer Research and Business Strategy
+- **Pricing**: Validates pricing consistency between Business Strategy and Financial Modeling
+- **Target Customer**: Ensures GTM segment aligns with Customer Research segments
+
+When contradictions are found, the Facilitator re-runs the affected agent with context about the inconsistency.
 
 ### Targeted Revision (New)
 
@@ -402,10 +460,11 @@ seedcraft/
 |   |-- .env.example                  # Environment variable template
 |   |
 |   |-- agents/
-|   |   |-- orchestrator.py           # LangGraph workflow + targeted revision
+|   |   |-- orchestrator.py           # LangGraph workflow + parallel execution
+|   |   |-- facilitator.py            # Facilitator Agent (swarm coordination)
 |   |   |-- planner.py                # Planning Agent (domain, competitors, regs)
-|   |   |-- base_agent.py             # call_llm with multi-model routing
-|   |   |-- state.py                  # DiscoveryState with research_plan
+|   |   |-- base_agent.py             # call_llm + call_llm_with_memory
+|   |   |-- state.py                  # DiscoveryState with swarm outputs
 |   |   |-- prompts.py                # All prompts with search protocols
 |   |   |-- customer_research.py      # Customer Research [Flash + grounding]
 |   |   |-- business_strategy.py      # Business Strategy [Pro + grounding]
@@ -416,12 +475,27 @@ seedcraft/
 |   |   |-- prd_critic.py             # PRD quality critic [Pro]
 |   |   |-- prd_formatter.py          # PRD formatting [Flash]
 |   |   |-- prd_subgraph.py           # PRD sub-workflow orchestration
-|   |   +-- __init__.py
+|   |   |-- __init__.py
+|   |   |
+|   |   +-- swarms/                   # Swarm implementations
+|   |       |-- __init__.py           # Swarm exports
+|   |       |-- base.py               # BaseSwarm (parallel execution)
+|   |       |-- discovery_swarm.py    # Customer, Competitive, Persona agents
+|   |       |-- strategy_swarm.py     # Business, GTM, Financial agents
+|   |       +-- delivery_swarm.py     # PRD, Tech, Legal, Risk agents
 |   |
 |   |-- models/
 |   |   |-- schemas.py                # Pydantic models (60+ types)
 |   |   |-- visual_schemas.py         # Chart/visualization data models
 |   |   +-- __init__.py
+|   |
+|   |-- services/                     # Cross-run learning services
+|   |   |-- __init__.py
+|   |   |-- embeddings.py             # Gemini embeddings + similarity search
+|   |   +-- memory_pipeline.py        # Memory storage and retrieval
+|   |
+|   |-- migrations/
+|   |   +-- 002_add_run_memories.sql  # pgvector schema for memories
 |   |
 |   |-- utils/
 |   |   |-- helpers.py                # Session store, sanitization
@@ -453,7 +527,15 @@ seedcraft/
 |       |   |-- LandingPage.tsx       # Landing page with value proposition
 |       |   |-- DiscoveryForm.tsx     # Product idea input form
 |       |   |-- ProgressTracker.tsx   # Real-time agent progress display
-|       |   +-- InceptionPackViewer.tsx  # Tabbed results viewer
+|       |   |-- PackViewer.tsx        # Tabbed results viewer with charts
+|       |   |
+|       |   +-- charts/               # Visualization components
+|       |       |-- index.ts
+|       |       |-- charts.css
+|       |       |-- CompetitivePositionChart.tsx  # Scatter plot
+|       |       |-- FinancialProjectionChart.tsx  # Area chart
+|       |       |-- RiskMatrixChart.tsx           # 5x5 heatmap
+|       |       +-- LeanCanvasVisual.tsx          # Canvas grid
 |       |
 |       |-- api/
 |       |   +-- client.ts            # API client with SSE support
@@ -507,6 +589,30 @@ Different agents use different models based on their needs:
 | **Gemini Pro** | Business Strategy, PRD Critic, Legal & Regulatory, Critique | Deeper reasoning for financial analysis, quality evaluation, regulatory precision |
 
 Model assignments are configured in `AGENT_MODEL_CONFIG` in `config.py`.
+
+### Cross-Run Learning (Memory Pipeline)
+
+High-quality outputs are stored with embeddings for future retrieval:
+
+| Component | Description |
+|-----------|-------------|
+| **Memory Storage** | Outputs with quality score >= 0.8 are stored in `run_memories` table |
+| **Embedding Model** | Gemini `text-embedding-004` (768 dimensions) |
+| **Vector Search** | pgvector with cosine similarity, threshold 0.7 |
+| **Memory Injection** | Top 3 similar examples injected into agent prompts |
+
+**Database Setup:**
+```sql
+-- Run the migration in Supabase
+-- backend/migrations/002_add_run_memories.sql
+CREATE EXTENSION IF NOT EXISTS vector;
+```
+
+**Environment Variables:**
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `SUPABASE_URL` | Supabase project URL | -- |
+| `SUPABASE_KEY` | Supabase anon key | -- |
 
 ### Google Search Grounding
 
@@ -623,10 +729,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 See [docs/seedcraft-evolution-roadmap.md](docs/seedcraft-evolution-roadmap.md) for planned features:
 
 - [x] **Phase 1**: Targeted revision, multi-model routing, structured grounding
-- [x] **Phase 2**: Planning Agent, enhanced SSE events
-- [x] **Phase 3**: Visual data schemas for charts and dashboards
-- [ ] **Phase 4**: Cross-run learning with embeddings (memory pipeline)
-- [ ] **Phase 5**: Swarm architecture with parallel agent execution
+- [x] **Phase 2**: Planning Agent, parallel execution, enhanced SSE events
+- [x] **Phase 3**: Visual data schemas and interactive charts (recharts)
+- [x] **Phase 4**: Cross-run learning with embeddings (pgvector + Gemini embeddings)
+- [x] **Phase 5**: Swarm architecture with Facilitator agent and contradiction detection
 
 ---
 
