@@ -9,6 +9,9 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      # Required for config.py to load during test collection
+      GOOGLE_API_KEY: test-api-key-for-ci-only
 
     steps:
       - name: Checkout code
