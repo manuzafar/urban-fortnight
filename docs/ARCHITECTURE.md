@@ -1,1146 +1,1575 @@
 # Seedcraft Architecture Documentation
 
-> A comprehensive guide to the multi-agent AI system that transforms product ideas into complete inception packs.
+## Complete Technical Reference for the Multi-Agent Product Discovery System
+
+**Version**: 2.0 (Swarm Architecture)
+**Last Updated**: February 2026
 
 ---
 
 ## Table of Contents
 
 1. [System Overview](#1-system-overview)
-2. [Technology Stack](#2-technology-stack)
-3. [Agent Architecture](#3-agent-architecture)
-4. [Workflow Orchestration](#4-workflow-orchestration)
-5. [State Management](#5-state-management)
-6. [Data Models](#6-data-models)
-7. [API Reference](#7-api-reference)
-8. [Real-time Streaming (SSE)](#8-real-time-streaming-sse)
-9. [Database Schema](#9-database-schema)
-10. [Authentication](#10-authentication)
-11. [Configuration](#11-configuration)
-12. [Complete Data Flow](#12-complete-data-flow)
+2. [High-Level Architecture](#2-high-level-architecture)
+3. [Agentic Architecture](#3-agentic-architecture)
+4. [Swarm Architecture](#4-swarm-architecture)
+5. [Facilitator Agent](#5-facilitator-agent)
+6. [Cross-Run Learning](#6-cross-run-learning)
+7. [State Management](#7-state-management)
+8. [Backend Structure](#8-backend-structure)
+9. [Frontend Architecture](#9-frontend-architecture)
+10. [Real-Time Streaming (SSE)](#10-real-time-streaming-sse)
+11. [Data Flow](#11-data-flow)
+12. [Database Schema](#12-database-schema)
+13. [API Reference](#13-api-reference)
+14. [Configuration](#14-configuration)
 
 ---
 
 ## 1. System Overview
 
-Seedcraft is a **multi-agent AI system** that transforms product ideas into comprehensive "inception packs" containing:
+Seedcraft is an AI-powered product discovery system that transforms product ideas into comprehensive "inception packs" - decision-ready documents containing market research, business strategy, technical architecture, and more.
 
-- Executive Summary
-- Customer Research & Market Analysis
-- Business Case & Financial Projections
-- Product Requirements Document (PRD)
-- Technical Architecture
-- Legal & Regulatory Review
-- Quality Assessment
+### Key Capabilities
 
-### High-Level Architecture
+| Capability | Description |
+|------------|-------------|
+| **Swarm-Based Multi-Agent Architecture** | 12+ specialized AI agents organized into 3 parallel swarms |
+| **Facilitator Agent** | Central coordinator that detects contradictions and resolves conflicts |
+| **Cross-Run Learning** | High-quality outputs stored with embeddings for future retrieval |
+| **Parallel Execution** | Agents within swarms run concurrently via `asyncio.gather` |
+| **Real-Time Streaming** | 15 SSE event types for granular progress tracking |
+| **Multi-Model Routing** | Gemini Flash for speed, Gemini Pro for deep reasoning |
+| **Search Grounding** | Google Search integration for real-world data validation |
+| **Contradiction Detection** | Automatic detection and resolution of inconsistencies |
 
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              FRONTEND (React)                                │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐        │
-│  │  Dashboard  │  │  Execution  │  │ PackViewer  │  │    Auth     │        │
-│  │             │  │    View     │  │             │  │  (Supabase) │        │
-│  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘  └──────┬──────┘        │
-└─────────┼────────────────┼────────────────┼────────────────┼────────────────┘
-          │                │                │                │
-          │    REST API    │      SSE       │    REST API    │   OAuth
-          ▼                ▼                ▼                ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                           BACKEND (FastAPI)                                  │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │                         API Layer (main.py)                          │   │
-│  │  POST /api/discovery/start    GET /api/discovery/session/{id}       │   │
-│  │  GET  /api/discovery/session/{id}/stream (SSE)                      │   │
-│  └──────────────────────────────────┬──────────────────────────────────┘   │
-│                                     │                                       │
-│  ┌──────────────────────────────────▼──────────────────────────────────┐   │
-│  │                    LangGraph Orchestrator                            │   │
-│  │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐   │   │
-│  │  │Customer │→ │Business │→ │  PRD    │→ │Technical│→ │  Legal  │   │   │
-│  │  │Research │  │Strategy │  │Subgraph │  │Architect│  │ Review  │   │   │
-│  │  └─────────┘  └─────────┘  └─────────┘  └─────────┘  └─────────┘   │   │
-│  │                                                            │        │   │
-│  │                              ┌─────────┐ ←──────────────────┘        │   │
-│  │                              │Critique │ (Quality Gate)             │   │
-│  │                              └────┬────┘                            │   │
-│  │                                   │                                  │   │
-│  │                    ┌──────────────┴──────────────┐                  │   │
-│  │                    ▼                              ▼                  │   │
-│  │              [Score < 0.7]                  [Score >= 0.7]          │   │
-│  │              Loop Back                      Executive Summary       │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
-│                                     │                                       │
-│  ┌──────────────────────────────────▼──────────────────────────────────┐   │
-│  │                         Google Gemini API                            │   │
-│  │                    (with optional Search Grounding)                  │   │
-│  └─────────────────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────────────┘
-                                      │
-                                      ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                        SUPABASE (PostgreSQL + Auth)                         │
-│  ┌─────────────────────┐  ┌─────────────────────┐  ┌─────────────────────┐ │
-│  │  discovery_sessions │  │   inception_packs   │  │    auth.users       │ │
-│  └─────────────────────┘  └─────────────────────┘  └─────────────────────┘ │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
+### What You Get
+
+A complete inception pack containing 10+ sections:
+
+| Swarm | Agents | Output Sections |
+|-------|--------|-----------------|
+| **Discovery** | Customer Research, Competitive Intelligence, Persona Development | Market Hypotheses, Competitive Analysis, Detailed Personas |
+| **Strategy** | Business Strategy, GTM Strategy, Financial Modeling | Lean Canvas, Go-to-Market Plan, Financial Projections |
+| **Delivery** | PRD Generator, Technical Architect, Legal & Regulatory, Risk Assessment | PRD, Architecture, Legal Review, Risk Matrix |
+
+**Additional Components:**
+- Research Plan (Planning Agent)
+- Executive Summary (Synthesizer)
+- Quality Assessment (Critique Agent)
 
 ---
 
-## 2. Technology Stack
-
-### Backend
-
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| Framework | FastAPI | Async REST API with automatic OpenAPI docs |
-| AI Orchestration | LangGraph | Stateful multi-agent workflow management |
-| LLM | Google Gemini 2.0 Flash | Primary AI model with search grounding |
-| Database | Supabase PostgreSQL | Persistent session and pack storage |
-| Auth | Supabase Auth + JWT | User authentication and authorization |
-| Validation | Pydantic v2 | Type-safe schema validation |
-| Streaming | SSE (sse-starlette) | Real-time event streaming |
-| Logging | Structlog | Structured JSON logging |
-
-### Frontend
-
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| Framework | React 18 | UI components |
-| Build Tool | Vite | Fast development and builds |
-| Language | TypeScript | Type-safe development |
-| Auth | Supabase JS Client | OAuth and session management |
-| Styling | CSS Modules | Component-scoped styles |
-| Charts | Mermaid.js | Architecture diagram rendering |
-
-### Infrastructure
-
-| Component | Technology | Purpose |
-|-----------|------------|---------|
-| Backend Hosting | Railway | Auto-scaling container deployment |
-| Frontend Hosting | Railway | Static site hosting |
-| Database | Supabase | Managed PostgreSQL |
-| PDF Generation | WeasyPrint | HTML to PDF conversion |
-
----
-
-## 3. Agent Architecture
-
-The system uses **6 primary agents** plus a **3-agent PRD sub-workflow**, each specialized for a specific domain.
-
-### Agent Overview
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                              AGENT PIPELINE                                  │
-├─────────────────────────────────────────────────────────────────────────────┤
-│                                                                             │
-│  ┌─────────────────────┐     Uses Google Search Grounding                  │
-│  │  1. CUSTOMER        │     ────────────────────────────                  │
-│  │     RESEARCH        │     Outputs: Personas, Pain Points, TAM/SAM/SOM   │
-│  │                     │     Evidence Tiers: E1-E4                         │
-│  └──────────┬──────────┘                                                   │
-│             │                                                               │
-│             ▼                                                               │
-│  ┌─────────────────────┐     Uses Google Search Grounding                  │
-│  │  2. BUSINESS        │     ────────────────────────────                  │
-│  │     STRATEGY        │     Outputs: Lean Canvas, Revenue Model,          │
-│  │                     │              Financial Projections, GTM           │
-│  └──────────┬──────────┘                                                   │
-│             │                                                               │
-│             ▼                                                               │
-│  ┌─────────────────────────────────────────────────────────────────────┐   │
-│  │  3. PRD SUB-WORKFLOW                                                 │   │
-│  │  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐              │   │
-│  │  │    PRD      │ →  │    PRD      │ →  │    PRD      │              │   │
-│  │  │  Generator  │    │   Critic    │    │  Formatter  │              │   │
-│  │  └─────────────┘    └──────┬──────┘    └─────────────┘              │   │
-│  │                            │                                         │   │
-│  │                     [Score < 0.75]                                   │   │
-│  │                     Loop back to Generator (max 3x)                  │   │
-│  │                                                                      │   │
-│  │  Outputs: Epics, User Stories, Functional/Non-Functional Reqs,      │   │
-│  │           Data Model, Release Plan                                   │   │
-│  └──────────┬──────────────────────────────────────────────────────────┘   │
-│             │                                                               │
-│             ▼                                                               │
-│  ┌─────────────────────┐     No Grounding (deterministic design)           │
-│  │  4. TECHNICAL       │     ────────────────────────────────              │
-│  │     ARCHITECT       │     Outputs: Architecture, Tech Stack,            │
-│  │                     │              Mermaid Diagrams, Security           │
-│  └──────────┬──────────┘                                                   │
-│             │                                                               │
-│             ▼                                                               │
-│  ┌─────────────────────┐     Uses Google Search Grounding                  │
-│  │  5. LEGAL &         │     ────────────────────────────                  │
-│  │     REGULATORY      │     Outputs: Regulations, Licensing,              │
-│  │                     │              Compliance, Legal Risks              │
-│  └──────────┬──────────┘                                                   │
-│             │                                                               │
-│             ▼                                                               │
-│  ┌─────────────────────┐     Quality Gate                                  │
-│  │  6. CRITIQUE        │     ────────────────────────────                  │
-│  │                     │     Outputs: Quality Score, Section Scores,       │
-│  │                     │              Revision Feedback                    │
-│  └──────────┬──────────┘                                                   │
-│             │                                                               │
-│      ┌──────┴──────┐                                                       │
-│      │             │                                                        │
-│      ▼             ▼                                                        │
-│  [< 0.7]       [>= 0.7]                                                    │
-│  REVISE        FINALIZE                                                    │
-│                    │                                                        │
-│                    ▼                                                        │
-│  ┌─────────────────────┐                                                   │
-│  │  EXECUTIVE          │     Synthesizes all outputs into                  │
-│  │  SUMMARY            │     board-ready summary                           │
-│  └─────────────────────┘                                                   │
-│                                                                             │
-└─────────────────────────────────────────────────────────────────────────────┘
-```
-
-### Agent Details
-
-#### Agent 1: Customer Research
-
-**File**: `backend/agents/customer_research.py`
-
-**Purpose**: Generate market hypotheses through evidence-based analysis. Designed to surface uncomfortable truths, not advocate for the product.
-
-**Inputs**:
-- Product idea, industry, target market, constraints
-- Revision feedback (if iterating)
-
-**Outputs** (`CustomerResearch` model):
-```python
-{
-    "research_scope": {
-        "segments_examined": [...],
-        "observation_context": "...",
-        "known_gaps": [...]
-    },
-    "job_to_be_done": {
-        "trigger_situation": "...",
-        "underlying_goal": "...",
-        "success_definition": "..."
-    },
-    "pain_signals": [
-        {
-            "signal": "...",
-            "evidence_tier": "E1",  # E1=direct, E2=observed, E3=market, E4=hypothesis
-            "source": "...",
-            "severity": "high"
-        }
-    ],
-    "uncomfortable_insights": [...],
-    "competitive_landscape": {...},
-    "market_context": {
-        "tam": "$X billion",
-        "sam": "$Y million",
-        "som": "$Z million",
-        "growth_rate": "X%",
-        "uncertainty_factors": [...]
-    }
-}
-```
-
-**Key Features**:
-- Uses Google Search grounding for real-world validation
-- Evidence tier system (E1-E4) for research rigor
-- Mandatory "uncomfortable insights" requirement
-- Explicitly surfaces research gaps
-
----
-
-#### Agent 2: Business Strategy
-
-**File**: `backend/agents/business_strategy.py`
-
-**Purpose**: Create comprehensive business case from customer research findings.
-
-**Inputs**:
-- Product idea + context
-- Customer research summary
-
-**Outputs** (`BusinessCase` model):
-```python
-{
-    "lean_canvas": {
-        "problem": [...],
-        "solution": [...],
-        "unique_value_proposition": "...",
-        "unfair_advantage": "...",
-        "customer_segments": [...],
-        "key_metrics": [...],
-        "channels": [...],
-        "cost_structure": {...},
-        "revenue_streams": [...]
-    },
-    "revenue_streams": [
-        {
-            "name": "SaaS Subscription",
-            "model": "recurring",
-            "pricing": "$99/month",
-            "rationale": "..."
-        }
-    ],
-    "year_1_projection": {
-        "users": 1000,
-        "revenue": 500000,
-        "costs": 400000,
-        "profit_loss": 100000
-    },
-    "year_3_projection": {...},
-    "break_even_analysis": "Month 18",
-    "funding_requirement": "$500K seed",
-    "roi_analysis": "3.2x over 3 years",
-    "go_to_market_strategy": {...},
-    "risks_and_mitigations": [...]
-}
-```
-
----
-
-#### Agent 3: PRD Sub-Workflow
-
-**Files**:
-- `backend/agents/prd_subgraph.py` (orchestrator)
-- `backend/agents/prd_generator.py`
-- `backend/agents/prd_critic.py`
-- `backend/agents/prd_formatter.py`
-
-**Architecture**: Nested LangGraph sub-workflow with internal quality loop.
+## 2. High-Level Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                     PRD SUB-WORKFLOW                            │
-│                                                                 │
-│   ┌─────────────┐         ┌─────────────┐                      │
-│   │    PRD      │────────▶│    PRD      │                      │
-│   │  Generator  │         │   Critic    │                      │
-│   └─────────────┘         └──────┬──────┘                      │
-│         ▲                        │                              │
-│         │                        │                              │
-│         │    [Score < 0.75       │                              │
-│         │     AND iter < 3]      │                              │
-│         │                        │                              │
-│         └────────────────────────┤                              │
-│                                  │                              │
-│                           [Score >= 0.75                        │
-│                            OR iter >= 3]                        │
-│                                  │                              │
-│                                  ▼                              │
-│                         ┌─────────────┐                        │
-│                         │    PRD      │                        │
-│                         │  Formatter  │                        │
-│                         └─────────────┘                        │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**PRD Critic Scoring** (6 dimensions):
-| Dimension | Weight | Criteria |
-|-----------|--------|----------|
-| Epic Quality | 20% | Proper structure, business value alignment |
-| User Story Quality | 25% | Format compliance, testability, pain point coverage |
-| Functional Requirements | 20% | Completeness, specificity, actionability |
-| Non-Functional Requirements | 15% | Coverage, measurability |
-| Completeness | 10% | Data model, integrations, release plan |
-| Consistency | 10% | Alignment across sections |
-
-**Pass Threshold**: 0.75
-
-**Outputs** (`ProductRequirementsDocument` model):
-```python
-{
-    "version": "1.0",
-    "overview": {...},
-    "objectives": [...],  # 5-7 SMART objectives
-    "scope_in": [...],
-    "scope_out": [...],
-    "user_personas": [...],
-    "epics": [
-        {
-            "id": "EPIC-001",
-            "title": "...",
-            "description": "...",
-            "business_value": "...",
-            "stories": [
-                {
-                    "id": "US-001",
-                    "title": "...",
-                    "as_a": "user",
-                    "i_want": "...",
-                    "so_that": "...",
-                    "acceptance_criteria": [
-                        "Given ... When ... Then ..."
-                    ],
-                    "priority": "high",
-                    "size": "M"
-                }
-            ]
-        }
-    ],
-    "functional_requirements": [
-        {
-            "id": "FR-001",
-            "title": "...",
-            "description": "...",
-            "priority": "critical"
-        }
-    ],
-    "non_functional_requirements": [
-        {
-            "id": "NFR-001",
-            "category": "performance",
-            "title": "...",
-            "metric": "response_time",
-            "target": "< 200ms"
-        }
-    ],
-    "data_model": {...},
-    "release_plan": [...]
-}
-```
-
----
-
-#### Agent 4: Technical Architect
-
-**File**: `backend/agents/technical_architect.py`
-
-**Purpose**: Design complete technical architecture addressing PRD requirements.
-
-**Outputs** (`TechnicalArchitecture` model):
-```python
-{
-    "architecture_style": {
-        "pattern": "microservices",
-        "justification": "..."
-    },
-    "architecture_diagram_mermaid": "graph TB\n  ...",
-    "sequence_diagram_mermaid": "sequenceDiagram\n  ...",
-    "technology_stack": [
-        {
-            "category": "Backend Framework",
-            "technology": "FastAPI",
-            "rationale": "...",
-            "alternatives_considered": ["Django", "Flask"]
-        }
-    ],
-    "system_components": [
-        {
-            "name": "API Gateway",
-            "description": "...",
-            "responsibilities": [...],
-            "technologies": [...],
-            "interfaces": [...]
-        }
-    ],
-    "data_storage": {
-        "primary_store": "PostgreSQL",
-        "caching": "Redis",
-        "search": "Elasticsearch"
-    },
-    "security_architecture": {...},
-    "scalability_approach": {...},
-    "deployment_strategy": {...},
-    "technical_risks": [...]
-}
+│                     FRONTEND (React + TypeScript)               │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐ │
+│  │ LandingPage │  │DiscoveryForm│  │     PackViewer          │ │
+│  │             │  │             │  │  ┌─────────────────────┐│ │
+│  │             │  │ProgressTrack│  │  │ Charts (recharts)   ││ │
+│  │             │  │             │  │  │ - Competitive Pos   ││ │
+│  │             │  │   useSSE()  │  │  │ - Financial Proj    ││ │
+│  │             │  │             │  │  │ - Risk Matrix       ││ │
+│  │             │  │             │  │  │ - Lean Canvas       ││ │
+│  └─────────────┘  └─────────────┘  │  └─────────────────────┘│ │
+│                                     └─────────────────────────┘ │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+                    REST API + SSE (15 event types)
+                             │
+┌────────────────────────────▼────────────────────────────────────┐
+│                     BACKEND (FastAPI + LangGraph)               │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │                    FACILITATOR AGENT                      │  │
+│  │          (Coordinates swarms, detects contradictions)     │  │
+│  └─────────────────────────┬────────────────────────────────┘  │
+│                            │                                    │
+│  ┌─────────────────────────▼────────────────────────────────┐  │
+│  │                   PLANNING PHASE                          │  │
+│  │  ┌─────────────┐    ┌─────────────────────┐              │  │
+│  │  │   Planner   │    │  Legal Preliminary  │  (parallel)  │  │
+│  │  │   Agent     │    │       Scan          │              │  │
+│  │  └─────────────┘    └─────────────────────┘              │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                            │                                    │
+│  ┌─────────────────────────▼────────────────────────────────┐  │
+│  │                  DISCOVERY SWARM (Parallel)               │  │
+│  │  ┌────────────────┐ ┌───────────────┐ ┌────────────────┐ │  │
+│  │  │   Customer     │ │  Competitive  │ │    Persona     │ │  │
+│  │  │   Research     │ │ Intelligence  │ │  Development   │ │  │
+│  │  │   [Flash]      │ │   [Flash]     │ │    [Flash]     │ │  │
+│  │  └────────────────┘ └───────────────┘ └────────────────┘ │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                            │                                    │
+│                  Contradiction Check ──────────────────────┐   │
+│                            │                               │   │
+│  ┌─────────────────────────▼────────────────────────────┐ │   │
+│  │                  STRATEGY SWARM (Parallel)            │ │   │
+│  │  ┌────────────────┐ ┌───────────────┐ ┌────────────┐ │ │   │
+│  │  │   Business     │ │     GTM       │ │  Financial │ │ │   │
+│  │  │   Strategy     │ │   Strategy    │ │  Modeling  │ │ │   │
+│  │  │    [Pro]       │ │    [Pro]      │ │   [Pro]    │ │ │   │
+│  │  └────────────────┘ └───────────────┘ └────────────┘ │ │   │
+│  └──────────────────────────────────────────────────────┘ │   │
+│                            │                               │   │
+│                  Contradiction Check ◄─────────────────────┘   │
+│                            │                                    │
+│  ┌─────────────────────────▼────────────────────────────────┐  │
+│  │                  DELIVERY SWARM (Parallel)                │  │
+│  │  ┌──────────┐ ┌──────────┐ ┌─────────┐ ┌──────────────┐  │  │
+│  │  │   PRD    │ │  Tech    │ │  Legal  │ │    Risk      │  │  │
+│  │  │  Loop    │ │ Architect│ │ Review  │ │  Assessment  │  │  │
+│  │  │ [Mixed]  │ │ [Flash]  │ │  [Pro]  │ │   [Flash]    │  │  │
+│  │  └──────────┘ └──────────┘ └─────────┘ └──────────────┘  │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                            │                                    │
+│  ┌─────────────────────────▼────────────────────────────────┐  │
+│  │                  QUALITY & SYNTHESIS                      │  │
+│  │  ┌─────────────┐         ┌───────────────────────┐       │  │
+│  │  │  Critique   │────────▶│  Executive Summary    │       │  │
+│  │  │   [Pro]     │         │       [Flash]         │       │  │
+│  │  └─────────────┘         └───────────────────────┘       │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                            │                                    │
+│  ┌─────────────────────────▼────────────────────────────────┐  │
+│  │                  MEMORY PIPELINE                          │  │
+│  │  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐   │  │
+│  │  │ Generate    │───▶│   Store     │───▶│  Retrieve   │   │  │
+│  │  │ Embedding   │    │ in pgvector │    │  Similar    │   │  │
+│  │  │ (Gemini)    │    │             │    │  Memories   │   │  │
+│  │  └─────────────┘    └─────────────┘    └─────────────┘   │  │
+│  └──────────────────────────────────────────────────────────┘  │
+└────────────────────────────┬────────────────────────────────────┘
+                             │
+              ┌──────────────┴──────────────┐
+              │                             │
+    ┌─────────▼─────────┐       ┌───────────▼───────────┐
+    │   Google Gemini   │       │      Supabase         │
+    │  Flash + Pro +    │       │  PostgreSQL + pgvector│
+    │  Embeddings +     │       │    + Auth + RLS       │
+    │  Search Grounding │       │                       │
+    └───────────────────┘       └───────────────────────┘
 ```
 
 ---
 
-#### Agent 5: Legal & Regulatory Review
+## 3. Agentic Architecture
 
-**File**: `backend/agents/legal_regulatory.py`
+### Agent Overview
 
-**Purpose**: Stress-test product against legal/regulatory frameworks.
+Seedcraft uses **12+ specialized agents** organized by function:
 
-**Outputs** (`LegalRegulatoryReview` model):
-```python
-{
-    "executive_summary": "...",
-    "applicable_regulations": [
-        {
-            "name": "GDPR",
-            "description": "...",
-            "applicability": "...",
-            "compliance_requirements": [...],
-            "impact_level": "high",
-            "timeline": "3 months",
-            "estimated_cost": "$50,000"
-        }
-    ],
-    "licensing_requirements": [...],
-    "data_protection_requirements": [...],
-    "legal_risks": [
-        {
-            "category": "privacy",
-            "description": "...",
-            "severity": "high",
-            "likelihood": "medium",
-            "mitigation_strategies": [...]
-        }
-    ],
-    "intellectual_property": {...},
-    "recommended_legal_structure": "Delaware C-Corp",
-    "overall_risk_assessment": {
-        "level": "medium",
-        "key_concerns": [...],
-        "blocking_issues": []
-    },
-    "next_steps": [...]
-}
-```
+#### Planning Phase
 
----
+| Agent | Model | File | Purpose |
+|-------|-------|------|---------|
+| **Planner** | Flash | `planner.py` | Domain classification, competitor identification, regulatory focus |
+| **Legal Preliminary** | Flash | `legal_regulatory.py` | Quick regulatory landscape scan (runs in parallel with planner) |
 
-#### Agent 6: Critique (Quality Gate)
+#### Discovery Swarm
 
-**File**: `backend/agents/critique.py`
+| Agent | Model | File | Purpose |
+|-------|-------|------|---------|
+| **Customer Research** | Flash + Grounding | `customer_research.py` | Market analysis, pain signals, competitive positioning |
+| **Competitive Intelligence** | Flash + Grounding | `swarms/discovery_swarm.py` | Deep competitor profiles, market share, moats |
+| **Persona Development** | Flash | `swarms/discovery_swarm.py` | Detailed user personas with psychographics |
 
-**Purpose**: Evaluate entire inception pack quality and provide targeted feedback.
+#### Strategy Swarm
 
-**Scoring Weights**:
-| Section | Weight |
-|---------|--------|
-| Customer Research | 20% |
-| Business Case | 20% |
-| Product Requirements | 25% |
-| Technical Architecture | 20% |
-| Cross-Section Consistency | 15% |
+| Agent | Model | File | Purpose |
+|-------|-------|------|---------|
+| **Business Strategy** | Pro + Grounding | `business_strategy.py` | Lean Canvas, revenue model, strategic recommendations |
+| **GTM Strategy** | Pro | `swarms/strategy_swarm.py` | Go-to-market plan, launch strategy, channels |
+| **Financial Modeling** | Pro | `swarms/strategy_swarm.py` | Detailed projections, unit economics, break-even |
 
-**Quality Thresholds**:
-- **< 0.7**: Fail - requires revision
-- **0.7 - 0.79**: Pass - acceptable quality
-- **0.8 - 0.89**: Strong - minor improvements possible
-- **0.9 - 1.0**: Exceptional - ready for development
+#### Delivery Swarm
 
-**Outputs** (`QualityAssessment` model):
-```python
-{
-    "overall_score": 0.82,
-    "passed": True,
-    "section_scores": [
-        {
-            "section": "Customer Research",
-            "score": 0.85,
-            "feedback": "...",
-            "suggestions": [...]
-        }
-    ],
-    "strengths": [...],
-    "weaknesses": [...],
-    "critical_gaps": [],
-    "recommendations": [...],
-    "ready_for_delivery": True,
-    "revision_feedback": {
-        "customer_research_feedback": [...],
-        "business_strategy_feedback": [...],
-        "product_requirements_feedback": [...],
-        "technical_architecture_feedback": [...],
-        "priority_improvements": [...]
-    }
-}
-```
+| Agent | Model | File | Purpose |
+|-------|-------|------|---------|
+| **PRD Generator** | Flash | `prd_generator.py` | Epics, user stories, acceptance criteria |
+| **PRD Critic** | Pro | `prd_critic.py` | Quality evaluation, feedback |
+| **PRD Formatter** | Flash | `prd_formatter.py` | Final PRD formatting |
+| **Technical Architect** | Flash | `technical_architect.py` | System design, Mermaid diagrams |
+| **Legal & Regulatory** | Pro + Grounding | `legal_regulatory.py` | Full compliance review |
+| **Risk Assessment** | Flash | `swarms/delivery_swarm.py` | Risk matrix with likelihood/impact |
 
----
+#### Quality & Synthesis
 
-## 4. Workflow Orchestration
+| Agent | Model | File | Purpose |
+|-------|-------|------|---------|
+| **Critique** | Pro | `critique.py` | Cross-validation, calibrated scoring |
+| **Executive Summary** | Flash | `orchestrator.py` | Decision brief, key decisions |
 
-**File**: `backend/agents/orchestrator.py`
+### Agent Implementation Pattern
 
-The system uses **LangGraph** for stateful workflow orchestration with automatic checkpointing.
-
-### Complete Workflow Graph
+Each agent follows this consistent pattern:
 
 ```python
-from langgraph.graph import StateGraph, END
+# backend/agents/customer_research.py
 
-graph = StateGraph(DiscoveryState)
+async def run_customer_research_agent(state: DiscoveryState) -> DiscoveryState:
+    """
+    Customer Research Agent implementation.
 
-# Add nodes
-graph.add_node("customer_research", customer_research_node)
-graph.add_node("business_strategy", business_strategy_node)
-graph.add_node("product_requirements", product_requirements_node)  # PRD sub-workflow
-graph.add_node("technical_architect", technical_architect_node)
-graph.add_node("legal_regulatory", legal_regulatory_node)
-graph.add_node("critique", critique_node)
-graph.add_node("prepare_revision", prepare_revision_node)
-graph.add_node("executive_summary", executive_summary_node)
-graph.add_node("finalize", finalize_node)
+    Flow:
+    1. Extract context from state
+    2. Format the prompt with context
+    3. Call LLM (optionally with memory augmentation)
+    4. Parse and validate response
+    5. Update state with results
+    6. Return updated state
+    """
+    AGENT_NAME = "Customer Research"
 
-# Sequential edges
-graph.add_edge("customer_research", "business_strategy")
-graph.add_edge("business_strategy", "product_requirements")
-graph.add_edge("product_requirements", "technical_architect")
-graph.add_edge("technical_architect", "legal_regulatory")
-graph.add_edge("legal_regulatory", "critique")
+    # Update state to show agent is running
+    state["current_agent"] = AGENT_NAME
+    state["status"] = SessionStatus.IN_PROGRESS
+    state["updated_at"] = datetime.utcnow().isoformat()
 
-# Conditional edge (quality gate)
-graph.add_conditional_edges(
-    "critique",
-    should_revise_condition,
-    {
-        "revise": "prepare_revision",
-        "finalize": "executive_summary"
-    }
-)
+    # Get research plan context from planning phase
+    research_plan = state.get("research_plan", {})
 
-# Revision loop
-graph.add_edge("prepare_revision", "customer_research")
-
-# Finalization
-graph.add_edge("executive_summary", "finalize")
-graph.add_edge("finalize", END)
-
-# Entry point
-graph.set_entry_point("customer_research")
-```
-
-### Revision Loop Logic
-
-```python
-def should_revise_condition(state: DiscoveryState) -> str:
-    quality_score = state.get("quality_assessment", {}).get("overall_score", 0)
-    iteration = state.get("iteration", 1)
-    max_iterations = settings.max_revision_iterations  # Default: 3
-    min_score = settings.min_quality_score  # Default: 0.7
-
-    if quality_score < min_score and iteration < max_iterations:
-        return "revise"
-    return "finalize"
-```
-
-### Node Execution Pattern
-
-Each agent node follows this pattern:
-
-```python
-async def agent_node(state: DiscoveryState) -> DiscoveryState:
-    # 1. Emit SSE: agent starting
-    emitter = get_current_emitter()
-    if emitter:
-        await emitter.emit_agent_start("agent_name", "Processing...")
-
-    # 2. Run the agent
-    result = await run_agent(
-        state["product_idea"],
-        state.get("customer_research"),  # Previous outputs
-        state.get("critique_feedback", {}).get("agent_feedback", [])
+    # Format prompt with all available context
+    prompt = format_prompt(
+        CUSTOMER_RESEARCH_PROMPT,
+        product_idea=state["product_idea"],
+        industry=state.get("industry"),
+        target_market=state.get("target_market"),
+        competitors=research_plan.get("competitors", []),
+        regulatory_hints=state.get("preliminary_legal_scan", {}).get("key_areas", []),
     )
 
-    # 3. Emit SSE: insights discovered
-    if emitter and result:
-        await emitter.emit_insight("agent_name", "key", "value")
+    # Call LLM with grounding enabled for real-world data
+    result = await call_llm_with_grounding(prompt, AGENT_NAME)
 
-    # 4. Update state
-    state["agent_output"] = result
-    state["total_tokens_used"] += result.get("tokens_used", 0)
+    # Update metrics
+    state["total_tokens_used"] = state.get("total_tokens_used", 0) + result.get("tokens_used", 0)
+    state["total_duration_seconds"] = state.get("total_duration_seconds", 0.0) + result.get("duration_seconds", 0.0)
 
-    # 5. Emit SSE: agent complete
-    if emitter:
-        await emitter.emit_agent_complete("agent_name", "Summary")
+    # Parse response and update state
+    if result["success"]:
+        # Validate visual data if present
+        if "competitive_positioning" in result["data"]:
+            try:
+                positioning = CompetitivePositioning.model_validate(
+                    result["data"]["competitive_positioning"]
+                )
+                result["data"]["competitive_positioning"] = positioning.model_dump()
+            except ValidationError:
+                pass  # Use raw data if validation fails
 
+        state["customer_research"] = result["data"]
+    else:
+        if "errors" not in state:
+            state["errors"] = []
+        state["errors"].append(f"{AGENT_NAME}: {result['error']}")
+
+    state["updated_at"] = datetime.utcnow().isoformat()
     return state
 ```
 
+### Base Agent Utilities
+
+```python
+# backend/agents/base_agent.py
+
+async def call_llm(prompt: str, agent_name: str) -> dict:
+    """Basic LLM call without grounding."""
+    model = get_model_for_agent(agent_name)  # Returns 'flash' or 'pro'
+    full_model_name = settings.llm_model if model == "flash" else settings.llm_pro_model
+
+    client = genai.Client(api_key=settings.google_api_key)
+
+    response = await client.aio.models.generate_content(
+        model=full_model_name,
+        contents=prompt,
+        config=GenerateContentConfig(
+            temperature=settings.llm_temperature,
+            max_output_tokens=settings.llm_max_tokens,
+        )
+    )
+
+    return parse_json_response(response)
+
+
+async def call_llm_with_grounding(prompt: str, agent_name: str) -> dict:
+    """LLM call with Google Search grounding enabled."""
+    # Same as above but with search tool:
+    config = GenerateContentConfig(
+        tools=[Tool(google_search=GoogleSearch())],
+        temperature=settings.llm_temperature,
+        max_output_tokens=settings.llm_max_tokens,
+    )
+    # ...
+
+
+async def call_llm_with_memory(
+    prompt: str,
+    agent_name: str,
+    state: DiscoveryState
+) -> dict:
+    """LLM call with memory augmentation from past high-quality runs."""
+    from services.embeddings import generate_embedding, find_similar_memories, format_memories_for_prompt
+
+    # 1. Generate embedding for current context
+    domain_type = state.get("research_plan", {}).get("domain_type", "general")
+    query_text = f"{state['product_idea']} {state.get('industry', '')} {domain_type}"
+
+    try:
+        query_embedding = await generate_embedding(query_text)
+
+        # 2. Find similar high-quality memories
+        memories = await find_similar_memories(
+            query_embedding=query_embedding,
+            domain_type=domain_type,
+            agent_name=agent_name,
+            limit=3,
+        )
+
+        # 3. Inject memories into prompt if found
+        if memories:
+            memory_context = format_memories_for_prompt(memories)
+            prompt = f"{prompt}\n\n## HIGH-QUALITY EXAMPLES FROM SIMILAR PRODUCTS\n{memory_context}"
+
+    except Exception as e:
+        logger.warning("memory_retrieval_failed", error=str(e))
+        # Continue without memories - non-blocking
+
+    # 4. Call LLM with augmented prompt
+    return await call_llm(prompt, agent_name)
+```
+
 ---
 
-## 5. State Management
+## 4. Swarm Architecture
 
-**File**: `backend/agents/state.py`
+### Overview
+
+Swarms enable **parallel execution** of independent agents, significantly reducing total execution time.
+
+```
+Without Swarms (Sequential):
+┌────────┐   ┌────────┐   ┌────────┐   ┌────────┐   ┌────────┐
+│Agent 1 │──▶│Agent 2 │──▶│Agent 3 │──▶│Agent 4 │──▶│Agent 5 │
+└────────┘   └────────┘   └────────┘   └────────┘   └────────┘
+Total time = 10 + 10 + 10 + 10 + 10 = 50 minutes
+
+With Swarms (Parallel):
+┌─────────────────────────────────┐
+│ Swarm 1 (parallel)              │   ┌────────┐   ┌────────┐
+│ ┌────────┐ ┌────────┐ ┌────────┐│──▶│ Merge  │──▶│ Next   │
+│ │Agent 1 │ │Agent 2 │ │Agent 3 ││   └────────┘   │ Swarm  │
+│ └────────┘ └────────┘ └────────┘│                └────────┘
+└─────────────────────────────────┘
+Total time = max(10, 10, 10) + merge = 12 minutes
+```
+
+### BaseSwarm Implementation
+
+```python
+# backend/agents/swarms/base.py
+
+class BaseSwarm(ABC):
+    """Abstract base class for agent swarms."""
+
+    swarm_name: str = "BaseSwarm"
+    agent_names: list[str] = []
+
+    def __init__(self):
+        self.logger = structlog.get_logger(f"swarm.{self.swarm_name}")
+
+    @abstractmethod
+    def get_agent_tasks(
+        self, state: DiscoveryState
+    ) -> list[tuple[str, Coroutine[Any, Any, DiscoveryState]]]:
+        """
+        Return list of (agent_name, coroutine) tuples to run in parallel.
+
+        Each coroutine receives a COPY of the state to prevent race conditions.
+        """
+        pass
+
+    async def run(self, state: DiscoveryState) -> DiscoveryState:
+        """Execute all agents in the swarm in parallel."""
+        start_time = datetime.utcnow()
+
+        self.logger.info(
+            "swarm_start",
+            swarm=self.swarm_name,
+            session_id=state["session_id"],
+            agent_count=len(self.agent_names),
+        )
+
+        # Get agent tasks
+        agent_tasks = self.get_agent_tasks(state)
+
+        if not agent_tasks:
+            return state
+
+        # Extract names and coroutines
+        agent_names = [name for name, _ in agent_tasks]
+        coroutines = [coro for _, coro in agent_tasks]
+
+        # Run ALL agents in parallel
+        results = await asyncio.gather(
+            *coroutines,
+            return_exceptions=True,  # Don't fail entire swarm on single agent error
+        )
+
+        # Merge results back into state
+        merged_state = self._merge_results(state, agent_names, results)
+
+        # Log completion
+        duration = (datetime.utcnow() - start_time).total_seconds()
+        success_count = sum(1 for r in results if not isinstance(r, Exception))
+
+        self.logger.info(
+            "swarm_complete",
+            swarm=self.swarm_name,
+            session_id=state["session_id"],
+            duration_seconds=round(duration, 2),
+            success_count=success_count,
+            failure_count=len(results) - success_count,
+        )
+
+        return merged_state
+
+    def _merge_results(
+        self,
+        base_state: DiscoveryState,
+        agent_names: list[str],
+        results: list[DiscoveryState | Exception],
+    ) -> DiscoveryState:
+        """Merge results from parallel agent executions."""
+        merged = dict(base_state)
+
+        for agent_name, result in zip(agent_names, results):
+            if isinstance(result, Exception):
+                # Log error but continue with other agents' results
+                self.logger.error(
+                    "swarm_agent_failed",
+                    swarm=self.swarm_name,
+                    agent=agent_name,
+                    error=str(result),
+                )
+                if "errors" not in merged:
+                    merged["errors"] = []
+                merged["errors"].append(f"{agent_name}: {str(result)}")
+                continue
+
+            # Copy specific output fields from the result
+            output_fields = self.get_output_fields(agent_name)
+            for field in output_fields:
+                if field in result and result[field] is not None:
+                    merged[field] = result[field]
+
+            # Aggregate token usage and duration
+            merged["total_tokens_used"] = merged.get("total_tokens_used", 0) + result.get("total_tokens_used", 0)
+            merged["total_duration_seconds"] = merged.get("total_duration_seconds", 0.0) + result.get("total_duration_seconds", 0.0)
+
+        merged["updated_at"] = datetime.utcnow().isoformat()
+        return merged
+
+    def get_output_fields(self, agent_name: str) -> list[str]:
+        """Get the state fields that an agent outputs."""
+        field_mappings = {
+            "customer_research": ["customer_research"],
+            "competitive_intelligence": ["competitive_analysis"],
+            "persona_development": ["detailed_personas"],
+            "business_strategy": ["business_case"],
+            "gtm_strategy": ["gtm_plan"],
+            "financial_modeling": ["financial_model"],
+            "product_requirements": ["product_requirements"],
+            "technical_architect": ["technical_architecture"],
+            "legal_regulatory": ["legal_regulatory_review"],
+            "risk_assessment": ["risk_assessment"],
+        }
+        return field_mappings.get(agent_name, [agent_name])
+```
+
+### Discovery Swarm
+
+```python
+# backend/agents/swarms/discovery_swarm.py
+
+class DiscoverySwarm(BaseSwarm):
+    """
+    Swarm for market discovery and customer research.
+
+    Runs customer research, competitive intelligence, and persona
+    development in parallel to build a comprehensive market picture.
+    """
+
+    swarm_name = "DiscoverySwarm"
+    agent_names = [
+        "customer_research",
+        "competitive_intelligence",
+        "persona_development",
+    ]
+
+    def get_agent_tasks(
+        self, state: DiscoveryState
+    ) -> list[tuple[str, Coroutine[Any, Any, DiscoveryState]]]:
+        """Get discovery agent coroutines."""
+        return [
+            ("customer_research", run_customer_research_agent(state.copy())),
+            ("competitive_intelligence", run_competitive_intelligence(state.copy())),
+            ("persona_development", run_persona_development(state.copy())),
+        ]
+
+
+async def run_competitive_intelligence(state: DiscoveryState) -> DiscoveryState:
+    """
+    Deep competitive analysis agent.
+
+    Focuses on:
+    - Detailed competitor profiles
+    - Competitive positioning
+    - Market share analysis
+    - Competitive moats and threats
+    """
+    AGENT_NAME = "Competitive Intelligence"
+
+    prompt = f"""You are a Competitive Intelligence Analyst...
+
+## PRODUCT IDEA
+{state['product_idea']}
+
+## YOUR TASK
+Perform deep competitive analysis:
+1. Direct Competitors - Products solving the same problem
+2. Indirect Competitors - Alternative solutions or workarounds
+3. Potential Future Competitors - Companies that could enter
+4. Competitive Moats - What makes each competitor defensible
+5. Market Positioning - How each competitor positions themselves
+6. Competitive Threats - Risks from competition
+
+## OUTPUT FORMAT
+{{
+  "direct_competitors": [...],
+  "indirect_competitors": [...],
+  "potential_future_competitors": [...],
+  "competitive_moats": {{...}},
+  "market_dynamics": {{...}},
+  "strategic_recommendations": [...]
+}}
+"""
+
+    result = await call_llm_with_grounding(prompt, AGENT_NAME)
+
+    if result["success"]:
+        state["competitive_analysis"] = result["data"]
+
+    return state
+
+
+async def run_persona_development(state: DiscoveryState) -> DiscoveryState:
+    """
+    Detailed persona development agent.
+
+    Creates rich, detailed user personas beyond basic demographics:
+    - Psychographics and motivations
+    - Jobs to be done
+    - Decision-making process
+    - Technology adoption profile
+    """
+    # Similar implementation...
+```
+
+### Strategy Swarm
+
+```python
+# backend/agents/swarms/strategy_swarm.py
+
+class StrategySwarm(BaseSwarm):
+    """
+    Swarm for business strategy development.
+
+    Runs business strategy, GTM strategy, and financial modeling
+    in parallel to create comprehensive business planning.
+    """
+
+    swarm_name = "StrategySwarm"
+    agent_names = [
+        "business_strategy",
+        "gtm_strategy",
+        "financial_modeling",
+    ]
+
+    def get_agent_tasks(self, state: DiscoveryState):
+        return [
+            ("business_strategy", run_business_strategy_agent(state.copy())),
+            ("gtm_strategy", run_gtm_strategy(state.copy())),
+            ("financial_modeling", run_financial_modeling(state.copy())),
+        ]
+```
+
+### Delivery Swarm
+
+```python
+# backend/agents/swarms/delivery_swarm.py
+
+class DeliverySwarm(BaseSwarm):
+    """
+    Swarm for product delivery specifications.
+
+    Runs PRD generation, technical architecture, legal review,
+    and risk assessment in parallel.
+    """
+
+    swarm_name = "DeliverySwarm"
+    agent_names = [
+        "product_requirements",
+        "technical_architect",
+        "legal_regulatory",
+        "risk_assessment",
+    ]
+```
+
+---
+
+## 5. Facilitator Agent
+
+The Facilitator is the **central coordinator** that orchestrates all swarms and ensures consistency.
+
+### Responsibilities
+
+1. **Dispatches swarms** in dependency order (Discovery → Strategy → Delivery)
+2. **Detects contradictions** between agent outputs
+3. **Resolves conflicts** by re-running specific agents with context
+4. **Synthesizes outputs** into final inception pack
+
+### Implementation
+
+```python
+# backend/agents/facilitator.py
+
+class FacilitatorAgent:
+    """Central intelligence coordinating all swarms."""
+
+    def __init__(self):
+        self.logger = structlog.get_logger("facilitator")
+        self.discovery_swarm = DiscoverySwarm()
+        self.strategy_swarm = StrategySwarm()
+        self.delivery_swarm = DeliverySwarm()
+
+    async def run(self, state: DiscoveryState) -> DiscoveryState:
+        """Execute the complete swarm-based workflow."""
+        self.logger.info("facilitator_start", session_id=state["session_id"])
+
+        try:
+            # Phase 1: Planning
+            state = await self._run_planning_phase(state)
+            if state.get("status") == SessionStatus.FAILED:
+                return state
+
+            # Phase 2: Discovery Swarm
+            state = await self._run_discovery_phase(state)
+
+            # Check for contradictions in discovery outputs
+            contradictions = self.detect_contradictions(state, phase="discovery")
+            if contradictions:
+                state = await self._resolve_contradictions(state, contradictions)
+
+            # Phase 3: Strategy Swarm (depends on Discovery)
+            state = await self._run_strategy_phase(state)
+
+            # Check for contradictions between discovery and strategy
+            contradictions = self.detect_contradictions(state, phase="strategy")
+            if contradictions:
+                state = await self._resolve_contradictions(state, contradictions)
+
+            # Phase 4: Delivery Swarm (depends on Discovery + Strategy)
+            state = await self._run_delivery_phase(state)
+
+            # Phase 5: Quality Check
+            state = await self._run_quality_check(state)
+
+            # Phase 6: Executive Summary and Finalization
+            state = await self._synthesize_outputs(state)
+
+            return state
+
+        except Exception as e:
+            self.logger.error("facilitator_error", error=str(e))
+            state["status"] = SessionStatus.FAILED
+            state["errors"].append(f"Facilitator error: {str(e)}")
+            return state
+
+    def detect_contradictions(
+        self, state: DiscoveryState, phase: str = "all"
+    ) -> list[dict]:
+        """
+        Detect contradictions between agent outputs.
+
+        Checks for inconsistencies in:
+        - Market size estimates (TAM/SAM/SOM)
+        - Pricing assumptions
+        - Target customer definitions
+        - Technical feasibility vs business requirements
+        """
+        contradictions = []
+
+        customer_research = state.get("customer_research", {})
+        business_case = state.get("business_case", {})
+        financial_model = state.get("financial_model", {})
+        gtm_plan = state.get("gtm_plan", {})
+
+        # Check 1: Market size consistency
+        if customer_research and business_case:
+            cr_tam = customer_research.get("market_context", {}).get("total_addressable_market", "")
+            bc_tam = business_case.get("market_size", {}).get("tam", "")
+
+            if cr_tam and bc_tam and self._values_differ_significantly(cr_tam, bc_tam):
+                contradictions.append({
+                    "type": "market_size",
+                    "agents": ["customer_research", "business_strategy"],
+                    "field": "TAM",
+                    "values": {"customer_research": cr_tam, "business_case": bc_tam},
+                    "severity": "medium",
+                })
+
+        # Check 2: Pricing consistency
+        if business_case and financial_model:
+            bc_pricing = business_case.get("revenue_streams", [])
+            fm_pricing = financial_model.get("revenue_model", {}).get("pricing_tiers", [])
+
+            bc_price = self._extract_price(bc_pricing)
+            fm_price = fm_pricing[0].get("price_monthly", 0) if fm_pricing else 0
+
+            if bc_price and fm_price and abs(bc_price - fm_price) / max(bc_price, fm_price) > 0.5:
+                contradictions.append({
+                    "type": "pricing",
+                    "agents": ["business_strategy", "financial_modeling"],
+                    "field": "pricing",
+                    "values": {"business_case": bc_price, "financial_model": fm_price},
+                    "severity": "high",
+                })
+
+        # Check 3: Target customer consistency
+        if customer_research and gtm_plan:
+            cr_segments = customer_research.get("market_context", {}).get("customer_segments", [])
+            gtm_segment = gtm_plan.get("market_entry_strategy", {}).get("initial_segment", "")
+
+            if cr_segments and gtm_segment:
+                if not any(gtm_segment.lower() in str(seg).lower() for seg in cr_segments):
+                    contradictions.append({
+                        "type": "target_customer",
+                        "agents": ["customer_research", "gtm_strategy"],
+                        "severity": "medium",
+                    })
+
+        if contradictions:
+            self.logger.warning(
+                "contradictions_detected",
+                phase=phase,
+                count=len(contradictions),
+                types=[c["type"] for c in contradictions],
+            )
+
+        return contradictions
+
+    async def _resolve_contradictions(
+        self,
+        state: DiscoveryState,
+        contradictions: list[dict],
+    ) -> DiscoveryState:
+        """Resolve contradictions by re-running specific agents with context."""
+        self.logger.info(
+            "resolving_contradictions",
+            session_id=state["session_id"],
+            count=len(contradictions),
+        )
+
+        # Only resolve high-severity contradictions
+        high_severity = [c for c in contradictions if c.get("severity") == "high"]
+
+        if not high_severity:
+            return state  # Just log medium severity and continue
+
+        # Add contradiction context to state for agents to consider
+        state["contradiction_context"] = {
+            "contradictions": contradictions,
+            "resolution_instruction": (
+                "Previous outputs contained inconsistencies. "
+                "Please review and ensure your output is consistent with other agents' findings."
+            ),
+        }
+
+        # Re-run the second agent in each contradiction
+        agents_to_rerun = set()
+        for c in high_severity:
+            agents_to_rerun.add(c["agents"][1])
+
+        for agent in agents_to_rerun:
+            self.logger.info("rerunning_agent_for_resolution", agent=agent)
+
+            if agent == "business_strategy":
+                from agents.business_strategy import run_business_strategy_agent
+                state = await run_business_strategy_agent(state)
+            elif agent == "financial_modeling":
+                from agents.swarms.strategy_swarm import run_financial_modeling
+                state = await run_financial_modeling(state)
+            elif agent == "gtm_strategy":
+                from agents.swarms.strategy_swarm import run_gtm_strategy
+                state = await run_gtm_strategy(state)
+
+        # Clear contradiction context after resolution
+        del state["contradiction_context"]
+
+        return state
+```
+
+---
+
+## 6. Cross-Run Learning
+
+### Overview
+
+The memory system stores high-quality outputs with vector embeddings, enabling retrieval of similar past examples to improve future outputs.
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│                    MEMORY PIPELINE                            │
+├──────────────────────────────────────────────────────────────┤
+│                                                               │
+│  STORAGE (after successful run with score >= 0.8)            │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐       │
+│  │   Output    │───▶│  Compress   │───▶│  Generate   │       │
+│  │   (JSON)    │    │  to Summary │    │  Embedding  │       │
+│  │             │    │  (2000 chr) │    │  (768-dim)  │       │
+│  └─────────────┘    └─────────────┘    └──────┬──────┘       │
+│                                               │              │
+│                                        ┌──────▼──────┐       │
+│                                        │   Store in  │       │
+│                                        │   pgvector  │       │
+│                                        └─────────────┘       │
+│                                                               │
+│  RETRIEVAL (during new run)                                  │
+│  ┌─────────────┐    ┌─────────────┐    ┌─────────────┐       │
+│  │   Query     │───▶│  Generate   │───▶│   Vector    │       │
+│  │   Context   │    │  Embedding  │    │ Similarity  │       │
+│  │             │    │             │    │   Search    │       │
+│  └─────────────┘    └─────────────┘    └──────┬──────┘       │
+│                                               │              │
+│                                        ┌──────▼──────┐       │
+│                                        │ Top 3 Most  │       │
+│                                        │   Similar   │───────┤
+│                                        │  (>70% sim) │       │
+│                                        └─────────────┘       │
+│                                               │              │
+│                                        ┌──────▼──────┐       │
+│                                        │   Inject    │       │
+│                                        │ into Prompt │       │
+│                                        └─────────────┘       │
+└──────────────────────────────────────────────────────────────┘
+```
+
+### Embedding Service
+
+```python
+# backend/services/embeddings.py
+
+EMBEDDING_MODEL = "text-embedding-004"
+EMBEDDING_DIMENSION = 768
+
+async def generate_embedding(text: str) -> list[float]:
+    """
+    Generate 768-dimensional embedding using Gemini.
+
+    Uses text-embedding-004 which produces high-quality
+    semantic embeddings suitable for similarity search.
+    """
+    client = genai.Client(api_key=settings.google_api_key)
+
+    # Truncate if too long (embedding models have limits)
+    max_chars = 25000
+    if len(text) > max_chars:
+        text = text[:max_chars]
+        logger.warning("text_truncated_for_embedding", original_length=len(text))
+
+    result = await client.aio.models.embed_content(
+        model=EMBEDDING_MODEL,
+        contents=text,
+    )
+
+    embedding = result.embeddings[0].values
+
+    logger.debug(
+        "embedding_generated",
+        text_length=len(text),
+        embedding_dimension=len(embedding),
+    )
+
+    return embedding
+
+
+async def find_similar_memories(
+    query_embedding: list[float],
+    domain_type: str | None = None,
+    agent_name: str | None = None,
+    user_id: str | None = None,
+    match_threshold: float = 0.7,
+    limit: int = 3,
+) -> list[dict]:
+    """
+    Find similar high-quality memories using vector similarity.
+
+    Uses pgvector's cosine similarity search with optional filters.
+    """
+    supabase = await get_supabase_client()
+
+    # Call the match_memories function via RPC
+    result = await supabase.rpc(
+        "match_memories",
+        {
+            "query_embedding": query_embedding,
+            "match_threshold": match_threshold,
+            "match_count": limit,
+            "filter_domain": domain_type,
+            "filter_agent": agent_name,
+            "filter_user_id": user_id,
+        }
+    ).execute()
+
+    memories = result.data or []
+
+    logger.info(
+        "similar_memories_found",
+        count=len(memories),
+        domain_type=domain_type,
+        agent_name=agent_name,
+    )
+
+    return memories
+
+
+def format_memories_for_prompt(memories: list[dict]) -> str:
+    """Format retrieved memories into a prompt-friendly string."""
+    if not memories:
+        return ""
+
+    formatted = []
+
+    for i, memory in enumerate(memories, 1):
+        similarity = memory.get("similarity", 0)
+        quality = memory.get("quality_score", 0)
+        content = memory.get("content_summary", "")
+
+        formatted.append(
+            f"### Example {i} (Similarity: {similarity:.0%}, Quality: {quality:.0%})\n"
+            f"{content}\n"
+        )
+
+    return "\n".join(formatted)
+```
+
+### Memory Storage Pipeline
+
+```python
+# backend/services/memory_pipeline.py
+
+async def store_successful_run(
+    session_id: str,
+    user_id: str,
+    state: DiscoveryState,
+) -> None:
+    """
+    Extract and store memories from a successful run.
+
+    Only stores outputs from runs with quality score >= 0.8
+    """
+    quality_score = state.get("quality_assessment", {}).get("overall_score", 0)
+
+    # Only store high-quality runs
+    if quality_score < 0.8:
+        logger.info(
+            "memory_skipped_low_quality",
+            session_id=session_id,
+            quality_score=quality_score,
+        )
+        return
+
+    domain_type = state.get("research_plan", {}).get("domain_type", "general")
+    industry = state.get("industry")
+
+    # Store memories for each major agent output
+    agent_outputs = [
+        ("customer_research", state.get("customer_research")),
+        ("competitive_intelligence", state.get("competitive_analysis")),
+        ("business_strategy", state.get("business_case")),
+        ("gtm_strategy", state.get("gtm_plan")),
+        ("financial_modeling", state.get("financial_model")),
+        ("product_requirements", state.get("prd")),
+        ("technical_architect", state.get("technical_architecture")),
+        ("legal_regulatory", state.get("legal_review")),
+    ]
+
+    for agent_name, output in agent_outputs:
+        if not output:
+            continue
+
+        try:
+            # Compress output to summary (key fields, max 2000 chars)
+            summary = compress_to_summary(output)
+
+            # Generate embedding
+            embedding = await generate_embedding(summary)
+
+            # Store in database
+            success = await store_memory(
+                user_id=user_id,
+                session_id=session_id,
+                domain_type=domain_type,
+                industry=industry,
+                agent_name=agent_name,
+                quality_score=quality_score,
+                content_summary=summary,
+                embedding=embedding,
+            )
+
+            if success:
+                logger.info(
+                    "memory_stored",
+                    agent_name=agent_name,
+                    quality_score=quality_score,
+                )
+
+        except Exception as e:
+            logger.error(
+                "memory_storage_failed",
+                agent_name=agent_name,
+                error=str(e),
+            )
+            # Continue with other agents - non-blocking
+
+
+def compress_to_summary(output: dict, max_chars: int = 2000) -> str:
+    """
+    Compress agent output to a summary suitable for embedding.
+
+    Extracts key sections and truncates to fit within embedding limits.
+    """
+    # Key fields to prioritize for different agent types
+    priority_fields = [
+        "executive_summary",
+        "recommendation",
+        "key_findings",
+        "summary",
+        "pain_signals",
+        "lean_canvas",
+        "user_personas",
+        "epics",
+        "system_components",
+        "overall_risk_assessment",
+    ]
+
+    summary_parts = []
+
+    for field in priority_fields:
+        if field in output and output[field]:
+            value = output[field]
+            if isinstance(value, str):
+                summary_parts.append(f"{field}: {value}")
+            elif isinstance(value, list) and len(value) > 0:
+                items = value[:3]  # Take first few items
+                summary_parts.append(f"{field}: {json.dumps(items, default=str)}")
+            elif isinstance(value, dict):
+                summary_parts.append(f"{field}: {json.dumps(value, default=str)[:500]}")
+
+    summary = "\n".join(summary_parts)
+
+    if len(summary) > max_chars:
+        summary = summary[:max_chars - 3] + "..."
+
+    return summary
+```
+
+### Database Schema for Memories
+
+```sql
+-- backend/migrations/002_add_run_memories.sql
+
+-- Enable pgvector extension (Supabase has this)
+CREATE EXTENSION IF NOT EXISTS vector;
+
+CREATE TABLE run_memories (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    session_id TEXT,
+    domain_type TEXT NOT NULL,
+    industry TEXT,
+    agent_name TEXT NOT NULL,
+    quality_score FLOAT NOT NULL,
+    content_summary TEXT NOT NULL,
+    embedding VECTOR(768),  -- Gemini text-embedding-004 dimension
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+
+    -- Only store high-quality outputs
+    CONSTRAINT quality_threshold CHECK (quality_score >= 0.8)
+);
+
+-- Indexes for efficient querying
+CREATE INDEX idx_memories_domain ON run_memories(domain_type);
+CREATE INDEX idx_memories_agent ON run_memories(agent_name);
+CREATE INDEX idx_memories_user ON run_memories(user_id);
+
+-- IVFFlat index for fast approximate nearest neighbor search
+CREATE INDEX idx_memories_embedding ON run_memories
+    USING ivfflat (embedding vector_cosine_ops)
+    WITH (lists = 100);
+
+-- Function for similarity search with filters
+CREATE OR REPLACE FUNCTION match_memories(
+    query_embedding VECTOR(768),
+    match_threshold FLOAT DEFAULT 0.7,
+    match_count INT DEFAULT 3,
+    filter_domain TEXT DEFAULT NULL,
+    filter_agent TEXT DEFAULT NULL,
+    filter_user_id UUID DEFAULT NULL
+)
+RETURNS TABLE (
+    id UUID,
+    content_summary TEXT,
+    quality_score FLOAT,
+    similarity FLOAT,
+    domain_type TEXT,
+    agent_name TEXT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        rm.id,
+        rm.content_summary,
+        rm.quality_score,
+        1 - (rm.embedding <=> query_embedding) AS similarity,
+        rm.domain_type,
+        rm.agent_name
+    FROM run_memories rm
+    WHERE
+        1 - (rm.embedding <=> query_embedding) > match_threshold
+        AND (filter_domain IS NULL OR rm.domain_type = filter_domain)
+        AND (filter_agent IS NULL OR rm.agent_name = filter_agent)
+        AND (filter_user_id IS NULL OR rm.user_id = filter_user_id)
+    ORDER BY rm.embedding <=> query_embedding
+    LIMIT match_count;
+END;
+$$;
+```
+
+---
+
+## 7. State Management
 
 ### DiscoveryState Structure
 
 ```python
+# backend/agents/state.py
+
 class DiscoveryState(TypedDict, total=False):
     # ═══════════════════════════════════════════════════════════
-    # INPUT FIELDS (set at workflow start)
+    # INPUT FIELDS
     # ═══════════════════════════════════════════════════════════
     session_id: str
+    user_id: str
     product_idea: str
-    industry: Optional[str]
-    target_market: Optional[str]
-    constraints: Optional[list[str]]
-    additional_context: Optional[str]
+    industry: str | None
+    target_market: str | None
+    constraints: list[str]
+    additional_context: str | None
 
     # ═══════════════════════════════════════════════════════════
-    # PROCESSING FIELDS (updated during workflow)
+    # WORKFLOW CONTROL
     # ═══════════════════════════════════════════════════════════
-    status: SessionStatus           # PENDING, IN_PROGRESS, COMPLETED, FAILED
-    current_agent: str              # Currently executing agent name
-    iteration: int                  # Current revision iteration (1-3)
-    started_at: str                 # ISO datetime
-    updated_at: str                 # ISO datetime
+    status: SessionStatus  # pending, in_progress, completed, failed
+    current_agent: str
+    iteration: int
+    progress_percentage: int
+    started_at: str
+    updated_at: str
 
     # ═══════════════════════════════════════════════════════════
-    # AGENT OUTPUTS (populated by respective agents)
+    # PLANNING PHASE OUTPUTS
     # ═══════════════════════════════════════════════════════════
-    customer_research: Optional[dict]
-    business_case: Optional[dict]
-    product_requirements: Optional[dict]
-    technical_architecture: Optional[dict]
-    legal_regulatory_review: Optional[dict]
-    quality_assessment: Optional[dict]
-    executive_summary: Optional[dict]
+    research_plan: dict[str, Any]
+    preliminary_legal_scan: dict[str, Any]
 
     # ═══════════════════════════════════════════════════════════
-    # PRD SUB-WORKFLOW FIELDS
+    # DISCOVERY SWARM OUTPUTS
     # ═══════════════════════════════════════════════════════════
-    prd_iteration: int              # Internal PRD loop iteration
-    prd_draft: Optional[dict]       # Current PRD draft
-    prd_critic_feedback: Optional[list[str]]
-    prd_critic_score: Optional[float]
+    customer_research: dict[str, Any]
+    competitive_analysis: dict[str, Any]
+    detailed_personas: dict[str, Any]
+
+    # ═══════════════════════════════════════════════════════════
+    # STRATEGY SWARM OUTPUTS
+    # ═══════════════════════════════════════════════════════════
+    business_case: dict[str, Any]
+    gtm_plan: dict[str, Any]
+    financial_model: dict[str, Any]
+
+    # ═══════════════════════════════════════════════════════════
+    # DELIVERY SWARM OUTPUTS
+    # ═══════════════════════════════════════════════════════════
+    prd: dict[str, Any]
+    technical_architecture: dict[str, Any]
+    legal_review: dict[str, Any]
+    risk_assessment: dict[str, Any]
+
+    # ═══════════════════════════════════════════════════════════
+    # PRD SUB-WORKFLOW
+    # ═══════════════════════════════════════════════════════════
+    prd_iteration: int
+    prd_draft: dict[str, Any] | None
+    prd_critic_feedback: list[str] | None
+    prd_critic_score: float | None
     prd_quality_passed: bool
 
     # ═══════════════════════════════════════════════════════════
-    # REVISION FEEDBACK FIELDS
+    # QUALITY & SYNTHESIS
     # ═══════════════════════════════════════════════════════════
-    critique_feedback: Optional[CritiqueFeedback]
-    quality_passed: bool
-    requires_revision: bool
+    quality_assessment: dict[str, Any]
+    executive_summary: dict[str, Any]
 
     # ═══════════════════════════════════════════════════════════
-    # TRACKING FIELDS
+    # FACILITATOR FIELDS
     # ═══════════════════════════════════════════════════════════
-    errors: list[str]               # All errors encountered
-    total_tokens_used: int          # Cumulative token count
-    total_duration_seconds: float   # Total processing time
-```
+    contradiction_context: dict[str, Any] | None
 
-### State Initialization
-
-```python
-def create_initial_state(
-    session_id: str,
-    product_idea: str,
-    industry: Optional[str] = None,
-    target_market: Optional[str] = None,
-    constraints: Optional[list[str]] = None,
-    additional_context: Optional[str] = None,
-) -> DiscoveryState:
-    return {
-        "session_id": session_id,
-        "product_idea": product_idea,
-        "industry": industry,
-        "target_market": target_market,
-        "constraints": constraints or [],
-        "additional_context": additional_context,
-        "status": SessionStatus.PENDING,
-        "iteration": 1,
-        "prd_iteration": 0,
-        "prd_quality_passed": False,
-        "quality_passed": False,
-        "requires_revision": False,
-        "errors": [],
-        "total_tokens_used": 0,
-        "total_duration_seconds": 0.0,
-        "started_at": datetime.utcnow().isoformat(),
-        "updated_at": datetime.utcnow().isoformat(),
-    }
-```
-
-### Progress Calculation
-
-```python
-AGENT_WEIGHTS = {
-    "customer_research": 15,
-    "business_strategy": 15,
-    "product_requirements": 20,
-    "technical_architect": 15,
-    "legal_regulatory": 20,
-    "quality_assessment": 15,
-}
-
-def get_progress_percentage(state: DiscoveryState) -> int:
-    completed = 0
-    for agent, weight in AGENT_WEIGHTS.items():
-        if state.get(agent.replace("_", "_")):  # Check if output exists
-            completed += weight
-    return min(completed, 100)
-```
-
----
-
-## 6. Data Models
-
-**File**: `backend/models/schemas.py`
-
-### Enums
-
-```python
-class SessionStatus(str, Enum):
-    PENDING = "pending"
-    IN_PROGRESS = "in_progress"
-    COMPLETED = "completed"
-    FAILED = "failed"
-
-class Priority(str, Enum):
-    CRITICAL = "critical"
-    HIGH = "high"
-    MEDIUM = "medium"
-    LOW = "low"
-
-class StorySize(str, Enum):
-    XS = "XS"
-    S = "S"
-    M = "M"
-    L = "L"
-    XL = "XL"
-
-class EvidenceTier(str, Enum):
-    E1 = "E1"  # Direct customer evidence
-    E2 = "E2"  # Observed behavior
-    E3 = "E3"  # Market/industry data
-    E4 = "E4"  # Hypothesis/assumption
-```
-
-### API Request/Response Models
-
-```python
-class DiscoveryRequest(BaseModel):
-    product_idea: str = Field(..., min_length=10, max_length=2000)
-    industry: Optional[str] = Field(None, max_length=100)
-    target_market: Optional[str] = Field(None, max_length=200)
-    constraints: Optional[list[str]] = Field(None, max_items=10)
-    additional_context: Optional[str] = Field(None, max_length=1000)
-
-class DiscoveryResponse(BaseModel):
-    session_id: str
-    status: SessionStatus
-    message: str
-    created_at: datetime
-
-class SessionStatusResponse(BaseModel):
-    session_id: str
-    status: SessionStatus
-    current_agent: Optional[str]
-    iteration: int
-    progress_percentage: int
-    inception_pack: Optional[dict]
-    error_message: Optional[str]
-    created_at: datetime
-    updated_at: datetime
-```
-
-### Inception Pack Model
-
-```python
-class InceptionPack(BaseModel):
-    executive_summary: ExecutiveSummary
-    customer_research: CustomerResearch
-    business_case: BusinessCase
-    product_requirements: ProductRequirementsDocument
-    technical_architecture: TechnicalArchitecture
-    legal_regulatory_review: LegalRegulatoryReview
-    quality_assessment: QualityAssessment
-    metadata: PackMetadata
-
-class PackMetadata(BaseModel):
-    session_id: str
-    created_at: datetime
-    completed_at: datetime
-    iterations: int
-    total_tokens: int
+    # ═══════════════════════════════════════════════════════════
+    # METRICS
+    # ═══════════════════════════════════════════════════════════
+    errors: list[str]
+    total_tokens_used: int
     total_duration_seconds: float
 ```
 
 ---
 
-## 7. API Reference
-
-**File**: `backend/main.py`
-
-### Endpoints
-
-#### Health Check
+## 8. Backend Structure
 
 ```
-GET /api/health
-
-Response 200:
-{
-    "status": "healthy",
-    "timestamp": "2024-02-06T10:30:00Z",
-    "version": "1.0.0",
-    "environment": "production",
-    "active_sessions": 3
-}
-```
-
-#### Start Discovery
-
-```
-POST /api/discovery/start
-Authorization: Bearer <jwt_token>
-Content-Type: application/json
-
-Request:
-{
-    "product_idea": "An AI-powered meeting room booking system...",
-    "industry": "Enterprise SaaS",
-    "target_market": "Companies with 500+ employees",
-    "constraints": ["Must support on-premise deployment"],
-    "additional_context": "Integration with Outlook required"
-}
-
-Response 202 Accepted:
-{
-    "session_id": "disc_20240206_abc123",
-    "status": "pending",
-    "message": "Discovery session started. Use the session ID to check status.",
-    "created_at": "2024-02-06T10:30:00Z"
-}
-```
-
-#### Get Session Status
-
-```
-GET /api/discovery/session/{session_id}
-Authorization: Bearer <jwt_token>
-
-Response 200:
-{
-    "session_id": "disc_20240206_abc123",
-    "status": "in_progress",
-    "current_agent": "Technical Architect Agent",
-    "iteration": 1,
-    "progress_percentage": 65,
-    "created_at": "2024-02-06T10:30:00Z",
-    "updated_at": "2024-02-06T10:35:00Z"
-}
-
-Response 200 (completed):
-{
-    "session_id": "disc_20240206_abc123",
-    "status": "completed",
-    "current_agent": "Complete",
-    "iteration": 2,
-    "progress_percentage": 100,
-    "inception_pack": { ... },
-    "created_at": "2024-02-06T10:30:00Z",
-    "updated_at": "2024-02-06T10:45:00Z"
-}
-```
-
-#### Get Inception Pack Only
-
-```
-GET /api/discovery/session/{session_id}/pack
-Authorization: Bearer <jwt_token>
-
-Response 200:
-{
-    "executive_summary": { ... },
-    "customer_research": { ... },
-    "business_case": { ... },
-    "product_requirements": { ... },
-    "technical_architecture": { ... },
-    "legal_regulatory_review": { ... },
-    "quality_assessment": { ... },
-    "metadata": { ... }
-}
-```
-
-#### Stream Session Events (SSE)
-
-```
-GET /api/discovery/session/{session_id}/stream?token={jwt_token}
-Accept: text/event-stream
-
-Response: Server-Sent Events stream
-
-event: agent_start
-data: {"type":"agent_start","agent":"customer_research","data":{"message":"Analyzing market..."}}
-
-event: insight
-data: {"type":"insight","agent":"customer_research","data":{"key":"pain_signals","value":"Found 5 pain points"}}
-
-event: progress
-data: {"type":"progress","agent":"customer_research","data":{"percentage":15}}
-
-event: agent_complete
-data: {"type":"agent_complete","agent":"customer_research","data":{"summary":"Identified 3 personas"}}
-
-event: done
-data: {"type":"done","data":{"session_id":"...","status":"completed"}}
-```
-
-#### List User Sessions
-
-```
-GET /api/discovery/sessions
-Authorization: Bearer <jwt_token>
-
-Response 200:
-{
-    "count": 5,
-    "sessions": [
-        {
-            "id": "disc_20240206_abc123",
-            "status": "completed",
-            "product_idea": "AI meeting room booking...",
-            "progress_percentage": 100,
-            "created_at": "2024-02-06T10:30:00Z",
-            "updated_at": "2024-02-06T10:45:00Z"
-        }
-    ]
-}
-```
-
-#### Delete Session
-
-```
-DELETE /api/discovery/session/{session_id}
-Authorization: Bearer <jwt_token>
-
-Response 204 No Content
-```
-
-#### Export PDF
-
-```
-GET /api/discovery/session/{session_id}/export/pdf
-Authorization: Bearer <jwt_token>
-
-Response 200: application/pdf binary
-```
-
-#### Export DOCX
-
-```
-GET /api/discovery/session/{session_id}/export/docx
-Authorization: Bearer <jwt_token>
-
-Response 200: application/vnd.openxmlformats-officedocument.wordprocessingml.document binary
+backend/
+├── main.py                    # FastAPI entry point
+├── config.py                  # Settings & model routing
+├── requirements.txt           # Dependencies
+│
+├── agents/                    # Agent implementations
+│   ├── __init__.py           # Exports
+│   ├── orchestrator.py       # LangGraph workflow + parallel execution
+│   ├── facilitator.py        # Swarm coordinator
+│   ├── state.py              # DiscoveryState TypedDict
+│   ├── prompts.py            # All agent prompts
+│   ├── base_agent.py         # LLM utilities + memory augmentation
+│   │
+│   ├── planner.py            # Planning Agent
+│   ├── customer_research.py  # Customer Research Agent
+│   ├── business_strategy.py  # Business Strategy Agent
+│   ├── legal_regulatory.py   # Legal & Preliminary Scan
+│   ├── technical_architect.py# Technical Architect
+│   ├── critique.py           # Critique Agent
+│   ├── prd_generator.py      # PRD Generator
+│   ├── prd_critic.py         # PRD Critic
+│   ├── prd_formatter.py      # PRD Formatter
+│   ├── prd_subgraph.py       # PRD sub-workflow
+│   │
+│   └── swarms/               # Swarm implementations
+│       ├── __init__.py       # Swarm exports
+│       ├── base.py           # BaseSwarm (parallel execution)
+│       ├── discovery_swarm.py# Customer, Competitive, Persona
+│       ├── strategy_swarm.py # Business, GTM, Financial
+│       └── delivery_swarm.py # PRD, Tech, Legal, Risk
+│
+├── models/                    # Pydantic schemas
+│   ├── __init__.py
+│   ├── schemas.py            # 60+ data models
+│   └── visual_schemas.py     # Chart data schemas
+│
+├── services/                  # Cross-run learning
+│   ├── __init__.py
+│   ├── embeddings.py         # Gemini embeddings + similarity
+│   └── memory_pipeline.py    # Memory storage/retrieval
+│
+├── migrations/               # Database migrations
+│   └── 002_add_run_memories.sql
+│
+├── utils/                    # Utilities
+│   ├── __init__.py
+│   ├── helpers.py            # Session store
+│   ├── sse.py                # SSE events (15 types)
+│   └── db.py                 # Database client
+│
+└── tests/                    # Test suite
+    ├── unit/
+    │   ├── test_orchestrator_routing.py
+    │   ├── test_planner.py
+    │   ├── test_visual_schemas.py
+    │   └── test_export_formatting.py
+    └── integration/
+        └── test_export_pipeline.py
 ```
 
 ---
 
-## 8. Real-time Streaming (SSE)
+## 9. Frontend Architecture
 
-**File**: `backend/utils/sse.py`
+```
+frontend/src/
+├── main.tsx                    # Entry point
+├── App.tsx                     # Main app + state machine
+├── App.css                     # Global styles
+│
+├── components/
+│   ├── LandingPage.tsx        # Landing page
+│   ├── DiscoveryForm.tsx      # Product idea input
+│   ├── ProgressTracker.tsx    # Real-time progress
+│   ├── PackViewer.tsx         # Results viewer with charts
+│   │
+│   └── charts/                # Visualization components
+│       ├── index.ts           # Exports
+│       ├── charts.css         # Chart styles
+│       ├── CompetitivePositionChart.tsx  # Scatter plot
+│       ├── FinancialProjectionChart.tsx  # Area chart
+│       ├── RiskMatrixChart.tsx           # 5x5 heatmap
+│       └── LeanCanvasVisual.tsx          # Canvas grid
+│
+├── hooks/
+│   └── useSSE.ts              # SSE hook (15 event types)
+│
+├── api/
+│   └── client.ts              # API client
+│
+└── types/
+    └── api.ts                 # TypeScript types
+```
 
-### Event Types
+### Chart Components
+
+```typescript
+// frontend/src/components/charts/CompetitivePositionChart.tsx
+
+import { ScatterChart, Scatter, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+
+export interface CompetitorPosition {
+  name: string;
+  x_score: number;  // 0-10
+  y_score: number;  // 0-10
+  description: string;
+  is_target_product: boolean;
+}
+
+export function CompetitivePositionChart({
+  data,
+  xAxisLabel,
+  yAxisLabel
+}: {
+  data: CompetitorPosition[];
+  xAxisLabel: string;
+  yAxisLabel: string;
+}) {
+  return (
+    <ResponsiveContainer width="100%" height={400}>
+      <ScatterChart margin={{ top: 20, right: 20, bottom: 60, left: 60 }}>
+        <XAxis
+          type="number"
+          dataKey="x_score"
+          domain={[0, 10]}
+          label={{ value: xAxisLabel, position: 'bottom' }}
+        />
+        <YAxis
+          type="number"
+          dataKey="y_score"
+          domain={[0, 10]}
+          label={{ value: yAxisLabel, angle: -90, position: 'left' }}
+        />
+        <Tooltip content={<CustomTooltip />} />
+        <Scatter
+          data={data}
+          shape={({ cx, cy, payload }) => (
+            <circle
+              cx={cx}
+              cy={cy}
+              r={payload.is_target_product ? 12 : 8}
+              fill={payload.is_target_product ? '#22c55e' : '#6366f1'}
+              stroke={payload.is_target_product ? '#16a34a' : '#4f46e5'}
+              strokeWidth={2}
+            />
+          )}
+        />
+      </ScatterChart>
+    </ResponsiveContainer>
+  );
+}
+```
+
+---
+
+## 10. Real-Time Streaming (SSE)
+
+### 15 Event Types
 
 ```python
+# backend/utils/sse.py
+
 class StreamEventType(str, Enum):
-    AGENT_START = "agent_start"       # Agent begins processing
+    # Core events
+    AGENT_START = "agent_start"       # Agent begins work
     INSIGHT = "insight"               # Key finding discovered
     AGENT_COMPLETE = "agent_complete" # Agent finished
-    PROGRESS = "progress"             # Progress percentage update
+    PROGRESS = "progress"             # Progress percentage
     ERROR = "error"                   # Error occurred
     DONE = "done"                     # Session complete
-    HEARTBEAT = "heartbeat"           # Keep-alive (every 30s)
-```
+    HEARTBEAT = "heartbeat"           # Keep-alive
 
-### Event Structure
-
-```python
-class StreamEvent(BaseModel):
-    type: StreamEventType
-    agent: Optional[str]              # Which agent emitted this
-    data: dict[str, Any]              # Event-specific payload
-    timestamp: datetime
-
-    def to_sse_format(self) -> str:
-        """Format as SSE message."""
-        event_data = {
-            "type": self.type.value,
-            "agent": self.agent,
-            "data": self.data,
-            "timestamp": self.timestamp.isoformat()
-        }
-        return f"event: {self.type.value}\ndata: {json.dumps(event_data)}\n\n"
-```
-
-### Session Event Emitter
-
-```python
-class SessionEventEmitter:
-    """Per-session event queue for SSE streaming."""
-
-    def __init__(self, session_id: str):
-        self.session_id = session_id
-        self.queue: asyncio.Queue[StreamEvent] = asyncio.Queue()
-        self._closed = False
-
-    async def emit_agent_start(self, agent: str, message: str) -> None:
-        """Emit when agent starts processing."""
-
-    async def emit_insight(self, agent: str, key: str, value: str) -> None:
-        """Emit when agent discovers a key insight."""
-
-    async def emit_agent_complete(self, agent: str, summary: str) -> None:
-        """Emit when agent finishes."""
-
-    async def emit_progress(self, percentage: int) -> None:
-        """Emit progress update."""
-
-    async def emit_error(self, message: str) -> None:
-        """Emit error event."""
-
-    async def emit_done(self, status: str) -> None:
-        """Emit completion event and close stream."""
-
-    async def events(self) -> AsyncGenerator[StreamEvent, None]:
-        """Async generator for consuming events."""
-        while not self._closed:
-            try:
-                event = await asyncio.wait_for(self.queue.get(), timeout=30.0)
-                yield event
-            except asyncio.TimeoutError:
-                yield StreamEvent(type=StreamEventType.HEARTBEAT, data={})
+    # Enhanced events for richer UI
+    PLAN_READY = "plan_ready"         # Research plan created
+    COMPETITOR_FOUND = "competitor"   # Named competitor identified
+    MARKET_DATA = "market_data"       # Market size or trend
+    RISK_IDENTIFIED = "risk"          # Risk flagged
+    FINANCIAL_METRIC = "financial"    # Financial data point
+    DIAGRAM_READY = "diagram"         # Architecture diagram
+    CITATION = "citation"             # Source citation
+    DECISION_POINT = "decision"       # Key decision identified
 ```
 
 ### Frontend SSE Hook
 
-**File**: `frontend/src/hooks/useSSE.ts`
-
 ```typescript
+// frontend/src/hooks/useSSE.ts
+
 export function useSSE(
-    sessionId: string | null,
-    authToken: string | null,
-    enabled: boolean = true
+  sessionId: string | null,
+  authToken: string | null,
+  enabled: boolean = true
 ): UseSSEResult {
-    const [isConnected, setIsConnected] = useState(false);
-    const [currentAgent, setCurrentAgent] = useState<string | null>(null);
-    const [agentStates, setAgentStates] = useState<Record<string, AgentState>>({});
-    const [insights, setInsights] = useState<Record<string, Insight[]>>({});
-    const [progress, setProgress] = useState(0);
-    const [isComplete, setIsComplete] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [currentAgent, setCurrentAgent] = useState<string | null>(null);
+  const [progress, setProgress] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
 
-    useEffect(() => {
-        const url = `${API_BASE}/api/discovery/session/${sessionId}/stream?token=${authToken}`;
-        const eventSource = new EventSource(url);
+  useEffect(() => {
+    if (!sessionId || !authToken || !enabled) return;
 
-        eventSource.addEventListener('agent_start', (e) => { ... });
-        eventSource.addEventListener('insight', (e) => { ... });
-        eventSource.addEventListener('agent_complete', (e) => { ... });
-        eventSource.addEventListener('progress', (e) => { ... });
-        eventSource.addEventListener('done', (e) => { ... });
+    const url = `${API_BASE}/api/discovery/session/${sessionId}/stream?token=${authToken}`;
+    const eventSource = new EventSource(url);
 
-        return () => eventSource.close();
-    }, [sessionId, authToken, enabled]);
+    // Core event handlers
+    eventSource.addEventListener('agent_start', (e) => handleEvent('agent_start', e.data));
+    eventSource.addEventListener('progress', (e) => handleEvent('progress', e.data));
+    eventSource.addEventListener('done', (e) => handleEvent('done', e.data));
 
-    return { isConnected, currentAgent, agentStates, insights, progress, isComplete };
+    // Enhanced event handlers
+    eventSource.addEventListener('plan_ready', (e) => handleEvent('plan_ready', e.data));
+    eventSource.addEventListener('competitor', (e) => handleEvent('competitor', e.data));
+    eventSource.addEventListener('market_data', (e) => handleEvent('market_data', e.data));
+    eventSource.addEventListener('financial', (e) => handleEvent('financial', e.data));
+    eventSource.addEventListener('risk', (e) => handleEvent('risk', e.data));
+    eventSource.addEventListener('diagram', (e) => handleEvent('diagram', e.data));
+    eventSource.addEventListener('citation', (e) => handleEvent('citation', e.data));
+    eventSource.addEventListener('decision', (e) => handleEvent('decision', e.data));
+
+    return () => eventSource.close();
+  }, [sessionId, authToken, enabled]);
+
+  return { isConnected, currentAgent, progress, isComplete, /* ... */ };
 }
 ```
 
 ---
 
-## 9. Database Schema
+## 11. Data Flow
 
-**File**: `backend/utils/db.py`
+### Complete Request Flow
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ 1. USER SUBMITS PRODUCT IDEA                                        │
+│    Frontend: DiscoveryForm → handleSubmit()                         │
+│    API: POST /api/discovery/start                                   │
+└────────────────────────────────────┬────────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│ 2. BACKEND PROCESSING                                               │
+│    • Validate request (Pydantic)                                    │
+│    • Create session_id                                              │
+│    • Initialize DiscoveryState                                      │
+│    • Launch background task                                         │
+│    • Return session_id (202 Accepted)                               │
+└────────────────────────────────────┬────────────────────────────────┘
+                                     │
+                 ┌───────────────────┴───────────────────┐
+                 │                                       │
+                 ▼                                       ▼
+      ┌─────────────────────┐               ┌─────────────────────┐
+      │  SSE Connection     │               │  Background Worker  │
+      │  (Real-time UI)     │               │  (Facilitator)      │
+      └─────────────────────┘               └──────────┬──────────┘
+                 │                                     │
+                 │                                     ▼
+                 │                          ┌─────────────────────┐
+                 │                          │   PLANNING PHASE    │
+                 │◄─────────────────────────│   Planner + Legal   │
+                 │         events           │   (parallel)        │
+                 │                          └──────────┬──────────┘
+                 │                                     │
+                 │                                     ▼
+                 │                          ┌─────────────────────┐
+                 │                          │  DISCOVERY SWARM    │
+                 │◄─────────────────────────│  Customer + Compet  │
+                 │                          │  + Persona (||)     │
+                 │                          └──────────┬──────────┘
+                 │                                     │
+                 │                          Contradiction Check
+                 │                                     │
+                 │                                     ▼
+                 │                          ┌─────────────────────┐
+                 │                          │   STRATEGY SWARM    │
+                 │◄─────────────────────────│  Business + GTM     │
+                 │                          │  + Financial (||)   │
+                 │                          └──────────┬──────────┘
+                 │                                     │
+                 │                          Contradiction Check
+                 │                                     │
+                 │                                     ▼
+                 │                          ┌─────────────────────┐
+                 │                          │   DELIVERY SWARM    │
+                 │◄─────────────────────────│  PRD + Tech + Legal │
+                 │                          │  + Risk (||)        │
+                 │                          └──────────┬──────────┘
+                 │                                     │
+                 │                                     ▼
+                 │                          ┌─────────────────────┐
+                 │◄─────────────────────────│  QUALITY CHECK      │
+                 │                          │  Critique + Summary │
+                 │                          └──────────┬──────────┘
+                 │                                     │
+                 │                                     ▼
+                 │                          ┌─────────────────────┐
+                 │◄─────────────────────────│  STORE MEMORIES     │
+                 │        "done"            │  (if score >= 0.8)  │
+                 │                          └─────────────────────┘
+                 │
+                 ▼
+      ┌─────────────────────┐
+      │  PackViewer shows   │
+      │  results with       │
+      │  interactive charts │
+      └─────────────────────┘
+```
+
+---
+
+## 12. Database Schema
 
 ### Tables
 
-#### discovery_sessions
-
 ```sql
+-- Discovery Sessions
 CREATE TABLE discovery_sessions (
     id TEXT PRIMARY KEY,
     user_id UUID NOT NULL REFERENCES auth.users(id),
@@ -1149,345 +1578,121 @@ CREATE TABLE discovery_sessions (
     industry TEXT,
     target_market TEXT,
     constraints JSONB,
-    additional_context TEXT,
     current_agent TEXT,
     iteration INTEGER DEFAULT 1,
     progress_percentage INTEGER DEFAULT 0,
-    error_message TEXT,
-    errors JSONB DEFAULT '[]',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_sessions_user_id ON discovery_sessions(user_id);
-CREATE INDEX idx_sessions_status ON discovery_sessions(status);
-```
-
-#### inception_packs
-
-```sql
+-- Inception Packs
 CREATE TABLE inception_packs (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    session_id TEXT UNIQUE NOT NULL REFERENCES discovery_sessions(id),
+    session_id TEXT UNIQUE REFERENCES discovery_sessions(id),
     user_id UUID NOT NULL REFERENCES auth.users(id),
     pack_data JSONB NOT NULL,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_packs_session_id ON inception_packs(session_id);
-CREATE INDEX idx_packs_user_id ON inception_packs(user_id);
-```
-
-### Row Level Security
-
-```sql
--- Users can only see their own sessions
-ALTER TABLE discovery_sessions ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view own sessions"
-    ON discovery_sessions FOR SELECT
-    USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert own sessions"
-    ON discovery_sessions FOR INSERT
-    WITH CHECK (auth.uid() = user_id);
-
--- Similar policies for inception_packs
+-- Run Memories (Cross-Run Learning)
+CREATE TABLE run_memories (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    session_id TEXT,
+    domain_type TEXT NOT NULL,
+    industry TEXT,
+    agent_name TEXT NOT NULL,
+    quality_score FLOAT NOT NULL CHECK (quality_score >= 0.8),
+    content_summary TEXT NOT NULL,
+    embedding VECTOR(768),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
 ```
 
 ---
 
-## 10. Authentication
+## 13. API Reference
 
-**File**: `backend/utils/auth.py`
-
-### JWT Verification
-
-The system supports both HS256 (symmetric) and ES256 (asymmetric) JWT algorithms.
-
-```python
-def decode_supabase_jwt(token: str) -> dict:
-    """Decode and verify Supabase JWT."""
-    header = jwt.get_unverified_header(token)
-    alg = header.get("alg", "HS256")
-
-    if alg == "ES256":
-        # Fetch public key from Supabase JWKS
-        public_key = get_public_key_from_jwks(token)
-        payload = jwt.decode(token, public_key, algorithms=["ES256"], audience="authenticated")
-    else:
-        # Use JWT secret for HS256
-        payload = jwt.decode(token, settings.supabase_jwt_secret, algorithms=["HS256"], audience="authenticated")
-
-    return payload
-```
-
-### FastAPI Dependencies
-
-```python
-async def get_current_user_id(
-    credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())
-) -> str:
-    """Extract and verify user_id from JWT."""
-    payload = decode_supabase_jwt(credentials.credentials)
-    user_id = payload.get("sub")
-    if not user_id:
-        raise HTTPException(status_code=401, detail="Invalid token")
-    return user_id
-
-# Usage in endpoints
-@app.post("/api/discovery/start")
-async def start_discovery(
-    request: DiscoveryRequest,
-    user_id: str = Depends(get_current_user_id)
-):
-    ...
-```
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/discovery/start` | Start discovery session |
+| `GET` | `/api/discovery/session/{id}` | Get session status |
+| `GET` | `/api/discovery/session/{id}/stream` | SSE event stream |
+| `GET` | `/api/discovery/session/{id}/pack` | Get inception pack |
+| `DELETE` | `/api/discovery/session/{id}` | Delete session |
+| `GET` | `/api/discovery/sessions` | List all sessions |
+| `GET` | `/api/discovery/session/{id}/export/pdf` | Export as PDF |
+| `GET` | `/api/discovery/session/{id}/export/docx` | Export as DOCX |
+| `GET` | `/api/health` | Health check |
 
 ---
 
-## 11. Configuration
-
-**File**: `backend/config.py`
+## 14. Configuration
 
 ### Environment Variables
 
 ```bash
-# ═══════════════════════════════════════════════════════════
-# REQUIRED
-# ═══════════════════════════════════════════════════════════
+# Required
 GOOGLE_API_KEY=...           # Gemini API key
 SUPABASE_URL=...             # Supabase project URL
-SUPABASE_SERVICE_KEY=...     # Supabase service role key
-SUPABASE_JWT_SECRET=...      # JWT verification secret
+SUPABASE_KEY=...             # Supabase anon key
 
-# ═══════════════════════════════════════════════════════════
-# LLM CONFIGURATION
-# ═══════════════════════════════════════════════════════════
-LLM_MODEL=gemini-2.0-flash   # Model to use
-LLM_TEMPERATURE=0.7          # Generation temperature (0.0-1.0)
-LLM_MAX_TOKENS=8192          # Max tokens per response
-LLM_TIMEOUT=120              # Request timeout (seconds)
-LLM_ENABLE_GROUNDING=true    # Enable Google Search grounding
+# LLM Configuration
+LLM_MODEL=gemini-2.0-flash   # Default model
+LLM_PRO_MODEL=gemini-2.5-pro # Pro model for reasoning
+LLM_TEMPERATURE=0.7
+LLM_MAX_TOKENS=8192
+LLM_ENABLE_GROUNDING=true
 
-# ═══════════════════════════════════════════════════════════
-# AGENT ORCHESTRATION
-# ═══════════════════════════════════════════════════════════
-MAX_REVISION_ITERATIONS=3    # Max full workflow iterations
-MIN_QUALITY_SCORE=0.7        # Quality threshold to pass
-PRD_QUALITY_THRESHOLD=0.75   # PRD sub-workflow threshold
-PRD_MAX_ITERATIONS=3         # Max PRD iterations
+# Orchestration
+MAX_REVISION_ITERATIONS=3
+MIN_QUALITY_SCORE=0.7
+PRD_QUALITY_THRESHOLD=0.75
 
-# ═══════════════════════════════════════════════════════════
-# APPLICATION
-# ═══════════════════════════════════════════════════════════
-APP_ENV=development          # development|staging|production
-DEBUG=true                   # Enable debug mode
-API_HOST=0.0.0.0
-API_PORT=8000
-CORS_ORIGINS=http://localhost:5173,https://app.seedcraft.ai
-MAX_CONCURRENT_SESSIONS=100  # 0 = unlimited
-LOG_LEVEL=INFO
+# Application
+APP_ENV=development
+CORS_ORIGINS=http://localhost:5173
 ```
 
-### Settings Class
+### Model Routing
 
 ```python
-class Settings(BaseSettings):
-    model_config = SettingsConfigDict(
-        env_file=".env",
-        case_sensitive=False,
-    )
+# backend/config.py
 
-    # Gemini
-    google_api_key: str
-    llm_model: str = "gemini-2.0-flash"
-    llm_temperature: float = 0.7
-    llm_enable_grounding: bool = True
+AGENT_MODEL_CONFIG = {
+    # Flash (speed + cost efficiency)
+    "planner": "flash",
+    "customer_research": "flash",
+    "competitive_intelligence": "flash",
+    "persona_development": "flash",
+    "prd_generator": "flash",
+    "prd_formatter": "flash",
+    "technical_architect": "flash",
+    "risk_assessment": "flash",
+    "executive_summary": "flash",
 
-    # Supabase
-    supabase_url: str
-    supabase_service_key: str
-    supabase_jwt_secret: str
-
-    # Orchestration
-    max_revision_iterations: int = 3
-    min_quality_score: float = 0.7
-    prd_quality_threshold: float = 0.75
-
-    # Application
-    app_env: Literal["development", "staging", "production"] = "development"
-    cors_origins: str = "http://localhost:5173"
-
-    @property
-    def is_production(self) -> bool:
-        return self.app_env == "production"
-```
-
----
-
-## 12. Complete Data Flow
-
-### End-to-End Request Flow
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 1. USER SUBMITS PRODUCT IDEA                                                │
-│    Frontend: Dashboard.tsx → handleSubmit()                                 │
-│    API Call: POST /api/discovery/start                                      │
-└──────────────────────────────────┬──────────────────────────────────────────┘
-                                   │
-                                   ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 2. API LAYER PROCESSING                                                     │
-│    main.py: start_discovery()                                               │
-│    ├─ Authenticate user (JWT verification)                                  │
-│    ├─ Validate request (Pydantic)                                           │
-│    ├─ Sanitize inputs                                                       │
-│    ├─ Create session in Supabase                                            │
-│    ├─ Launch background task                                                │
-│    └─ Return session_id (202 Accepted)                                      │
-└──────────────────────────────────┬──────────────────────────────────────────┘
-                                   │
-                                   ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 3. FRONTEND CONNECTS TO SSE                                                 │
-│    ExecutionView.tsx → useSSE(sessionId, authToken)                         │
-│    EventSource: GET /api/discovery/session/{id}/stream?token=...            │
-└──────────────────────────────────┬──────────────────────────────────────────┘
-                                   │
-                                   ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 4. BACKGROUND TASK EXECUTION                                                │
-│    main.py: run_discovery_task()                                            │
-│    ├─ Create SSE emitter for session                                        │
-│    ├─ Update session status to IN_PROGRESS                                  │
-│    └─ Call run_discovery_workflow()                                         │
-└──────────────────────────────────┬──────────────────────────────────────────┘
-                                   │
-                                   ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 5. LANGGRAPH WORKFLOW EXECUTION                                             │
-│    orchestrator.py: run_discovery_workflow()                                │
-│                                                                             │
-│    ITERATION 1:                                                             │
-│    ┌─────────────────────────────────────────────────────────────────┐     │
-│    │ Customer Research Agent                                         │     │
-│    │ ├─ Emit SSE: agent_start                                        │     │
-│    │ ├─ Format prompt with product_idea + context                    │     │
-│    │ ├─ Call Gemini API (with Google Search grounding)               │     │
-│    │ ├─ Parse and validate response                                  │     │
-│    │ ├─ Update state.customer_research                               │     │
-│    │ ├─ Emit SSE: insight (pain_signals, market_size, etc.)          │     │
-│    │ └─ Emit SSE: agent_complete, progress=15%                       │     │
-│    └─────────────────────────────────────────────────────────────────┘     │
-│                          │                                                  │
-│                          ▼                                                  │
-│    ┌─────────────────────────────────────────────────────────────────┐     │
-│    │ Business Strategy Agent                                         │     │
-│    │ ├─ Input: product_idea + customer_research                      │     │
-│    │ ├─ Call Gemini API (with grounding for benchmarks)              │     │
-│    │ ├─ Update state.business_case                                   │     │
-│    │ └─ Emit SSE events, progress=30%                                │     │
-│    └─────────────────────────────────────────────────────────────────┘     │
-│                          │                                                  │
-│                          ▼                                                  │
-│    ┌─────────────────────────────────────────────────────────────────┐     │
-│    │ PRD Sub-Workflow (internal loop)                                │     │
-│    │ ├─ PRD Generator → PRD Critic → [Loop if score < 0.75]         │     │
-│    │ ├─ PRD Formatter (cleanup and validation)                       │     │
-│    │ ├─ Update state.product_requirements                            │     │
-│    │ └─ Emit SSE events, progress=50%                                │     │
-│    └─────────────────────────────────────────────────────────────────┘     │
-│                          │                                                  │
-│                          ▼                                                  │
-│    ┌─────────────────────────────────────────────────────────────────┐     │
-│    │ Technical Architect Agent                                       │     │
-│    │ ├─ Input: PRD + business_case                                   │     │
-│    │ ├─ Generate architecture + Mermaid diagrams                     │     │
-│    │ ├─ Update state.technical_architecture                          │     │
-│    │ └─ Emit SSE events, progress=65%                                │     │
-│    └─────────────────────────────────────────────────────────────────┘     │
-│                          │                                                  │
-│                          ▼                                                  │
-│    ┌─────────────────────────────────────────────────────────────────┐     │
-│    │ Legal & Regulatory Agent                                        │     │
-│    │ ├─ Input: All previous outputs                                  │     │
-│    │ ├─ Call Gemini API (with grounding for regulations)             │     │
-│    │ ├─ Update state.legal_regulatory_review                         │     │
-│    │ └─ Emit SSE events, progress=85%                                │     │
-│    └─────────────────────────────────────────────────────────────────┘     │
-│                          │                                                  │
-│                          ▼                                                  │
-│    ┌─────────────────────────────────────────────────────────────────┐     │
-│    │ Critique Agent (Quality Gate)                                   │     │
-│    │ ├─ Evaluate all sections                                        │     │
-│    │ ├─ Calculate overall_score (weighted)                           │     │
-│    │ ├─ Generate revision_feedback (if needed)                       │     │
-│    │ └─ Emit SSE events                                              │     │
-│    └─────────────────────────────────────────────────────────────────┘     │
-│                          │                                                  │
-│                   ┌──────┴──────┐                                          │
-│                   │             │                                           │
-│                   ▼             ▼                                           │
-│            [Score < 0.7]  [Score >= 0.7]                                   │
-│            AND iter < 3                                                     │
-│                   │             │                                           │
-│                   ▼             ▼                                           │
-│    ┌─────────────────┐  ┌─────────────────┐                                │
-│    │ Prepare Revision│  │Executive Summary│                                │
-│    │ ├─ iteration++  │  │ ├─ Synthesize   │                                │
-│    │ ├─ Clear outputs│  │ │   all outputs │                                │
-│    │ └─ Keep feedback│  │ └─ Board-ready  │                                │
-│    └────────┬────────┘  └────────┬────────┘                                │
-│             │                    │                                          │
-│             ▼                    ▼                                          │
-│    [Loop back to         ┌─────────────────┐                               │
-│     Customer Research]   │    Finalize     │                               │
-│                          │ ├─ status=DONE  │                               │
-│                          │ └─ Emit: done   │                               │
-│                          └─────────────────┘                               │
-│                                                                             │
-└──────────────────────────────────┬──────────────────────────────────────────┘
-                                   │
-                                   ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 6. RESULTS STORAGE                                                          │
-│    main.py: run_discovery_task() (continued)                                │
-│    ├─ Build inception_pack from final state                                 │
-│    ├─ Save to Supabase: inception_packs table                               │
-│    ├─ Update session: status=completed, progress=100%                       │
-│    └─ Emit SSE: done event                                                  │
-└──────────────────────────────────┬──────────────────────────────────────────┘
-                                   │
-                                   ▼
-┌─────────────────────────────────────────────────────────────────────────────┐
-│ 7. FRONTEND COMPLETION                                                      │
-│    ExecutionView.tsx:                                                       │
-│    ├─ Receive SSE: done event                                               │
-│    ├─ Fetch inception pack: GET /api/discovery/session/{id}/pack            │
-│    └─ Navigate to PackViewer with results                                   │
-└─────────────────────────────────────────────────────────────────────────────┘
+    # Pro (deep reasoning)
+    "business_strategy": "pro",
+    "gtm_strategy": "pro",
+    "financial_modeling": "pro",
+    "prd_critic": "pro",
+    "legal_regulatory": "pro",
+    "critique": "pro",
+}
 ```
 
 ---
 
 ## Summary
 
-Seedcraft is a **production-grade multi-agent AI system** that combines:
+Seedcraft v2.0 is a production-grade multi-agent AI system featuring:
 
-- **6 specialized AI agents** with domain expertise
-- **LangGraph orchestration** for complex stateful workflows
-- **Quality gates** with iterative refinement (up to 3 iterations)
-- **Real-time SSE streaming** for live progress updates
-- **Type-safe Pydantic models** for all data structures
-- **Supabase PostgreSQL** for persistent storage
-- **JWT authentication** with row-level security
-- **Google Gemini 2.0** with search grounding for real-world validation
+- **12+ specialized agents** organized into 3 parallel swarms
+- **Facilitator agent** for swarm coordination and contradiction detection
+- **Cross-run learning** with vector embeddings and pgvector
+- **Real-time SSE streaming** with 15 event types
+- **Interactive visualizations** using recharts
+- **Multi-model routing** (Gemini Flash + Pro)
+- **Search grounding** for real-world data validation
 
-The architecture is designed for:
-- **Extensibility**: Easy to add new agents or modify existing ones
-- **Reliability**: Graceful error handling and state persistence
-- **Observability**: Structured logging and real-time event streaming
-- **Security**: Authentication, authorization, and input validation
-- **Scalability**: Async execution, background tasks, and concurrency limits
+The swarm architecture reduces execution time by running agents in parallel while maintaining consistency through automatic contradiction detection and resolution.
