@@ -357,11 +357,66 @@
     <ul>
       {% for signal in pack.customer_research.pain_signals[:8] %}
       <li>
-        <span class="evidence-tier">{{ signal.evidence_tier if signal.evidence_tier else 'E3' }}</span>
-        {{ signal.signal if signal.signal else (signal.description if signal.description else signal) }}
+        {% if signal is mapping %}
+          <span class="evidence-tier">{{ signal.evidence_tier if signal.evidence_tier else 'E3' }}</span>
+          {{ signal.description or signal.signal or signal }}
+          {% if signal.impact %} — {{ signal.impact }}{% endif %}
+        {% else %}
+          <span class="evidence-tier">E3</span>
+          {{ signal }}
+        {% endif %}
       </li>
       {% endfor %}
     </ul>
+    {% endif %}
+
+    {% if pack.customer_research.job_to_be_done %}
+    <h3>Job to be Done</h3>
+    {% if pack.customer_research.job_to_be_done is mapping %}
+      {% if pack.customer_research.job_to_be_done.trigger_situation %}
+      <p><strong>Trigger:</strong> {{ pack.customer_research.job_to_be_done.trigger_situation }}</p>
+      {% endif %}
+      {% if pack.customer_research.job_to_be_done.underlying_goal %}
+      <p><strong>Goal:</strong> {{ pack.customer_research.job_to_be_done.underlying_goal }}</p>
+      {% endif %}
+      {% if pack.customer_research.job_to_be_done.success_definition %}
+      <p><strong>Success:</strong> {{ pack.customer_research.job_to_be_done.success_definition }}</p>
+      {% endif %}
+      {% if pack.customer_research.job_to_be_done.statement %}
+      <p>{{ pack.customer_research.job_to_be_done.statement }}</p>
+      {% endif %}
+    {% else %}
+      <p>{{ pack.customer_research.job_to_be_done }}</p>
+    {% endif %}
+    {% endif %}
+
+    {% if pack.customer_research.market_context %}
+    <h3>Market Context</h3>
+    {% if pack.customer_research.market_context is mapping %}
+      {% if pack.customer_research.market_context.tam %}
+      <p><strong>TAM:</strong> {{ pack.customer_research.market_context.tam }}</p>
+      {% endif %}
+      {% if pack.customer_research.market_context.sam %}
+      <p><strong>SAM:</strong> {{ pack.customer_research.market_context.sam }}</p>
+      {% endif %}
+      {% if pack.customer_research.market_context.som %}
+      <p><strong>SOM:</strong> {{ pack.customer_research.market_context.som }}</p>
+      {% endif %}
+      {% if pack.customer_research.market_context.growth_rate %}
+      <p><strong>Growth Rate:</strong> {{ pack.customer_research.market_context.growth_rate }}</p>
+      {% endif %}
+      {% if pack.customer_research.market_context.trends %}
+      <p><strong>Trends:</strong>
+        {% if pack.customer_research.market_context.trends is iterable and pack.customer_research.market_context.trends is not string %}
+          {{ pack.customer_research.market_context.trends | join('; ') }}
+        {% else %}
+          {{ pack.customer_research.market_context.trends }}
+        {% endif %}
+      </p>
+      {% endif %}
+    {% else %}
+      <p>{{ pack.customer_research.market_context }}</p>
+    {% endif %}
     {% endif %}
 
     {% if pack.customer_research.market_hypotheses %}
@@ -399,7 +454,33 @@
 
     {% if pack.customer_research.competitive_landscape %}
     <h3>Competitive Landscape</h3>
-    <p>{{ pack.customer_research.competitive_landscape }}</p>
+    {% if pack.customer_research.competitive_landscape is mapping %}
+      {% if pack.customer_research.competitive_landscape.market_position %}
+      <p><strong>Market Position:</strong> {{ pack.customer_research.competitive_landscape.market_position }}</p>
+      {% endif %}
+      {% if pack.customer_research.competitive_landscape.competitors %}
+      <h4>Competitors</h4>
+      <ul>
+        {% for competitor in pack.customer_research.competitive_landscape.competitors %}
+        <li>
+          {% if competitor is mapping %}
+            <strong>{{ competitor.name }}</strong>
+            {% if competitor.description %}: {{ competitor.description }}{% endif %}
+            {% if competitor.strengths %}<br><em>Strengths:</em> {{ competitor.strengths if competitor.strengths is string else competitor.strengths | join(', ') }}{% endif %}
+            {% if competitor.weaknesses %}<br><em>Weaknesses:</em> {{ competitor.weaknesses if competitor.weaknesses is string else competitor.weaknesses | join(', ') }}{% endif %}
+          {% else %}
+            {{ competitor }}
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% if pack.customer_research.competitive_landscape.differentiation %}
+      <p><strong>Differentiation:</strong> {{ pack.customer_research.competitive_landscape.differentiation }}</p>
+      {% endif %}
+    {% else %}
+      <p>{{ pack.customer_research.competitive_landscape }}</p>
+    {% endif %}
     {% endif %}
   </div>
   {% if not section %}<div class="page-break"></div>{% endif %}
@@ -417,35 +498,85 @@
     <table>
       <tr>
         <th>Problem</th>
-        <td>{{ pack.business_case.lean_canvas.problem }}</td>
+        <td>
+          {% if pack.business_case.lean_canvas.problem is iterable and pack.business_case.lean_canvas.problem is not string %}
+            {{ pack.business_case.lean_canvas.problem | join('; ') }}
+          {% else %}
+            {{ pack.business_case.lean_canvas.problem }}
+          {% endif %}
+        </td>
       </tr>
       <tr>
         <th>Solution</th>
-        <td>{{ pack.business_case.lean_canvas.solution }}</td>
+        <td>
+          {% if pack.business_case.lean_canvas.solution is iterable and pack.business_case.lean_canvas.solution is not string %}
+            {{ pack.business_case.lean_canvas.solution | join('; ') }}
+          {% else %}
+            {{ pack.business_case.lean_canvas.solution }}
+          {% endif %}
+        </td>
       </tr>
       <tr>
         <th>Unique Value Proposition</th>
-        <td>{{ pack.business_case.lean_canvas.unique_value_proposition }}</td>
+        <td>
+          {% if pack.business_case.lean_canvas.unique_value_proposition is iterable and pack.business_case.lean_canvas.unique_value_proposition is not string %}
+            {{ pack.business_case.lean_canvas.unique_value_proposition | join('; ') }}
+          {% else %}
+            {{ pack.business_case.lean_canvas.unique_value_proposition }}
+          {% endif %}
+        </td>
       </tr>
       <tr>
         <th>Unfair Advantage</th>
-        <td>{{ pack.business_case.lean_canvas.unfair_advantage or '-' }}</td>
+        <td>
+          {% if pack.business_case.lean_canvas.unfair_advantage is iterable and pack.business_case.lean_canvas.unfair_advantage is not string %}
+            {{ pack.business_case.lean_canvas.unfair_advantage | join('; ') }}
+          {% elif pack.business_case.lean_canvas.unfair_advantage %}
+            {{ pack.business_case.lean_canvas.unfair_advantage }}
+          {% else %}
+            -
+          {% endif %}
+        </td>
       </tr>
       <tr>
         <th>Customer Segments</th>
-        <td>{{ pack.business_case.lean_canvas.customer_segments }}</td>
+        <td>
+          {% if pack.business_case.lean_canvas.customer_segments is iterable and pack.business_case.lean_canvas.customer_segments is not string %}
+            {{ pack.business_case.lean_canvas.customer_segments | join('; ') }}
+          {% else %}
+            {{ pack.business_case.lean_canvas.customer_segments }}
+          {% endif %}
+        </td>
       </tr>
       <tr>
         <th>Channels</th>
-        <td>{{ pack.business_case.lean_canvas.channels }}</td>
+        <td>
+          {% if pack.business_case.lean_canvas.channels is iterable and pack.business_case.lean_canvas.channels is not string %}
+            {{ pack.business_case.lean_canvas.channels | join('; ') }}
+          {% else %}
+            {{ pack.business_case.lean_canvas.channels }}
+          {% endif %}
+        </td>
       </tr>
       <tr>
         <th>Revenue Streams</th>
-        <td>{{ pack.business_case.lean_canvas.revenue_streams }}</td>
+        <td>
+          {% if pack.business_case.lean_canvas.revenue_streams is iterable and pack.business_case.lean_canvas.revenue_streams is not string %}
+            {{ pack.business_case.lean_canvas.revenue_streams | join('; ') }}
+          {% else %}
+            {{ pack.business_case.lean_canvas.revenue_streams }}
+          {% endif %}
+        </td>
       </tr>
       <tr>
         <th>Cost Structure</th>
-        <td>{{ pack.business_case.lean_canvas.cost_structure }}</td>
+        <td>
+          {% if pack.business_case.lean_canvas.cost_structure is iterable and pack.business_case.lean_canvas.cost_structure is not string %}
+            {{ pack.business_case.lean_canvas.cost_structure | join('; ') }}
+          {% else %}
+            {{ pack.business_case.lean_canvas.cost_structure }}
+          {% endif %}
+        </td>
       </tr>
     </table>
     {% endif %}
@@ -516,6 +647,40 @@
     {% if pack.business_case.pricing_strategy %}
     <h3>Pricing Strategy</h3>
     <p>{{ pack.business_case.pricing_strategy }}</p>
+    {% endif %}
+
+    {% if pack.business_case.revenue_streams and pack.business_case.revenue_streams is iterable and pack.business_case.revenue_streams is not string %}
+    <h3>Revenue Streams</h3>
+    <ul>
+      {% for stream in pack.business_case.revenue_streams %}
+      <li>
+        {% if stream is mapping %}
+          <strong>{{ stream.name or 'Revenue Stream' }}</strong>: {{ stream.description or '' }}
+          {% if stream.pricing_model %} ({{ stream.pricing_model }}){% endif %}
+          {% if stream.estimated_revenue %} — Est: {{ stream.estimated_revenue }}{% endif %}
+        {% else %}
+          {{ stream }}
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if pack.business_case.cost_structure and pack.business_case.cost_structure is iterable and pack.business_case.cost_structure is not string %}
+    <h3>Cost Structure</h3>
+    <ul>
+      {% for cost in pack.business_case.cost_structure %}
+      <li>
+        {% if cost is mapping %}
+          <strong>{{ cost.category or cost.name or 'Cost' }}</strong>: {{ cost.description or '' }}
+          {% if cost.estimated_amount %} — Est: {{ cost.estimated_amount }}{% endif %}
+          {% if cost.type %} ({{ cost.type }}){% endif %}
+        {% else %}
+          {{ cost }}
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
     {% endif %}
   </div>
   {% if not section %}<div class="page-break"></div>{% endif %}

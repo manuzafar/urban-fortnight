@@ -13,6 +13,43 @@ from docx.shared import Inches, Pt, RGBColor
 from docx.enum.style import WD_STYLE_TYPE
 
 
+def _extract_first_string(obj: Any) -> str:
+    """Extract the first meaningful string value from a dict or return str(obj)."""
+    if isinstance(obj, dict):
+        # Try common field names first
+        for key in ["description", "text", "value", "name", "content", "summary"]:
+            if obj.get(key) and isinstance(obj[key], str):
+                return obj[key]
+        # Fall back to first string value
+        for v in obj.values():
+            if v and isinstance(v, str):
+                return v
+        # Last resort: format as key-value pairs, recursively handling nested dicts/lists
+        parts = []
+        for k, v in obj.items():
+            if v is None:
+                continue
+            if isinstance(v, dict):
+                v = _extract_first_string(v)
+            elif isinstance(v, list):
+                v = _format_list_value(v)
+            parts.append(f"{k}: {v}")
+        return "; ".join(parts)
+    return str(obj)
+
+
+def _format_list_value(value: Any) -> str:
+    """Format a list or scalar value as a readable string."""
+    if isinstance(value, list):
+        # Handle list of dicts
+        if value and isinstance(value[0], dict):
+            return "; ".join(_extract_first_string(item) for item in value)
+        return "; ".join(str(v) for v in value)
+    elif isinstance(value, dict):
+        return _extract_first_string(value)
+    return str(value) if value else ""
+
+
 def generate_docx(pack: dict[str, Any], section: str | None = None) -> bytes:
     """
     Generate a DOCX file from an inception pack.
@@ -195,17 +232,57 @@ def _render_customer_research(doc: Document, data: dict[str, Any]) -> None:
     """Render customer research section."""
     if data.get("target_customer"):
         doc.add_heading("Target Customer", level=2)
-        doc.add_paragraph(data["target_customer"])
+        doc.add_paragraph(str(data["target_customer"]))
 
     if data.get("pain_signals"):
         doc.add_heading("Pain Signals", level=2)
         for signal in data["pain_signals"][:8]:
             if isinstance(signal, dict):
                 tier = signal.get("evidence_tier", "E3")
-                text = signal.get("signal") or signal.get("description") or str(signal)
-                doc.add_paragraph(f"[{tier}] {text}", style="List Bullet")
+                desc = signal.get("description") or signal.get("signal") or _extract_first_string(signal)
+                text = f"[{tier}] {desc}" if tier else str(desc)
+                if signal.get("impact"):
+                    text += f" — {signal['impact']}"
+                doc.add_paragraph(text, style="List Bullet")
             else:
                 doc.add_paragraph(str(signal), style="List Bullet")
+
+    # Job to be Done
+    if data.get("job_to_be_done"):
+        doc.add_heading("Job to be Done", level=2)
+        jtbd = data["job_to_be_done"]
+        if isinstance(jtbd, dict):
+            if jtbd.get("trigger_situation"):
+                doc.add_paragraph(f"Trigger: {jtbd['trigger_situation']}")
+            if jtbd.get("underlying_goal"):
+                doc.add_paragraph(f"Goal: {jtbd['underlying_goal']}")
+            if jtbd.get("success_definition"):
+                doc.add_paragraph(f"Success: {jtbd['success_definition']}")
+            if jtbd.get("statement"):
+                doc.add_paragraph(str(jtbd["statement"]))
+        else:
+            doc.add_paragraph(str(jtbd))
+
+    # Market Context
+    if data.get("market_context"):
+        doc.add_heading("Market Context", level=2)
+        mc = data["market_context"]
+        if isinstance(mc, dict):
+            if mc.get("tam"):
+                doc.add_paragraph(f"TAM: {mc['tam']}")
+            if mc.get("sam"):
+                doc.add_paragraph(f"SAM: {mc['sam']}")
+            if mc.get("som"):
+                doc.add_paragraph(f"SOM: {mc['som']}")
+            if mc.get("growth_rate"):
+                doc.add_paragraph(f"Growth Rate: {mc['growth_rate']}")
+            if mc.get("trends"):
+                trends = mc["trends"]
+                if isinstance(trends, list):
+                    trends = "; ".join(str(t) for t in trends)
+                doc.add_paragraph(f"Trends: {trends}")
+        else:
+            doc.add_paragraph(str(mc))
 
     if data.get("market_hypotheses"):
         doc.add_heading("Market Hypotheses", level=2)
@@ -219,7 +296,7 @@ def _render_customer_research(doc: Document, data: dict[str, Any]) -> None:
         for hyp in data["market_hypotheses"][:6]:
             row = table.add_row().cells
             if isinstance(hyp, dict):
-                row[0].text = str(hyp.get("hypothesis") or hyp)
+                row[0].text = str(hyp.get("hypothesis") or _extract_first_string(hyp))
                 row[1].text = str(hyp.get("validation") or "-")
                 row[2].text = str(hyp.get("evidence_tier") or "E3")
             else:
@@ -230,11 +307,41 @@ def _render_customer_research(doc: Document, data: dict[str, Any]) -> None:
     if data.get("uncomfortable_insights"):
         doc.add_heading("Uncomfortable Insights", level=2)
         for insight in data["uncomfortable_insights"][:4]:
-            doc.add_paragraph(str(insight), style="List Bullet")
+            if isinstance(insight, dict):
+                doc.add_paragraph(_extract_first_string(insight), style="List Bullet")
+            else:
+                doc.add_paragraph(str(insight), style="List Bullet")
 
     if data.get("competitive_landscape"):
         doc.add_heading("Competitive Landscape", level=2)
-        doc.add_paragraph(data["competitive_landscape"])
+        cl = data["competitive_landscape"]
+        if isinstance(cl, dict):
+            if cl.get("market_position"):
+                doc.add_paragraph(f"Market Position: {cl['market_position']}")
+            if cl.get("competitors"):
+                doc.add_heading("Competitors", level=3)
+                for comp in cl["competitors"]:
+                    if isinstance(comp, dict):
+                        name = comp.get("name", "Competitor")
+                        desc = comp.get("description", "")
+                        text = f"{name}: {desc}" if desc else name
+                        if comp.get("strengths"):
+                            strengths = comp["strengths"]
+                            if isinstance(strengths, list):
+                                strengths = ", ".join(str(s) for s in strengths)
+                            text += f" | Strengths: {strengths}"
+                        if comp.get("weaknesses"):
+                            weaknesses = comp["weaknesses"]
+                            if isinstance(weaknesses, list):
+                                weaknesses = ", ".join(str(w) for w in weaknesses)
+                            text += f" | Weaknesses: {weaknesses}"
+                        doc.add_paragraph(text, style="List Bullet")
+                    else:
+                        doc.add_paragraph(str(comp), style="List Bullet")
+            if cl.get("differentiation"):
+                doc.add_paragraph(f"Differentiation: {cl['differentiation']}")
+        else:
+            doc.add_paragraph(str(cl))
 
 
 def _render_business_case(doc: Document, data: dict[str, Any]) -> None:
@@ -258,19 +365,22 @@ def _render_business_case(doc: Document, data: dict[str, Any]) -> None:
 
         for i, (label, value) in enumerate(fields):
             table.rows[i].cells[0].text = label
-            table.rows[i].cells[1].text = str(value or "-")
+            table.rows[i].cells[1].text = _format_list_value(value) if value else "-"
 
     if data.get("market_sizing"):
         doc.add_heading("Market Sizing", level=2)
         sizing = data["market_sizing"]
-        table = doc.add_table(rows=3, cols=2)
-        table.style = "Table Grid"
-        table.rows[0].cells[0].text = "TAM (Total Addressable Market)"
-        table.rows[0].cells[1].text = str(sizing.get("tam") or "-")
-        table.rows[1].cells[0].text = "SAM (Serviceable Addressable Market)"
-        table.rows[1].cells[1].text = str(sizing.get("sam") or "-")
-        table.rows[2].cells[0].text = "SOM (Serviceable Obtainable Market)"
-        table.rows[2].cells[1].text = str(sizing.get("som") or "-")
+        if isinstance(sizing, dict):
+            table = doc.add_table(rows=3, cols=2)
+            table.style = "Table Grid"
+            table.rows[0].cells[0].text = "TAM (Total Addressable Market)"
+            table.rows[0].cells[1].text = str(sizing.get("tam") or "-")
+            table.rows[1].cells[0].text = "SAM (Serviceable Addressable Market)"
+            table.rows[1].cells[1].text = str(sizing.get("sam") or "-")
+            table.rows[2].cells[0].text = "SOM (Serviceable Obtainable Market)"
+            table.rows[2].cells[1].text = str(sizing.get("som") or "-")
+        else:
+            doc.add_paragraph(str(sizing))
 
     if data.get("financial_projections"):
         doc.add_heading("Financial Projections", level=2)
@@ -293,64 +403,124 @@ def _render_business_case(doc: Document, data: dict[str, Any]) -> None:
 
     if data.get("gtm_strategy"):
         doc.add_heading("Go-to-Market Strategy", level=2)
-        doc.add_paragraph(data["gtm_strategy"])
+        gtm = data["gtm_strategy"]
+        if isinstance(gtm, dict):
+            doc.add_paragraph(_extract_first_string(gtm))
+        else:
+            doc.add_paragraph(str(gtm))
 
     if data.get("pricing_strategy"):
         doc.add_heading("Pricing Strategy", level=2)
-        doc.add_paragraph(data["pricing_strategy"])
+        ps = data["pricing_strategy"]
+        if isinstance(ps, dict):
+            doc.add_paragraph(_extract_first_string(ps))
+        else:
+            doc.add_paragraph(str(ps))
+
+    # Top-level Revenue Streams (separate from lean canvas)
+    if data.get("revenue_streams") and isinstance(data["revenue_streams"], list):
+        doc.add_heading("Revenue Streams", level=2)
+        for stream in data["revenue_streams"]:
+            if isinstance(stream, dict):
+                name = stream.get("name", "")
+                desc = stream.get("description", "")
+                model = stream.get("pricing_model", "")
+                text = f"{name}: {desc}" if name else desc or _extract_first_string(stream)
+                if model:
+                    text += f" ({model})"
+                if stream.get("estimated_revenue"):
+                    text += f" — Est: {stream['estimated_revenue']}"
+                doc.add_paragraph(text, style="List Bullet")
+            else:
+                doc.add_paragraph(str(stream), style="List Bullet")
+
+    # Top-level Cost Structure (separate from lean canvas)
+    if data.get("cost_structure") and isinstance(data["cost_structure"], list):
+        doc.add_heading("Cost Structure", level=2)
+        for cost in data["cost_structure"]:
+            if isinstance(cost, dict):
+                category = cost.get("category") or cost.get("name", "")
+                desc = cost.get("description", "")
+                text = f"{category}: {desc}" if category else desc or _extract_first_string(cost)
+                if cost.get("estimated_amount"):
+                    text += f" — Est: {cost['estimated_amount']}"
+                if cost.get("type"):
+                    text += f" ({cost['type']})"
+                doc.add_paragraph(text, style="List Bullet")
+            else:
+                doc.add_paragraph(str(cost), style="List Bullet")
 
 
 def _render_prd(doc: Document, data: dict[str, Any]) -> None:
     """Render PRD section."""
     if data.get("product_vision"):
         doc.add_heading("Product Vision", level=2)
-        doc.add_paragraph(data["product_vision"])
+        pv = data["product_vision"]
+        if isinstance(pv, dict):
+            doc.add_paragraph(_extract_first_string(pv))
+        else:
+            doc.add_paragraph(str(pv))
 
     if data.get("goals"):
         doc.add_heading("Goals", level=2)
         for goal in data["goals"]:
-            doc.add_paragraph(str(goal), style="List Bullet")
+            if isinstance(goal, dict):
+                doc.add_paragraph(_extract_first_string(goal), style="List Bullet")
+            else:
+                doc.add_paragraph(str(goal), style="List Bullet")
 
     if data.get("epics"):
         doc.add_heading("Epics", level=2)
         for i, epic in enumerate(data["epics"][:5], 1):
-            epic_id = epic.get("id") or f"E{i}"
-            epic_title = epic.get("title") or epic.get("name") or "Epic"
-            doc.add_heading(f"{epic_id}: {epic_title}", level=3)
+            if isinstance(epic, dict):
+                epic_id = epic.get("id") or f"E{i}"
+                epic_title = epic.get("title") or epic.get("name") or "Epic"
+                doc.add_heading(f"{epic_id}: {epic_title}", level=3)
 
-            if epic.get("description"):
-                doc.add_paragraph(epic["description"])
+                if epic.get("description"):
+                    doc.add_paragraph(str(epic["description"]))
 
-            if epic.get("priority"):
-                doc.add_paragraph(f"Priority: {epic['priority']}")
+                if epic.get("priority"):
+                    doc.add_paragraph(f"Priority: {epic['priority']}")
 
-            if epic.get("user_stories"):
-                doc.add_paragraph(f"User Stories: {len(epic['user_stories'])} stories")
+                if epic.get("user_stories"):
+                    doc.add_paragraph(f"User Stories: {len(epic['user_stories'])} stories")
+            else:
+                doc.add_paragraph(str(epic), style="List Bullet")
 
     if data.get("functional_requirements"):
         doc.add_heading("Functional Requirements", level=2)
         for req in data["functional_requirements"][:10]:
-            req_text = req.get("requirement") if isinstance(req, dict) else str(req)
             if isinstance(req, dict):
-                req_text = req.get("requirement") or req.get("description") or str(req)
+                req_text = req.get("requirement") or req.get("description") or _extract_first_string(req)
+            else:
+                req_text = str(req)
             doc.add_paragraph(req_text, style="List Bullet")
 
     if data.get("non_functional_requirements"):
         doc.add_heading("Non-Functional Requirements", level=2)
         for req in data["non_functional_requirements"][:8]:
-            req_text = req.get("requirement") if isinstance(req, dict) else str(req)
             if isinstance(req, dict):
-                req_text = req.get("requirement") or req.get("description") or str(req)
+                req_text = req.get("requirement") or req.get("description") or _extract_first_string(req)
+            else:
+                req_text = str(req)
             doc.add_paragraph(req_text, style="List Bullet")
 
     if data.get("mvp_scope"):
         doc.add_heading("MVP Scope", level=2)
-        doc.add_paragraph(data["mvp_scope"])
+        mvp = data["mvp_scope"]
+        if isinstance(mvp, dict):
+            doc.add_paragraph(_extract_first_string(mvp))
+        else:
+            doc.add_paragraph(str(mvp))
 
     if data.get("success_criteria"):
         doc.add_heading("Success Criteria", level=2)
         for criteria in data["success_criteria"]:
-            doc.add_paragraph(str(criteria), style="List Bullet")
+            if isinstance(criteria, dict):
+                doc.add_paragraph(_extract_first_string(criteria), style="List Bullet")
+            else:
+                doc.add_paragraph(str(criteria), style="List Bullet")
 
 
 def _render_technical_architecture(doc: Document, data: dict[str, Any]) -> None:
@@ -415,7 +585,10 @@ def _render_technical_architecture(doc: Document, data: dict[str, Any]) -> None:
     if data.get("security_considerations"):
         doc.add_heading("Security Considerations", level=2)
         for item in data["security_considerations"]:
-            doc.add_paragraph(str(item), style="List Bullet")
+            if isinstance(item, dict):
+                doc.add_paragraph(_extract_first_string(item), style="List Bullet")
+            else:
+                doc.add_paragraph(str(item), style="List Bullet")
 
     if data.get("scalability_approach"):
         doc.add_heading("Scalability Approach", level=2)
@@ -476,7 +649,10 @@ def _render_quality_assessment(doc: Document, data: dict[str, Any]) -> None:
     """Render quality assessment section."""
     if data.get("overall_score") is not None:
         doc.add_heading("Overall Quality Score", level=2)
-        score_pct = round(data["overall_score"] * 100)
+        score = data["overall_score"]
+        if isinstance(score, dict):
+            score = score.get("value") or score.get("score") or 0
+        score_pct = round(float(score) * 100)
         p = doc.add_paragraph()
         run = p.add_run(f"{score_pct}%")
         run.bold = True
@@ -495,15 +671,23 @@ def _render_quality_assessment(doc: Document, data: dict[str, Any]) -> None:
         if isinstance(section_scores, dict):
             for section_name, score in section_scores.items():
                 row = table.add_row().cells
-                row[0].text = section_name.replace("_", " ").title()
-                row[1].text = f"{round(score * 100)}%"
+                row[0].text = str(section_name).replace("_", " ").title()
+                if isinstance(score, dict):
+                    score = score.get("value") or score.get("score") or 0
+                try:
+                    row[1].text = f"{round(float(score) * 100)}%"
+                except (ValueError, TypeError):
+                    row[1].text = str(score)
         elif isinstance(section_scores, list):
             for item in section_scores:
                 row = table.add_row().cells
                 if isinstance(item, dict):
                     row[0].text = str(item.get("section") or item.get("name") or "Section").replace("_", " ").title()
                     score = item.get("score") or item.get("value") or 0
-                    row[1].text = f"{round(float(score) * 100)}%"
+                    try:
+                        row[1].text = f"{round(float(score) * 100)}%"
+                    except (ValueError, TypeError):
+                        row[1].text = str(score)
                 else:
                     row[0].text = "Section"
                     row[1].text = str(item)
@@ -511,21 +695,30 @@ def _render_quality_assessment(doc: Document, data: dict[str, Any]) -> None:
     if data.get("strengths"):
         doc.add_heading("Strengths", level=2)
         for strength in data["strengths"]:
-            doc.add_paragraph(str(strength), style="List Bullet")
+            if isinstance(strength, dict):
+                doc.add_paragraph(_extract_first_string(strength), style="List Bullet")
+            else:
+                doc.add_paragraph(str(strength), style="List Bullet")
 
     if data.get("critical_gaps"):
         doc.add_heading("Areas Needing Attention", level=2)
         for gap in data["critical_gaps"]:
-            doc.add_paragraph(str(gap), style="List Bullet")
+            if isinstance(gap, dict):
+                doc.add_paragraph(_extract_first_string(gap), style="List Bullet")
+            else:
+                doc.add_paragraph(str(gap), style="List Bullet")
 
     if data.get("recommendations"):
         doc.add_heading("Recommendations", level=2)
         for rec in data["recommendations"]:
-            doc.add_paragraph(str(rec), style="List Bullet")
+            if isinstance(rec, dict):
+                doc.add_paragraph(_extract_first_string(rec), style="List Bullet")
+            else:
+                doc.add_paragraph(str(rec), style="List Bullet")
 
 
 def _render_generic(doc: Document, data: dict[str, Any]) -> None:
-    """Render any section generically."""
+    """Render any section generically, ensuring no raw dict/list syntax appears."""
     for key, value in data.items():
         if value is None:
             continue
@@ -538,17 +731,28 @@ def _render_generic(doc: Document, data: dict[str, Any]) -> None:
         elif isinstance(value, list):
             for item in value:
                 if isinstance(item, dict):
-                    for k, v in item.items():
-                        doc.add_paragraph(f"{k}: {v}", style="List Bullet")
+                    # Extract first meaningful string value from dict
+                    text = _extract_first_string(item)
+                    doc.add_paragraph(text, style="List Bullet")
                 else:
                     doc.add_paragraph(str(item), style="List Bullet")
         elif isinstance(value, dict):
-            table = doc.add_table(rows=1, cols=2)
-            table.style = "Table Grid"
+            # Render as key: value paragraphs, not raw dict
             for k, v in value.items():
-                row = table.add_row().cells
-                row[0].text = str(k)
-                row[1].text = str(v) if v else ""
+                if v is not None:
+                    k_formatted = k.replace("_", " ").title()
+                    if isinstance(v, list):
+                        v_text = _format_list_value(v)
+                    elif isinstance(v, dict):
+                        v_text = _extract_first_string(v)
+                    else:
+                        v_text = str(v)
+                    doc.add_paragraph(f"{k_formatted}: {v_text}")
+        elif isinstance(value, (int, float, bool)):
+            doc.add_paragraph(str(value))
+        else:
+            # Fallback for any other type
+            doc.add_paragraph(str(value))
 
 
 def get_docx_filename(session_id: str, section: str | None = None) -> str:
