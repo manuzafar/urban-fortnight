@@ -28,6 +28,14 @@ def decode_supabase_jwt(token: str) -> dict:
         HTTPException: If token is invalid or expired.
     """
     try:
+        # First, decode header to check algorithm (for debugging)
+        try:
+            unverified_header = jwt.get_unverified_header(token)
+            logger.debug("jwt_header", alg=unverified_header.get("alg"), typ=unverified_header.get("typ"))
+        except Exception as e:
+            logger.warning("jwt_header_decode_failed", error=str(e))
+
+        # Decode and verify the token
         payload = jwt.decode(
             token,
             settings.supabase_jwt_secret,
@@ -36,7 +44,17 @@ def decode_supabase_jwt(token: str) -> dict:
         )
         return payload
     except JWTError as e:
-        logger.warning("jwt_verification_failed", error=str(e))
+        error_str = str(e)
+        logger.warning("jwt_verification_failed", error=error_str)
+
+        # Log more details for debugging
+        if "alg" in error_str.lower():
+            try:
+                header = jwt.get_unverified_header(token)
+                logger.warning("jwt_algorithm_mismatch", token_alg=header.get("alg"), expected_alg="HS256")
+            except Exception:
+                pass
+
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired authentication token",
