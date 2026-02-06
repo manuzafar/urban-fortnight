@@ -1,0 +1,16 @@
+{
+  "heading_texts": [
+    "2. Customer Research",
+    "Target Customer",
+    "Pain Signals",
+    "Job to be Done",
+    "Market Context",
+    "Market Hypotheses",
+    "Uncomfortable Insights",
+    "Competitive Landscape",
+    "Competitors"
+  ],
+  "paragraph_count": 40,
+  "table_count": 1,
+  "text_content": "2. Customer Research Target Customer Independent convenience store owners aged 35-55, managing 1-3 locations, currently using spreadsheets or basic POS systems for inventory Pain Signals [E1] Spending 10+ hours weekly on manual inventory counts \u2014 Direct labor cost and opportunity cost [E1] Frequent stockouts of popular items leading to lost sales [E2] Overstocking of slow-moving items tying up capital \u2014 Cash flow constraints Difficulty predicting seasonal demand fluctuations [E2] No visibility into inventory across multiple locations Job to be Done Trigger: When a customer asks for a product and the shelf is empty Goal: Never lose a sale due to stockout while minimizing capital tied up in inventory Success: Zero stockouts for top 100 SKUs and 20% reduction in inventory holding costs Market Context TAM: $50 billion globally for retail inventory management SAM: $12 billion in North American SMB retail SOM: $600 million achievable in 5 years Growth Rate: 12% CAGR driven by digital transformation Trends: AI/ML adoption in retail operations; Omnichannel inventory requirements; Supply chain resilience focus post-pandemic; Sustainability and waste reduction Market Hypotheses Hypothesis Validation Evidence Tier SMB retailers will pay $200+/month for AI-powered inventory management Survey of 150 store owners showed 68% willingness to pay E2 Integration with existing POS systems is critical for adoption User interviews revealed this as top 3 requirement E1 Uncomfortable Insights Many target customers are skeptical of AI claims due to past vendor overpromises Price sensitivity is higher than initially assumed - $99/month may be ceiling for smallest stores Competitors are rapidly adding similar features Competitive Landscape Market Position: Emerging challenger in fragmented market dominated by legacy solutions Competitors Square for Retail: Part of Square ecosystem, strong brand recognition | Strengths: Integrated payments, Large existing customer base, Brand trust | Weaknesses: Limited AI capabilities, One-size-fits-all approach Lightspeed Retail: Full-featured retail POS with inventory | Strengths: Comprehensive features, Multi-location support | Weaknesses: Complex setup, Higher price point, Steep learning curve Cin7: Inventory-focused solution for growing brands | Strengths: Strong inventory features, Good integrations | Weaknesses: Primarily for e-commerce, Expensive for small retailers Differentiation: Only solution with true predictive AI for demand forecasting at SMB price point"
+}

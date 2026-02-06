@@ -1,0 +1,16 @@
+{
+  "heading_texts": [
+    "1. Executive Summary",
+    "InventoryAI Pro",
+    "Problem Statement",
+    "Solution Overview",
+    "Target Audience",
+    "Unique Value Proposition",
+    "Key Metrics",
+    "Key Risks",
+    "Recommendation"
+  ],
+  "paragraph_count": 30,
+  "table_count": 1,
+  "text_content": "1. Executive Summary InventoryAI Pro Smart inventory for smart businesses Problem Statement Small retailers lose $50,000 annually due to inventory mismanagement, stockouts, and overstocking. Manual tracking is error-prone and time-consuming. Solution Overview InventoryAI Pro uses machine learning to predict demand, automate reordering, and provide real-time inventory visibility across all sales channels. Target Audience Small and medium-sized retail businesses with 1-50 locations Unique Value Proposition Reduce stockouts by 90% and cut inventory costs by 25% with AI-powered predictions Key Metrics Metric Target Rationale Monthly Active Users 10,000 by end of Year 1 Critical mass for network effects Customer Retention 95% High retention indicates product-market fit Revenue $2M ARR - Key Risks Market adoption slower than projected Competition from established POS vendors Data quality issues in customer systems Recommendation Proceed with MVP development targeting convenience stores as initial beachhead market."
+}

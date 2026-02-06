@@ -9,10 +9,6 @@ import pytest
 from typing import Any
 from io import BytesIO
 
-# Import the helper functions and generators
-import sys
-sys.path.insert(0, "..")
-
 from utils.export_docx import (
     _extract_first_string,
     _format_list_value,

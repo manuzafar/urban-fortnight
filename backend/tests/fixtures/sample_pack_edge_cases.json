@@ -1,0 +1,94 @@
+{
+  "metadata": {
+    "session_id": "test-edge-003",
+    "generated_at": "2024-01-15T10:00:00Z"
+  },
+  "executive_summary": {
+    "product_name": "EdgeCase™ Testing — Pro",
+    "tagline": "",
+    "problem_statement": "Testing edge cases with special characters: <script>alert('xss')</script> and unicode: 日本語 🚀 émojis",
+    "solution_overview": "A solution with \"quotes\" and 'apostrophes' and\nnewlines\nand\ttabs",
+    "target_audience": null,
+    "unique_value_proposition": "Value prop with numbers: 100% satisfaction, $1,000,000 savings, 10x faster",
+    "key_metrics": [],
+    "key_risks": [
+      "",
+      null,
+      {"risk": null, "mitigation": "No risk specified"},
+      {"risk": "Valid risk with <html>tags</html>"}
+    ],
+    "recommendation": null
+  },
+  "customer_research": {
+    "target_customer": "",
+    "pain_signals": [
+      "",
+      {"description": "", "evidence_tier": ""},
+      {"signal": null},
+      {"description": "Valid signal with lots of    whitespace   and\nnewlines"},
+      "Simple string signal"
+    ],
+    "job_to_be_done": "",
+    "market_context": {
+      "tam": null,
+      "sam": "",
+      "som": "$0",
+      "growth_rate": "N/A",
+      "trends": []
+    },
+    "market_hypotheses": [],
+    "uncomfortable_insights": null,
+    "competitive_landscape": ""
+  },
+  "business_case": {
+    "lean_canvas": {
+      "problem": null,
+      "solution": [],
+      "unique_value_proposition": "",
+      "unfair_advantage": null,
+      "customer_segments": [""],
+      "channels": ["Single channel"],
+      "revenue_streams": null,
+      "cost_structure": []
+    },
+    "market_sizing": null,
+    "revenue_streams": [],
+    "cost_structure": null,
+    "financial_projections": {
+      "year_1": null,
+      "year_2": {},
+      "year_3": {
+        "revenue": null,
+        "costs": "",
+        "profit": "TBD"
+      }
+    },
+    "gtm_strategy": null,
+    "pricing_strategy": ""
+  },
+  "product_requirements_document": {
+    "product_vision": null,
+    "goals": null,
+    "epics": [],
+    "functional_requirements": null,
+    "non_functional_requirements": [],
+    "mvp_scope": "",
+    "success_criteria": null
+  },
+  "technical_architecture": {
+    "architecture_overview": "",
+    "technology_stack": {},
+    "key_components": null,
+    "integration_points": [],
+    "security_considerations": null,
+    "scalability_approach": null
+  },
+  "legal_regulatory_review": null,
+  "quality_assessment": {
+    "overall_score": 0,
+    "section_scores": {},
+    "strengths": null,
+    "critical_gaps": [],
+    "recommendations": ["Only one recommendation"]
+  }
+}

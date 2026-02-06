@@ -1,0 +1,221 @@
+{
+  "metadata": {
+    "session_id": "test-nested-004",
+    "generated_at": "2024-01-15T10:00:00Z"
+  },
+  "executive_summary": {
+    "product_name": "NestedStructures",
+    "problem_statement": "Testing deeply nested data structures",
+    "solution_overview": "Handle all nesting levels gracefully",
+    "key_metrics": [
+      {
+        "name": "Nested Metric",
+        "target": {
+          "value": 100,
+          "unit": "percent",
+          "details": {
+            "min": 90,
+            "max": 100,
+            "notes": ["Note 1", "Note 2"]
+          }
+        },
+        "rationale": {
+          "primary": "Main reason",
+          "secondary": ["Reason A", "Reason B"]
+        }
+      }
+    ],
+    "key_risks": [
+      {
+        "risk": {
+          "title": "Nested Risk",
+          "severity": {
+            "level": "high",
+            "score": 8,
+            "factors": ["Factor 1", "Factor 2"]
+          }
+        },
+        "mitigation": {
+          "strategy": "Multi-pronged approach",
+          "actions": [
+            {"action": "Action 1", "owner": "Team A"},
+            {"action": "Action 2", "owner": "Team B"}
+          ]
+        }
+      }
+    ]
+  },
+  "customer_research": {
+    "target_customer": "Users with complex data needs",
+    "pain_signals": [
+      {
+        "description": {
+          "summary": "Complex pain signal",
+          "details": {
+            "observed": "Multiple nested observations",
+            "frequency": {"value": 10, "unit": "per day"},
+            "impact": {
+              "financial": "$10,000",
+              "operational": "High",
+              "emotional": ["Frustration", "Confusion"]
+            }
+          }
+        },
+        "evidence_tier": "E1",
+        "sources": [
+          {"type": "Interview", "count": 5},
+          {"type": "Survey", "count": 100}
+        ]
+      }
+    ],
+    "job_to_be_done": {
+      "trigger_situation": {
+        "context": "When user encounters complex data",
+        "conditions": ["Condition A", "Condition B"]
+      },
+      "underlying_goal": {
+        "primary": "Simplify complexity",
+        "secondary": {
+          "goal": "Save time",
+          "metrics": ["Metric 1", "Metric 2"]
+        }
+      },
+      "success_definition": {
+        "criteria": [
+          {"criterion": "Criterion 1", "threshold": 90},
+          {"criterion": "Criterion 2", "threshold": 95}
+        ]
+      }
+    },
+    "competitive_landscape": {
+      "market_position": {
+        "current": "Emerging",
+        "target": {
+          "year_1": "Challenger",
+          "year_3": "Leader"
+        }
+      },
+      "competitors": [
+        {
+          "name": "Competitor X",
+          "description": {
+            "overview": "Market incumbent",
+            "details": {
+              "founded": 2010,
+              "funding": "$50M",
+              "employees": {"range": "100-500"}
+            }
+          },
+          "strengths": [
+            {"strength": "Brand", "details": {"score": 9, "notes": "Well known"}},
+            "Simple string strength"
+          ],
+          "weaknesses": {
+            "technical": ["Legacy tech", "Slow updates"],
+            "business": {"pricing": "Expensive", "support": "Poor"}
+          }
+        }
+      ]
+    }
+  },
+  "business_case": {
+    "lean_canvas": {
+      "problem": [
+        {"description": "Problem 1", "severity": "High"},
+        {"description": "Problem 2", "severity": "Medium"},
+        "Simple string problem"
+      ],
+      "solution": {
+        "primary": "Main solution",
+        "features": [
+          {"feature": "Feature A", "priority": 1},
+          {"feature": "Feature B", "priority": 2}
+        ]
+      },
+      "customer_segments": {
+        "primary": ["Segment A", "Segment B"],
+        "secondary": {
+          "emerging": ["Segment C"],
+          "future": ["Segment D", "Segment E"]
+        }
+      },
+      "channels": [
+        {"channel": "Direct", "effectiveness": {"score": 8, "trend": "growing"}},
+        "Partner channel"
+      ],
+      "revenue_streams": [
+        {
+          "stream": "Subscription",
+          "details": {
+            "pricing": {"min": 10, "max": 100, "currency": "USD"},
+            "billing": ["Monthly", "Annual"]
+          }
+        }
+      ],
+      "cost_structure": {
+        "fixed": [
+          {"category": "Engineering", "amount": {"value": 500000, "currency": "USD"}}
+        ],
+        "variable": {
+          "infrastructure": {"base": 1000, "per_user": 0.10}
+        }
+      }
+    },
+    "revenue_streams": [
+      {
+        "name": {
+          "short": "SaaS",
+          "full": "Software as a Service Subscription"
+        },
+        "description": "Recurring revenue model",
+        "pricing_model": {
+          "type": "tiered",
+          "tiers": [
+            {"name": "Basic", "price": 10},
+            {"name": "Pro", "price": 50}
+          ]
+        }
+      }
+    ]
+  },
+  "quality_assessment": {
+    "overall_score": {
+      "value": 0.75,
+      "confidence": 0.8,
+      "methodology": "Weighted average"
+    },
+    "section_scores": {
+      "executive_summary": {
+        "score": 0.8,
+        "details": {
+          "completeness": 0.9,
+          "clarity": 0.7
+        }
+      },
+      "customer_research": 0.7
+    },
+    "strengths": [
+      {
+        "strength": "Comprehensive coverage",
+        "evidence": {
+          "sources": ["Review 1", "Review 2"],
+          "confidence": 0.9
+        }
+      },
+      "Simple string strength"
+    ],
+    "recommendations": [
+      {
+        "recommendation": "Add more detail",
+        "priority": {
+          "level": "High",
+          "rationale": "Critical for success"
+        },
+        "actions": [
+          {"action": "Action 1", "deadline": "2024-02-01"},
+          {"action": "Action 2", "deadline": "2024-03-01"}
+        ]
+      }
+    ]
+  }
+}

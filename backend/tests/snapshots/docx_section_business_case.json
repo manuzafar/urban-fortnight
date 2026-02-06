@@ -1,0 +1,15 @@
+{
+  "heading_texts": [
+    "3. Business Case",
+    "Lean Canvas",
+    "Market Sizing",
+    "Financial Projections",
+    "Go-to-Market Strategy",
+    "Pricing Strategy",
+    "Revenue Streams",
+    "Cost Structure"
+  ],
+  "paragraph_count": 55,
+  "table_count": 3,
+  "text_content": "3. Business Case Lean Canvas Problem Manual inventory tracking is time-consuming and error-prone; Stockouts cause lost sales and customer frustration; Overstocking ties up capital and leads to waste Solution AI-powered demand prediction; Automated reorder suggestions; Real-time inventory visibility; Mobile-first interface Unique Value Proposition Reduce stockouts by 90% and cut inventory costs by 25% with AI-powered predictions that learn your business Unfair Advantage Proprietary ML models trained on retail data; Team with 20+ years retail technology experience; Early mover in SMB AI inventory space Customer Segments Independent convenience stores (primary); Small grocery chains (secondary); Specialty retail (tertiary) Channels Direct sales with inside sales team; App store marketplaces (Shopify, Square); Industry trade shows and associations; Content marketing and SEO Revenue Streams Monthly SaaS subscription ($99-499/month); Transaction fees on automated orders; Premium support packages Cost Structure Engineering team (60% of costs); Cloud infrastructure; Sales and marketing; Customer support Market Sizing TAM (Total Addressable Market) $50B - Global retail inventory management software market SAM (Serviceable Addressable Market) $12B - North American SMB retail segment SOM (Serviceable Obtainable Market) $600M - Achievable in 5 years with focused execution Financial Projections Period Revenue Costs Profit Year 1 $1.8M $2.5M -$700K Year 2 $5.5M $4.0M $1.5M Year 3 $12M $7M $5M Go-to-Market Strategy Land and expand strategy starting with convenience stores in urban areas. Partner with POS vendors for distribution. Build case studies and leverage word-of-mouth in tight-knit retail communities. Pricing Strategy Freemium model with 14-day full-featured trial. Three tiers: Starter ($99/mo for single location), Growth ($249/mo for 2-5 locations), Enterprise (custom pricing for 6+ locations). Revenue Streams Core Subscription: Monthly access to AI inventory management platform (Tiered per-location pricing) \u2014 Est: $1.5M Year 1 Auto-Order Commission: Small percentage on automated purchase orders (1-2% of order value) \u2014 Est: $200K Year 1 Premium Support: Dedicated account manager and priority support (Annual contract add-on) Cost Structure Engineering: Product development and infrastructure \u2014 Est: $1.2M/year (Fixed) Cloud Infrastructure: AWS/GCP hosting, ML compute, data storage \u2014 Est: $300K/year (Variable) Sales & Marketing: Inside sales, content, paid acquisition \u2014 Est: $500K/year (Semi-variable) Customer Success: Onboarding, support, account management \u2014 Est: $250K/year"
+}
