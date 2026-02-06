@@ -1,0 +1,325 @@
+/**
+ * SSE (Server-Sent Events) Hook for real-time discovery session updates.
+ *
+ * Provides real-time streaming of agent progress, insights, and completion
+ * events during discovery session execution.
+ */
+
+import { useState, useEffect, useCallback, useRef } from 'react';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
+// Event types from the backend
+export type StreamEventType =
+  | 'agent_start'
+  | 'insight'
+  | 'agent_complete'
+  | 'progress'
+  | 'error'
+  | 'done'
+  | 'heartbeat';
+
+export interface StreamEvent {
+  type: StreamEventType;
+  agent: string | null;
+  data: Record<string, unknown>;
+  timestamp: string;
+}
+
+export interface Insight {
+  key: string;
+  value: string;
+  preview?: unknown;
+}
+
+export interface AgentState {
+  status: 'pending' | 'running' | 'completed' | 'error';
+  displayName: string;
+  icon: string;
+  message?: string;
+  summary?: string;
+  insightsCount: number;
+}
+
+// Agent display configuration
+const AGENT_CONFIG: Record<string, { name: string; icon: string }> = {
+  customer_research: { name: 'Customer Research', icon: 'search' },
+  business_strategy: { name: 'Business Strategy', icon: 'trending-up' },
+  product_requirements: { name: 'Product Requirements', icon: 'file-text' },
+  technical_architect: { name: 'Technical Architecture', icon: 'cpu' },
+  legal_regulatory: { name: 'Legal Review', icon: 'shield' },
+  critique: { name: 'Quality Check', icon: 'check-circle' },
+  executive_summary: { name: 'Summary', icon: 'file-check' },
+};
+
+// Agent execution order
+const AGENT_ORDER = [
+  'customer_research',
+  'business_strategy',
+  'product_requirements',
+  'technical_architect',
+  'legal_regulatory',
+  'critique',
+  'executive_summary',
+];
+
+export interface UseSSEResult {
+  /** Whether the SSE connection is active */
+  isConnected: boolean;
+  /** The currently running agent (or null if none) */
+  currentAgent: string | null;
+  /** Map of agent key to its current state */
+  agentStates: Record<string, AgentState>;
+  /** Map of agent key to its discovered insights */
+  insights: Record<string, Insight[]>;
+  /** Overall progress percentage (0-100) */
+  progress: number;
+  /** Whether the session is complete */
+  isComplete: boolean;
+  /** Final completion status */
+  completionStatus: 'completed' | 'failed' | null;
+  /** Error message if any */
+  error: string | null;
+  /** All received events (for debugging) */
+  events: StreamEvent[];
+  /** Ordered list of agent keys */
+  agentOrder: string[];
+  /** Manually close the connection */
+  close: () => void;
+}
+
+/**
+ * Hook for subscribing to SSE events for a discovery session.
+ *
+ * @param sessionId - The session ID to subscribe to
+ * @param authToken - The auth token for authentication
+ * @param enabled - Whether to enable the subscription (default: true)
+ * @returns SSE state and controls
+ */
+export function useSSE(
+  sessionId: string | null,
+  authToken: string | null,
+  enabled: boolean = true
+): UseSSEResult {
+  const [isConnected, setIsConnected] = useState(false);
+  const [currentAgent, setCurrentAgent] = useState<string | null>(null);
+  const [agentStates, setAgentStates] = useState<Record<string, AgentState>>({});
+  const [insights, setInsights] = useState<Record<string, Insight[]>>({});
+  const [progress, setProgress] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
+  const [completionStatus, setCompletionStatus] = useState<'completed' | 'failed' | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [events, setEvents] = useState<StreamEvent[]>([]);
+
+  const eventSourceRef = useRef<EventSource | null>(null);
+
+  // Initialize agent states
+  useEffect(() => {
+    const initialStates: Record<string, AgentState> = {};
+    for (const agent of AGENT_ORDER) {
+      const config = AGENT_CONFIG[agent] || { name: agent, icon: 'cpu' };
+      initialStates[agent] = {
+        status: 'pending',
+        displayName: config.name,
+        icon: config.icon,
+        insightsCount: 0,
+      };
+    }
+    setAgentStates(initialStates);
+  }, []);
+
+  const close = useCallback(() => {
+    if (eventSourceRef.current) {
+      eventSourceRef.current.close();
+      eventSourceRef.current = null;
+      setIsConnected(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!sessionId || !authToken || !enabled) {
+      return;
+    }
+
+    // Reset state on new session
+    setIsComplete(false);
+    setCompletionStatus(null);
+    setError(null);
+    setProgress(0);
+    setCurrentAgent(null);
+    setEvents([]);
+    setInsights({});
+
+    // Reset agent states to pending
+    setAgentStates((prev) => {
+      const reset: Record<string, AgentState> = {};
+      for (const agent of AGENT_ORDER) {
+        reset[agent] = {
+          ...prev[agent],
+          status: 'pending',
+          message: undefined,
+          summary: undefined,
+          insightsCount: 0,
+        };
+      }
+      return reset;
+    });
+
+    // Create EventSource with auth token in URL (EventSource doesn't support headers)
+    const url = `${API_BASE_URL}/api/discovery/session/${sessionId}/stream?token=${encodeURIComponent(authToken)}`;
+    const eventSource = new EventSource(url);
+    eventSourceRef.current = eventSource;
+
+    eventSource.onopen = () => {
+      setIsConnected(true);
+      setError(null);
+    };
+
+    eventSource.onerror = (e) => {
+      console.error('SSE Error:', e);
+      setIsConnected(false);
+
+      // Don't set error if we're intentionally closing
+      if (eventSource.readyState === EventSource.CLOSED) {
+        return;
+      }
+
+      setError('Connection lost. Attempting to reconnect...');
+    };
+
+    // Handle different event types
+    const handleEvent = (_eventType: string, data: string) => {
+      try {
+        const parsed = JSON.parse(data) as StreamEvent;
+        setEvents((prev) => [...prev, parsed]);
+
+        switch (parsed.type) {
+          case 'agent_start': {
+            const agent = parsed.agent;
+            if (agent) {
+              setCurrentAgent(agent);
+              setAgentStates((prev) => ({
+                ...prev,
+                [agent]: {
+                  ...prev[agent],
+                  status: 'running',
+                  message: (parsed.data.message as string) || 'Processing...',
+                },
+              }));
+            }
+            break;
+          }
+
+          case 'insight': {
+            const agent = parsed.agent;
+            if (agent) {
+              const insight: Insight = {
+                key: parsed.data.key as string,
+                value: parsed.data.value as string,
+                preview: parsed.data.preview,
+              };
+              setInsights((prev) => ({
+                ...prev,
+                [agent]: [...(prev[agent] || []), insight],
+              }));
+              setAgentStates((prev) => ({
+                ...prev,
+                [agent]: {
+                  ...prev[agent],
+                  insightsCount: (prev[agent]?.insightsCount || 0) + 1,
+                },
+              }));
+            }
+            break;
+          }
+
+          case 'agent_complete': {
+            const agent = parsed.agent;
+            if (agent) {
+              setAgentStates((prev) => ({
+                ...prev,
+                [agent]: {
+                  ...prev[agent],
+                  status: 'completed',
+                  summary: (parsed.data.summary as string) || 'Complete',
+                },
+              }));
+            }
+            break;
+          }
+
+          case 'progress': {
+            setProgress(parsed.data.percentage as number);
+            break;
+          }
+
+          case 'error': {
+            setError(parsed.data.message as string);
+            if (parsed.agent) {
+              setAgentStates((prev) => ({
+                ...prev,
+                [parsed.agent!]: {
+                  ...prev[parsed.agent!],
+                  status: 'error',
+                },
+              }));
+            }
+            break;
+          }
+
+          case 'done': {
+            setIsComplete(true);
+            setCompletionStatus(parsed.data.status as 'completed' | 'failed');
+            setProgress(100);
+            eventSource.close();
+            setIsConnected(false);
+            break;
+          }
+
+          case 'heartbeat': {
+            // Just keep-alive, no action needed
+            break;
+          }
+        }
+      } catch (e) {
+        console.error('Error parsing SSE event:', e, data);
+      }
+    };
+
+    // Listen to all event types
+    eventSource.addEventListener('agent_start', (e) => handleEvent('agent_start', (e as MessageEvent).data));
+    eventSource.addEventListener('insight', (e) => handleEvent('insight', (e as MessageEvent).data));
+    eventSource.addEventListener('agent_complete', (e) => handleEvent('agent_complete', (e as MessageEvent).data));
+    eventSource.addEventListener('progress', (e) => handleEvent('progress', (e as MessageEvent).data));
+    eventSource.addEventListener('error', (e) => handleEvent('error', (e as MessageEvent).data));
+    eventSource.addEventListener('done', (e) => handleEvent('done', (e as MessageEvent).data));
+    eventSource.addEventListener('heartbeat', (e) => handleEvent('heartbeat', (e as MessageEvent).data));
+
+    // Also handle generic message events
+    eventSource.onmessage = (e) => {
+      handleEvent('message', e.data);
+    };
+
+    return () => {
+      eventSource.close();
+      eventSourceRef.current = null;
+      setIsConnected(false);
+    };
+  }, [sessionId, authToken, enabled]);
+
+  return {
+    isConnected,
+    currentAgent,
+    agentStates,
+    insights,
+    progress,
+    isComplete,
+    completionStatus,
+    error,
+    events,
+    agentOrder: AGENT_ORDER,
+    close,
+  };
+}
+
+export default useSSE;

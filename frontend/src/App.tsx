@@ -6,6 +6,9 @@ import { DiscoveryForm } from './components/DiscoveryForm';
 import { ProgressTracker } from './components/ProgressTracker';
 import { SlideViewer } from './components/SlideViewer';
 import { SessionHistory } from './components/SessionHistory';
+import { Dashboard } from './components/Dashboard';
+import { ExecutionView } from './components/ExecutionView';
+import { PackViewer } from './components/PackViewer';
 import {
   startDiscovery,
   getSessionStatus,
@@ -17,7 +20,8 @@ import {
 import type { DiscoveryRequest, SessionStatusResponse, InceptionPack } from './types/api';
 import './App.css';
 
-type AppState = 'landing' | 'form' | 'progress' | 'result' | 'sessions';
+// Extended app state with new views
+type AppState = 'landing' | 'form' | 'progress' | 'result' | 'sessions' | 'dashboard' | 'execution' | 'pack';
 
 function App() {
   const { user, session, isLoading: authLoading, signInWithGoogle, signOut } = useAuth();
@@ -27,13 +31,14 @@ function App() {
   const [sessionData, setSessionData] = useState<SessionStatusResponse | null>(null);
   const [inceptionPack, setInceptionPack] = useState<InceptionPack | null>(null);
   const [isHealthy, setIsHealthy] = useState<boolean | null>(null);
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
 
   // Sync auth token to API client whenever session changes
   useEffect(() => {
     setAuthToken(session?.access_token ?? null);
   }, [session]);
 
-  // Handle OAuth redirect: check if user was trying to go to form before login
+  // Handle OAuth redirect: check if user was trying to go to form/dashboard before login
   useEffect(() => {
     if (authLoading) return;
     if (!user) return;
@@ -42,6 +47,9 @@ function App() {
     if (pending === 'form') {
       sessionStorage.removeItem('seedcraft_pending_action');
       setAppState('form');
+    } else if (pending === 'dashboard') {
+      sessionStorage.removeItem('seedcraft_pending_action');
+      setAppState('dashboard');
     }
   }, [user, authLoading]);
 
@@ -52,7 +60,41 @@ function App() {
       .catch(() => setIsHealthy(false));
   }, []);
 
+  // Handle starting discovery (used by both DiscoveryForm and Dashboard)
   const handleStartDiscovery = useCallback(async (request: DiscoveryRequest) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await startDiscovery(request);
+      setCurrentSessionId(response.session_id);
+
+      // Get initial status
+      const status = await getSessionStatus(response.session_id);
+      setSessionData(status);
+
+      // Switch to execution view for SSE streaming
+      setAppState('execution');
+
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.status === 401) {
+          // Token expired or invalid — re-trigger login
+          sessionStorage.setItem('seedcraft_pending_action', 'dashboard');
+          await signInWithGoogle();
+          return;
+        }
+        setError(err.message);
+      } else {
+        setError('Failed to start discovery. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [signInWithGoogle]);
+
+  // Legacy start discovery with polling (for old DiscoveryForm)
+  const handleStartDiscoveryLegacy = useCallback(async (request: DiscoveryRequest) => {
     setIsLoading(true);
     setError(null);
 
@@ -70,6 +112,7 @@ function App() {
 
         if (updatedStatus.status === 'completed' && updatedStatus.inception_pack) {
           setInceptionPack(updatedStatus.inception_pack as InceptionPack);
+          setCurrentSessionId(response.session_id);
           setAppState('result');
         } else if (updatedStatus.status === 'failed') {
           setError(updatedStatus.error_message || 'Discovery failed');
@@ -99,22 +142,40 @@ function App() {
     setAppState('landing');
     setSessionData(null);
     setInceptionPack(null);
+    setCurrentSessionId(null);
     setError(null);
   }, []);
 
-  const handleGoToForm = useCallback(() => {
+  const handleGoToDashboard = useCallback(() => {
     if (!user) {
       // Not logged in — store intent and trigger Google SSO
-      sessionStorage.setItem('seedcraft_pending_action', 'form');
+      sessionStorage.setItem('seedcraft_pending_action', 'dashboard');
       signInWithGoogle();
       return;
     }
-    setAppState('form');
+    setAppState('dashboard');
   }, [user, signInWithGoogle]);
 
-  const handleViewSessionPack = useCallback((pack: InceptionPack) => {
+  const handleViewSessionPack = useCallback((pack: InceptionPack, sessionId?: string) => {
     setInceptionPack(pack);
+    setCurrentSessionId(sessionId || pack.metadata?.session_id || null);
+    setAppState('pack');
+  }, []);
+
+  // Legacy pack viewer
+  const handleViewSessionPackLegacy = useCallback((pack: InceptionPack) => {
+    setInceptionPack(pack);
+    setCurrentSessionId(pack.metadata?.session_id || null);
     setAppState('result');
+  }, []);
+
+  const handleExecutionComplete = useCallback((pack: InceptionPack) => {
+    setInceptionPack(pack);
+    setAppState('pack');
+  }, []);
+
+  const handleBackToDashboard = useCallback(() => {
+    setAppState('dashboard');
   }, []);
 
   const handleSignOut = useCallback(async () => {
@@ -122,10 +183,16 @@ function App() {
     handleNewDiscovery();
   }, [signOut, handleNewDiscovery]);
 
+  // Determine if we should show header
+  const showHeader = ['landing', 'form', 'sessions', 'dashboard'].includes(appState);
+
+  // Determine if we should show footer
+  const showFooter = appState === 'landing';
+
   return (
     <div className="app">
-      {/* Header - show on landing, form, and sessions pages */}
-      {(appState === 'landing' || appState === 'form' || appState === 'sessions') && (
+      {/* Header - show on landing, form, sessions, and dashboard pages */}
+      {showHeader && (
         <header className="app-header">
           <div className="header-inner">
             <div className="brand" onClick={handleNewDiscovery} style={{ cursor: 'pointer' }}>
@@ -147,9 +214,9 @@ function App() {
               </a>
               {user ? (
                 <>
-                  <button className="nav-pill" onClick={() => setAppState('sessions')}>
+                  <button className="nav-pill" onClick={handleGoToDashboard}>
                     <History size={14} />
-                    <span>My Sessions</span>
+                    <span>Dashboard</span>
                   </button>
                   <div className="user-menu">
                     {user.user_metadata?.avatar_url && (
@@ -167,7 +234,7 @@ function App() {
                 </>
               ) : null}
               {appState === 'landing' && (
-                <button className="btn-start" onClick={handleGoToForm}>
+                <button className="btn-start" onClick={handleGoToDashboard}>
                   Start Discovery
                   <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                     <path d="M6 12l4-4-4-4"/>
@@ -190,28 +257,53 @@ function App() {
         )}
 
         {appState === 'landing' && (
-          <LandingPage onStartDiscovery={handleGoToForm} />
+          <LandingPage onStartDiscovery={handleGoToDashboard} />
+        )}
+
+        {appState === 'dashboard' && (
+          <Dashboard
+            onStartDiscovery={handleStartDiscovery}
+            onViewPack={handleViewSessionPack}
+            isLoading={isLoading}
+          />
         )}
 
         {appState === 'form' && (
-          <DiscoveryForm onSubmit={handleStartDiscovery} isLoading={isLoading} onBack={handleNewDiscovery} />
+          <DiscoveryForm onSubmit={handleStartDiscoveryLegacy} isLoading={isLoading} onBack={handleNewDiscovery} />
         )}
 
         {appState === 'progress' && sessionData && (
           <ProgressTracker session={sessionData} onCancel={handleNewDiscovery} />
         )}
 
+        {appState === 'execution' && currentSessionId && session?.access_token && (
+          <ExecutionView
+            sessionId={currentSessionId}
+            authToken={session.access_token}
+            onComplete={handleExecutionComplete}
+            onBack={handleBackToDashboard}
+          />
+        )}
+
         {appState === 'sessions' && (
-          <SessionHistory onBack={handleNewDiscovery} onViewPack={handleViewSessionPack} />
+          <SessionHistory onBack={handleNewDiscovery} onViewPack={handleViewSessionPackLegacy} />
         )}
 
         {appState === 'result' && inceptionPack && (
           <SlideViewer pack={inceptionPack} onNewDiscovery={handleNewDiscovery} />
         )}
+
+        {appState === 'pack' && inceptionPack && currentSessionId && (
+          <PackViewer
+            pack={inceptionPack}
+            sessionId={currentSessionId}
+            onBack={handleBackToDashboard}
+          />
+        )}
       </main>
 
       {/* Footer - only show on landing page */}
-      {appState === 'landing' && (
+      {showFooter && (
         <footer className="app-footer">
           <div className="footer-links">
             <a href="http://localhost:8000/docs" target="_blank" rel="noopener noreferrer" className="footer-link">Documentation</a>

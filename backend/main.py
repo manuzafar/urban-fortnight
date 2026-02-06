@@ -21,6 +21,7 @@ import structlog
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response
+from sse_starlette.sse import EventSourceResponse
 
 from agents.orchestrator import run_discovery_workflow
 from agents.state import get_progress_percentage
@@ -39,8 +40,15 @@ from utils.helpers import (
     sanitize_constraints,
     build_inception_pack,
 )
-from utils.auth import get_current_user_id
+from utils.auth import get_current_user_id, get_user_id_from_token
 from utils.db import SupabaseSessionStore
+from utils.sse import (
+    get_or_create_emitter,
+    get_emitter,
+    remove_emitter,
+    stream_session_events,
+    StreamEventType,
+)
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # INITIALIZATION
@@ -140,6 +148,7 @@ async def run_discovery_task(
     Background task to run the discovery workflow.
 
     Updates Supabase DB with progress and final results.
+    Also emits SSE events for real-time streaming to frontend.
 
     Args:
         session_id: Unique session identifier.
@@ -151,6 +160,9 @@ async def run_discovery_task(
         additional_context: Optional additional context.
     """
     logger.info("discovery_task_started", session_id=session_id, user_id=user_id)
+
+    # Get or create SSE emitter for this session
+    emitter = get_or_create_emitter(session_id)
 
     try:
         # Update status to in progress
@@ -164,7 +176,7 @@ async def run_discovery_task(
             },
         )
 
-        # Run the workflow
+        # Run the workflow with SSE callback
         final_state = await run_discovery_workflow(
             session_id=session_id,
             product_idea=product_idea,
@@ -172,6 +184,7 @@ async def run_discovery_task(
             target_market=target_market,
             constraints=constraints,
             additional_context=additional_context,
+            event_emitter=emitter,
         )
 
         # Build the inception pack
@@ -198,6 +211,9 @@ async def run_discovery_task(
             status=final_state.get("status"),
             quality_score=(final_state.get("quality_assessment") or {}).get("overall_score"),
         )
+
+        # Emit completion event
+        await emitter.emit_done(status="completed")
 
         # Send founder alert email (fire and forget, don't block on failure)
         if final_state.get("status") == SessionStatus.COMPLETED:
@@ -228,6 +244,10 @@ async def run_discovery_task(
             exc_info=True,
         )
 
+        # Emit error event
+        await emitter.emit_error(str(e))
+        await emitter.emit_done(status="failed")
+
         # Update session with error
         session_store.update_status(
             session_id,
@@ -236,6 +256,10 @@ async def run_discovery_task(
                 "error_message": str(e),
             },
         )
+
+    finally:
+        # Clean up emitter
+        remove_emitter(session_id)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -528,6 +552,141 @@ async def list_sessions(
         "count": len(sessions),
         "sessions": sessions,
     }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SSE STREAMING ENDPOINT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+@app.get(
+    "/api/discovery/session/{session_id}/stream",
+    tags=["Discovery"],
+    summary="Stream session events",
+    description=(
+        "Stream real-time updates for a discovery session via Server-Sent Events. "
+        "Events include agent starts, insights, completions, and progress updates. "
+        "Authentication can be via Authorization header or 'token' query parameter."
+    ),
+)
+async def stream_session(
+    session_id: str,
+    token: str | None = Query(default=None, description="JWT token for SSE auth"),
+    user_id: str | None = None,
+):
+    """
+    Stream real-time updates via Server-Sent Events.
+
+    This endpoint provides a real-time event stream for monitoring
+    discovery session progress. Events are sent as agents start,
+    find insights, and complete their work.
+
+    Since EventSource API doesn't support custom headers, authentication
+    can be provided via the 'token' query parameter as an alternative
+    to the Authorization header.
+
+    Event Types:
+    - agent_start: An agent has started processing
+    - insight: A key finding has been discovered
+    - agent_complete: An agent has finished
+    - progress: Overall progress percentage update
+    - error: An error has occurred
+    - done: Session is complete
+    - heartbeat: Keep-alive signal (every 30s)
+
+    Args:
+        session_id: The session ID to stream.
+        token: Optional JWT token (for EventSource which can't send headers).
+        user_id: Not used directly, extracted from token.
+
+    Returns:
+        EventSourceResponse: SSE event stream.
+
+    Raises:
+        HTTPException: If session not found, not owned by user, or auth fails.
+    """
+    # Get user_id from token query param (EventSource doesn't support headers)
+    if not token:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required. Provide token query parameter.",
+        )
+
+    try:
+        user_id = get_user_id_from_token(token)
+    except HTTPException:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authentication token.",
+        )
+
+    # Verify session ownership
+    if not session_store.verify_ownership(session_id, user_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session '{session_id}' not found.",
+        )
+
+    # Get session status
+    session_data = session_store.get(session_id)
+    if not session_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session '{session_id}' not found.",
+        )
+
+    # If session is already completed, send done event immediately
+    if session_data.get("status") == SessionStatus.COMPLETED:
+        async def completed_stream():
+            yield {
+                "event": "done",
+                "data": f'{{"session_id": "{session_id}", "status": "completed"}}',
+            }
+
+        return EventSourceResponse(completed_stream())
+
+    # If session failed, send error and done
+    if session_data.get("status") == SessionStatus.FAILED:
+        async def failed_stream():
+            error_msg = session_data.get("error_message", "Unknown error")
+            yield {
+                "event": "error",
+                "data": f'{{"message": "{error_msg}"}}',
+            }
+            yield {
+                "event": "done",
+                "data": f'{{"session_id": "{session_id}", "status": "failed"}}',
+            }
+
+        return EventSourceResponse(failed_stream())
+
+    # Stream events for in-progress sessions
+    async def event_stream():
+        async for event_str in stream_session_events(session_id):
+            # Parse the SSE format to extract event and data
+            lines = event_str.strip().split("\n")
+            event_type = None
+            event_data = None
+
+            for line in lines:
+                if line.startswith("event: "):
+                    event_type = line[7:]
+                elif line.startswith("data: "):
+                    event_data = line[6:]
+
+            if event_type and event_data:
+                yield {
+                    "event": event_type,
+                    "data": event_data,
+                }
+
+    logger.info(
+        "sse_stream_started",
+        session_id=session_id,
+        user_id=user_id,
+    )
+
+    return EventSourceResponse(event_stream())
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

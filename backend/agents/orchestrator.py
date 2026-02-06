@@ -11,11 +11,14 @@ This module defines the workflow that coordinates all 6 agents:
 
 The workflow includes a conditional revision loop that can iterate
 up to 3 times if quality thresholds are not met.
+
+SSE streaming is supported via an optional event_emitter parameter
+that broadcasts agent progress and insights in real-time.
 """
 
 import json
 from datetime import datetime
-from typing import Literal
+from typing import Literal, Optional, TYPE_CHECKING
 
 import structlog
 from langgraph.checkpoint.memory import MemorySaver
@@ -33,7 +36,18 @@ from agents.legal_regulatory import run_legal_regulatory_agent
 from config import settings
 from models.schemas import ExecutiveSummary, SessionStatus
 
+if TYPE_CHECKING:
+    from utils.sse import SessionEventEmitter
+
 logger = structlog.get_logger(__name__)
+
+# Global reference to the current event emitter (set per workflow run)
+_current_emitter: Optional["SessionEventEmitter"] = None
+
+
+def get_current_emitter() -> Optional["SessionEventEmitter"]:
+    """Get the current event emitter for the running workflow."""
+    return _current_emitter
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -57,7 +71,50 @@ async def customer_research_node(state: DiscoveryState) -> DiscoveryState:
         session_id=state["session_id"],
         iteration=state.get("iteration", 1),
     )
-    return await run_customer_research_agent(state)
+
+    # Emit agent start event
+    emitter = get_current_emitter()
+    if emitter:
+        await emitter.emit_agent_start("customer_research")
+
+    result = await run_customer_research_agent(state)
+
+    # Emit insights and completion
+    if emitter and result.get("customer_research"):
+        cr = result["customer_research"]
+
+        # Emit key insights
+        if cr.get("pain_signals"):
+            await emitter.emit_insight(
+                "customer_research",
+                "pain_signals",
+                f"Found {len(cr['pain_signals'])} pain points",
+                cr["pain_signals"][0] if cr["pain_signals"] else None,
+            )
+
+        if cr.get("personas"):
+            await emitter.emit_insight(
+                "customer_research",
+                "personas",
+                f"Identified {len(cr['personas'])} personas",
+            )
+
+        if cr.get("market_context", {}).get("total_addressable_market"):
+            tam = cr["market_context"]["total_addressable_market"]
+            await emitter.emit_insight(
+                "customer_research",
+                "market_size",
+                f"TAM: {tam}",
+            )
+
+        await emitter.emit_agent_complete(
+            "customer_research",
+            "Market research and personas identified",
+            insights_count=3,
+        )
+        await emitter.emit_progress(15, "customer_research")
+
+    return result
 
 
 async def business_strategy_node(state: DiscoveryState) -> DiscoveryState:
@@ -76,7 +133,46 @@ async def business_strategy_node(state: DiscoveryState) -> DiscoveryState:
         session_id=state["session_id"],
         iteration=state.get("iteration", 1),
     )
-    return await run_business_strategy_agent(state)
+
+    emitter = get_current_emitter()
+    if emitter:
+        await emitter.emit_agent_start("business_strategy")
+
+    result = await run_business_strategy_agent(state)
+
+    if emitter and result.get("business_case"):
+        bc = result["business_case"]
+
+        if bc.get("revenue_streams"):
+            await emitter.emit_insight(
+                "business_strategy",
+                "revenue_streams",
+                f"{len(bc['revenue_streams'])} revenue streams defined",
+            )
+
+        if bc.get("lean_canvas", {}).get("unique_value_proposition"):
+            await emitter.emit_insight(
+                "business_strategy",
+                "value_proposition",
+                "Value proposition defined",
+            )
+
+        if bc.get("go_to_market", {}).get("channels"):
+            channels = bc["go_to_market"]["channels"]
+            await emitter.emit_insight(
+                "business_strategy",
+                "channels",
+                f"{len(channels)} GTM channels identified",
+            )
+
+        await emitter.emit_agent_complete(
+            "business_strategy",
+            "Business model and revenue strategy complete",
+            insights_count=3,
+        )
+        await emitter.emit_progress(30, "business_strategy")
+
+    return result
 
 
 async def product_requirements_node(state: DiscoveryState) -> DiscoveryState:
@@ -102,6 +198,10 @@ async def product_requirements_node(state: DiscoveryState) -> DiscoveryState:
         iteration=state.get("iteration", 1),
     )
 
+    emitter = get_current_emitter()
+    if emitter:
+        await emitter.emit_agent_start("product_requirements")
+
     # Initialize PRD sub-workflow state fields
     state["prd_iteration"] = 0
     state["prd_draft"] = None
@@ -120,6 +220,40 @@ async def product_requirements_node(state: DiscoveryState) -> DiscoveryState:
         prd_score=updated_state.get("prd_critic_score"),
         has_product_requirements=updated_state.get("product_requirements") is not None,
     )
+
+    if emitter and updated_state.get("product_requirements"):
+        prd = updated_state["product_requirements"]
+
+        if prd.get("epics"):
+            await emitter.emit_insight(
+                "product_requirements",
+                "epics",
+                f"{len(prd['epics'])} epics defined",
+            )
+
+        total_stories = sum(
+            len(epic.get("user_stories", [])) for epic in prd.get("epics", [])
+        )
+        if total_stories:
+            await emitter.emit_insight(
+                "product_requirements",
+                "user_stories",
+                f"{total_stories} user stories created",
+            )
+
+        if prd.get("functional_requirements"):
+            await emitter.emit_insight(
+                "product_requirements",
+                "requirements",
+                f"{len(prd['functional_requirements'])} functional requirements",
+            )
+
+        await emitter.emit_agent_complete(
+            "product_requirements",
+            f"PRD complete after {updated_state.get('prd_iteration', 1)} iterations",
+            insights_count=3,
+        )
+        await emitter.emit_progress(50, "product_requirements")
 
     return updated_state
 
@@ -140,7 +274,52 @@ async def technical_architect_node(state: DiscoveryState) -> DiscoveryState:
         session_id=state["session_id"],
         iteration=state.get("iteration", 1),
     )
-    return await run_technical_architect_agent(state)
+
+    emitter = get_current_emitter()
+    if emitter:
+        await emitter.emit_agent_start("technical_architect")
+
+    result = await run_technical_architect_agent(state)
+
+    if emitter and result.get("technical_architecture"):
+        ta = result["technical_architecture"]
+
+        if ta.get("tech_stack"):
+            stack = ta["tech_stack"]
+            techs = []
+            if stack.get("frontend"):
+                techs.append(stack["frontend"])
+            if stack.get("backend"):
+                techs.append(stack["backend"])
+            if techs:
+                await emitter.emit_insight(
+                    "technical_architect",
+                    "tech_stack",
+                    f"Stack: {', '.join(techs[:3])}",
+                )
+
+        if ta.get("system_components"):
+            await emitter.emit_insight(
+                "technical_architect",
+                "components",
+                f"{len(ta['system_components'])} system components",
+            )
+
+        if ta.get("security_architecture"):
+            await emitter.emit_insight(
+                "technical_architect",
+                "security",
+                "Security architecture defined",
+            )
+
+        await emitter.emit_agent_complete(
+            "technical_architect",
+            "System architecture designed",
+            insights_count=3,
+        )
+        await emitter.emit_progress(65, "technical_architect")
+
+    return result
 
 
 async def legal_regulatory_node(state: DiscoveryState) -> DiscoveryState:
@@ -159,7 +338,46 @@ async def legal_regulatory_node(state: DiscoveryState) -> DiscoveryState:
         session_id=state["session_id"],
         iteration=state.get("iteration", 1),
     )
-    return await run_legal_regulatory_agent(state)
+
+    emitter = get_current_emitter()
+    if emitter:
+        await emitter.emit_agent_start("legal_regulatory")
+
+    result = await run_legal_regulatory_agent(state)
+
+    if emitter and result.get("legal_regulatory_review"):
+        lr = result["legal_regulatory_review"]
+
+        if lr.get("applicable_regulations"):
+            await emitter.emit_insight(
+                "legal_regulatory",
+                "regulations",
+                f"{len(lr['applicable_regulations'])} regulations identified",
+            )
+
+        if lr.get("data_protection"):
+            await emitter.emit_insight(
+                "legal_regulatory",
+                "data_protection",
+                "Data protection requirements defined",
+            )
+
+        if lr.get("overall_risk_assessment", {}).get("risk_level"):
+            risk = lr["overall_risk_assessment"]["risk_level"]
+            await emitter.emit_insight(
+                "legal_regulatory",
+                "risk_level",
+                f"Risk level: {risk}",
+            )
+
+        await emitter.emit_agent_complete(
+            "legal_regulatory",
+            "Compliance review complete",
+            insights_count=3,
+        )
+        await emitter.emit_progress(85, "legal_regulatory")
+
+    return result
 
 
 async def critique_node(state: DiscoveryState) -> DiscoveryState:
@@ -178,7 +396,46 @@ async def critique_node(state: DiscoveryState) -> DiscoveryState:
         session_id=state["session_id"],
         iteration=state.get("iteration", 1),
     )
-    return await run_critique_agent(state)
+
+    emitter = get_current_emitter()
+    if emitter:
+        await emitter.emit_agent_start("critique")
+
+    result = await run_critique_agent(state)
+
+    if emitter and result.get("quality_assessment"):
+        qa = result["quality_assessment"]
+
+        if qa.get("overall_score") is not None:
+            score = qa["overall_score"]
+            await emitter.emit_insight(
+                "critique",
+                "quality_score",
+                f"Quality score: {int(score * 100)}%",
+            )
+
+        if qa.get("strengths"):
+            await emitter.emit_insight(
+                "critique",
+                "strengths",
+                f"{len(qa['strengths'])} strengths identified",
+            )
+
+        if qa.get("areas_for_improvement"):
+            await emitter.emit_insight(
+                "critique",
+                "improvements",
+                f"{len(qa['areas_for_improvement'])} areas for improvement",
+            )
+
+        await emitter.emit_agent_complete(
+            "critique",
+            f"Quality assessment: {int((qa.get('overall_score') or 0) * 100)}%",
+            insights_count=3,
+        )
+        await emitter.emit_progress(95, "critique")
+
+    return result
 
 
 async def executive_summary_node(state: DiscoveryState) -> DiscoveryState:
@@ -199,6 +456,10 @@ async def executive_summary_node(state: DiscoveryState) -> DiscoveryState:
         node="executive_summary",
         session_id=state["session_id"],
     )
+
+    emitter = get_current_emitter()
+    if emitter:
+        await emitter.emit_agent_start("executive_summary")
 
     state["current_agent"] = "Executive Summary Generator"
     state["updated_at"] = datetime.utcnow().isoformat()
@@ -232,6 +493,21 @@ async def executive_summary_node(state: DiscoveryState) -> DiscoveryState:
                 session_id=state["session_id"],
                 product_name=validated_data.product_name,
             )
+
+            # Emit executive summary insights
+            if emitter:
+                await emitter.emit_insight(
+                    "executive_summary",
+                    "product_name",
+                    f"Product: {validated_data.product_name}",
+                )
+                if validated_data.recommendation:
+                    await emitter.emit_insight(
+                        "executive_summary",
+                        "recommendation",
+                        validated_data.recommendation[:100],
+                    )
+
         except Exception as e:
             logger.error(
                 "executive_summary_validation_error",
@@ -247,6 +523,14 @@ async def executive_summary_node(state: DiscoveryState) -> DiscoveryState:
         )
         # Create a minimal executive summary from available data
         state["executive_summary"] = _create_fallback_summary(state)
+
+    if emitter:
+        await emitter.emit_agent_complete(
+            "executive_summary",
+            "Executive summary generated",
+            insights_count=2,
+        )
+        await emitter.emit_progress(100, "executive_summary")
 
     return state
 
@@ -453,6 +737,7 @@ async def run_discovery_workflow(
     target_market: str | None = None,
     constraints: list[str] | None = None,
     additional_context: str | None = None,
+    event_emitter: Optional["SessionEventEmitter"] = None,
 ) -> DiscoveryState:
     """
     Execute the complete product discovery workflow.
@@ -467,6 +752,7 @@ async def run_discovery_workflow(
         target_market: Optional target market specification.
         constraints: Optional business/technical constraints.
         additional_context: Any additional context.
+        event_emitter: Optional SSE event emitter for real-time streaming.
 
     Returns:
         DiscoveryState: Final state with complete inception pack.
@@ -474,12 +760,16 @@ async def run_discovery_workflow(
     Raises:
         Exception: If workflow execution fails.
     """
+    global _current_emitter
+    _current_emitter = event_emitter
+
     logger.info(
         "workflow_start",
         session_id=session_id,
         product_idea=product_idea[:100],
         industry=industry,
         target_market=target_market,
+        has_emitter=event_emitter is not None,
     )
 
     # Configure Gemini API
@@ -526,12 +816,20 @@ async def run_discovery_workflow(
             exc_info=True,
         )
 
+        # Emit error if emitter available
+        if event_emitter:
+            await event_emitter.emit_error(str(e))
+
         # Return state with error
         initial_state["status"] = SessionStatus.FAILED
         initial_state["errors"] = initial_state.get("errors", []) + [str(e)]
         initial_state["updated_at"] = datetime.utcnow().isoformat()
 
         return initial_state
+
+    finally:
+        # Clear the global emitter reference
+        _current_emitter = None
 
 
 async def get_workflow_state(session_id: str) -> DiscoveryState | None:

@@ -1,0 +1,819 @@
+/**
+ * PackViewer Component
+ *
+ * Enhanced pack viewer with:
+ * - Metrics hero banner at top
+ * - Horizontal section tabs
+ * - Evidence tier badges
+ * - Modern card-based layout
+ */
+
+import { useState, useCallback } from 'react';
+import {
+  ArrowLeft,
+  Download,
+  FileText,
+  FileJson,
+  TrendingUp,
+  Target,
+  Clock,
+  Award,
+  ChevronDown,
+} from 'lucide-react';
+import { exportPdf, exportDocx } from '../api/client';
+import type { InceptionPack, EvidenceTier } from '../types/api';
+import { MermaidDiagram } from './MermaidDiagram';
+import './PackViewer.css';
+
+export interface PackViewerProps {
+  pack: InceptionPack;
+  sessionId: string;
+  onBack: () => void;
+}
+
+// Section configuration
+const SECTIONS = [
+  { key: 'summary', label: 'Summary' },
+  { key: 'research', label: 'Research' },
+  { key: 'business', label: 'Business' },
+  { key: 'product', label: 'Product' },
+  { key: 'tech', label: 'Tech' },
+  { key: 'legal', label: 'Legal' },
+  { key: 'quality', label: 'QA' },
+] as const;
+
+type SectionKey = (typeof SECTIONS)[number]['key'];
+
+// Evidence tier configuration
+const EVIDENCE_TIERS: Record<
+  EvidenceTier,
+  { label: string; color: string; bgColor: string; description: string }
+> = {
+  E1: {
+    label: 'Validated',
+    color: '#22c55e',
+    bgColor: 'rgba(34, 197, 94, 0.15)',
+    description: 'Confirmed by research',
+  },
+  E2: {
+    label: 'Supported',
+    color: '#3b82f6',
+    bgColor: 'rgba(59, 130, 246, 0.15)',
+    description: 'Strong indicators',
+  },
+  E3: {
+    label: 'Hypothesis',
+    color: '#f59e0b',
+    bgColor: 'rgba(245, 158, 11, 0.15)',
+    description: 'Needs validation',
+  },
+  E4: {
+    label: 'Assumption',
+    color: '#ef4444',
+    bgColor: 'rgba(239, 68, 68, 0.15)',
+    description: 'Requires testing',
+  },
+};
+
+// Evidence Badge Component
+function EvidenceBadge({ tier }: { tier: EvidenceTier }) {
+  const config = EVIDENCE_TIERS[tier] || EVIDENCE_TIERS.E4;
+  return (
+    <span
+      className="evidence-badge"
+      style={{ backgroundColor: config.bgColor, color: config.color }}
+      title={config.description}
+    >
+      {tier}
+    </span>
+  );
+}
+
+// Metric Card Component
+function MetricCard({
+  label,
+  value,
+  icon,
+  color,
+}: {
+  label: string;
+  value: string | number;
+  icon: React.ReactNode;
+  color: string;
+}) {
+  return (
+    <div className="metric-card" style={{ borderColor: color }}>
+      <div className="metric-icon" style={{ color }}>
+        {icon}
+      </div>
+      <div className="metric-content">
+        <span className="metric-value">{value}</span>
+        <span className="metric-label">{label}</span>
+      </div>
+    </div>
+  );
+}
+
+// Format duration
+function formatDuration(seconds: number | undefined): string {
+  if (!seconds) return 'N/A';
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.round(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+// Count hypotheses across the pack
+function countHypotheses(pack: InceptionPack): number {
+  let count = 0;
+
+  // Count pain signals
+  if (pack.customer_research?.pain_signals) {
+    count += pack.customer_research.pain_signals.length;
+  }
+
+  // Count epics
+  if (pack.product_requirements_document?.epics) {
+    count += pack.product_requirements_document.epics.length;
+  }
+
+  // Count risks
+  if (pack.business_case?.risks_and_mitigations) {
+    count += pack.business_case.risks_and_mitigations.length;
+  }
+
+  return count;
+}
+
+export function PackViewer({ pack, sessionId, onBack }: PackViewerProps) {
+  const [activeSection, setActiveSection] = useState<SectionKey>('summary');
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
+
+  const handleExport = useCallback(
+    async (format: 'pdf' | 'docx') => {
+      setIsExporting(true);
+      setExportDropdownOpen(false);
+
+      try {
+        const blob = format === 'pdf' ? await exportPdf(sessionId) : await exportDocx(sessionId);
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `inception-pack-${sessionId}.${format}`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Export failed:', error);
+      } finally {
+        setIsExporting(false);
+      }
+    },
+    [sessionId]
+  );
+
+  const handleExportJson = useCallback(() => {
+    const blob = new Blob([JSON.stringify(pack, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `inception-pack-${sessionId}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setExportDropdownOpen(false);
+  }, [pack, sessionId]);
+
+  const qualityScore = pack.quality_assessment?.overall_score ?? pack.metadata?.quality_score;
+  const scorePercent = qualityScore ? Math.round(qualityScore * 100) : null;
+
+  // Extract TAM from customer research
+  const tam = pack.customer_research?.market_context?.total_addressable_market;
+
+  return (
+    <div className="pack-viewer">
+      {/* Header */}
+      <header className="pack-header">
+        <button className="back-btn" onClick={onBack}>
+          <ArrowLeft size={18} />
+          <span>Dashboard</span>
+        </button>
+
+        <div className="header-spacer" />
+
+        <div className="export-dropdown">
+          <button
+            className="export-btn"
+            onClick={() => setExportDropdownOpen(!exportDropdownOpen)}
+            disabled={isExporting}
+          >
+            <Download size={16} />
+            <span>{isExporting ? 'Exporting...' : 'Export'}</span>
+            <ChevronDown size={14} />
+          </button>
+
+          {exportDropdownOpen && (
+            <div className="export-menu">
+              <button onClick={() => handleExport('pdf')}>
+                <FileText size={16} />
+                <span>Export PDF</span>
+              </button>
+              <button onClick={() => handleExport('docx')}>
+                <FileText size={16} />
+                <span>Export DOCX</span>
+              </button>
+              <button onClick={handleExportJson}>
+                <FileJson size={16} />
+                <span>Export JSON</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <section className="pack-hero">
+        <h1 className="hero-title">{pack.executive_summary?.product_name || 'Inception Pack'}</h1>
+        {pack.executive_summary?.tagline && (
+          <p className="hero-tagline">{pack.executive_summary.tagline}</p>
+        )}
+
+        <div className="metrics-grid">
+          {scorePercent !== null && (
+            <MetricCard
+              label="Score"
+              value={`${scorePercent}%`}
+              icon={<Award size={20} />}
+              color="#8b5cf6"
+            />
+          )}
+          {tam && (
+            <MetricCard
+              label="TAM"
+              value={tam}
+              icon={<TrendingUp size={20} />}
+              color="#3b82f6"
+            />
+          )}
+          <MetricCard
+            label="Hypotheses"
+            value={countHypotheses(pack)}
+            icon={<Target size={20} />}
+            color="#22c55e"
+          />
+          <MetricCard
+            label="Duration"
+            value={formatDuration(pack.metadata?.total_duration_seconds)}
+            icon={<Clock size={20} />}
+            color="#6b7280"
+          />
+        </div>
+      </section>
+
+      {/* Section Navigation */}
+      <nav className="section-nav">
+        {SECTIONS.map((section) => (
+          <button
+            key={section.key}
+            className={`section-tab ${activeSection === section.key ? 'active' : ''}`}
+            onClick={() => setActiveSection(section.key)}
+          >
+            {section.label}
+          </button>
+        ))}
+      </nav>
+
+      {/* Section Content */}
+      <main className="section-content">
+        {activeSection === 'summary' && (
+          <SummarySection summary={pack.executive_summary} />
+        )}
+        {activeSection === 'research' && (
+          <ResearchSection research={pack.customer_research} />
+        )}
+        {activeSection === 'business' && (
+          <BusinessSection business={pack.business_case} />
+        )}
+        {activeSection === 'product' && (
+          <ProductSection prd={pack.product_requirements_document} />
+        )}
+        {activeSection === 'tech' && (
+          <TechSection tech={pack.technical_architecture} />
+        )}
+        {activeSection === 'legal' && (
+          <LegalSection legal={pack.legal_regulatory_review} />
+        )}
+        {activeSection === 'quality' && (
+          <QualitySection quality={pack.quality_assessment} />
+        )}
+      </main>
+    </div>
+  );
+}
+
+// Section Components
+
+function SummarySection({ summary }: { summary: InceptionPack['executive_summary'] }) {
+  if (!summary) return <EmptySection message="No executive summary available" />;
+
+  return (
+    <div className="section-grid">
+      <div className="content-card full-width">
+        <h3>Problem Statement</h3>
+        <p>{summary.problem_statement}</p>
+      </div>
+
+      <div className="content-card full-width">
+        <h3>Solution Overview</h3>
+        <p>{summary.solution_overview}</p>
+      </div>
+
+      <div className="content-card">
+        <h3>Value Proposition</h3>
+        <p>{summary.value_proposition}</p>
+      </div>
+
+      <div className="content-card">
+        <h3>Target Users</h3>
+        <ul className="bullet-list">
+          {summary.target_users?.map((user, i) => (
+            <li key={i}>{user}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="content-card">
+        <h3>Key Differentiators</h3>
+        <ul className="bullet-list">
+          {summary.key_differentiators?.map((diff, i) => (
+            <li key={i}>{diff}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="content-card">
+        <h3>Top Risks</h3>
+        <ul className="bullet-list warning">
+          {summary.top_risks?.map((risk, i) => (
+            <li key={i}>{risk}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="content-card full-width highlight">
+        <h3>Recommendation</h3>
+        <p className="recommendation">{summary.recommendation}</p>
+      </div>
+    </div>
+  );
+}
+
+function ResearchSection({ research }: { research: InceptionPack['customer_research'] }) {
+  if (!research) return <EmptySection message="No customer research available" />;
+
+  return (
+    <div className="section-grid">
+      {/* Pain Signals */}
+      {research.pain_signals && research.pain_signals.length > 0 && (
+        <div className="content-card full-width">
+          <h3>Pain Signals</h3>
+          <div className="evidence-table">
+            <div className="table-header">
+              <span>Description</span>
+              <span>Severity</span>
+              <span>Evidence</span>
+            </div>
+            {research.pain_signals.map((signal, i) => (
+              <div key={i} className="table-row">
+                <span className="pain-description">{signal.description}</span>
+                <span className={`severity ${signal.severity}`}>{signal.severity}</span>
+                <span>
+                  <EvidenceBadge tier={signal.evidence_tier} />
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Job to be Done */}
+      {research.job_to_be_done && (
+        <div className="content-card">
+          <h3>Job to be Done</h3>
+          <div className="jtbd-card">
+            <p>
+              <strong>When</strong> {research.job_to_be_done.trigger_situation}
+            </p>
+            <p>
+              <strong>I want to</strong> {research.job_to_be_done.underlying_goal}
+            </p>
+            <p>
+              <strong>So that</strong> {research.job_to_be_done.success_definition}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Market Context */}
+      {research.market_context && (
+        <div className="content-card">
+          <h3>Market Context</h3>
+          <div className="market-funnel">
+            <div className="funnel-item">
+              <span className="funnel-label">TAM</span>
+              <span className="funnel-value">
+                {research.market_context.total_addressable_market}
+              </span>
+            </div>
+            <div className="funnel-arrow">→</div>
+            <div className="funnel-item">
+              <span className="funnel-label">SAM</span>
+              <span className="funnel-value">
+                {research.market_context.serviceable_addressable_market}
+              </span>
+            </div>
+            <div className="funnel-arrow">→</div>
+            <div className="funnel-item">
+              <span className="funnel-label">SOM</span>
+              <span className="funnel-value">
+                {research.market_context.serviceable_obtainable_market}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Personas */}
+      {research.user_personas && research.user_personas.length > 0 && (
+        <div className="content-card full-width">
+          <h3>Personas</h3>
+          <div className="persona-grid">
+            {research.user_personas.map((persona, i) => (
+              <div key={i} className="persona-card">
+                <h4>{persona.name}</h4>
+                <p className="persona-role">{persona.role}</p>
+                <div className="persona-details">
+                  <p>
+                    <strong>Goals:</strong> {persona.goals?.join(', ')}
+                  </p>
+                  <p>
+                    <strong>Pain Points:</strong> {persona.frustrations?.join(', ')}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function BusinessSection({ business }: { business: InceptionPack['business_case'] }) {
+  if (!business) return <EmptySection message="No business case available" />;
+
+  return (
+    <div className="section-grid">
+      {/* Lean Canvas */}
+      {business.lean_canvas && (
+        <div className="content-card full-width">
+          <h3>Lean Canvas</h3>
+          <div className="lean-canvas">
+            <div className="canvas-cell problem">
+              <h4>Problem</h4>
+              <ul>
+                {business.lean_canvas.problem?.map((p, i) => (
+                  <li key={i}>{p}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="canvas-cell solution">
+              <h4>Solution</h4>
+              <ul>
+                {business.lean_canvas.solution?.map((s, i) => (
+                  <li key={i}>{s}</li>
+                ))}
+              </ul>
+            </div>
+            <div className="canvas-cell uvp">
+              <h4>Unique Value Proposition</h4>
+              <p>{business.lean_canvas.unique_value_proposition}</p>
+            </div>
+            <div className="canvas-cell unfair">
+              <h4>Unfair Advantage</h4>
+              <p>{business.lean_canvas.unfair_advantage}</p>
+            </div>
+            <div className="canvas-cell segments">
+              <h4>Customer Segments</h4>
+              <ul>
+                {business.lean_canvas.customer_segments?.map((s, i) => (
+                  <li key={i}>{s}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Revenue Streams */}
+      {business.revenue_streams && business.revenue_streams.length > 0 && (
+        <div className="content-card">
+          <h3>Revenue Streams</h3>
+          <ul className="revenue-list">
+            {business.revenue_streams.map((stream, i) => (
+              <li key={i}>
+                <span className="stream-name">{stream.name}</span>
+                <span className="stream-model">{stream.pricing_model}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Risks */}
+      {business.risks_and_mitigations && business.risks_and_mitigations.length > 0 && (
+        <div className="content-card">
+          <h3>Risks & Mitigations</h3>
+          <ul className="risk-list">
+            {business.risks_and_mitigations.map((item, i) => (
+              <li key={i}>
+                <div className="risk-item">
+                  <span className="risk-label">{item.risk}</span>
+                  <span className="mitigation">{item.mitigation}</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductSection({ prd }: { prd: InceptionPack['product_requirements_document'] }) {
+  if (!prd) return <EmptySection message="No product requirements available" />;
+
+  return (
+    <div className="section-grid">
+      {/* Epics */}
+      {prd.epics && prd.epics.length > 0 && (
+        <div className="content-card full-width">
+          <h3>Epics & User Stories</h3>
+          <div className="epic-list">
+            {prd.epics.map((epic, i) => (
+              <div key={i} className="epic-card">
+                <h4>
+                  <span className="epic-number">E{i + 1}</span>
+                  {epic.title}
+                </h4>
+                <p className="epic-description">{epic.description}</p>
+                {epic.stories && epic.stories.length > 0 && (
+                  <div className="story-list">
+                    {epic.stories.slice(0, 3).map((story, j) => (
+                      <div key={j} className="story-item">
+                        <span className="story-id">{story.id}</span>
+                        <span className="story-text">{story.title}</span>
+                        <span className={`story-priority ${story.priority}`}>
+                          {story.priority}
+                        </span>
+                      </div>
+                    ))}
+                    {epic.stories.length > 3 && (
+                      <span className="more-stories">
+                        +{epic.stories.length - 3} more stories
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Functional Requirements */}
+      {prd.functional_requirements && prd.functional_requirements.length > 0 && (
+        <div className="content-card">
+          <h3>Functional Requirements</h3>
+          <ul className="requirement-list">
+            {prd.functional_requirements.slice(0, 8).map((req, i) => (
+              <li key={i}>
+                <span className="req-id">{req.id}</span>
+                <span className="req-text">{req.description}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Non-Functional Requirements */}
+      {prd.non_functional_requirements && prd.non_functional_requirements.length > 0 && (
+        <div className="content-card">
+          <h3>Non-Functional Requirements</h3>
+          <ul className="requirement-list">
+            {prd.non_functional_requirements.slice(0, 6).map((req, i) => (
+              <li key={i}>
+                <span className="req-category">{req.category}</span>
+                <span className="req-text">{req.description}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TechSection({ tech }: { tech: InceptionPack['technical_architecture'] }) {
+  if (!tech) return <EmptySection message="No technical architecture available" />;
+
+  return (
+    <div className="section-grid">
+      {/* Architecture Diagram */}
+      {tech.architecture_diagram_mermaid && (
+        <div className="content-card full-width">
+          <h3>System Architecture</h3>
+          <div className="diagram-container">
+            <MermaidDiagram chart={tech.architecture_diagram_mermaid} />
+          </div>
+        </div>
+      )}
+
+      {/* Tech Stack */}
+      {tech.technology_stack && tech.technology_stack.length > 0 && (
+        <div className="content-card">
+          <h3>Tech Stack</h3>
+          <div className="tech-stack-grid">
+            {tech.technology_stack.map((item, i) => (
+              <div key={i} className="stack-item">
+                <span className="stack-label">{item.category}</span>
+                <span className="stack-value">{item.technology}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* System Components */}
+      {tech.system_components && tech.system_components.length > 0 && (
+        <div className="content-card">
+          <h3>System Components</h3>
+          <ul className="component-list">
+            {tech.system_components.map((comp, i) => (
+              <li key={i}>
+                <span className="comp-name">{comp.name}</span>
+                <span className="comp-purpose">{comp.description}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function LegalSection({ legal }: { legal: InceptionPack['legal_regulatory_review'] }) {
+  if (!legal) return <EmptySection message="No legal review available" />;
+
+  return (
+    <div className="section-grid">
+      {/* Risk Assessment */}
+      {legal.overall_risk_assessment && (
+        <div className="content-card highlight">
+          <h3>Overall Risk Assessment</h3>
+          <div className="risk-assessment">
+            <span className={`risk-level ${legal.overall_risk_assessment.risk_level}`}>
+              {legal.overall_risk_assessment.risk_level?.toUpperCase()} RISK
+            </span>
+            {legal.overall_risk_assessment.key_concerns && legal.overall_risk_assessment.key_concerns.length > 0 && (
+              <ul className="bullet-list">
+                {legal.overall_risk_assessment.key_concerns.slice(0, 3).map((concern, i) => (
+                  <li key={i}>{concern}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Applicable Regulations */}
+      {legal.applicable_regulations && legal.applicable_regulations.length > 0 && (
+        <div className="content-card full-width">
+          <h3>Applicable Regulations</h3>
+          <div className="regulation-grid">
+            {legal.applicable_regulations.map((reg, i) => (
+              <div key={i} className="regulation-card">
+                <h4>{reg.name}</h4>
+                <p>{reg.description}</p>
+                {reg.compliance_requirements && (
+                  <ul className="compliance-list">
+                    {reg.compliance_requirements.slice(0, 3).map((req, j) => (
+                      <li key={j}>{req}</li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Data Protection */}
+      {legal.data_protection_requirements && legal.data_protection_requirements.length > 0 && (
+        <div className="content-card">
+          <h3>Data Protection</h3>
+          <ul className="bullet-list">
+            {legal.data_protection_requirements.map((req, i) => (
+              <li key={i}>
+                <strong>{req.regulation}:</strong> {req.key_obligations?.join(', ')}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function QualitySection({ quality }: { quality: InceptionPack['quality_assessment'] }) {
+  if (!quality) return <EmptySection message="No quality assessment available" />;
+
+  const score = quality.overall_score ? Math.round(quality.overall_score * 100) : null;
+
+  return (
+    <div className="section-grid">
+      {/* Overall Score */}
+      <div className="content-card highlight center">
+        <h3>Overall Quality Score</h3>
+        <div className="quality-score">
+          <span className="score-value">{score ?? 'N/A'}%</span>
+          <span className="score-label">
+            {score && score >= 80 ? 'Excellent' : score && score >= 60 ? 'Good' : 'Needs Work'}
+          </span>
+        </div>
+      </div>
+
+      {/* Strengths */}
+      {quality.strengths && quality.strengths.length > 0 && (
+        <div className="content-card">
+          <h3>Strengths</h3>
+          <ul className="bullet-list success">
+            {quality.strengths.map((strength, i) => (
+              <li key={i}>{strength}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Areas for Improvement (Weaknesses) */}
+      {quality.weaknesses && quality.weaknesses.length > 0 && (
+        <div className="content-card">
+          <h3>Areas for Improvement</h3>
+          <ul className="bullet-list warning">
+            {quality.weaknesses.map((weakness, i) => (
+              <li key={i}>{weakness}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Section Scores */}
+      {quality.section_scores && quality.section_scores.length > 0 && (
+        <div className="content-card full-width">
+          <h3>Section Scores</h3>
+          <div className="score-bars">
+            {quality.section_scores.map((sectionScore, i) => {
+              const percent = Math.round(sectionScore.score * 100);
+              return (
+                <div key={i} className="score-bar-item">
+                  <span className="score-bar-label">
+                    {sectionScore.section.replace(/_/g, ' ')}
+                  </span>
+                  <div className="score-bar-track">
+                    <div
+                      className="score-bar-fill"
+                      style={{ width: `${percent}%` }}
+                    />
+                  </div>
+                  <span className="score-bar-value">{percent}%</span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function EmptySection({ message }: { message: string }) {
+  return (
+    <div className="empty-section">
+      <p>{message}</p>
+    </div>
+  );
+}
+
+export default PackViewer;

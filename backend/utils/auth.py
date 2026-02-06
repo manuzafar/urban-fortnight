@@ -192,3 +192,29 @@ async def get_optional_user_id(
         return payload.get("sub")
     except HTTPException:
         return None
+
+
+def get_user_id_from_token(token: str) -> str:
+    """
+    Extract user_id from a token string.
+
+    Used for SSE endpoints where the token is passed as a query parameter
+    since EventSource doesn't support custom headers.
+
+    Args:
+        token: JWT token string
+
+    Returns:
+        User ID from the token
+
+    Raises:
+        HTTPException: If token is invalid or missing user ID
+    """
+    payload = decode_supabase_jwt(token)
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token missing user identifier",
+        )
+    return user_id
