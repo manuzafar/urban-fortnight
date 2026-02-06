@@ -495,7 +495,7 @@ function BusinessSection({ business }: { business: InceptionPack['business_case'
   if (!business) return <EmptySection message="No business case available" />;
 
   // Type assertion for financial_projection since it may come from visual data
-  const financialProjection = (business as Record<string, unknown>).financial_projection as
+  const financialProjection = (business as unknown as Record<string, unknown>).financial_projection as
     | { monthly_data: unknown[]; break_even_month: number | null }
     | undefined;
 
@@ -678,7 +678,7 @@ function LegalSection({ legal }: { legal: InceptionPack['legal_regulatory_review
   if (!legal) return <EmptySection message="No legal review available" />;
 
   // Type assertion for risk_matrix since it may come from visual data
-  const riskMatrix = (legal as Record<string, unknown>).risk_matrix as
+  const riskMatrix = (legal as unknown as Record<string, unknown>).risk_matrix as
     | { risks: unknown[]; high_priority_count: number; overall_risk_level: string }
     | undefined;
 

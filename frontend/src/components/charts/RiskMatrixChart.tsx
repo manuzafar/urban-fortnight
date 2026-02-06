@@ -32,13 +32,6 @@ function getRiskColor(score: number): string {
   return '#ef4444'; // Red - Critical
 }
 
-function getRiskLabel(score: number): string {
-  if (score <= 4) return 'Low';
-  if (score <= 9) return 'Medium';
-  if (score <= 15) return 'High';
-  return 'Critical';
-}
-
 export function RiskMatrixChart({ data }: { data: RiskMatrixData }) {
   // Group risks by grid cell
   const riskGrid = useMemo(() => {
