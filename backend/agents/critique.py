@@ -63,6 +63,22 @@ async def run_critique_agent(state: DiscoveryState) -> DiscoveryState:
     product_requirements_json = get_product_requirements_summary(state)
     technical_architecture_json = get_technical_architecture_summary(state)
 
+    # Log what data is available for debugging
+    has_customer_research = state.get("customer_research") is not None
+    has_business_case = state.get("business_case") is not None
+    has_product_requirements = state.get("product_requirements") is not None
+    has_technical_architecture = state.get("technical_architecture") is not None
+
+    logger.info(
+        "critique_inputs",
+        session_id=state["session_id"],
+        has_customer_research=has_customer_research,
+        has_business_case=has_business_case,
+        has_product_requirements=has_product_requirements,
+        has_technical_architecture=has_technical_architecture,
+        tech_arch_json_length=len(technical_architecture_json) if technical_architecture_json else 0,
+    )
+
     # Get previous assessment if this is a later iteration
     previous_assessment = None
     if state.get("quality_assessment"):
@@ -70,6 +86,19 @@ async def run_critique_agent(state: DiscoveryState) -> DiscoveryState:
 
     current_iteration = state.get("iteration", 1)
     max_iterations = settings.max_revision_iterations
+
+    # Build a content availability note to help the LLM
+    content_note = f"""
+## CONTENT AVAILABILITY NOTE
+The following sections have been generated and are provided below for your evaluation:
+- Customer Research: {"PRESENT" if has_customer_research else "NOT AVAILABLE"}
+- Business Case: {"PRESENT" if has_business_case else "NOT AVAILABLE"}
+- Product Requirements: {"PRESENT" if has_product_requirements else "NOT AVAILABLE"}
+- Technical Architecture: {"PRESENT" if has_technical_architecture else "NOT AVAILABLE"}
+
+IMPORTANT: Only mark a section as "absent" or "missing" if it shows "NOT AVAILABLE" above.
+If a section shows "PRESENT", it contains actual content that must be evaluated.
+"""
 
     # Format the prompt with all context
     prompt = format_prompt(
@@ -83,6 +112,9 @@ async def run_critique_agent(state: DiscoveryState) -> DiscoveryState:
         max_iterations=max_iterations,
         previous_assessment=previous_assessment,
     )
+
+    # Prepend the content note to help the LLM understand what's available
+    prompt = content_note + "\n" + prompt
 
     # Call the LLM
     result = await call_llm(prompt, AGENT_NAME)
