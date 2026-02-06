@@ -2,8 +2,8 @@
 
 ## Complete Technical Reference for the Multi-Agent Product Discovery System
 
-**Version**: 2.0 (Swarm Architecture)
-**Last Updated**: February 2026
+**Version**: 2.1 (Parallel Execution Fixes + SSE Improvements)
+**Last Updated**: February 6, 2026
 
 ---
 
@@ -1165,88 +1165,118 @@ $$;
 
 ## 7. State Management
 
-### DiscoveryState Structure
+### Parallel State Merging with Reducers
+
+LangGraph's parallel execution requires special handling when multiple branches update state simultaneously. We use `Annotated` types with custom reducers to control how state is merged when parallel branches converge.
 
 ```python
 # backend/agents/state.py
 
+from typing import Annotated, Any, Optional
+
+# ═══════════════════════════════════════════════════════════════
+# REDUCERS FOR PARALLEL STATE MERGING
+# ═══════════════════════════════════════════════════════════════
+
+def keep_last(current: Any, new: Any) -> Any:
+    """Keep the last non-None value (for immutable fields like session_id)."""
+    return new if new is not None else current
+
+def keep_first_non_none(current: Any, new: Any) -> Any:
+    """Keep the first non-None value (for agent outputs set once)."""
+    return current if current is not None else new
+
+def merge_errors(current: list[str], new: list[str]) -> list[str]:
+    """Merge error lists from parallel branches (deduplicates)."""
+    if current is None:
+        current = []
+    if new is None:
+        new = []
+    return list(set(current + new))
+```
+
+### DiscoveryState Structure
+
+```python
 class DiscoveryState(TypedDict, total=False):
     # ═══════════════════════════════════════════════════════════
-    # INPUT FIELDS
+    # INPUT FIELDS (immutable - use keep_last for parallel safety)
     # ═══════════════════════════════════════════════════════════
-    session_id: str
-    user_id: str
-    product_idea: str
-    industry: str | None
-    target_market: str | None
-    constraints: list[str]
-    additional_context: str | None
+    session_id: Annotated[str, keep_last]
+    product_idea: Annotated[str, keep_last]
+    industry: Annotated[Optional[str], keep_last]
+    target_market: Annotated[Optional[str], keep_last]
+    constraints: Annotated[Optional[list[str]], keep_last]
+    additional_context: Annotated[Optional[str], keep_last]
 
     # ═══════════════════════════════════════════════════════════
-    # WORKFLOW CONTROL
+    # WORKFLOW CONTROL (use keep_last for parallel merging)
     # ═══════════════════════════════════════════════════════════
-    status: SessionStatus  # pending, in_progress, completed, failed
-    current_agent: str
-    iteration: int
-    progress_percentage: int
-    started_at: str
-    updated_at: str
+    status: Annotated[SessionStatus, keep_last]
+    current_agent: Annotated[str, keep_last]
+    iteration: Annotated[int, keep_last]
+    started_at: Annotated[str, keep_last]
+    updated_at: Annotated[str, keep_last]
 
     # ═══════════════════════════════════════════════════════════
     # PLANNING PHASE OUTPUTS
     # ═══════════════════════════════════════════════════════════
-    research_plan: dict[str, Any]
-    preliminary_legal_scan: dict[str, Any]
+    research_plan: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    preliminary_legal_scan: Annotated[Optional[dict[str, Any]], keep_first_non_none]
 
     # ═══════════════════════════════════════════════════════════
-    # DISCOVERY SWARM OUTPUTS
+    # AGENT OUTPUTS (use keep_first_non_none - set once per agent)
     # ═══════════════════════════════════════════════════════════
-    customer_research: dict[str, Any]
-    competitive_analysis: dict[str, Any]
-    detailed_personas: dict[str, Any]
-
-    # ═══════════════════════════════════════════════════════════
-    # STRATEGY SWARM OUTPUTS
-    # ═══════════════════════════════════════════════════════════
-    business_case: dict[str, Any]
-    gtm_plan: dict[str, Any]
-    financial_model: dict[str, Any]
-
-    # ═══════════════════════════════════════════════════════════
-    # DELIVERY SWARM OUTPUTS
-    # ═══════════════════════════════════════════════════════════
-    prd: dict[str, Any]
-    technical_architecture: dict[str, Any]
-    legal_review: dict[str, Any]
-    risk_assessment: dict[str, Any]
+    customer_research: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    competitive_analysis: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    detailed_personas: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    business_case: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    gtm_plan: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    financial_model: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    product_requirements: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    technical_architecture: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    legal_regulatory_review: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    risk_assessment: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    quality_assessment: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    executive_summary: Annotated[Optional[dict[str, Any]], keep_first_non_none]
 
     # ═══════════════════════════════════════════════════════════
     # PRD SUB-WORKFLOW
     # ═══════════════════════════════════════════════════════════
-    prd_iteration: int
-    prd_draft: dict[str, Any] | None
-    prd_critic_feedback: list[str] | None
-    prd_critic_score: float | None
-    prd_quality_passed: bool
-
-    # ═══════════════════════════════════════════════════════════
-    # QUALITY & SYNTHESIS
-    # ═══════════════════════════════════════════════════════════
-    quality_assessment: dict[str, Any]
-    executive_summary: dict[str, Any]
+    prd_iteration: Annotated[int, keep_last]
+    prd_draft: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    prd_critic_feedback: Annotated[Optional[list[str]], keep_first_non_none]
+    prd_critic_score: Annotated[Optional[float], keep_first_non_none]
+    prd_quality_passed: Annotated[bool, keep_last]
 
     # ═══════════════════════════════════════════════════════════
     # FACILITATOR FIELDS
     # ═══════════════════════════════════════════════════════════
-    contradiction_context: dict[str, Any] | None
+    contradiction_context: Annotated[Optional[dict[str, Any]], keep_first_non_none]
 
     # ═══════════════════════════════════════════════════════════
-    # METRICS
+    # METRICS (errors merge, others keep_last)
     # ═══════════════════════════════════════════════════════════
-    errors: list[str]
-    total_tokens_used: int
-    total_duration_seconds: float
+    errors: Annotated[list[str], merge_errors]
+    total_tokens_used: Annotated[int, keep_last]
+    total_duration_seconds: Annotated[float, keep_last]
 ```
+
+### Why Reducers Are Needed
+
+When parallel branches (e.g., `customer_research` and `legal_preliminary`) converge, LangGraph must merge their states. Without reducers, LangGraph throws:
+
+```
+InvalidUpdateError: At key 'session_id': Can receive only one value per step.
+```
+
+The reducers tell LangGraph how to handle this:
+
+| Reducer | Use Case | Behavior |
+|---------|----------|----------|
+| `keep_last` | Immutable fields (session_id) | Keep latest value |
+| `keep_first_non_none` | Agent outputs | Keep first set value |
+| `merge_errors` | Error tracking | Combine from all branches |
 
 ---
 
@@ -1421,7 +1451,7 @@ class StreamEventType(str, Enum):
     INSIGHT = "insight"               # Key finding discovered
     AGENT_COMPLETE = "agent_complete" # Agent finished
     PROGRESS = "progress"             # Progress percentage
-    ERROR = "error"                   # Error occurred
+    ERROR = "workflow_error"          # Error occurred (NOT 'error' - reserved by EventSource!)
     DONE = "done"                     # Session complete
     HEARTBEAT = "heartbeat"           # Keep-alive
 
@@ -1436,7 +1466,35 @@ class StreamEventType(str, Enum):
     DECISION_POINT = "decision"       # Key decision identified
 ```
 
-### Frontend SSE Hook
+> **Important**: The error event is named `workflow_error` instead of `error` because `error` is a reserved EventSource event type used by browsers for connection errors. Using `error` for custom events causes conflicts.
+
+### SSE Connection Flow
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│ 1. Client connects to /api/discovery/session/{id}/stream?token= │
+└────────────────────────────────────┬────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 2. Backend sends IMMEDIATE HEARTBEAT                            │
+│    (Establishes connection, prevents browser timeout)           │
+└────────────────────────────────────┬────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 3. Backend streams events as agents progress                    │
+│    agent_start → insight → insight → agent_complete → ...       │
+└────────────────────────────────────┬────────────────────────────┘
+                                     │
+                                     ▼
+┌─────────────────────────────────────────────────────────────────┐
+│ 4. Workflow complete: Backend sends DONE event                  │
+│    Client receives pack, closes connection                      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Frontend SSE Hook with Safe Event Handling
 
 ```typescript
 // frontend/src/hooks/useSSE.ts
@@ -1457,25 +1515,63 @@ export function useSSE(
     const url = `${API_BASE}/api/discovery/session/${sessionId}/stream?token=${authToken}`;
     const eventSource = new EventSource(url);
 
+    // Safe event handler - validates data exists before JSON parsing
+    // This prevents "undefined is not valid JSON" errors when browser
+    // fires native EventSource events (which don't have .data)
+    const safeEventHandler = (eventType: string) => (e: Event) => {
+      const messageEvent = e as MessageEvent;
+      if (messageEvent.data !== undefined && messageEvent.data !== null) {
+        handleEvent(eventType, messageEvent.data);
+      }
+    };
+
     // Core event handlers
-    eventSource.addEventListener('agent_start', (e) => handleEvent('agent_start', e.data));
-    eventSource.addEventListener('progress', (e) => handleEvent('progress', e.data));
-    eventSource.addEventListener('done', (e) => handleEvent('done', e.data));
+    eventSource.addEventListener('agent_start', safeEventHandler('agent_start'));
+    eventSource.addEventListener('progress', safeEventHandler('progress'));
+    eventSource.addEventListener('done', safeEventHandler('done'));
+    eventSource.addEventListener('heartbeat', safeEventHandler('heartbeat'));
+
+    // IMPORTANT: Use 'workflow_error' NOT 'error' (reserved by EventSource)
+    eventSource.addEventListener('workflow_error', safeEventHandler('error'));
 
     // Enhanced event handlers
-    eventSource.addEventListener('plan_ready', (e) => handleEvent('plan_ready', e.data));
-    eventSource.addEventListener('competitor', (e) => handleEvent('competitor', e.data));
-    eventSource.addEventListener('market_data', (e) => handleEvent('market_data', e.data));
-    eventSource.addEventListener('financial', (e) => handleEvent('financial', e.data));
-    eventSource.addEventListener('risk', (e) => handleEvent('risk', e.data));
-    eventSource.addEventListener('diagram', (e) => handleEvent('diagram', e.data));
-    eventSource.addEventListener('citation', (e) => handleEvent('citation', e.data));
-    eventSource.addEventListener('decision', (e) => handleEvent('decision', e.data));
+    eventSource.addEventListener('plan_ready', safeEventHandler('plan_ready'));
+    eventSource.addEventListener('competitor', safeEventHandler('competitor'));
+    eventSource.addEventListener('market_data', safeEventHandler('market_data'));
+    eventSource.addEventListener('financial', safeEventHandler('financial'));
+    eventSource.addEventListener('risk', safeEventHandler('risk'));
+    eventSource.addEventListener('diagram', safeEventHandler('diagram'));
+    eventSource.addEventListener('citation', safeEventHandler('citation'));
+    eventSource.addEventListener('decision', safeEventHandler('decision'));
+
+    // Handle browser connection errors (NOT our custom errors)
+    eventSource.onerror = (e) => {
+      console.error('SSE connection error:', e);
+      setIsConnected(false);
+      setError('Connection lost. Attempting to reconnect...');
+    };
 
     return () => eventSource.close();
   }, [sessionId, authToken, enabled]);
 
   return { isConnected, currentAgent, progress, isComplete, /* ... */ };
+}
+```
+
+### SSE Event Format
+
+All events follow this structure:
+
+```json
+{
+  "type": "agent_start",
+  "agent": "customer_research",
+  "data": {
+    "message": "Analyzing market and customer needs",
+    "display_name": "Customer Research",
+    "icon": "search"
+  },
+  "timestamp": "2026-02-06T15:30:00.000000"
 }
 ```
 
@@ -1679,6 +1775,116 @@ AGENT_MODEL_CONFIG = {
     "legal_regulatory": "pro",
     "critique": "pro",
 }
+```
+
+---
+
+## 15. Troubleshooting & Known Issues
+
+### SSE Connection Errors
+
+**Symptom**: `Error parsing SSE event: SyntaxError: "undefined" is not valid JSON`
+
+**Cause**: The browser's EventSource fires native `error` events (for connection issues) which don't have a `.data` property. If you use `addEventListener('error', ...)` for custom events, the handler receives both native errors (no data) and custom events (with data).
+
+**Solution**:
+1. Use `workflow_error` instead of `error` for custom SSE events
+2. Use `safeEventHandler` that checks if `data` exists before parsing
+
+```typescript
+const safeEventHandler = (eventType: string) => (e: Event) => {
+  const messageEvent = e as MessageEvent;
+  if (messageEvent.data !== undefined && messageEvent.data !== null) {
+    handleEvent(eventType, messageEvent.data);
+  }
+};
+
+// Listen to custom errors (NOT browser errors)
+eventSource.addEventListener('workflow_error', safeEventHandler('error'));
+```
+
+### Parallel Execution State Merge Errors
+
+**Symptom**: `InvalidUpdateError: At key 'session_id': Can receive only one value per step`
+
+**Cause**: When LangGraph parallel branches converge, both branches have the same field values (e.g., `session_id`). Without reducers, LangGraph can't decide which value to keep.
+
+**Solution**: Use `Annotated` types with reducers in `DiscoveryState`:
+
+```python
+from typing import Annotated
+
+def keep_last(current: Any, new: Any) -> Any:
+    return new if new is not None else current
+
+session_id: Annotated[str, keep_last]
+```
+
+### Critique Agent Reports Section as "Absent" When Present
+
+**Symptom**: Quality assessment says a section (e.g., Technical Architecture) is missing, but it appears in the final pack.
+
+**Cause**: LLM hallucination - the model doesn't carefully read the input or misinterprets the content.
+
+**Solution**: The critique agent now:
+1. Logs what content is actually available (`critique_inputs` in logs)
+2. Prepends a "Content Availability Note" to the prompt:
+
+```
+## CONTENT AVAILABILITY NOTE
+- Customer Research: PRESENT
+- Business Case: PRESENT
+- Technical Architecture: PRESENT
+
+IMPORTANT: Only mark a section as "absent" if it shows "NOT AVAILABLE" above.
+```
+
+### OAuth Redirects to Production Instead of Localhost
+
+**Symptom**: After Google sign-in, browser redirects to production URL instead of localhost.
+
+**Cause**: Supabase's OAuth redirect settings. The `redirectTo` parameter may be overridden by Supabase's Site URL setting.
+
+**Solution**:
+1. Add `http://localhost:5174` to Supabase Authentication → URL Configuration → Redirect URLs
+2. The frontend now uses explicit localhost in development mode:
+
+```typescript
+const redirectUrl = import.meta.env.DEV
+  ? 'http://localhost:5174'
+  : window.location.origin;
+```
+
+### Railway Deployment Not Picking Up Changes
+
+**Symptom**: Code changes pushed but production still shows old behavior.
+
+**Causes**:
+1. Frontend service hasn't redeployed (backend and frontend are separate services)
+2. Browser caching old JavaScript bundles
+
+**Solution**:
+1. Check Railway dashboard - verify both services show recent deployments
+2. Hard refresh browser: `Cmd+Shift+R` (Mac) or `Ctrl+Shift+R` (Windows)
+3. Check JavaScript filename hash in Network tab - should change after deployment
+
+### Debugging Tips
+
+**Check SSE Events in Browser**:
+```
+DevTools → Network → Filter by "EventStream" → Click stream → Events tab
+```
+
+**Check Backend Logs on Railway**:
+```bash
+railway logs  # Get recent logs
+railway logs | grep "agent_success"  # Filter for agent completions
+```
+
+**Check Content Availability Before Critique**:
+```bash
+railway logs | grep "critique_inputs"
+# Shows: has_customer_research=True, has_technical_architecture=True, etc.
 ```
 
 ---
