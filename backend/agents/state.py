@@ -7,10 +7,14 @@ specific fields in this state.
 
 The state follows LangGraph's TypedDict pattern for type safety
 and checkpoint serialization support.
+
+For parallel execution support, we use Annotated types with reducers
+to handle state merging when parallel branches converge.
 """
 
 from datetime import datetime
-from typing import Any, Optional, TypedDict
+from operator import add
+from typing import Annotated, Any, Optional, TypedDict
 
 from models.schemas import (
     ExecutiveSummary,
@@ -22,6 +26,31 @@ from models.schemas import (
     QualityAssessment,
     SessionStatus,
 )
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REDUCERS FOR PARALLEL STATE MERGING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+def keep_last(current: Any, new: Any) -> Any:
+    """Keep the last non-None value (for immutable fields like session_id)."""
+    return new if new is not None else current
+
+
+def keep_first_non_none(current: Any, new: Any) -> Any:
+    """Keep the first non-None value."""
+    return current if current is not None else new
+
+
+def merge_errors(current: list[str], new: list[str]) -> list[str]:
+    """Merge error lists from parallel branches."""
+    if current is None:
+        current = []
+    if new is None:
+        new = []
+    # Use set to avoid duplicates, then convert back to list
+    return list(set(current + new))
 
 
 class AgentOutput(TypedDict, total=False):
@@ -73,6 +102,11 @@ class DiscoveryState(TypedDict, total=False):
     This TypedDict defines all fields that flow through the LangGraph
     workflow. Each agent reads the inputs it needs and writes its outputs.
 
+    For parallel execution, fields use Annotated types with reducers:
+    - keep_last: For fields that should use the latest value
+    - keep_first_non_none: For fields set once and shouldn't change
+    - merge_errors: For error lists that should be combined
+
     Input Fields (set at start):
         session_id: Unique identifier for this discovery session.
         product_idea: The product idea to analyze.
@@ -110,94 +144,94 @@ class DiscoveryState(TypedDict, total=False):
     """
 
     # ═══════════════════════════════════════════════════════════════════════════
-    # INPUT FIELDS
+    # INPUT FIELDS (immutable - use keep_last reducer for parallel safety)
     # ═══════════════════════════════════════════════════════════════════════════
 
-    session_id: str
-    product_idea: str
-    industry: Optional[str]
-    target_market: Optional[str]
-    constraints: Optional[list[str]]
-    additional_context: Optional[str]
+    session_id: Annotated[str, keep_last]
+    product_idea: Annotated[str, keep_last]
+    industry: Annotated[Optional[str], keep_last]
+    target_market: Annotated[Optional[str], keep_last]
+    constraints: Annotated[Optional[list[str]], keep_last]
+    additional_context: Annotated[Optional[str], keep_last]
 
     # ═══════════════════════════════════════════════════════════════════════════
-    # PROCESSING FIELDS
+    # PROCESSING FIELDS (use keep_last for parallel merging)
     # ═══════════════════════════════════════════════════════════════════════════
 
-    status: SessionStatus
-    current_agent: str
-    iteration: int
-    started_at: str  # ISO format datetime string
-    updated_at: str  # ISO format datetime string
+    status: Annotated[SessionStatus, keep_last]
+    current_agent: Annotated[str, keep_last]
+    iteration: Annotated[int, keep_last]
+    started_at: Annotated[str, keep_last]  # ISO format datetime string
+    updated_at: Annotated[str, keep_last]  # ISO format datetime string
 
     # ═══════════════════════════════════════════════════════════════════════════
     # PLANNING AGENT OUTPUT
     # ═══════════════════════════════════════════════════════════════════════════
 
-    research_plan: Optional[dict[str, Any]]  # Planning agent output
+    research_plan: Annotated[Optional[dict[str, Any]], keep_first_non_none]
 
     # ═══════════════════════════════════════════════════════════════════════════
     # PARALLEL EXECUTION OUTPUTS (from parallel tracks after planner)
     # ═══════════════════════════════════════════════════════════════════════════
 
-    preliminary_legal_scan: Optional[dict[str, Any]]  # Quick legal scan from parallel track
+    preliminary_legal_scan: Annotated[Optional[dict[str, Any]], keep_first_non_none]
 
     # ═══════════════════════════════════════════════════════════════════════════
     # AGENT OUTPUTS (Validated Pydantic Models serialized to dict)
     # ═══════════════════════════════════════════════════════════════════════════
 
-    executive_summary: Optional[dict[str, Any]]  # ExecutiveSummary
-    customer_research: Optional[dict[str, Any]]  # CustomerResearch
-    business_case: Optional[dict[str, Any]]  # BusinessCase
-    product_requirements: Optional[dict[str, Any]]  # ProductRequirementsDocument
-    technical_architecture: Optional[dict[str, Any]]  # TechnicalArchitecture
-    legal_regulatory_review: Optional[dict[str, Any]]  # LegalRegulatoryReview
-    quality_assessment: Optional[dict[str, Any]]  # QualityAssessment
+    executive_summary: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    customer_research: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    business_case: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    product_requirements: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    technical_architecture: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    legal_regulatory_review: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    quality_assessment: Annotated[Optional[dict[str, Any]], keep_first_non_none]
 
     # ═══════════════════════════════════════════════════════════════════════════
     # SWARM AGENT OUTPUTS (from parallel swarm execution)
     # ═══════════════════════════════════════════════════════════════════════════
 
     # Discovery Swarm outputs
-    competitive_analysis: Optional[dict[str, Any]]  # From Competitive Intelligence agent
-    detailed_personas: Optional[dict[str, Any]]  # From Persona Development agent
+    competitive_analysis: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    detailed_personas: Annotated[Optional[dict[str, Any]], keep_first_non_none]
 
     # Strategy Swarm outputs
-    gtm_plan: Optional[dict[str, Any]]  # From GTM Strategy agent
-    financial_model: Optional[dict[str, Any]]  # From Financial Modeling agent
+    gtm_plan: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    financial_model: Annotated[Optional[dict[str, Any]], keep_first_non_none]
 
     # Delivery Swarm outputs
-    risk_assessment: Optional[dict[str, Any]]  # From Risk Assessment agent
+    risk_assessment: Annotated[Optional[dict[str, Any]], keep_first_non_none]
 
     # Facilitator context
-    contradiction_context: Optional[dict[str, Any]]  # For contradiction resolution
+    contradiction_context: Annotated[Optional[dict[str, Any]], keep_first_non_none]
 
     # ═══════════════════════════════════════════════════════════════════════════
     # PRD SUB-WORKFLOW FIELDS
     # ═══════════════════════════════════════════════════════════════════════════
 
-    prd_iteration: int  # Current iteration within PRD loop (1-3)
-    prd_draft: Optional[dict[str, Any]]  # Current PRD draft being refined
-    prd_critic_feedback: Optional[list[str]]  # Feedback from PRD critic
-    prd_critic_score: Optional[float]  # Latest PRD critic score (0.0-1.0)
-    prd_quality_passed: bool  # Whether PRD passed quality threshold
+    prd_iteration: Annotated[int, keep_last]
+    prd_draft: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    prd_critic_feedback: Annotated[Optional[list[str]], keep_first_non_none]
+    prd_critic_score: Annotated[Optional[float], keep_first_non_none]
+    prd_quality_passed: Annotated[bool, keep_last]
 
     # ═══════════════════════════════════════════════════════════════════════════
     # FEEDBACK FIELDS (for revision loops)
     # ═══════════════════════════════════════════════════════════════════════════
 
-    critique_feedback: Optional[CritiqueFeedback]
-    quality_passed: bool
-    requires_revision: bool
+    critique_feedback: Annotated[Optional[CritiqueFeedback], keep_first_non_none]
+    quality_passed: Annotated[bool, keep_last]
+    requires_revision: Annotated[bool, keep_last]
 
     # ═══════════════════════════════════════════════════════════════════════════
     # TRACKING FIELDS
     # ═══════════════════════════════════════════════════════════════════════════
 
-    agent_outputs: dict[str, AgentOutput]  # Keyed by agent name
-    errors: list[str]
-    total_tokens_used: int
-    total_duration_seconds: float
+    agent_outputs: Annotated[dict[str, AgentOutput], keep_last]
+    errors: Annotated[list[str], merge_errors]
+    total_tokens_used: Annotated[int, keep_last]
+    total_duration_seconds: Annotated[float, keep_last]
 
 
 def create_initial_state(
