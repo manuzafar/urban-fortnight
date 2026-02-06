@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ pack.executive_summary.product_name if pack.executive_summary else 'Inception Pack' }} — Inception Pack</title>
+  <style>
+    /* Base styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.6;
+      color: #1a1a2e;
+      padding: 40px;
+    }
+
+    /* Page breaks */
+    @page {
+      margin: 1in;
+      size: A4;
+      @bottom-center {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 9pt;
+        color: #666;
+      }
+    }
+
+    .section {
+      page-break-inside: avoid;
+      margin-bottom: 30px;
+    }
+
+    .page-break {
+      page-break-after: always;
+    }
+
+    /* Typography */
+    h1 {
+      font-size: 28pt;
+      color: #1a1a2e;
+      border-bottom: 3px solid #667eea;
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 18pt;
+      color: #4a4a6a;
+      margin-top: 30px;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid #e0e0e0;
+    }
+
+    h3 {
+      font-size: 14pt;
+      color: #667eea;
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+
+    h4 {
+      font-size: 12pt;
+      color: #4a4a6a;
+      margin-top: 15px;
+      margin-bottom: 8px;
+    }
+
+    p {
+      margin-bottom: 12px;
+    }
+
+    .meta {
+      color: #666;
+      font-size: 10pt;
+      margin-bottom: 30px;
+    }
+
+    /* Cover page */
+    .cover {
+      text-align: center;
+      padding-top: 200px;
+      page-break-after: always;
+    }
+
+    .cover h1 {
+      font-size: 36pt;
+      border: none;
+      margin-bottom: 10px;
+    }
+
+    .cover .tagline {
+      font-size: 16pt;
+      color: #667eea;
+      margin-bottom: 40px;
+    }
+
+    .cover .meta {
+      margin-top: 60px;
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 15px 0;
+      font-size: 10pt;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f5f7fa;
+      font-weight: 600;
+      color: #4a4a6a;
+    }
+
+    tr:nth-child(even) {
+      background: #fafbfc;
+    }
+
+    /* Lists */
+    ul, ol {
+      margin-left: 25px;
+      margin-bottom: 15px;
+    }
+
+    li {
+      margin-bottom: 8px;
+    }
+
+    /* Cards */
+    .card {
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .card-highlight {
+      background: linear-gradient(135deg, #f0f3ff 0%, #e8ecff 100%);
+      border-color: #667eea;
+    }
+
+    .card-warning {
+      background: #fff5f5;
+      border-color: #fa709a;
+    }
+
+    /* Metrics */
+    .metrics-row {
+      display: flex;
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .metric-card {
+      flex: 1;
+      background: #f8f9fa;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 24pt;
+      font-weight: 700;
+      color: #667eea;
+    }
+
+    .metric-label {
+      font-size: 10pt;
+      color: #666;
+    }
+
+    /* Evidence tiers */
+    .evidence-tier {
+      display: inline-block;
+      background: #667eea;
+      color: white;
+      font-size: 8pt;
+      padding: 2px 6px;
+      border-radius: 3px;
+      margin-right: 8px;
+      font-weight: 600;
+    }
+
+    /* Priority badges */
+    .priority-high {
+      color: #dc3545;
+      font-weight: 600;
+    }
+
+    .priority-medium {
+      color: #fd7e14;
+      font-weight: 600;
+    }
+
+    .priority-low {
+      color: #28a745;
+      font-weight: 600;
+    }
+
+    /* Score */
+    .score-section {
+      text-align: center;
+      margin: 30px 0;
+    }
+
+    .score-value {
+      font-size: 48pt;
+      font-weight: 700;
+      color: #667eea;
+    }
+
+    .score-label {
+      font-size: 14pt;
+      color: #666;
+    }
+
+    /* Two column layout */
+    .two-col {
+      display: flex;
+      gap: 20px;
+    }
+
+    .two-col > div {
+      flex: 1;
+    }
+
+    /* Footer */
+    .footer {
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      text-align: center;
+      font-size: 9pt;
+      color: #999;
+    }
+  </style>
+</head>
+<body>
+  <!-- Cover Page -->
+  {% if not section %}
+  <div class="cover">
+    <h1>{{ pack.executive_summary.product_name if pack.executive_summary else 'Product' }}</h1>
+    {% if pack.executive_summary and pack.executive_summary.tagline %}
+    <p class="tagline">{{ pack.executive_summary.tagline }}</p>
+    {% endif %}
+    <p style="font-size: 18pt; color: #4a4a6a;">Inception Pack</p>
+    <div class="meta">
+      <p>Generated: {{ pack.metadata.generated_at if pack.metadata else 'Unknown' }}</p>
+      <p>Session: {{ pack.metadata.session_id[:8] if pack.metadata else 'Unknown' }}...</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- 1. Executive Summary -->
+  {% if not section or section == 'executive_summary' %}
+  {% if pack.executive_summary %}
+  <div class="section">
+    <h2>1. Executive Summary</h2>
+
+    <div class="card card-highlight">
+      <h3>{{ pack.executive_summary.product_name }}</h3>
+      {% if pack.executive_summary.tagline %}
+      <p><em>{{ pack.executive_summary.tagline }}</em></p>
+      {% endif %}
+    </div>
+
+    <h3>Problem Statement</h3>
+    <p>{{ pack.executive_summary.problem_statement }}</p>
+
+    <h3>Solution Overview</h3>
+    <p>{{ pack.executive_summary.solution_overview }}</p>
+
+    {% if pack.executive_summary.target_audience %}
+    <h3>Target Audience</h3>
+    <p>{{ pack.executive_summary.target_audience }}</p>
+    {% endif %}
+
+    {% if pack.executive_summary.unique_value_proposition %}
+    <h3>Unique Value Proposition</h3>
+    <p>{{ pack.executive_summary.unique_value_proposition }}</p>
+    {% endif %}
+
+    {% if pack.executive_summary.key_metrics %}
+    <h3>Key Metrics</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Target</th>
+          <th>Rationale</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for metric in pack.executive_summary.key_metrics %}
+        <tr>
+          <td>{{ metric.name or metric.metric or metric }}</td>
+          <td>{{ metric.target or metric.value or 'TBD' }}</td>
+          <td>{{ metric.rationale or metric.description or '-' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    {% if pack.executive_summary.key_risks %}
+    <h3>Key Risks</h3>
+    <ul>
+      {% for risk in pack.executive_summary.key_risks[:5] %}
+      <li>{{ risk.risk if risk.risk else risk }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if pack.executive_summary.recommendation %}
+    <div class="card">
+      <h4>Recommendation</h4>
+      <p>{{ pack.executive_summary.recommendation }}</p>
+    </div>
+    {% endif %}
+  </div>
+  {% if not section %}<div class="page-break"></div>{% endif %}
+  {% endif %}
+  {% endif %}
+
+  <!-- 2. Customer Research -->
+  {% if not section or section == 'customer_research' %}
+  {% if pack.customer_research %}
+  <div class="section">
+    <h2>2. Customer Research</h2>
+
+    {% if pack.customer_research.target_customer %}
+    <h3>Target Customer</h3>
+    <div class="card card-highlight">
+      <p>{{ pack.customer_research.target_customer }}</p>
+    </div>
+    {% endif %}
+
+    {% if pack.customer_research.pain_signals %}
+    <h3>Pain Signals</h3>
+    <ul>
+      {% for signal in pack.customer_research.pain_signals[:8] %}
+      <li>
+        <span class="evidence-tier">{{ signal.evidence_tier if signal.evidence_tier else 'E3' }}</span>
+        {{ signal.signal if signal.signal else (signal.description if signal.description else signal) }}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if pack.customer_research.market_hypotheses %}
+    <h3>Market Hypotheses</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Hypothesis</th>
+          <th>Validation</th>
+          <th>Evidence Tier</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for hyp in pack.customer_research.market_hypotheses[:6] %}
+        <tr>
+          <td>{{ hyp.hypothesis if hyp.hypothesis else hyp }}</td>
+          <td>{{ hyp.validation if hyp.validation else '-' }}</td>
+          <td>{{ hyp.evidence_tier if hyp.evidence_tier else 'E3' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    {% if pack.customer_research.uncomfortable_insights %}
+    <h3>Uncomfortable Insights</h3>
+    <div class="card card-warning">
+      <ul>
+        {% for insight in pack.customer_research.uncomfortable_insights[:4] %}
+        <li>{{ insight }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if pack.customer_research.competitive_landscape %}
+    <h3>Competitive Landscape</h3>
+    <p>{{ pack.customer_research.competitive_landscape }}</p>
+    {% endif %}
+  </div>
+  {% if not section %}<div class="page-break"></div>{% endif %}
+  {% endif %}
+  {% endif %}
+
+  <!-- 3. Business Case -->
+  {% if not section or section == 'business_case' %}
+  {% if pack.business_case %}
+  <div class="section">
+    <h2>3. Business Case</h2>
+
+    {% if pack.business_case.lean_canvas %}
+    <h3>Lean Canvas</h3>
+    <table>
+      <tr>
+        <th>Problem</th>
+        <td>{{ pack.business_case.lean_canvas.problem }}</td>
+      </tr>
+      <tr>
+        <th>Solution</th>
+        <td>{{ pack.business_case.lean_canvas.solution }}</td>
+      </tr>
+      <tr>
+        <th>Unique Value Proposition</th>
+        <td>{{ pack.business_case.lean_canvas.unique_value_proposition }}</td>
+      </tr>
+      <tr>
+        <th>Unfair Advantage</th>
+        <td>{{ pack.business_case.lean_canvas.unfair_advantage or '-' }}</td>
+      </tr>
+      <tr>
+        <th>Customer Segments</th>
+        <td>{{ pack.business_case.lean_canvas.customer_segments }}</td>
+      </tr>
+      <tr>
+        <th>Channels</th>
+        <td>{{ pack.business_case.lean_canvas.channels }}</td>
+      </tr>
+      <tr>
+        <th>Revenue Streams</th>
+        <td>{{ pack.business_case.lean_canvas.revenue_streams }}</td>
+      </tr>
+      <tr>
+        <th>Cost Structure</th>
+        <td>{{ pack.business_case.lean_canvas.cost_structure }}</td>
+      </tr>
+    </table>
+    {% endif %}
+
+    {% if pack.business_case.market_sizing %}
+    <h3>Market Sizing</h3>
+    <table>
+      <tr>
+        <th>TAM (Total Addressable Market)</th>
+        <td>{{ pack.business_case.market_sizing.tam }}</td>
+      </tr>
+      <tr>
+        <th>SAM (Serviceable Addressable Market)</th>
+        <td>{{ pack.business_case.market_sizing.sam }}</td>
+      </tr>
+      <tr>
+        <th>SOM (Serviceable Obtainable Market)</th>
+        <td>{{ pack.business_case.market_sizing.som }}</td>
+      </tr>
+    </table>
+    {% endif %}
+
+    {% if pack.business_case.financial_projections %}
+    <h3>Financial Projections</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Period</th>
+          <th>Revenue</th>
+          <th>Costs</th>
+          <th>Profit</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if pack.business_case.financial_projections.year_1 %}
+        <tr>
+          <td>Year 1</td>
+          <td>{{ pack.business_case.financial_projections.year_1.revenue or 'TBD' }}</td>
+          <td>{{ pack.business_case.financial_projections.year_1.costs or 'TBD' }}</td>
+          <td>{{ pack.business_case.financial_projections.year_1.profit or 'TBD' }}</td>
+        </tr>
+        {% endif %}
+        {% if pack.business_case.financial_projections.year_2 %}
+        <tr>
+          <td>Year 2</td>
+          <td>{{ pack.business_case.financial_projections.year_2.revenue or 'TBD' }}</td>
+          <td>{{ pack.business_case.financial_projections.year_2.costs or 'TBD' }}</td>
+          <td>{{ pack.business_case.financial_projections.year_2.profit or 'TBD' }}</td>
+        </tr>
+        {% endif %}
+        {% if pack.business_case.financial_projections.year_3 %}
+        <tr>
+          <td>Year 3</td>
+          <td>{{ pack.business_case.financial_projections.year_3.revenue or 'TBD' }}</td>
+          <td>{{ pack.business_case.financial_projections.year_3.costs or 'TBD' }}</td>
+          <td>{{ pack.business_case.financial_projections.year_3.profit or 'TBD' }}</td>
+        </tr>
+        {% endif %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    {% if pack.business_case.gtm_strategy %}
+    <h3>Go-to-Market Strategy</h3>
+    <p>{{ pack.business_case.gtm_strategy }}</p>
+    {% endif %}
+
+    {% if pack.business_case.pricing_strategy %}
+    <h3>Pricing Strategy</h3>
+    <p>{{ pack.business_case.pricing_strategy }}</p>
+    {% endif %}
+  </div>
+  {% if not section %}<div class="page-break"></div>{% endif %}
+  {% endif %}
+  {% endif %}
+
+  <!-- 4. Product Requirements Document -->
+  {% if not section or section == 'product_requirements_document' %}
+  {% if pack.product_requirements_document %}
+  <div class="section">
+    <h2>4. Product Requirements Document</h2>
+
+    {% if pack.product_requirements_document.product_vision %}
+    <h3>Product Vision</h3>
+    <div class="card card-highlight">
+      <p>{{ pack.product_requirements_document.product_vision }}</p>
+    </div>
+    {% endif %}
+
+    {% if pack.product_requirements_document.goals %}
+    <h3>Goals</h3>
+    <ul>
+      {% for goal in pack.product_requirements_document.goals %}
+      <li>{{ goal }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if pack.product_requirements_document.epics %}
+    <h3>Epics</h3>
+    {% for epic in pack.product_requirements_document.epics[:5] %}
+    <div class="card">
+      <h4>{{ epic.id if epic.id else 'E' ~ loop.index }}: {{ epic.title if epic.title else epic.name }}</h4>
+      <p>{{ epic.description }}</p>
+      {% if epic.user_stories %}
+      <p><strong>User Stories:</strong> {{ epic.user_stories|length }} stories</p>
+      {% endif %}
+      {% if epic.priority %}
+      <p><strong>Priority:</strong> <span class="priority-{{ epic.priority|lower }}">{{ epic.priority }}</span></p>
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if pack.product_requirements_document.functional_requirements %}
+    <h3>Functional Requirements</h3>
+    <ul>
+      {% for req in pack.product_requirements_document.functional_requirements[:10] %}
+      <li>{{ req.requirement if req.requirement else (req.description if req.description else req) }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if pack.product_requirements_document.non_functional_requirements %}
+    <h3>Non-Functional Requirements</h3>
+    <ul>
+      {% for req in pack.product_requirements_document.non_functional_requirements[:8] %}
+      <li>{{ req.requirement if req.requirement else (req.description if req.description else req) }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if pack.product_requirements_document.mvp_scope %}
+    <h3>MVP Scope</h3>
+    <p>{{ pack.product_requirements_document.mvp_scope }}</p>
+    {% endif %}
+
+    {% if pack.product_requirements_document.success_criteria %}
+    <h3>Success Criteria</h3>
+    <ul>
+      {% for criteria in pack.product_requirements_document.success_criteria %}
+      <li>{{ criteria }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+  {% if not section %}<div class="page-break"></div>{% endif %}
+  {% endif %}
+  {% endif %}
+
+  <!-- 5. Technical Architecture -->
+  {% if not section or section == 'technical_architecture' %}
+  {% if pack.technical_architecture %}
+  <div class="section">
+    <h2>5. Technical Architecture</h2>
+
+    {% if pack.technical_architecture.architecture_overview %}
+    <h3>Architecture Overview</h3>
+    <p>{{ pack.technical_architecture.architecture_overview }}</p>
+    {% endif %}
+
+    {% if pack.technical_architecture.technology_stack %}
+    <h3>Technology Stack</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Category</th>
+          <th>Technologies</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for category, techs in pack.technical_architecture.technology_stack.items() %}
+        <tr>
+          <td>{{ category|replace('_', ' ')|title }}</td>
+          <td>
+            {% if techs is iterable and techs is not string %}
+              {{ techs|join(', ') }}
+            {% else %}
+              {{ techs }}
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    {% if pack.technical_architecture.key_components %}
+    <h3>Key Components</h3>
+    {% for component in pack.technical_architecture.key_components[:6] %}
+    <div class="card">
+      <h4>{{ component.name }}</h4>
+      <p>{{ component.description }}</p>
+      {% if component.technologies %}
+      <p><em>Technologies: {{ component.technologies|join(', ') if component.technologies is iterable else component.technologies }}</em></p>
+      {% endif %}
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if pack.technical_architecture.integration_points %}
+    <h3>Integration Points</h3>
+    <ul>
+      {% for point in pack.technical_architecture.integration_points %}
+      <li>{{ point.name if point.name else point }}: {{ point.description if point.description else '' }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if pack.technical_architecture.security_considerations %}
+    <h3>Security Considerations</h3>
+    <ul>
+      {% for item in pack.technical_architecture.security_considerations %}
+      <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if pack.technical_architecture.scalability_approach %}
+    <h3>Scalability Approach</h3>
+    <p>{{ pack.technical_architecture.scalability_approach }}</p>
+    {% endif %}
+  </div>
+  {% if not section %}<div class="page-break"></div>{% endif %}
+  {% endif %}
+  {% endif %}
+
+  <!-- 6. Legal & Regulatory Review -->
+  {% if not section or section == 'legal_regulatory_review' %}
+  {% if pack.legal_regulatory_review %}
+  <div class="section">
+    <h2>6. Legal & Regulatory Review</h2>
+
+    {% if pack.legal_regulatory_review.applicable_regulations %}
+    <h3>Applicable Regulations</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Regulation</th>
+          <th>Requirements</th>
+          <th>Impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for reg in pack.legal_regulatory_review.applicable_regulations %}
+        <tr>
+          <td>{{ reg.name if reg.name else (reg.regulation if reg.regulation else reg) }}</td>
+          <td>{{ reg.requirements if reg.requirements else '-' }}</td>
+          <td>{{ reg.impact if reg.impact else '-' }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    {% if pack.legal_regulatory_review.data_protection %}
+    <h3>Data Protection</h3>
+    <div class="card">
+      {% if pack.legal_regulatory_review.data_protection is mapping %}
+        <p>{{ pack.legal_regulatory_review.data_protection.summary or pack.legal_regulatory_review.data_protection.requirements or pack.legal_regulatory_review.data_protection }}</p>
+      {% else %}
+        <p>{{ pack.legal_regulatory_review.data_protection }}</p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {% if pack.legal_regulatory_review.risks %}
+    <h3>Legal Risks</h3>
+    <div class="card card-warning">
+      <ul>
+        {% for risk in pack.legal_regulatory_review.risks[:5] %}
+        <li>
+          <strong>{{ risk.risk if risk.risk else risk.title }}:</strong>
+          {{ risk.mitigation if risk.mitigation else risk.description }}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if pack.legal_regulatory_review.ip_considerations %}
+    <h3>Intellectual Property Considerations</h3>
+    <p>{{ pack.legal_regulatory_review.ip_considerations }}</p>
+    {% endif %}
+
+    {% if pack.legal_regulatory_review.compliance_roadmap %}
+    <h3>Compliance Roadmap</h3>
+    <p>{{ pack.legal_regulatory_review.compliance_roadmap }}</p>
+    {% endif %}
+  </div>
+  {% if not section %}<div class="page-break"></div>{% endif %}
+  {% endif %}
+  {% endif %}
+
+  <!-- 7. Quality Assessment -->
+  {% if not section or section == 'quality_assessment' %}
+  {% if pack.quality_assessment %}
+  <div class="section">
+    <h2>7. Quality Assessment</h2>
+
+    {% if pack.quality_assessment.overall_score is defined %}
+    <div class="score-section">
+      <div class="score-value">{{ (pack.quality_assessment.overall_score * 100)|round|int }}%</div>
+      <div class="score-label">Overall Quality Score</div>
+    </div>
+    {% endif %}
+
+    {% if pack.quality_assessment.section_scores %}
+    <h3>Section Scores</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Section</th>
+          <th>Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for section_name, score in pack.quality_assessment.section_scores.items() %}
+        <tr>
+          <td>{{ section_name|replace('_', ' ')|title }}</td>
+          <td>{{ (score * 100)|round|int }}%</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    {% if pack.quality_assessment.strengths %}
+    <h3>Strengths</h3>
+    <ul>
+      {% for strength in pack.quality_assessment.strengths %}
+      <li>{{ strength }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% if pack.quality_assessment.critical_gaps %}
+    <h3>Areas Needing Attention</h3>
+    <div class="card card-warning">
+      <ul>
+        {% for gap in pack.quality_assessment.critical_gaps %}
+        <li>{{ gap }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if pack.quality_assessment.recommendations %}
+    <h3>Recommendations</h3>
+    <ul>
+      {% for rec in pack.quality_assessment.recommendations %}
+      <li>{{ rec }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+  {% endif %}
+  {% endif %}
+
+  <!-- Footer -->
+  <div class="footer">
+    Generated by Seedcraft | {{ pack.metadata.generated_at if pack.metadata else '' }}
+  </div>
+
+</body>
+</html>

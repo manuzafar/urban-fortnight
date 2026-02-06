@@ -204,3 +204,59 @@ export function pollSessionStatus(
     isPolling = false;
   };
 }
+
+/**
+ * Export inception pack as PDF
+ */
+export async function exportPdf(
+  sessionId: string,
+  section?: string
+): Promise<Blob> {
+  const url = `${API_BASE_URL}/api/discovery/session/${sessionId}/export/pdf${section ? `?section=${section}` : ''}`;
+
+  const headers: Record<string, string> = {};
+  if (_authToken) {
+    headers['Authorization'] = `Bearer ${_authToken}`;
+  }
+
+  const response = await fetch(url, { headers });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new ApiError(
+      response.status,
+      response.statusText,
+      errorData.detail || errorData.message || 'Failed to export PDF'
+    );
+  }
+
+  return response.blob();
+}
+
+/**
+ * Export inception pack as DOCX
+ */
+export async function exportDocx(
+  sessionId: string,
+  section?: string
+): Promise<Blob> {
+  const url = `${API_BASE_URL}/api/discovery/session/${sessionId}/export/docx${section ? `?section=${section}` : ''}`;
+
+  const headers: Record<string, string> = {};
+  if (_authToken) {
+    headers['Authorization'] = `Bearer ${_authToken}`;
+  }
+
+  const response = await fetch(url, { headers });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new ApiError(
+      response.status,
+      response.statusText,
+      errorData.detail || errorData.message || 'Failed to export DOCX'
+    );
+  }
+
+  return response.blob();
+}

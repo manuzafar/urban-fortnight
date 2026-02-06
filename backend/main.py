@@ -18,9 +18,9 @@ from datetime import datetime
 from typing import Any
 
 import structlog
-from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, status
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 
 from agents.orchestrator import run_discovery_workflow
 from agents.state import get_progress_percentage
@@ -199,6 +199,27 @@ async def run_discovery_task(
             quality_score=(final_state.get("quality_assessment") or {}).get("overall_score"),
         )
 
+        # Send founder alert email (fire and forget, don't block on failure)
+        if final_state.get("status") == SessionStatus.COMPLETED:
+            try:
+                from utils.email import send_founder_alert, get_user_email_from_supabase
+
+                user_email = await get_user_email_from_supabase(user_id)
+                if user_email:
+                    product_name = inception_pack.get("executive_summary", {}).get("product_name")
+                    await send_founder_alert(
+                        user_email=user_email,
+                        product_idea=product_idea[:500],
+                        session_id=session_id,
+                        product_name=product_name,
+                    )
+            except Exception as email_error:
+                logger.warning(
+                    "founder_alert_exception",
+                    error=str(email_error),
+                    session_id=session_id,
+                )
+
     except Exception as e:
         logger.error(
             "discovery_task_failed",
@@ -227,15 +248,23 @@ async def health_check() -> dict[str, Any]:
     """
     Health check endpoint.
 
+    Returns 200 even if database is slow to connect, to prevent
+    Railway health check timeouts during startup.
+
     Returns:
         dict: Health status and configuration info.
     """
+    try:
+        active = session_store.count_active()
+    except Exception:
+        active = -1  # DB not ready, but app is alive
+
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
         "version": "1.0.0",
         "environment": settings.app_env,
-        "active_sessions": session_store.count_active(),
+        "active_sessions": active,
     }
 
 
@@ -499,6 +528,204 @@ async def list_sessions(
         "count": len(sessions),
         "sessions": sessions,
     }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EXPORT ENDPOINTS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Valid section names for export
+VALID_SECTIONS = {
+    "executive_summary",
+    "customer_research",
+    "business_case",
+    "product_requirements_document",
+    "technical_architecture",
+    "legal_regulatory_review",
+    "quality_assessment",
+}
+
+
+@app.get(
+    "/api/discovery/session/{session_id}/export/pdf",
+    tags=["Export"],
+    summary="Export inception pack as PDF",
+    description="Generates a PDF file of the inception pack or a specific section.",
+)
+async def export_pdf(
+    session_id: str,
+    section: str | None = Query(
+        default=None,
+        description="Optional section to export (e.g., 'executive_summary')",
+    ),
+    user_id: str = Depends(get_current_user_id),
+) -> Response:
+    """
+    Export an inception pack as a PDF file.
+
+    Args:
+        session_id: The session ID to export.
+        section: Optional section name to export only that section.
+        user_id: Authenticated user ID from JWT.
+
+    Returns:
+        Response: PDF file download.
+
+    Raises:
+        HTTPException: If session not found, not completed, or invalid section.
+    """
+    # Validate section if provided
+    if section and section not in VALID_SECTIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid section: {section}. Valid sections are: {', '.join(sorted(VALID_SECTIONS))}",
+        )
+
+    # Verify ownership
+    if not session_store.verify_ownership(session_id, user_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session '{session_id}' not found.",
+        )
+
+    # Get session and check status
+    session_data = session_store.get(session_id)
+    if session_data.get("status") != SessionStatus.COMPLETED:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Session is not completed. Current status: {session_data.get('status')}",
+        )
+
+    # Get inception pack
+    pack = session_store.get_inception_pack(session_id)
+    if not pack:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Inception pack not available.",
+        )
+
+    # Generate PDF
+    try:
+        from utils.export_pdf import generate_pdf, get_pdf_filename
+
+        pdf_bytes = generate_pdf(pack, section)
+        filename = get_pdf_filename(session_id, section)
+
+        logger.info(
+            "pdf_export_generated",
+            session_id=session_id,
+            section=section,
+            size_bytes=len(pdf_bytes),
+        )
+
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+    except Exception as e:
+        logger.error(
+            "pdf_export_failed",
+            session_id=session_id,
+            section=section,
+            error=str(e),
+            exc_info=True,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate PDF: {str(e)}",
+        )
+
+
+@app.get(
+    "/api/discovery/session/{session_id}/export/docx",
+    tags=["Export"],
+    summary="Export inception pack as DOCX",
+    description="Generates a Word document of the inception pack or a specific section.",
+)
+async def export_docx(
+    session_id: str,
+    section: str | None = Query(
+        default=None,
+        description="Optional section to export (e.g., 'executive_summary')",
+    ),
+    user_id: str = Depends(get_current_user_id),
+) -> Response:
+    """
+    Export an inception pack as a DOCX file.
+
+    Args:
+        session_id: The session ID to export.
+        section: Optional section name to export only that section.
+        user_id: Authenticated user ID from JWT.
+
+    Returns:
+        Response: DOCX file download.
+
+    Raises:
+        HTTPException: If session not found, not completed, or invalid section.
+    """
+    # Validate section if provided
+    if section and section not in VALID_SECTIONS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid section: {section}. Valid sections are: {', '.join(sorted(VALID_SECTIONS))}",
+        )
+
+    # Verify ownership
+    if not session_store.verify_ownership(session_id, user_id):
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session '{session_id}' not found.",
+        )
+
+    # Get session and check status
+    session_data = session_store.get(session_id)
+    if session_data.get("status") != SessionStatus.COMPLETED:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Session is not completed. Current status: {session_data.get('status')}",
+        )
+
+    # Get inception pack
+    pack = session_store.get_inception_pack(session_id)
+    if not pack:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Inception pack not available.",
+        )
+
+    # Generate DOCX
+    try:
+        from utils.export_docx import generate_docx, get_docx_filename
+
+        docx_bytes = generate_docx(pack, section)
+        filename = get_docx_filename(session_id, section)
+
+        logger.info(
+            "docx_export_generated",
+            session_id=session_id,
+            section=section,
+            size_bytes=len(docx_bytes),
+        )
+
+        return Response(
+            content=docx_bytes,
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+    except Exception as e:
+        logger.error(
+            "docx_export_failed",
+            session_id=session_id,
+            section=section,
+            error=str(e),
+            exc_info=True,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to generate DOCX: {str(e)}",
+        )
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

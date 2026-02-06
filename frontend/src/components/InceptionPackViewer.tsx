@@ -12,7 +12,6 @@ import {
   DollarSign,
   Shield,
   Clock,
-  Download,
   Star,
   Scale,
   AlertTriangle,
@@ -20,6 +19,10 @@ import {
 } from 'lucide-react';
 import type { InceptionPack, Epic, UserStory, AcceptanceCriteria, LegalRegulatoryReview } from '../types/api';
 import { MermaidDiagram } from './MermaidDiagram';
+import { ExportDropdown } from './ExportDropdown';
+import { FeedbackBanner } from './FeedbackBanner';
+import { WelcomeModal } from './WelcomeModal';
+import { OnboardingTour } from './OnboardingTour';
 
 interface InceptionPackViewerProps {
   pack: InceptionPack;
@@ -44,9 +47,48 @@ const TABS: TabConfig[] = [
   { id: 'quality', label: 'Quality', icon: CheckCircle2 },
 ];
 
+// Map tab IDs to section names for export
+const TAB_TO_SECTION: Record<TabId, string> = {
+  summary: 'executive_summary',
+  research: 'customer_research',
+  business: 'business_case',
+  prd: 'product_requirements_document',
+  architecture: 'technical_architecture',
+  legal: 'legal_regulatory_review',
+  quality: 'quality_assessment',
+};
+
+const TOUR_STORAGE_KEY = 'seedcraft_tour_completed';
+
+function getInitialShowWelcome(): boolean {
+  try {
+    return !localStorage.getItem(TOUR_STORAGE_KEY);
+  } catch {
+    return false;
+  }
+}
+
 export function InceptionPackViewer({ pack, onNewDiscovery }: InceptionPackViewerProps) {
   const [activeTab, setActiveTab] = useState<TabId>('summary');
   const [expandedEpics, setExpandedEpics] = useState<Set<string>>(new Set());
+  const [showWelcome, setShowWelcome] = useState(getInitialShowWelcome);
+  const [runTour, setRunTour] = useState(false);
+
+  const handleStartTour = () => {
+    setShowWelcome(false);
+    // Small delay to ensure modal is closed before tour starts
+    setTimeout(() => setRunTour(true), 100);
+  };
+
+  const handleSkipTour = () => {
+    setShowWelcome(false);
+    localStorage.setItem(TOUR_STORAGE_KEY, 'true');
+  };
+
+  const handleTourComplete = () => {
+    setRunTour(false);
+    localStorage.setItem(TOUR_STORAGE_KEY, 'true');
+  };
 
   const toggleEpic = (epicId: string) => {
     const newExpanded = new Set(expandedEpics);
@@ -98,7 +140,16 @@ export function InceptionPackViewer({ pack, onNewDiscovery }: InceptionPackViewe
   };
 
   return (
-    <div className="results-container">
+    <>
+      {/* Welcome Modal */}
+      {showWelcome && (
+        <WelcomeModal onStartTour={handleStartTour} onSkip={handleSkipTour} />
+      )}
+
+      {/* Onboarding Tour */}
+      <OnboardingTour run={runTour} onComplete={handleTourComplete} />
+
+      <div className="results-container">
       {/* Top Bar */}
       <div className="results-top-bar">
         <div className="results-top-inner">
@@ -107,10 +158,11 @@ export function InceptionPackViewer({ pack, onNewDiscovery }: InceptionPackViewe
             <span>{pack.executive_summary.product_name}</span>
           </div>
           <div className="results-actions">
-            <button className="action-btn" onClick={handleDownload}>
-              <Download size={18} />
-              Download JSON
-            </button>
+            <ExportDropdown
+              sessionId={pack.metadata.session_id}
+              currentSection={TAB_TO_SECTION[activeTab]}
+              onExportJson={handleDownload}
+            />
             <button className="action-btn primary" onClick={onNewDiscovery}>
               Start New Discovery
             </button>
@@ -152,12 +204,14 @@ export function InceptionPackViewer({ pack, onNewDiscovery }: InceptionPackViewe
 
         {/* Content Area */}
         <div className="results-content">
+          <FeedbackBanner />
           <div className="results-content-inner">
             {renderContent()}
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 

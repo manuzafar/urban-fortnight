@@ -122,7 +122,7 @@ describe('App – Session History integration', () => {
       current_agent: null,
       iteration: 1,
       progress_percentage: 100,
-      inception_pack: fakePack as any,
+      inception_pack: fakePack as unknown,
       error_message: null,
       created_at: '2025-06-01T12:00:00Z',
       updated_at: '2025-06-01T13:00:00Z',

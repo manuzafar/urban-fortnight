@@ -209,6 +209,29 @@ class Settings(BaseSettings):
     )
 
     # ═══════════════════════════════════════════════════════════════════════
+    # EMAIL ALERTS
+    # ═══════════════════════════════════════════════════════════════════════
+    resend_api_key: str | None = Field(
+        default=None,
+        description="Resend API key for email delivery",
+    )
+
+    founder_email: str | None = Field(
+        default=None,
+        description="Founder email for pack generation alerts",
+    )
+
+    email_from_address: str = Field(
+        default="alerts@seedcraft.ai",
+        description="From address for outbound emails",
+    )
+
+    frontend_url: str = Field(
+        default="https://seedcraft.ai",
+        description="Frontend URL for links in emails",
+    )
+
+    # ═══════════════════════════════════════════════════════════════════════
     # COMPUTED PROPERTIES
     # ═══════════════════════════════════════════════════════════════════════
 

@@ -4,7 +4,7 @@ import { useAuth } from './hooks/useAuth';
 import { LandingPage } from './components/LandingPage';
 import { DiscoveryForm } from './components/DiscoveryForm';
 import { ProgressTracker } from './components/ProgressTracker';
-import { InceptionPackViewer } from './components/InceptionPackViewer';
+import { SlideViewer } from './components/SlideViewer';
 import { SessionHistory } from './components/SessionHistory';
 import {
   startDiscovery,
@@ -206,7 +206,7 @@ function App() {
         )}
 
         {appState === 'result' && inceptionPack && (
-          <InceptionPackViewer pack={inceptionPack} onNewDiscovery={handleNewDiscovery} />
+          <SlideViewer pack={inceptionPack} onNewDiscovery={handleNewDiscovery} />
         )}
       </main>
 
