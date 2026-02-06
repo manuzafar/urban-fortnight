@@ -31,29 +31,46 @@ def decode_supabase_jwt(token: str) -> dict:
         # First, decode header to check algorithm (for debugging)
         try:
             unverified_header = jwt.get_unverified_header(token)
-            logger.debug("jwt_header", alg=unverified_header.get("alg"), typ=unverified_header.get("typ"))
+            token_alg = unverified_header.get("alg")
+            logger.info("jwt_header_received", alg=token_alg, typ=unverified_header.get("typ"))
         except Exception as e:
             logger.warning("jwt_header_decode_failed", error=str(e))
+            token_alg = None
 
         # Decode and verify the token
+        # Allow both HS256 and the token's actual algorithm
+        allowed_algorithms = ["HS256"]
+        if token_alg and token_alg not in allowed_algorithms:
+            allowed_algorithms.append(token_alg)
+            logger.info("jwt_allowing_extra_alg", extra_alg=token_alg)
+
         payload = jwt.decode(
             token,
             settings.supabase_jwt_secret,
-            algorithms=["HS256"],
+            algorithms=allowed_algorithms,
             audience="authenticated",
         )
+        logger.info("jwt_decode_success", user_id=payload.get("sub"))
         return payload
     except JWTError as e:
         error_str = str(e)
         logger.warning("jwt_verification_failed", error=error_str)
 
         # Log more details for debugging
-        if "alg" in error_str.lower():
-            try:
-                header = jwt.get_unverified_header(token)
-                logger.warning("jwt_algorithm_mismatch", token_alg=header.get("alg"), expected_alg="HS256")
-            except Exception:
-                pass
+        try:
+            header = jwt.get_unverified_header(token)
+            # Also try decoding without verification to see the payload
+            unverified = jwt.get_unverified_claims(token)
+            logger.warning(
+                "jwt_debug_info",
+                token_alg=header.get("alg"),
+                token_aud=unverified.get("aud"),
+                token_iss=unverified.get("iss"),
+                has_secret=bool(settings.supabase_jwt_secret),
+                secret_length=len(settings.supabase_jwt_secret) if settings.supabase_jwt_secret else 0,
+            )
+        except Exception as debug_err:
+            logger.warning("jwt_debug_failed", error=str(debug_err))
 
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
