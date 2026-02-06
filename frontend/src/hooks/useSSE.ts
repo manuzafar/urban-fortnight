@@ -17,7 +17,16 @@ export type StreamEventType =
   | 'progress'
   | 'error'
   | 'done'
-  | 'heartbeat';
+  | 'heartbeat'
+  // Enhanced event types
+  | 'plan_ready'
+  | 'competitor'
+  | 'market_data'
+  | 'risk'
+  | 'financial'
+  | 'diagram'
+  | 'citation'
+  | 'decision';
 
 export interface StreamEvent {
   type: StreamEventType;
@@ -280,6 +289,29 @@ export function useSSE(
             // Just keep-alive, no action needed
             break;
           }
+
+          // Enhanced event types - treat as insights for now
+          case 'plan_ready':
+          case 'competitor':
+          case 'market_data':
+          case 'risk':
+          case 'financial':
+          case 'diagram':
+          case 'citation':
+          case 'decision': {
+            // Store as an insight for the relevant agent
+            const agent = parsed.agent || 'planner';
+            const insight: Insight = {
+              key: parsed.type,
+              value: JSON.stringify(parsed.data),
+              preview: parsed.data,
+            };
+            setInsights((prev) => ({
+              ...prev,
+              [agent]: [...(prev[agent] || []), insight],
+            }));
+            break;
+          }
         }
       } catch (e) {
         console.error('Error parsing SSE event:', e, data);
@@ -295,9 +327,21 @@ export function useSSE(
     eventSource.addEventListener('done', (e) => handleEvent('done', (e as MessageEvent).data));
     eventSource.addEventListener('heartbeat', (e) => handleEvent('heartbeat', (e as MessageEvent).data));
 
-    // Also handle generic message events
+    // Enhanced event types
+    eventSource.addEventListener('plan_ready', (e) => handleEvent('plan_ready', (e as MessageEvent).data));
+    eventSource.addEventListener('competitor', (e) => handleEvent('competitor', (e as MessageEvent).data));
+    eventSource.addEventListener('market_data', (e) => handleEvent('market_data', (e as MessageEvent).data));
+    eventSource.addEventListener('risk', (e) => handleEvent('risk', (e as MessageEvent).data));
+    eventSource.addEventListener('financial', (e) => handleEvent('financial', (e as MessageEvent).data));
+    eventSource.addEventListener('diagram', (e) => handleEvent('diagram', (e as MessageEvent).data));
+    eventSource.addEventListener('citation', (e) => handleEvent('citation', (e as MessageEvent).data));
+    eventSource.addEventListener('decision', (e) => handleEvent('decision', (e as MessageEvent).data));
+
+    // Also handle generic message events (fallback for unhandled types)
     eventSource.onmessage = (e) => {
-      handleEvent('message', e.data);
+      if (e.data) {
+        handleEvent('message', e.data);
+      }
     };
 
     return () => {
