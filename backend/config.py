@@ -57,16 +57,19 @@ class Settings(BaseSettings):
     supabase_url: str = Field(
         default="",
         description="Supabase project URL",
+        validation_alias="SUPABASE_URL",
     )
 
     supabase_service_key: str = Field(
         default="",
         description="Supabase service role key (private, backend only)",
+        validation_alias="SUPABASE_SERVICE_KEY",
     )
 
     supabase_jwt_secret: str = Field(
         default="",
         description="Supabase JWT secret for token verification",
+        validation_alias="SUPABASE_JWT_SECRET",
     )
 
     # ═══════════════════════════════════════════════════════════════════════
