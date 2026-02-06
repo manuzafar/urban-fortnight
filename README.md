@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>Transform product ideas into decision-ready inception packs using 6 specialized AI agents</strong>
+  <strong>Transform product ideas into decision-ready inception packs using 7 specialized AI agents with intelligent multi-model routing</strong>
 </p>
 
 <p align="center">
@@ -21,40 +21,47 @@
 
 ## Overview
 
-Seedcraft is an AI-powered product discovery system that compresses weeks of discovery work into a single, structured inception pack. It uses a multi-agent architecture built on **LangGraph** and powered by **Google Gemini**, orchestrating 6 specialized agents that each produce a section of the final deliverable.
+Seedcraft is an AI-powered product discovery system that compresses weeks of discovery work into a single, structured inception pack. It uses a multi-agent architecture built on **LangGraph** and powered by **Google Gemini**, orchestrating 7 specialized agents with intelligent model routing (Flash for speed, Pro for reasoning).
 
 The system follows a **hypothesis-first** approach: all outputs are framed as testable hypotheses requiring customer validation, not as market truths.
 
 ### What You Get
 
-A complete inception pack containing 7 sections:
+A complete inception pack containing 8 sections:
 
-| # | Section | Agent | Description |
-|---|---------|-------|-------------|
-| 01 | **Executive Summary** | Synthesizer | 20-field decision brief with financials, risks, and GTM |
-| 02 | **Market Hypotheses** | Market Hypothesis Generator | Evidence-tiered research with uncomfortable insights |
-| 03 | **Business Strategy** | Business Strategist | Lean Canvas, revenue model, financial projections |
-| 04 | **Product Requirements** | PRD Generator + Critic + Formatter | Epics, user stories, acceptance criteria (quality-assured) |
-| 05 | **Technical Architecture** | Technical Architect | System design, tech stack, scalability approach |
-| 06 | **Legal & Regulatory** | Legal & Regulatory Analyst | Compliance, licensing, data protection, IP considerations |
-| 07 | **Quality Assessment** | Critique Agent | Cross-validation, gap analysis, revision recommendations |
+| # | Section | Agent | Model | Description |
+|---|---------|-------|-------|-------------|
+| 00 | **Research Plan** | Planning Agent | Flash | Domain classification, competitor list, regulatory focus |
+| 01 | **Executive Summary** | Synthesizer | Flash | Decision brief with key decisions requiring executive action |
+| 02 | **Market Hypotheses** | Market Hypothesis Generator | Flash | Evidence-tiered research with competitive positioning data |
+| 03 | **Business Strategy** | Business Strategist | Pro | Lean Canvas, financials with chart-ready projections |
+| 04 | **Product Requirements** | PRD Generator + Critic + Formatter | Mixed | Epics, user stories, acceptance criteria (quality-assured) |
+| 05 | **Technical Architecture** | Technical Architect | Flash | System design with Mermaid diagrams |
+| 06 | **Legal & Regulatory** | Legal & Regulatory Analyst | Pro | Specific regulations by name, penalties, compliance timeline |
+| 07 | **Quality Assessment** | Critique Agent | Pro | Calibrated scoring with mandatory deductions |
 
 ---
 
 ## Features
 
-### Multi-Agent Orchestration
-- **6 Specialized AI Agents** coordinated via LangGraph StateGraph
+### Intelligent Multi-Agent Orchestration
+- **7 Specialized AI Agents** coordinated via LangGraph StateGraph
+- **Planning Agent** runs first to classify domain and create targeted research plan
+- **Multi-Model Routing**: Gemini Flash for speed, Gemini Pro for deep reasoning
+- **Targeted Revision**: On quality failure, only failing agents re-run (not full pipeline)
 - **PRD Quality Loop** with automatic revision cycles (Generator -> Critic -> Formatter)
-- **Critique-driven revision** across all agents with configurable quality thresholds
-- **Sequential pipeline** ensuring each agent builds on previous outputs
+- **Calibrated Critique** with mandatory deductions preventing score inflation
 
-### Google Search Grounding
-Three agents (Market Hypotheses, Business Strategy, Legal & Regulatory) use **Google Search grounding** for real-world data validation:
-- Market size estimates backed by actual data
-- Competitor analysis referencing real companies
-- Current regulatory and compliance information
-- Automatic fallback to non-grounded calls if grounding fails
+### Structured Search Grounding
+Three agents use **Google Search grounding** with mandatory search protocols:
+
+| Agent | Required Searches |
+|-------|-------------------|
+| Market Hypotheses | Market size, top 3-5 competitors by name, pain point surveys, recent funding |
+| Business Strategy | Competitor pricing, revenue multiples, CAC/LTV benchmarks, unit economics |
+| Legal & Regulatory | Specific regulations with sections, penalty ranges, certification requirements |
+
+All claims require citations with confidence tags: `[CONFIRMED]`, `[ESTIMATED]`, `[HYPOTHESIS]`
 
 ### Hypothesis-First Approach
 Inspired by product thought leaders (Marty Cagan, Teresa Torres):
@@ -63,18 +70,30 @@ Inspired by product thought leaders (Marty Cagan, Teresa Torres):
 - Uncomfortable insights and "what customers don't care about" sections challenge assumptions
 - Validation reminders embedded throughout outputs
 
-### Modern Tech Stack
-- **Backend**: Python 3.11+ / FastAPI / LangGraph / Google Gemini API
-- **Frontend**: React 18 / TypeScript / Vite
-- **Validation**: Pydantic v2 with strict schema enforcement
-- **Deployment**: Docker / Railway
+### Rich Visual Output
+New structured schemas for frontend visualization:
+- **Competitive Positioning**: Quadrant chart data with X/Y scores for each competitor
+- **Financial Projections**: Monthly time-series for revenue, costs, MRR, users
+- **Lean Canvas Visual**: Structured canvas blocks ready for rendering
+- **Key Decisions**: 3-5 executive decisions with options, pros/cons, recommendations
+- **Risk Matrix**: Likelihood/impact grid for risk assessment
 
-### Frontend Experience
-- **Landing page** with clear value proposition
-- **Discovery form** with real-time validation feedback
-- **Live progress tracking** as each agent completes
-- **Tabbed results viewer** for navigating all inception pack sections
-- **Responsive design** with dark theme
+### Real-Time Streaming
+Enhanced SSE events for granular progress tracking:
+- `plan_ready` - Research plan created
+- `competitor` - Named competitor identified
+- `market_data` - Market size or trend found
+- `risk` - Risk flagged
+- `financial` - Financial metric calculated
+- `diagram` - Architecture diagram ready
+- `citation` - Source citation for claim
+
+### Modern Tech Stack
+- **Backend**: Python 3.11+ / FastAPI / LangGraph / Google Gemini API (Flash + Pro)
+- **Frontend**: React 18 / TypeScript / Vite
+- **Validation**: Pydantic v2 with 60+ strict schemas
+- **Testing**: pytest with 103 tests
+- **Deployment**: Docker / Railway
 
 ---
 
@@ -88,58 +107,79 @@ Inspired by product thought leaders (Marty Cagan, Teresa Torres):
 |  +-------------+  +--------------+  +---------------------+   |
 |  | LandingPage |  |DiscoveryForm |  |InceptionPackViewer  |   |
 |  +-------------+  +--------------+  +---------------------+   |
-|                    |ProgressTracker|                            |
+|                    |ProgressTracker|  (Charts, Canvas, etc)    |
 |                    +--------------+                            |
 +---------------------------------------------------------------+
                               |
-                         REST API
+                      REST API + SSE
                               |
 +---------------------------------------------------------------+
 |                     Backend (FastAPI)                           |
 |  +----------------------------------------------------------+ |
 |  |               LangGraph Orchestrator                      | |
 |  |                                                           | |
+|  |  +-----------+                                            | |
+|  |  |  Planner  |  Creates research plan, identifies domain  | |
+|  |  |  [Flash]  |  competitors, regulations, benchmarks      | |
+|  |  +-----+-----+                                            | |
+|  |        |                                                  | |
+|  |        v                                                  | |
 |  |  +------------+    +------------+    +--------------+     | |
-|  |  | Market     |--->| Business   |--->|     PRD      |     | |
-|  |  | Hypotheses |    | Strategy   |    |  Sub-Graph   |     | |
-|  |  | [grounded] |    | [grounded] |    | (3 agents)   |     | |
+|  |  | Customer   |--->| Business   |--->|     PRD      |     | |
+|  |  | Research   |    | Strategy   |    |  Sub-Graph   |     | |
+|  |  | [Flash]    |    | [Pro]      |    | (3 agents)   |     | |
 |  |  +------------+    +------------+    +--------------+     | |
 |  |                                             |             | |
 |  |  +------------+    +------------+    +------v-------+     | |
 |  |  | Executive  |<---| Critique   |<--+| Technical   |     | |
-|  |  |  Summary   |    |   Agent    |   || Architect   |     | |
-|  |  +------------+    +-----+------+   |+--------------+     | |
+|  |  |  Summary   |    |   [Pro]    |   || Architect   |     | |
+|  |  | [Flash]    |    +-----+------+   || [Flash]     |     | |
+|  |  +------------+          |          |+--------------+     | |
 |  |                          |          |                     | |
 |  |                    Score < 0.7?     |  +--------------+   | |
-|  |                    Revise all  <----+--| Legal &      |   | |
-|  |                                       | Regulatory   |   | |
-|  |                                       | [grounded]   |   | |
-|  |                                       +--------------+   | |
+|  |                    Targeted   <-----+--| Legal &      |   | |
+|  |                    Revision           | Regulatory   |   | |
+|  |                    (failing agent     | [Pro]        |   | |
+|  |                     onwards only)     +--------------+   | |
 |  +----------------------------------------------------------+ |
 +---------------------------------------------------------------+
                               |
                     +---------+---------+
                     |  Google Gemini    |
-                    |  API + Search    |
-                    |  Grounding       |
+                    |  Flash + Pro +    |
+                    |  Search Grounding |
                     +------------------+
 ```
 
 ### Agent Pipeline
 
-1. **Market Hypothesis Generator** -- Analyzes target market, pain signals, competitors, and market context. Uses Google Search grounding for real data.
-2. **Business Strategist** -- Builds Lean Canvas, revenue model, cost structure, and financial projections. Uses Google Search grounding.
-3. **PRD Sub-Graph** -- Three-agent loop:
-   - PRD Generator creates epics, stories, and requirements
-   - PRD Critic scores and provides feedback
-   - If score < 0.75, revises (up to 3 iterations)
-   - PRD Formatter produces the final structured document
-4. **Technical Architect** -- Designs system architecture, tech stack, and deployment strategy based on PRD.
-5. **Legal & Regulatory Analyst** -- Reviews compliance requirements, licensing, data protection, and IP. Uses Google Search grounding.
-6. **Critique Agent** -- Cross-validates all outputs, identifies gaps and inconsistencies, assigns quality score.
-7. **Executive Summary Generator** -- Synthesizes all outputs into a 20-field decision brief.
+1. **Planning Agent** [Flash] -- Analyzes product idea, classifies domain (B2B SaaS, Consumer, Healthcare, etc.), identifies specific competitors, regulatory domains, and financial benchmarks.
 
-If the critique score is below the threshold (default 0.7) and max iterations (default 3) haven't been reached, the entire pipeline reruns with critique feedback.
+2. **Customer Research Agent** [Flash + Grounding] -- Analyzes target market, pain signals, competitors. Mandatory searches for market size, competitor pricing, pain point surveys. Outputs include competitive positioning chart data.
+
+3. **Business Strategy Agent** [Pro + Grounding] -- Builds Lean Canvas, revenue model, financial projections. Mandatory searches for pricing benchmarks, revenue multiples, CAC/LTV. Outputs include chart-ready monthly projections.
+
+4. **PRD Sub-Graph** -- Three-agent loop:
+   - PRD Generator [Flash] creates epics, stories, and requirements
+   - PRD Critic [Pro] scores and provides feedback
+   - If score < 0.75, revises (up to 3 iterations)
+   - PRD Formatter [Flash] produces the final structured document
+
+5. **Technical Architect** [Flash] -- Designs system architecture, tech stack, deployment. Generates Mermaid diagrams for architecture and sequence flows.
+
+6. **Legal & Regulatory Analyst** [Pro + Grounding] -- Reviews compliance with mandatory searches for specific regulations, penalty ranges, certification timelines.
+
+7. **Critique Agent** [Pro] -- Cross-validates with calibrated scoring. Mandatory deductions prevent score inflation (e.g., -0.05 for unsourced market claims).
+
+8. **Executive Summary Generator** [Flash] -- Synthesizes all outputs into decision brief with 3-5 key decisions requiring executive action.
+
+### Targeted Revision (New)
+
+When critique score is below threshold (0.7), the system now uses **targeted revision**:
+- Analyzes `section_scores` to find the first failing section
+- Routes back to only that agent (not full pipeline restart)
+- Preserves outputs from earlier passing agents
+- Saves tokens and reduces latency
 
 ### PRD Sub-Graph (Quality Assurance Loop)
 
@@ -328,51 +368,74 @@ curl http://localhost:8000/api/discovery/session/disc_20260205_abc12345
 
 | Section | Key Fields |
 |---------|------------|
-| `executive_summary` | `product_name`, `tagline`, `problem_statement`, `solution_overview`, `value_proposition`, `target_users`, `target_market_size`, `key_differentiators`, `competitive_landscape`, `funding_required`, `revenue_model`, `financial_projections`, `break_even_timeline`, `expected_roi`, `top_risks`, `regulatory_summary`, `gtm_strategy`, `key_milestones`, `success_metrics`, `recommendation` |
-| `customer_research` | `research_scope`, `job_to_be_done`, `current_behaviour`, `pain_signals`, `uncomfortable_insights`, `what_customers_dont_care_about`, `open_questions`, `competitive_landscape`, `market_context`, `research_quality_check`, `validation_reminder` |
-| `business_case` | `lean_canvas`, `revenue_streams`, `cost_structure`, `break_even_analysis`, `year_1_projection`, `year_3_projection`, `funding_requirement`, `roi_analysis`, `go_to_market_strategy`, `key_partnerships`, `risks_and_mitigations` |
+| `executive_summary` | `product_name`, `tagline`, `problem_statement`, `solution_overview`, `value_proposition`, `target_users`, `target_market_size`, `key_differentiators`, `competitive_landscape`, `funding_required`, `revenue_model`, `financial_projections`, `break_even_timeline`, `expected_roi`, `top_risks`, `regulatory_summary`, `gtm_strategy`, `key_milestones`, `success_metrics`, `recommendation`, **`key_decisions`** (NEW) |
+| `customer_research` | `research_scope`, `job_to_be_done`, `current_behaviour`, `pain_signals`, `uncomfortable_insights`, `what_customers_dont_care_about`, `open_questions`, `competitive_landscape`, `market_context`, `research_quality_check`, `validation_reminder`, **`competitive_positioning`** (NEW - chart data) |
+| `business_case` | `lean_canvas`, `revenue_streams`, `cost_structure`, `break_even_analysis`, `year_1_projection`, `year_3_projection`, `funding_requirement`, `roi_analysis`, `go_to_market_strategy`, `key_partnerships`, `risks_and_mitigations`, **`financial_projection`** (NEW - chart data), **`lean_canvas_visual`** (NEW) |
 | `product_requirements_document` | `product_overview`, `scope`, `epics` (with `stories`, `acceptance_criteria`), `functional_requirements`, `non_functional_requirements`, `data_model`, `release_plan`, `risks`, `statistics` |
-| `technical_architecture` | `architecture_style`, `technology_stack`, `system_components`, `integration_points`, `data_storage`, `security_architecture`, `scalability_approach`, `deployment_strategy`, `infrastructure_requirements`, `technical_risks` |
+| `technical_architecture` | `architecture_style`, `technology_stack`, `system_components`, `integration_points`, `data_storage`, `security_architecture`, `scalability_approach`, `deployment_strategy`, `infrastructure_requirements`, `technical_risks`, `architecture_diagram_mermaid`, `sequence_diagram_mermaid` |
 | `legal_regulatory_review` | `applicable_regulations`, `licensing_requirements`, `data_protection_requirements`, `legal_risks`, `intellectual_property`, `industry_specific_considerations`, `international_considerations`, `overall_risk_assessment`, `next_steps` |
 | `quality_assessment` | `overall_score`, `passed`, `iteration`, `section_scores`, `strengths`, `weaknesses`, `critical_gaps`, `recommendations`, `ready_for_delivery` |
+
+### Visual Data Schemas (NEW)
+
+For frontend visualization, the following structured data is available:
+
+| Schema | Description | Fields |
+|--------|-------------|--------|
+| `competitive_positioning` | Quadrant chart data | `competitors[]` (name, x_score, y_score), `x_axis_label`, `y_axis_label` |
+| `financial_projection` | Time-series chart data | `monthly_data[]` (month, revenue, costs, profit, users, mrr), `break_even_month` |
+| `lean_canvas_visual` | Canvas block data | `problem[]`, `solution[]`, `key_metrics[]`, `unique_value_proposition`, etc. |
+| `key_decisions` | Executive decision framework | `decisions[]` (id, title, options, recommendation, confidence, impact_if_delayed) |
 
 ---
 
 ## Project Structure
 
 ```
-urban-fortnight/
+seedcraft/
 |
 |-- backend/
 |   |-- main.py                       # FastAPI application entry point
-|   |-- config.py                     # Pydantic Settings configuration
+|   |-- config.py                     # Settings + AGENT_MODEL_CONFIG routing
 |   |-- requirements.txt              # Python dependencies
 |   |-- Dockerfile                    # Backend container config
 |   |-- .env.example                  # Environment variable template
 |   |
 |   |-- agents/
-|   |   |-- orchestrator.py           # LangGraph workflow orchestration
-|   |   |-- base_agent.py             # call_llm + call_llm_with_grounding
-|   |   |-- state.py                  # DiscoveryState TypedDict
-|   |   |-- prompts.py                # All agent prompt templates
-|   |   |-- customer_research.py      # Market Hypothesis Generator [grounded]
-|   |   |-- business_strategy.py      # Business Strategist [grounded]
-|   |   |-- legal_regulatory.py       # Legal & Regulatory Analyst [grounded]
-|   |   |-- technical_architect.py    # Technical Architect
-|   |   |-- critique.py               # Cross-validation critique agent
-|   |   |-- prd_generator.py          # PRD generation agent
-|   |   |-- prd_critic.py             # PRD quality critic
-|   |   |-- prd_formatter.py          # PRD formatting agent
+|   |   |-- orchestrator.py           # LangGraph workflow + targeted revision
+|   |   |-- planner.py                # Planning Agent (domain, competitors, regs)
+|   |   |-- base_agent.py             # call_llm with multi-model routing
+|   |   |-- state.py                  # DiscoveryState with research_plan
+|   |   |-- prompts.py                # All prompts with search protocols
+|   |   |-- customer_research.py      # Customer Research [Flash + grounding]
+|   |   |-- business_strategy.py      # Business Strategy [Pro + grounding]
+|   |   |-- legal_regulatory.py       # Legal & Regulatory [Pro + grounding]
+|   |   |-- technical_architect.py    # Technical Architect [Flash]
+|   |   |-- critique.py               # Critique with calibrated scoring [Pro]
+|   |   |-- prd_generator.py          # PRD generation [Flash]
+|   |   |-- prd_critic.py             # PRD quality critic [Pro]
+|   |   |-- prd_formatter.py          # PRD formatting [Flash]
 |   |   |-- prd_subgraph.py           # PRD sub-workflow orchestration
 |   |   +-- __init__.py
 |   |
 |   |-- models/
-|   |   |-- schemas.py                # Pydantic models (50+ types)
+|   |   |-- schemas.py                # Pydantic models (60+ types)
+|   |   |-- visual_schemas.py         # Chart/visualization data models
 |   |   +-- __init__.py
 |   |
-|   +-- utils/
-|       |-- helpers.py                # Session store, sanitization, utilities
-|       +-- __init__.py
+|   |-- utils/
+|   |   |-- helpers.py                # Session store, sanitization
+|   |   |-- sse.py                    # Enhanced SSE event types
+|   |   +-- __init__.py
+|   |
+|   +-- tests/
+|       |-- unit/
+|       |   |-- test_orchestrator_routing.py  # Targeted revision tests
+|       |   |-- test_planner.py               # Planning agent tests
+|       |   |-- test_visual_schemas.py        # Visual schema validation
+|       |   +-- test_export_formatting.py     # Export formatting tests
+|       +-- integration/
+|           +-- test_export_pipeline.py       # End-to-end export tests
 |
 |-- frontend/
 |   |-- index.html                    # HTML entry point
@@ -393,13 +456,14 @@ urban-fortnight/
 |       |   +-- InceptionPackViewer.tsx  # Tabbed results viewer
 |       |
 |       |-- api/
-|       |   +-- client.ts            # API client with polling
+|       |   +-- client.ts            # API client with SSE support
 |       |
 |       +-- types/
 |           +-- api.ts               # TypeScript type definitions
 |
 |-- docs/
-|   +-- logo.svg
+|   |-- logo.svg
+|   +-- seedcraft-evolution-roadmap.md  # Future roadmap
 |
 |-- README.md
 |-- CONTRIBUTING.md
@@ -415,7 +479,8 @@ urban-fortnight/
 | Variable | Description | Default | Required |
 |----------|-------------|---------|----------|
 | `GOOGLE_API_KEY` | Google Gemini API key | -- | Yes |
-| `LLM_MODEL` | Gemini model identifier | `gemini-2.0-flash` | No |
+| `LLM_MODEL` | Default Gemini model | `gemini-2.0-flash` | No |
+| `LLM_PRO_MODEL` | Pro model for reasoning tasks | `gemini-2.5-pro` | No |
 | `LLM_TEMPERATURE` | Generation temperature (0.0-1.0) | `0.7` | No |
 | `LLM_MAX_TOKENS` | Max tokens per response | `8192` | No |
 | `LLM_ENABLE_GROUNDING` | Enable Google Search grounding | `true` | No |
@@ -432,14 +497,26 @@ urban-fortnight/
 | `MAX_CONCURRENT_SESSIONS` | Max parallel sessions (0=unlimited) | `100` | No |
 | `VITE_API_URL` | Backend URL for frontend (set in frontend env) | `http://localhost:8000` | No |
 
+### Multi-Model Routing
+
+Different agents use different models based on their needs:
+
+| Model | Agents | Rationale |
+|-------|--------|-----------|
+| **Gemini Flash** | Planner, Customer Research, PRD Generator, PRD Formatter, Technical Architect, Executive Summary | Speed + cost efficiency for volume output |
+| **Gemini Pro** | Business Strategy, PRD Critic, Legal & Regulatory, Critique | Deeper reasoning for financial analysis, quality evaluation, regulatory precision |
+
+Model assignments are configured in `AGENT_MODEL_CONFIG` in `config.py`.
+
 ### Google Search Grounding
 
-Grounding is enabled by default for agents that benefit from real-world data. It allows agents to use Google Search during generation to validate:
+Grounding is enabled for agents that benefit from real-world data validation. Each grounded agent has **mandatory search protocols**:
 
-- Market size estimates (TAM/SAM/SOM)
-- Competitor information
-- Industry trends and benchmarks
-- Regulatory and compliance data
+| Agent | Required Searches |
+|-------|-------------------|
+| Customer Research | Market size + year, competitor pricing, pain point surveys, recent funding rounds |
+| Business Strategy | Competitor pricing tiers, revenue multiples, CAC/LTV benchmarks, unit economics |
+| Legal & Regulatory | Regulation names + sections, penalty/enforcement data, certification timelines |
 
 To disable grounding, set `LLM_ENABLE_GROUNDING=false` in your `.env` file.
 
@@ -459,6 +536,31 @@ The market hypothesis generator uses a tiered evidence system to indicate confid
 | **E4** | Hypothesis/inference | Lowest | Logical deduction from observed patterns |
 
 All outputs include a `validation_reminder` field reinforcing that findings are hypotheses requiring customer interviews for validation.
+
+---
+
+## Critique Calibration
+
+The Critique Agent uses calibrated scoring with mandatory deductions to prevent score inflation:
+
+### Score Calibration
+
+| Score | Standard |
+|-------|----------|
+| **0.90+** | Every claim sourced, financial projections benchmarked, 15+ user stories with Given/When/Then, Mermaid diagrams, specific regulations cited |
+| **0.80-0.89** | Most claims sourced, reasonable financials with stated assumptions, adequate PRD coverage |
+| **0.70-0.79** | Bare minimum - directional claims, ballpark financials, happy path PRD |
+| **Below 0.70** | Fails - generic content, missing sections, unsupported claims |
+
+### Mandatory Deductions
+
+| Issue | Deduction |
+|-------|-----------|
+| Market size without source | -0.05 per instance |
+| Financial projections without benchmarks | -0.10 |
+| User stories missing acceptance criteria | -0.05 per story |
+| No security considerations in architecture | -0.10 |
+| Generic "consult a lawyer" without specific guidance | -0.10 |
 
 ---
 
@@ -510,11 +612,24 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 - Built with [LangGraph](https://github.com/langchain-ai/langgraph) for agent orchestration
-- Powered by [Google Gemini](https://deepmind.google/technologies/gemini/) for AI capabilities
+- Powered by [Google Gemini](https://deepmind.google/technologies/gemini/) (Flash + Pro) for AI capabilities
 - Google Search grounding for real-world data validation
+- Inspired by product discovery frameworks from Marty Cagan and Teresa Torres
+
+---
+
+## Roadmap
+
+See [docs/seedcraft-evolution-roadmap.md](docs/seedcraft-evolution-roadmap.md) for planned features:
+
+- [x] **Phase 1**: Targeted revision, multi-model routing, structured grounding
+- [x] **Phase 2**: Planning Agent, enhanced SSE events
+- [x] **Phase 3**: Visual data schemas for charts and dashboards
+- [ ] **Phase 4**: Cross-run learning with embeddings (memory pipeline)
+- [ ] **Phase 5**: Swarm architecture with parallel agent execution
 
 ---
 
 <p align="center">
-  Made with Multi-Agent AI
+  Made with Multi-Agent AI by <a href="https://github.com/manuzafar">@manuzafar</a>
 </p>
