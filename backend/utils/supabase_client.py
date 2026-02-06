@@ -34,15 +34,6 @@ def get_supabase_client() -> Client:
         or os.environ.get("SUPABASE_SERVICE_KEY ", "")  # With trailing space (Railway bug)
     )
 
-    # Debug: log what we found
-    print(f"SUPABASE DEBUG: url from settings='{settings.supabase_url[:20] if settings.supabase_url else 'EMPTY'}...'")
-    print(f"SUPABASE DEBUG: url from env='{os.environ.get('SUPABASE_URL', 'NOT SET')}'")
-    print(f"SUPABASE DEBUG: url from env (space)='{os.environ.get('SUPABASE_URL ', 'NOT SET')}'")
-    print(f"SUPABASE DEBUG: final url='{supabase_url[:30] if supabase_url else 'EMPTY'}...'")
-    # Print all env vars containing SUPA
-    supa_vars = {k: v[:30] for k, v in os.environ.items() if 'SUPA' in k.upper()}
-    print(f"SUPABASE DEBUG: all SUPA vars={supa_vars}")
-
     if not supabase_url:
         raise ValueError("SUPABASE_URL is not configured")
     if not supabase_key:
