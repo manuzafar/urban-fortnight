@@ -17,6 +17,7 @@ from pydantic import BaseModel
 class StreamEventType(str, Enum):
     """Types of events that can be streamed during discovery."""
 
+    # Core events
     AGENT_START = "agent_start"  # Agent begins work
     INSIGHT = "insight"  # Key finding discovered
     AGENT_COMPLETE = "agent_complete"  # Agent finished
@@ -24,6 +25,16 @@ class StreamEventType(str, Enum):
     ERROR = "error"  # Error occurred
     DONE = "done"  # Session complete
     HEARTBEAT = "heartbeat"  # Keep-alive signal
+
+    # Enhanced events for richer UI
+    PLAN_READY = "plan_ready"  # Research plan created
+    COMPETITOR_FOUND = "competitor"  # Named competitor identified
+    MARKET_DATA = "market_data"  # Market size or trend data
+    RISK_IDENTIFIED = "risk"  # Risk flagged
+    FINANCIAL_METRIC = "financial"  # Financial data point
+    DIAGRAM_READY = "diagram"  # Architecture diagram available
+    CITATION = "citation"  # Source citation for claim
+    DECISION_POINT = "decision"  # Key decision identified
 
 
 class StreamEvent(BaseModel):
@@ -52,6 +63,11 @@ class StreamEvent(BaseModel):
 
 # Agent display names and descriptions
 AGENT_INFO = {
+    "planner": {
+        "name": "Research Planner",
+        "icon": "compass",
+        "description": "Creating research strategy and plan",
+    },
     "customer_research": {
         "name": "Customer Research",
         "icon": "search",
@@ -216,6 +232,156 @@ class SessionEventEmitter:
             StreamEvent(
                 type=StreamEventType.HEARTBEAT,
                 data={"timestamp": datetime.utcnow().isoformat()},
+            )
+        )
+
+    async def emit_plan_ready(self, domain_type: str, summary: str) -> None:
+        """Emit event when research plan is ready."""
+        await self.emit(
+            StreamEvent(
+                type=StreamEventType.PLAN_READY,
+                agent="planner",
+                data={
+                    "domain_type": domain_type,
+                    "summary": summary,
+                },
+            )
+        )
+
+    async def emit_competitor(
+        self,
+        agent: str,
+        name: str,
+        competitor_type: str,
+        details: Optional[dict[str, Any]] = None,
+    ) -> None:
+        """Emit event when a competitor is identified."""
+        await self.emit(
+            StreamEvent(
+                type=StreamEventType.COMPETITOR_FOUND,
+                agent=agent,
+                data={
+                    "name": name,
+                    "type": competitor_type,
+                    "details": details or {},
+                },
+            )
+        )
+
+    async def emit_market_data(
+        self,
+        agent: str,
+        metric: str,
+        value: str,
+        source: Optional[str] = None,
+    ) -> None:
+        """Emit market data point."""
+        await self.emit(
+            StreamEvent(
+                type=StreamEventType.MARKET_DATA,
+                agent=agent,
+                data={
+                    "metric": metric,
+                    "value": value,
+                    "source": source,
+                },
+            )
+        )
+
+    async def emit_risk(
+        self,
+        agent: str,
+        risk_name: str,
+        severity: str,
+        mitigation: Optional[str] = None,
+    ) -> None:
+        """Emit identified risk."""
+        await self.emit(
+            StreamEvent(
+                type=StreamEventType.RISK_IDENTIFIED,
+                agent=agent,
+                data={
+                    "risk": risk_name,
+                    "severity": severity,
+                    "mitigation": mitigation,
+                },
+            )
+        )
+
+    async def emit_financial(
+        self,
+        agent: str,
+        metric: str,
+        value: str,
+        context: Optional[str] = None,
+    ) -> None:
+        """Emit financial metric."""
+        await self.emit(
+            StreamEvent(
+                type=StreamEventType.FINANCIAL_METRIC,
+                agent=agent,
+                data={
+                    "metric": metric,
+                    "value": value,
+                    "context": context,
+                },
+            )
+        )
+
+    async def emit_diagram(
+        self,
+        agent: str,
+        diagram_type: str,
+        content: str,
+    ) -> None:
+        """Emit diagram content (e.g., Mermaid)."""
+        await self.emit(
+            StreamEvent(
+                type=StreamEventType.DIAGRAM_READY,
+                agent=agent,
+                data={
+                    "diagram_type": diagram_type,
+                    "content": content,
+                },
+            )
+        )
+
+    async def emit_citation(
+        self,
+        agent: str,
+        claim: str,
+        source: str,
+        date: Optional[str] = None,
+    ) -> None:
+        """Emit a citation for a claim."""
+        await self.emit(
+            StreamEvent(
+                type=StreamEventType.CITATION,
+                agent=agent,
+                data={
+                    "claim": claim,
+                    "source": source,
+                    "date": date,
+                },
+            )
+        )
+
+    async def emit_decision_point(
+        self,
+        title: str,
+        options: list[str],
+        recommendation: Optional[str] = None,
+    ) -> None:
+        """Emit a key decision point."""
+        await self.emit(
+            StreamEvent(
+                type=StreamEventType.DECISION_POINT,
+                agent="executive_summary",
+                data={
+                    "title": title,
+                    "options": options,
+                    "recommendation": recommendation,
+                },
             )
         )
 

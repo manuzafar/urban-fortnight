@@ -20,7 +20,7 @@ from tenacity import (
     retry_if_exception_type,
 )
 
-from config import settings
+from config import settings, get_agent_model
 
 # Configure structured logging
 logger = structlog.get_logger(__name__)
@@ -78,19 +78,22 @@ def get_client() -> genai.Client:
 async def call_llm(
     prompt: str,
     agent_name: str,
+    model_override: str | None = None,
 ) -> dict[str, Any]:
     """
     Call the Gemini LLM with the given prompt and parse the JSON response.
 
     This function handles:
     - API communication with retries
+    - Agent-specific model routing (Flash vs Pro)
     - Response parsing and validation
     - Token counting and timing
     - Error handling and logging
 
     Args:
         prompt: The formatted prompt to send to the LLM.
-        agent_name: Name of the calling agent for logging.
+        agent_name: Name of the calling agent for logging and model selection.
+        model_override: Optional model to use instead of agent-specific default.
 
     Returns:
         dict containing:
@@ -100,13 +103,18 @@ async def call_llm(
             - error: error message (if failed)
             - tokens_used: approximate token count
             - duration_seconds: time taken for the call
+            - model_used: which model was actually used
 
     Raises:
         LLMError: If the API call fails after retries.
         JSONParseError: If the response cannot be parsed as JSON.
     """
     start_time = time.time()
-    logger.info("llm_call_start", agent=agent_name)
+
+    # Use agent-specific model or override
+    model = model_override or get_agent_model(agent_name)
+
+    logger.info("llm_call_start", agent=agent_name, model=model)
 
     raw_text = ""
 
@@ -120,9 +128,9 @@ async def call_llm(
             response_mime_type="application/json",
         )
 
-        # Make the API call
+        # Make the API call with agent-specific model
         response = await client.aio.models.generate_content(
-            model=settings.llm_model,
+            model=model,
             contents=prompt,
             config=config,
         )
@@ -141,6 +149,7 @@ async def call_llm(
         logger.info(
             "llm_call_success",
             agent=agent_name,
+            model=model,
             duration=round(duration, 2),
             tokens=tokens_used,
         )
@@ -152,12 +161,13 @@ async def call_llm(
             "error": None,
             "tokens_used": tokens_used,
             "duration_seconds": duration,
+            "model_used": model,
         }
 
     except json.JSONDecodeError as e:
         duration = time.time() - start_time
         error_msg = f"Failed to parse JSON response: {str(e)}"
-        logger.error("llm_json_parse_error", agent=agent_name, error=error_msg)
+        logger.error("llm_json_parse_error", agent=agent_name, model=model, error=error_msg)
 
         return {
             "success": False,
@@ -166,12 +176,13 @@ async def call_llm(
             "error": error_msg,
             "tokens_used": 0,
             "duration_seconds": duration,
+            "model_used": model,
         }
 
     except Exception as e:
         duration = time.time() - start_time
         error_msg = f"LLM call failed: {str(e)}"
-        logger.error("llm_call_error", agent=agent_name, error=error_msg, exc_info=True)
+        logger.error("llm_call_error", agent=agent_name, model=model, error=error_msg, exc_info=True)
 
         return {
             "success": False,
@@ -180,6 +191,7 @@ async def call_llm(
             "error": error_msg,
             "tokens_used": 0,
             "duration_seconds": duration,
+            "model_used": model,
         }
 
 
@@ -196,6 +208,7 @@ async def call_llm(
 async def call_llm_with_grounding(
     prompt: str,
     agent_name: str,
+    model_override: str | None = None,
 ) -> dict[str, Any]:
     """
     Call the Gemini LLM with Google Search grounding enabled.
@@ -207,7 +220,8 @@ async def call_llm_with_grounding(
 
     Args:
         prompt: The formatted prompt to send to the LLM.
-        agent_name: Name of the calling agent for logging.
+        agent_name: Name of the calling agent for logging and model selection.
+        model_override: Optional model to use instead of agent-specific default.
 
     Returns:
         dict containing:
@@ -218,20 +232,24 @@ async def call_llm_with_grounding(
             - tokens_used: approximate token count
             - duration_seconds: time taken for the call
             - grounded: bool indicating grounding was used
+            - model_used: which model was actually used
 
     Raises:
         LLMError: If the API call fails after retries.
         JSONParseError: If the response cannot be parsed as JSON.
     """
+    # Use agent-specific model or override
+    model = model_override or get_agent_model(agent_name)
+
     # Check if grounding is enabled globally
     if not settings.llm_enable_grounding:
-        logger.info("grounding_disabled_fallback", agent=agent_name)
-        result = await call_llm(prompt, agent_name)
+        logger.info("grounding_disabled_fallback", agent=agent_name, model=model)
+        result = await call_llm(prompt, agent_name, model_override=model)
         result["grounded"] = False
         return result
 
     start_time = time.time()
-    logger.info("llm_grounded_call_start", agent=agent_name)
+    logger.info("llm_grounded_call_start", agent=agent_name, model=model)
 
     raw_text = ""
 
@@ -252,9 +270,9 @@ async def call_llm_with_grounding(
             tools=[grounding_tool],
         )
 
-        # Make the API call with grounding
+        # Make the API call with grounding using agent-specific model
         response = await client.aio.models.generate_content(
-            model=settings.llm_model,
+            model=model,
             contents=prompt,
             config=config,
         )
@@ -273,6 +291,7 @@ async def call_llm_with_grounding(
         logger.info(
             "llm_grounded_call_success",
             agent=agent_name,
+            model=model,
             duration=round(duration, 2),
             tokens=tokens_used,
         )
@@ -285,12 +304,13 @@ async def call_llm_with_grounding(
             "tokens_used": tokens_used,
             "duration_seconds": duration,
             "grounded": True,
+            "model_used": model,
         }
 
     except json.JSONDecodeError as e:
         duration = time.time() - start_time
         error_msg = f"Failed to parse JSON response: {str(e)}"
-        logger.error("llm_grounded_json_parse_error", agent=agent_name, error=error_msg)
+        logger.error("llm_grounded_json_parse_error", agent=agent_name, model=model, error=error_msg)
 
         return {
             "success": False,
@@ -300,23 +320,25 @@ async def call_llm_with_grounding(
             "tokens_used": 0,
             "duration_seconds": duration,
             "grounded": True,
+            "model_used": model,
         }
 
     except Exception as e:
         duration = time.time() - start_time
         error_msg = f"Grounded LLM call failed: {str(e)}"
-        logger.warning("llm_grounded_call_failed", agent=agent_name, error=error_msg)
+        logger.warning("llm_grounded_call_failed", agent=agent_name, model=model, error=error_msg)
 
         # Fallback to non-grounded call
-        logger.info("grounding_fallback_to_standard", agent=agent_name)
+        logger.info("grounding_fallback_to_standard", agent=agent_name, model=model)
         try:
-            result = await call_llm(prompt, agent_name)
+            result = await call_llm(prompt, agent_name, model_override=model)
             result["grounded"] = False
             return result
         except Exception as fallback_error:
             logger.error(
                 "llm_grounded_fallback_failed",
                 agent=agent_name,
+                model=model,
                 error=str(fallback_error),
                 exc_info=True,
             )
@@ -328,6 +350,7 @@ async def call_llm_with_grounding(
                 "tokens_used": 0,
                 "duration_seconds": duration,
                 "grounded": False,
+                "model_used": model,
             }
 
 

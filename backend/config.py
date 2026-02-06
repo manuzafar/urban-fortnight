@@ -140,6 +140,11 @@ class Settings(BaseSettings):
         description="Enable Google Search grounding for supported agents",
     )
 
+    llm_pro_model: str = Field(
+        default="gemini-2.5-pro",
+        description="Gemini Pro model for deeper reasoning tasks",
+    )
+
     # ═══════════════════════════════════════════════════════════════════════
     # AGENT ORCHESTRATION
     # ═══════════════════════════════════════════════════════════════════════
@@ -297,3 +302,59 @@ def get_settings() -> Settings:
 
 # Singleton instance for direct import
 settings = get_settings()
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# AGENT-SPECIFIC MODEL ROUTING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Maps agent names to their optimal model
+# - Flash: Fast, cost-effective for volume output and structured generation
+# - Pro: Deeper reasoning for critical evaluation and complex analysis
+AGENT_MODEL_CONFIG: dict[str, str] = {
+    # Research agents - Flash for speed + grounding
+    "customer_research": "gemini-2.0-flash",
+    "Customer Research Agent": "gemini-2.0-flash",
+
+    # Strategy agents - Pro for deeper financial reasoning
+    "business_strategy": "gemini-2.5-pro",
+    "Business Strategy Agent": "gemini-2.5-pro",
+
+    # PRD sub-workflow
+    "prd_generator": "gemini-2.0-flash",  # Volume output
+    "PRD Generator": "gemini-2.0-flash",
+    "prd_critic": "gemini-2.5-pro",  # Critical evaluation
+    "PRD Critic": "gemini-2.5-pro",
+    "prd_formatter": "gemini-2.0-flash",  # Formatting speed
+    "PRD Formatter": "gemini-2.0-flash",
+    "Product Requirements Agent": "gemini-2.0-flash",
+
+    # Technical agents - Flash for deterministic design
+    "technical_architect": "gemini-2.0-flash",
+    "Technical Architect Agent": "gemini-2.0-flash",
+
+    # Legal review - Pro for regulatory precision
+    "legal_regulatory": "gemini-2.5-pro",
+    "Legal & Regulatory Review Agent": "gemini-2.5-pro",
+
+    # Quality gate - Pro for critical evaluation
+    "critique": "gemini-2.5-pro",
+    "Critique Agent": "gemini-2.5-pro",
+
+    # Executive summary - Flash for synthesis speed
+    "executive_summary": "gemini-2.0-flash",
+    "Executive Summary Generator": "gemini-2.0-flash",
+}
+
+
+def get_agent_model(agent_name: str) -> str:
+    """
+    Get the optimal model for a specific agent.
+
+    Args:
+        agent_name: Name of the agent.
+
+    Returns:
+        str: Model identifier to use for this agent.
+    """
+    return AGENT_MODEL_CONFIG.get(agent_name, settings.llm_model)

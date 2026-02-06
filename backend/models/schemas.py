@@ -15,6 +15,16 @@ from typing import Any, Optional
 
 from pydantic import BaseModel, Field
 
+# Import visual schemas for use in agent outputs
+from models.visual_schemas import (
+    CompetitivePositioning,
+    FinancialProjection,
+    LeanCanvasVisual,
+    KeyDecision,
+    KeyDecisions,
+    RiskMatrix,
+)
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ENUMS
@@ -202,6 +212,12 @@ class ExecutiveSummary(BaseModel):
     # Recommendation
     recommendation: str = Field(..., description="Clear recommendation: proceed, pivot, or stop - with rationale")
 
+    # Key Decisions (extracted for executive action)
+    key_decisions: Optional[list[dict[str, Any]]] = Field(
+        default=None,
+        description="3-5 critical decisions requiring executive attention",
+    )
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # CUSTOMER RESEARCH (Evidence-Based Reality Investigation)
@@ -344,6 +360,11 @@ class CustomerResearch(BaseModel):
         default="These findings are AI-generated hypotheses. Schedule customer interviews to validate.",
         description="Reminder that these are hypotheses requiring customer validation"
     )
+    # Visual data for frontend rendering
+    competitive_positioning: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Structured competitive positioning data for quadrant visualization",
+    )
 
 
 # Legacy models for backward compatibility
@@ -456,6 +477,15 @@ class BusinessCase(BaseModel):
     go_to_market_strategy: str = Field(..., description="GTM strategy")
     key_partnerships: list[str] = Field(default_factory=list, description="Key partnerships")
     risks_and_mitigations: list[dict[str, str]] = Field(..., description="Risk/mitigation pairs")
+    # Visual data for frontend rendering
+    financial_projection: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Structured monthly projection data for charts",
+    )
+    lean_canvas_visual: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Structured lean canvas data for visual rendering",
+    )
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

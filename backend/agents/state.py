@@ -131,6 +131,12 @@ class DiscoveryState(TypedDict, total=False):
     updated_at: str  # ISO format datetime string
 
     # ═══════════════════════════════════════════════════════════════════════════
+    # PLANNING AGENT OUTPUT
+    # ═══════════════════════════════════════════════════════════════════════════
+
+    research_plan: Optional[dict[str, Any]]  # Planning agent output
+
+    # ═══════════════════════════════════════════════════════════════════════════
     # AGENT OUTPUTS (Validated Pydantic Models serialized to dict)
     # ═══════════════════════════════════════════════════════════════════════════
 
@@ -208,6 +214,8 @@ def create_initial_state(
         iteration=1,
         started_at=now,
         updated_at=now,
+        # Planning agent output
+        research_plan=None,
         # Agent outputs (initially None)
         executive_summary=None,
         customer_research=None,

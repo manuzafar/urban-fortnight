@@ -29,6 +29,7 @@ from agents.critique import run_critique_agent, should_revise
 from agents.customer_research import run_customer_research_agent
 from agents.business_strategy import run_business_strategy_agent
 from agents.prd_subgraph import run_prd_subworkflow
+from agents.planner import run_planner_agent
 from agents.prompts import EXECUTIVE_SUMMARY_PROMPT, format_prompt
 from agents.state import DiscoveryState, create_initial_state, get_progress_percentage
 from agents.technical_architect import run_technical_architect_agent
@@ -53,6 +54,71 @@ def get_current_emitter() -> Optional["SessionEventEmitter"]:
 # ═══════════════════════════════════════════════════════════════════════════════
 # NODE FUNCTIONS
 # ═══════════════════════════════════════════════════════════════════════════════
+
+
+async def planner_node(state: DiscoveryState) -> DiscoveryState:
+    """
+    Node wrapper for Planning Agent.
+
+    The planner runs first to analyze the product idea and create
+    a research plan that guides all subsequent agents.
+
+    Args:
+        state: Current workflow state.
+
+    Returns:
+        DiscoveryState: Updated state with research_plan.
+    """
+    logger.info(
+        "node_start",
+        node="planner",
+        session_id=state["session_id"],
+    )
+
+    # Emit agent start event
+    emitter = get_current_emitter()
+    if emitter:
+        await emitter.emit_agent_start("planner")
+
+    result = await run_planner_agent(state)
+
+    # Emit insights and completion
+    if emitter and result.get("research_plan"):
+        plan = result["research_plan"]
+
+        if plan.get("domain_type"):
+            await emitter.emit_insight(
+                "planner",
+                "domain_type",
+                f"Domain: {plan['domain_type']}",
+            )
+
+        if plan.get("competitors_to_analyze"):
+            competitors = plan["competitors_to_analyze"]
+            names = [c.get("name", "Unknown") for c in competitors[:3]]
+            await emitter.emit_insight(
+                "planner",
+                "competitors",
+                f"Competitors: {', '.join(names)}",
+            )
+
+        if plan.get("regulatory_domains"):
+            regs = plan["regulatory_domains"]
+            reg_names = [r.get("regulation", "Unknown") for r in regs[:3]]
+            await emitter.emit_insight(
+                "planner",
+                "regulations",
+                f"Regulations: {', '.join(reg_names)}",
+            )
+
+        await emitter.emit_agent_complete(
+            "planner",
+            "Research plan created",
+            insights_count=3,
+        )
+        await emitter.emit_progress(5, "planner")
+
+    return result
 
 
 async def customer_research_node(state: DiscoveryState) -> DiscoveryState:
@@ -541,7 +607,8 @@ async def prepare_revision_node(state: DiscoveryState) -> DiscoveryState:
 
     This node:
     - Increments the iteration counter
-    - Clears previous agent outputs (keeping feedback)
+    - Clears outputs from the failing agent onwards (targeted revision)
+    - Preserves outputs from earlier agents that passed
     - Logs the revision event
 
     Args:
@@ -553,25 +620,59 @@ async def prepare_revision_node(state: DiscoveryState) -> DiscoveryState:
     current_iteration = state.get("iteration", 1)
     new_iteration = current_iteration + 1
 
+    # Determine which agent to start from based on quality scores
+    target_agent = route_revision(state)
+
+    # Agent execution order for determining what to clear
+    agent_order = [
+        "customer_research",
+        "business_strategy",  # maps to business_case
+        "product_requirements",
+        "technical_architect",  # maps to technical_architecture
+        "legal_regulatory",  # maps to legal_regulatory_review
+    ]
+
+    # State keys for each agent
+    agent_to_state_key = {
+        "customer_research": "customer_research",
+        "business_strategy": "business_case",
+        "product_requirements": "product_requirements",
+        "technical_architect": "technical_architecture",
+        "legal_regulatory": "legal_regulatory_review",
+    }
+
+    # Find the index of the target agent
+    try:
+        start_index = agent_order.index(target_agent)
+    except ValueError:
+        start_index = 0  # Fallback to clearing everything
+
+    # Determine what to clear (from target agent onwards)
+    agents_to_clear = agent_order[start_index:]
+    agents_preserved = agent_order[:start_index]
+
     logger.info(
         "revision_started",
         session_id=state["session_id"],
         previous_iteration=current_iteration,
         new_iteration=new_iteration,
         quality_score=(state.get("quality_assessment") or {}).get("overall_score"),
+        target_agent=target_agent,
+        agents_to_clear=agents_to_clear,
+        agents_preserved=agents_preserved,
     )
 
     # Increment iteration
     state["iteration"] = new_iteration
     state["updated_at"] = datetime.utcnow().isoformat()
 
-    # Clear previous outputs but keep the feedback
-    # Agents will use the feedback to improve their outputs
-    state["customer_research"] = None
-    state["business_case"] = None
-    state["product_requirements"] = None
-    state["technical_architecture"] = None
-    state["legal_regulatory_review"] = None
+    # Only clear outputs from the failing agent onwards
+    # This preserves work from earlier agents that passed quality checks
+    for agent in agents_to_clear:
+        state_key = agent_to_state_key.get(agent)
+        if state_key:
+            state[state_key] = None
+
     # Keep quality_assessment for reference
     # Keep critique_feedback for agents to use
 
@@ -644,6 +745,69 @@ def should_revise_condition(state: DiscoveryState) -> Literal["revise", "finaliz
         return "finalize"
 
 
+def route_revision(
+    state: DiscoveryState,
+) -> Literal[
+    "customer_research",
+    "business_strategy",
+    "product_requirements",
+    "technical_architect",
+    "legal_regulatory",
+]:
+    """
+    Route to the first failing agent instead of always customer_research.
+
+    Analyzes section_scores from quality_assessment to find the first section
+    that scored below the threshold (0.7), then routes to that agent.
+
+    Args:
+        state: Current workflow state with quality_assessment.
+
+    Returns:
+        str: The agent node name to route to for revision.
+    """
+    quality_assessment = state.get("quality_assessment") or {}
+    section_scores = quality_assessment.get("section_scores", []) or []
+
+    # Map section names (from critique) to agent node names
+    section_to_agent = {
+        "customer research": "customer_research",
+        "business case": "business_strategy",
+        "product requirements": "product_requirements",
+        "technical architecture": "technical_architect",
+        "legal": "legal_regulatory",
+        "cross-section consistency": "customer_research",  # Full re-run for consistency issues
+    }
+
+    # Find first section below threshold (0.7)
+    threshold = settings.min_quality_score
+    for section in section_scores:
+        score = section.get("score", 1.0)
+        section_name = section.get("section", "").lower()
+
+        if score < threshold:
+            # Find matching agent
+            for key, agent in section_to_agent.items():
+                if key in section_name:
+                    logger.info(
+                        "targeted_revision_routing",
+                        session_id=state["session_id"],
+                        failing_section=section_name,
+                        score=score,
+                        routed_to=agent,
+                    )
+                    return agent
+
+    # Fallback to full re-run if no specific failing section found
+    logger.info(
+        "targeted_revision_routing",
+        session_id=state["session_id"],
+        decision="fallback_to_customer_research",
+        reason="no_specific_failing_section",
+    )
+    return "customer_research"
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # GRAPH BUILDER
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -654,9 +818,9 @@ def build_discovery_graph() -> StateGraph:
     Build the LangGraph workflow for product discovery.
 
     The workflow follows this pattern:
-    1. Customer Research → Business Strategy → Product Requirements → Technical Architect → Legal & Regulatory Review
+    1. Planner → Customer Research → Business Strategy → Product Requirements → Technical Architect → Legal & Regulatory Review
     2. Critique evaluates all outputs
-    3. If quality < threshold and iterations < max: loop back to step 1
+    3. If quality < threshold and iterations < max: loop back to failing agent (targeted revision)
     4. Otherwise: generate executive summary and finalize
 
     Returns:
@@ -666,6 +830,7 @@ def build_discovery_graph() -> StateGraph:
     workflow = StateGraph(DiscoveryState)
 
     # Add all nodes
+    workflow.add_node("planner", planner_node)
     workflow.add_node("customer_research", customer_research_node)
     workflow.add_node("business_strategy", business_strategy_node)
     workflow.add_node("product_requirements", product_requirements_node)
@@ -676,8 +841,11 @@ def build_discovery_graph() -> StateGraph:
     workflow.add_node("executive_summary", executive_summary_node)
     workflow.add_node("finalize", finalize_node)
 
-    # Set entry point
-    workflow.set_entry_point("customer_research")
+    # Set entry point - planner runs first
+    workflow.set_entry_point("planner")
+
+    # Planner leads to customer research
+    workflow.add_edge("planner", "customer_research")
 
     # Add sequential edges for main flow
     workflow.add_edge("customer_research", "business_strategy")
@@ -696,8 +864,18 @@ def build_discovery_graph() -> StateGraph:
         },
     )
 
-    # Revision loops back to customer research
-    workflow.add_edge("prepare_revision", "customer_research")
+    # Revision routes to the first failing agent (targeted revision)
+    workflow.add_conditional_edges(
+        "prepare_revision",
+        route_revision,
+        {
+            "customer_research": "customer_research",
+            "business_strategy": "business_strategy",
+            "product_requirements": "product_requirements",
+            "technical_architect": "technical_architect",
+            "legal_regulatory": "legal_regulatory",
+        },
+    )
 
     # Executive summary leads to finalize
     workflow.add_edge("executive_summary", "finalize")
