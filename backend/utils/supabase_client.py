@@ -22,8 +22,17 @@ def get_supabase_client() -> Client:
         return _supabase_client
 
     # Try settings first, fall back to direct env var read
-    supabase_url = settings.supabase_url or os.environ.get("SUPABASE_URL", "")
-    supabase_key = settings.supabase_service_key or os.environ.get("SUPABASE_SERVICE_KEY", "")
+    # NOTE: Railway variables may have trailing spaces in names (bug in their dashboard)
+    supabase_url = (
+        settings.supabase_url
+        or os.environ.get("SUPABASE_URL", "")
+        or os.environ.get("SUPABASE_URL ", "")  # With trailing space (Railway bug)
+    )
+    supabase_key = (
+        settings.supabase_service_key
+        or os.environ.get("SUPABASE_SERVICE_KEY", "")
+        or os.environ.get("SUPABASE_SERVICE_KEY ", "")  # With trailing space (Railway bug)
+    )
 
     if not supabase_url:
         raise ValueError("SUPABASE_URL is not configured")
@@ -36,6 +45,14 @@ def get_supabase_client() -> Client:
 
 def is_supabase_configured() -> bool:
     """Check if Supabase environment variables are set."""
-    supabase_url = settings.supabase_url or os.environ.get("SUPABASE_URL", "")
-    supabase_key = settings.supabase_service_key or os.environ.get("SUPABASE_SERVICE_KEY", "")
+    supabase_url = (
+        settings.supabase_url
+        or os.environ.get("SUPABASE_URL", "")
+        or os.environ.get("SUPABASE_URL ", "")
+    )
+    supabase_key = (
+        settings.supabase_service_key
+        or os.environ.get("SUPABASE_SERVICE_KEY", "")
+        or os.environ.get("SUPABASE_SERVICE_KEY ", "")
+    )
     return bool(supabase_url and supabase_key)
