@@ -367,13 +367,28 @@ def _render_technical_architecture(doc: Document, data: dict[str, Any]) -> None:
         hdr[0].text = "Category"
         hdr[1].text = "Technologies"
 
-        for category, techs in data["technology_stack"].items():
-            row = table.add_row().cells
-            row[0].text = category.replace("_", " ").title()
-            if isinstance(techs, list):
-                row[1].text = ", ".join(str(t) for t in techs)
-            else:
-                row[1].text = str(techs)
+        tech_stack = data["technology_stack"]
+        if isinstance(tech_stack, dict):
+            for category, techs in tech_stack.items():
+                row = table.add_row().cells
+                row[0].text = category.replace("_", " ").title()
+                if isinstance(techs, list):
+                    row[1].text = ", ".join(str(t) for t in techs)
+                else:
+                    row[1].text = str(techs)
+        elif isinstance(tech_stack, list):
+            for item in tech_stack:
+                row = table.add_row().cells
+                if isinstance(item, dict):
+                    row[0].text = str(item.get("category") or item.get("name") or "Technology")
+                    techs = item.get("technologies") or item.get("tech") or item.get("value") or ""
+                    if isinstance(techs, list):
+                        row[1].text = ", ".join(str(t) for t in techs)
+                    else:
+                        row[1].text = str(techs)
+                else:
+                    row[0].text = "Technology"
+                    row[1].text = str(item)
 
     if data.get("key_components"):
         doc.add_heading("Key Components", level=2)
@@ -476,10 +491,22 @@ def _render_quality_assessment(doc: Document, data: dict[str, Any]) -> None:
         hdr[0].text = "Section"
         hdr[1].text = "Score"
 
-        for section_name, score in data["section_scores"].items():
-            row = table.add_row().cells
-            row[0].text = section_name.replace("_", " ").title()
-            row[1].text = f"{round(score * 100)}%"
+        section_scores = data["section_scores"]
+        if isinstance(section_scores, dict):
+            for section_name, score in section_scores.items():
+                row = table.add_row().cells
+                row[0].text = section_name.replace("_", " ").title()
+                row[1].text = f"{round(score * 100)}%"
+        elif isinstance(section_scores, list):
+            for item in section_scores:
+                row = table.add_row().cells
+                if isinstance(item, dict):
+                    row[0].text = str(item.get("section") or item.get("name") or "Section").replace("_", " ").title()
+                    score = item.get("score") or item.get("value") or 0
+                    row[1].text = f"{round(float(score) * 100)}%"
+                else:
+                    row[0].text = "Section"
+                    row[1].text = str(item)
 
     if data.get("strengths"):
         doc.add_heading("Strengths", level=2)

@@ -617,18 +617,27 @@
         </tr>
       </thead>
       <tbody>
-        {% for category, techs in pack.technical_architecture.technology_stack.items() %}
-        <tr>
-          <td>{{ category|replace('_', ' ')|title }}</td>
-          <td>
-            {% if techs is iterable and techs is not string %}
-              {{ techs|join(', ') }}
-            {% else %}
-              {{ techs }}
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
+        {% if pack.technical_architecture.technology_stack is mapping %}
+          {% for category, techs in pack.technical_architecture.technology_stack.items() %}
+          <tr>
+            <td>{{ category|replace('_', ' ')|title }}</td>
+            <td>
+              {% if techs is iterable and techs is not string %}
+                {{ techs|join(', ') }}
+              {% else %}
+                {{ techs }}
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          {% for item in pack.technical_architecture.technology_stack %}
+          <tr>
+            <td>{{ item.category if item.category else (item.name if item.name else 'Technology') }}</td>
+            <td>{{ item.technologies if item.technologies else (item.tech if item.tech else item) }}</td>
+          </tr>
+          {% endfor %}
+        {% endif %}
       </tbody>
     </table>
     {% endif %}
@@ -763,12 +772,21 @@
         </tr>
       </thead>
       <tbody>
-        {% for section_name, score in pack.quality_assessment.section_scores.items() %}
-        <tr>
-          <td>{{ section_name|replace('_', ' ')|title }}</td>
-          <td>{{ (score * 100)|round|int }}%</td>
-        </tr>
-        {% endfor %}
+        {% if pack.quality_assessment.section_scores is mapping %}
+          {% for section_name, score in pack.quality_assessment.section_scores.items() %}
+          <tr>
+            <td>{{ section_name|replace('_', ' ')|title }}</td>
+            <td>{{ (score * 100)|round|int }}%</td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          {% for item in pack.quality_assessment.section_scores %}
+          <tr>
+            <td>{{ item.section if item.section else (item.name if item.name else 'Section') }}</td>
+            <td>{{ ((item.score if item.score else item) * 100)|round|int }}%</td>
+          </tr>
+          {% endfor %}
+        {% endif %}
       </tbody>
     </table>
     {% endif %}
