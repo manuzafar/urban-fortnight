@@ -21,7 +21,15 @@ class SupabaseSessionStore:
     """
 
     def __init__(self):
-        self._client = get_supabase_client()
+        # Lazy initialization - don't get client in constructor
+        self._client = None
+
+    @property
+    def client(self):
+        """Get Supabase client (lazy-loaded on first use)."""
+        if self._client is None:
+            self._client = get_supabase_client()
+        return self._client
 
     def create(self, session_id: str, user_id: str, data: dict[str, Any]) -> None:
         """Create a new session in the database."""
@@ -40,13 +48,13 @@ class SupabaseSessionStore:
             "error_message": data.get("error_message"),
             "errors": data.get("errors", []),
         }
-        self._client.table("discovery_sessions").insert(row).execute()
+        self.client.table("discovery_sessions").insert(row).execute()
         logger.info("session_created", session_id=session_id, user_id=user_id)
 
     def get(self, session_id: str) -> Optional[dict[str, Any]]:
         """Get session data by ID."""
         result = (
-            self._client.table("discovery_sessions")
+            self.client.table("discovery_sessions")
             .select("*")
             .eq("id", session_id)
             .maybe_single()
@@ -57,7 +65,7 @@ class SupabaseSessionStore:
     def update_status(self, session_id: str, updates: dict[str, Any]) -> bool:
         """Update session status fields."""
         result = (
-            self._client.table("discovery_sessions")
+            self.client.table("discovery_sessions")
             .update(updates)
             .eq("id", session_id)
             .execute()
@@ -68,7 +76,7 @@ class SupabaseSessionStore:
         self, session_id: str, user_id: str, pack: dict[str, Any]
     ) -> None:
         """Save inception pack to separate table."""
-        self._client.table("inception_packs").upsert({
+        self.client.table("inception_packs").upsert({
             "session_id": session_id,
             "user_id": user_id,
             "pack": pack,
@@ -78,7 +86,7 @@ class SupabaseSessionStore:
     def get_inception_pack(self, session_id: str) -> Optional[dict[str, Any]]:
         """Get inception pack for a session."""
         result = (
-            self._client.table("inception_packs")
+            self.client.table("inception_packs")
             .select("pack")
             .eq("session_id", session_id)
             .maybe_single()
@@ -89,7 +97,7 @@ class SupabaseSessionStore:
     def delete(self, session_id: str) -> bool:
         """Delete a session (cascade deletes inception_pack)."""
         result = (
-            self._client.table("discovery_sessions")
+            self.client.table("discovery_sessions")
             .delete()
             .eq("id", session_id)
             .execute()
@@ -99,7 +107,7 @@ class SupabaseSessionStore:
     def get_user_sessions(self, user_id: str) -> list[dict[str, Any]]:
         """Get all sessions for a user, ordered by creation date."""
         result = (
-            self._client.table("discovery_sessions")
+            self.client.table("discovery_sessions")
             .select("id, status, product_idea, progress_percentage, created_at, updated_at")
             .eq("user_id", user_id)
             .order("created_at", desc=True)
@@ -110,7 +118,7 @@ class SupabaseSessionStore:
     def count_active(self) -> int:
         """Count active (non-terminal) sessions."""
         result = (
-            self._client.table("discovery_sessions")
+            self.client.table("discovery_sessions")
             .select("id", count="exact")
             .in_("status", ["pending", "in_progress"])
             .execute()
@@ -120,7 +128,7 @@ class SupabaseSessionStore:
     def verify_ownership(self, session_id: str, user_id: str) -> bool:
         """Check that user_id owns session_id."""
         result = (
-            self._client.table("discovery_sessions")
+            self.client.table("discovery_sessions")
             .select("id")
             .eq("id", session_id)
             .eq("user_id", user_id)
