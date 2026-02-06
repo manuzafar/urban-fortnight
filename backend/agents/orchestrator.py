@@ -16,12 +16,14 @@ SSE streaming is supported via an optional event_emitter parameter
 that broadcasts agent progress and insights in real-time.
 """
 
+import asyncio
 import json
 from datetime import datetime
 from typing import Literal, Optional, TYPE_CHECKING
 
 import structlog
 from langgraph.checkpoint.memory import MemorySaver
+from langgraph.constants import Send
 from langgraph.graph import END, StateGraph
 
 from agents.base_agent import call_llm, configure_gemini
@@ -33,7 +35,7 @@ from agents.planner import run_planner_agent
 from agents.prompts import EXECUTIVE_SUMMARY_PROMPT, format_prompt
 from agents.state import DiscoveryState, create_initial_state, get_progress_percentage
 from agents.technical_architect import run_technical_architect_agent
-from agents.legal_regulatory import run_legal_regulatory_agent
+from agents.legal_regulatory import run_legal_regulatory_agent, run_legal_preliminary_scan
 from config import settings
 from models.schemas import ExecutiveSummary, SessionStatus
 
@@ -119,6 +121,127 @@ async def planner_node(state: DiscoveryState) -> DiscoveryState:
         await emitter.emit_progress(5, "planner")
 
     return result
+
+
+def parallel_dispatch(state: DiscoveryState) -> list[Send]:
+    """
+    Fan out to parallel tracks after planning.
+
+    This dispatches customer research and legal preliminary scan
+    to run concurrently, improving overall workflow speed.
+
+    Args:
+        state: Current workflow state after planning.
+
+    Returns:
+        list[Send]: List of Send objects for parallel node execution.
+    """
+    logger.info(
+        "parallel_dispatch",
+        session_id=state["session_id"],
+        tracks=["customer_research", "legal_preliminary"],
+    )
+
+    return [
+        Send("customer_research", state),
+        Send("legal_preliminary", state),
+    ]
+
+
+async def legal_preliminary_node(state: DiscoveryState) -> DiscoveryState:
+    """
+    Node wrapper for Legal Preliminary Scan.
+
+    This lightweight legal scan runs in parallel with customer research
+    to identify regulatory considerations early.
+
+    Args:
+        state: Current workflow state.
+
+    Returns:
+        DiscoveryState: Updated state with preliminary_legal_scan.
+    """
+    logger.info(
+        "node_start",
+        node="legal_preliminary",
+        session_id=state["session_id"],
+    )
+
+    # Emit agent start event
+    emitter = get_current_emitter()
+    if emitter:
+        await emitter.emit_agent_start("legal_preliminary")
+
+    result = await run_legal_preliminary_scan(state)
+
+    # Emit insights and completion
+    if emitter and result.get("preliminary_legal_scan"):
+        scan = result["preliminary_legal_scan"]
+
+        if scan.get("regulatory_domains"):
+            domains = [d.get("name", "Unknown") for d in scan["regulatory_domains"][:3]]
+            await emitter.emit_insight(
+                "legal_preliminary",
+                "domains",
+                f"Regulations: {', '.join(domains)}",
+            )
+
+        if scan.get("initial_risk_level"):
+            await emitter.emit_insight(
+                "legal_preliminary",
+                "risk_level",
+                f"Initial risk: {scan['initial_risk_level']}",
+            )
+
+        if scan.get("blocking_issues") and len(scan["blocking_issues"]) > 0:
+            await emitter.emit_insight(
+                "legal_preliminary",
+                "blockers",
+                f"{len(scan['blocking_issues'])} potential blockers identified",
+            )
+
+        await emitter.emit_agent_complete(
+            "legal_preliminary",
+            "Preliminary legal scan complete",
+            insights_count=3,
+        )
+        await emitter.emit_progress(10, "legal_preliminary")
+
+    return result
+
+
+async def convergence_node(state: DiscoveryState) -> DiscoveryState:
+    """
+    Merge results from parallel tracks.
+
+    This node:
+    - Combines customer_research output with preliminary_legal_scan
+    - Enriches context for downstream agents
+    - Logs the convergence event
+
+    Args:
+        state: Current workflow state with parallel outputs.
+
+    Returns:
+        DiscoveryState: State ready for business_strategy.
+    """
+    logger.info(
+        "convergence_node",
+        session_id=state["session_id"],
+        has_customer_research=state.get("customer_research") is not None,
+        has_preliminary_legal=state.get("preliminary_legal_scan") is not None,
+    )
+
+    # Update state to show convergence
+    state["current_agent"] = "Convergence"
+    state["updated_at"] = datetime.utcnow().isoformat()
+
+    # Log the merge
+    emitter = get_current_emitter()
+    if emitter:
+        await emitter.emit_progress(18, "convergence")
+
+    return state
 
 
 async def customer_research_node(state: DiscoveryState) -> DiscoveryState:
@@ -683,6 +806,9 @@ async def finalize_node(state: DiscoveryState) -> DiscoveryState:
     """
     Finalize the workflow and mark as completed.
 
+    Also stores high-quality outputs as memories for future runs
+    (cross-run learning).
+
     Args:
         state: Current workflow state.
 
@@ -693,15 +819,48 @@ async def finalize_node(state: DiscoveryState) -> DiscoveryState:
     state["current_agent"] = "Complete"
     state["updated_at"] = datetime.utcnow().isoformat()
 
+    quality_score = (state.get("quality_assessment") or {}).get("overall_score")
+
     logger.info(
         "workflow_completed",
         session_id=state["session_id"],
         iteration=state.get("iteration", 1),
         total_tokens=state.get("total_tokens_used", 0),
         total_duration=round(state.get("total_duration_seconds", 0), 2),
-        quality_score=(state.get("quality_assessment") or {}).get("overall_score"),
+        quality_score=quality_score,
         quality_passed=state.get("quality_passed", False),
     )
+
+    # Store memories for cross-run learning (non-blocking)
+    try:
+        from services.memory_pipeline import store_successful_run
+
+        # Get user_id from state if available
+        user_id = state.get("user_id")
+
+        if user_id and quality_score and quality_score >= 0.8:
+            # Run memory storage asynchronously (don't wait for it)
+            asyncio.create_task(
+                store_successful_run(
+                    session_id=state["session_id"],
+                    user_id=user_id,
+                    state=state,
+                )
+            )
+            logger.info(
+                "memory_storage_initiated",
+                session_id=state["session_id"],
+            )
+    except ImportError:
+        # Memory services not available
+        pass
+    except Exception as e:
+        # Non-blocking - log and continue
+        logger.warning(
+            "memory_storage_failed",
+            session_id=state["session_id"],
+            error=str(e),
+        )
 
     return state
 
@@ -818,10 +977,14 @@ def build_discovery_graph() -> StateGraph:
     Build the LangGraph workflow for product discovery.
 
     The workflow follows this pattern:
-    1. Planner → Customer Research → Business Strategy → Product Requirements → Technical Architect → Legal & Regulatory Review
-    2. Critique evaluates all outputs
-    3. If quality < threshold and iterations < max: loop back to failing agent (targeted revision)
-    4. Otherwise: generate executive summary and finalize
+    1. Planner → [Parallel: Customer Research + Legal Preliminary] → Convergence
+    2. Convergence → Business Strategy → Product Requirements → Technical Architect → Legal & Regulatory Review
+    3. Critique evaluates all outputs
+    4. If quality < threshold and iterations < max: loop back to failing agent (targeted revision)
+    5. Otherwise: generate executive summary and finalize
+
+    Parallel execution improves speed by running customer research and
+    preliminary legal scan concurrently after planning.
 
     Returns:
         StateGraph: Compiled workflow graph.
@@ -832,6 +995,8 @@ def build_discovery_graph() -> StateGraph:
     # Add all nodes
     workflow.add_node("planner", planner_node)
     workflow.add_node("customer_research", customer_research_node)
+    workflow.add_node("legal_preliminary", legal_preliminary_node)
+    workflow.add_node("convergence", convergence_node)
     workflow.add_node("business_strategy", business_strategy_node)
     workflow.add_node("product_requirements", product_requirements_node)
     workflow.add_node("technical_architect", technical_architect_node)
@@ -844,11 +1009,21 @@ def build_discovery_graph() -> StateGraph:
     # Set entry point - planner runs first
     workflow.set_entry_point("planner")
 
-    # Planner leads to customer research
-    workflow.add_edge("planner", "customer_research")
+    # Planner fans out to parallel tracks
+    workflow.add_conditional_edges(
+        "planner",
+        parallel_dispatch,
+        ["customer_research", "legal_preliminary"],
+    )
+
+    # Parallel tracks converge
+    workflow.add_edge("customer_research", "convergence")
+    workflow.add_edge("legal_preliminary", "convergence")
+
+    # Convergence leads to business strategy
+    workflow.add_edge("convergence", "business_strategy")
 
     # Add sequential edges for main flow
-    workflow.add_edge("customer_research", "business_strategy")
     workflow.add_edge("business_strategy", "product_requirements")
     workflow.add_edge("product_requirements", "technical_architect")
     workflow.add_edge("technical_architect", "legal_regulatory")

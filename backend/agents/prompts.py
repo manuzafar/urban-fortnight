@@ -135,6 +135,92 @@ CRITICAL: Respond with ONLY the JSON object. Be specific - name actual companies
 '''
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# LEGAL PRELIMINARY SCAN (Runs in parallel with Customer Research)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+LEGAL_PRELIMINARY_PROMPT = '''You are a Legal Compliance Scout. Your job is to quickly identify the regulatory landscape for a product idea so downstream agents can factor in compliance considerations early.
+
+## YOUR TASK
+
+Perform a quick regulatory scan to identify:
+1. Which major regulations likely apply
+2. Key jurisdictions and their requirements
+3. Any obvious blocking issues or red flags
+4. Initial risk assessment
+
+This is a PRELIMINARY scan - the full legal review comes later. Focus on speed and key findings, not exhaustive analysis.
+
+## CONTEXT
+
+**Product Idea:** {product_idea}
+**Industry:** {industry}
+**Target Market:** {target_market}
+**Constraints:** {constraints}
+**Additional Context:** {additional_context}
+
+**Regulatory Hints from Planner:**
+{regulatory_hints}
+
+## ANALYSIS FOCUS
+
+### 1. Regulatory Domains
+Identify the major regulatory frameworks that likely apply:
+- Data protection (GDPR, CCPA, LGPD, etc.)
+- Industry-specific (HIPAA, PCI-DSS, SOX, etc.)
+- Consumer protection (FTC, CFPB, etc.)
+- Cross-border (data localization, transfer mechanisms)
+
+### 2. Jurisdiction Notes
+Key geographic/legal considerations:
+- Primary operating jurisdictions
+- Data residency requirements
+- Licensing requirements by region
+
+### 3. Blocking Issues
+Any obvious showstoppers:
+- Prohibited activities in target markets
+- Licensing requirements that take 12+ months
+- Regulatory approval processes (FDA, SEC, etc.)
+
+### 4. Initial Risk Level
+Quick assessment: low, medium, high, or critical
+
+## OUTPUT FORMAT
+
+Respond with ONLY valid JSON:
+
+{{
+  "regulatory_domains": [
+    {{
+      "name": "string - regulation name (e.g., GDPR)",
+      "applicability": "definite|likely|possible",
+      "key_requirements": ["string - key requirement 1", "string - key requirement 2"],
+      "priority": "critical|high|medium|low"
+    }}
+  ],
+  "jurisdiction_notes": [
+    "string - key jurisdiction consideration 1",
+    "string - key jurisdiction consideration 2"
+  ],
+  "blocking_issues": [
+    {{
+      "issue": "string - description of blocking issue",
+      "severity": "blocker|major|minor",
+      "resolution_path": "string - how to potentially resolve"
+    }}
+  ],
+  "initial_risk_level": "low|medium|high|critical",
+  "risk_summary": "string - 1-2 sentence summary of the regulatory landscape",
+  "recommendations_for_downstream": [
+    "string - what customer research should consider",
+    "string - what business strategy should factor in"
+  ]
+}}
+
+CRITICAL: This is a quick scan. Be concise. Respond with ONLY the JSON object.
+'''
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # AGENT 1: CUSTOMER RESEARCH AGENT
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -366,7 +452,35 @@ You MUST respond with ONLY a valid JSON object. No markdown, no explanations, no
     "assumptions_separated": true,
     "self_critique": "string - honest assessment of this research"
   }},
-  "validation_reminder": "These findings are AI-generated hypotheses, not validated insights. Schedule 5+ customer interviews to test these assumptions before making product decisions. Key hypotheses to validate: [list top 3 assumptions that need customer confirmation]"
+  "validation_reminder": "These findings are AI-generated hypotheses, not validated insights. Schedule 5+ customer interviews to test these assumptions before making product decisions. Key hypotheses to validate: [list top 3 assumptions that need customer confirmation]",
+
+  "competitive_positioning": {{
+    "x_axis_label": "string - dimension for X axis (e.g., 'Price Point')",
+    "y_axis_label": "string - dimension for Y axis (e.g., 'Feature Completeness')",
+    "x_axis_low": "string - label for low end of X (e.g., 'Budget')",
+    "x_axis_high": "string - label for high end of X (e.g., 'Premium')",
+    "y_axis_low": "string - label for low end of Y (e.g., 'Basic')",
+    "y_axis_high": "string - label for high end of Y (e.g., 'Enterprise')",
+    "competitors": [
+      {{
+        "name": "string - competitor name",
+        "x_score": 7.5,
+        "y_score": 8.0,
+        "description": "string - brief positioning description",
+        "market_share": "string - estimated market share if known",
+        "is_target_product": false
+      }},
+      {{
+        "name": "Our Product",
+        "x_score": 5.0,
+        "y_score": 6.5,
+        "description": "string - our proposed positioning",
+        "market_share": null,
+        "is_target_product": true
+      }}
+    ],
+    "insight": "string - key insight from competitive positioning analysis"
+  }}
 }}
 
 ## TONE & STYLE
@@ -385,6 +499,10 @@ CRITICAL REQUIREMENTS:
 - At least one uncomfortable insight is mandatory
 - "What customers don't care about" section cannot be empty
 - If you cannot find counter-evidence, explicitly state this as a research gap
+- competitive_positioning MUST include 4-6 competitors plus the target product
+- All x_score and y_score values must be between 0 and 10
+- Mark exactly one competitor with is_target_product: true (representing our product)
+- Choose axes relevant to the market (price vs features, ease vs power, etc.)
 '''
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -546,7 +664,35 @@ You MUST respond with ONLY a valid JSON object. No markdown, no explanations, no
       "risk": "string - risk description",
       "mitigation": "string - mitigation strategy"
     }}
-  ]
+  ],
+
+  "financial_projection": {{
+    "monthly_data": [
+      {{"month": 1, "revenue": 0, "costs": 15000, "profit": -15000, "users": 100, "mrr": 0}},
+      {{"month": 2, "revenue": 2000, "costs": 16000, "profit": -14000, "users": 250, "mrr": 2000}},
+      {{"month": 3, "revenue": 5000, "costs": 17000, "profit": -12000, "users": 500, "mrr": 5000}},
+      {{"month": 4, "revenue": 9000, "costs": 18000, "profit": -9000, "users": 800, "mrr": 9000}},
+      {{"month": 5, "revenue": 14000, "costs": 19000, "profit": -5000, "users": 1200, "mrr": 14000}},
+      {{"month": 6, "revenue": 20000, "costs": 20000, "profit": 0, "users": 1700, "mrr": 20000}},
+      {{"month": 7, "revenue": 28000, "costs": 22000, "profit": 6000, "users": 2300, "mrr": 28000}},
+      {{"month": 8, "revenue": 38000, "costs": 24000, "profit": 14000, "users": 3000, "mrr": 38000}},
+      {{"month": 9, "revenue": 50000, "costs": 26000, "profit": 24000, "users": 3800, "mrr": 50000}},
+      {{"month": 10, "revenue": 65000, "costs": 28000, "profit": 37000, "users": 4700, "mrr": 65000}},
+      {{"month": 11, "revenue": 82000, "costs": 30000, "profit": 52000, "users": 5700, "mrr": 82000}},
+      {{"month": 12, "revenue": 100000, "costs": 32000, "profit": 68000, "users": 6800, "mrr": 100000}}
+    ],
+    "break_even_month": 6,
+    "year_1_revenue": "$413,000",
+    "year_1_costs": "$267,000",
+    "year_1_profit": "$146,000",
+    "year_3_revenue": "$2,500,000",
+    "assumptions": [
+      "string - key assumption 1 (e.g., 'Average revenue per user: $15/month')",
+      "string - key assumption 2 (e.g., 'Monthly churn rate: 5%')",
+      "string - key assumption 3 (e.g., 'CAC: $50 via paid channels')"
+    ],
+    "sensitivity_notes": "string - notes on what would change projections (e.g., 'If CAC increases 50%, break-even extends to month 9')"
+  }}
 }}
 
 IMPORTANT:
@@ -554,6 +700,11 @@ IMPORTANT:
 - Use realistic financial projections based on market data
 - Ensure revenue and cost projections are internally consistent
 - Make the business case compelling but honest about risks
+- financial_projection MUST include all 12 months of data
+- All revenue/costs/profit/mrr values must be numbers (not strings)
+- users must be integer counts
+- break_even_month is when profit first becomes positive (1-12, or null if not reached)
+- Include 3-5 realistic assumptions that explain the projections
 '''
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -2197,6 +2348,8 @@ def format_prompt(
     iteration: int = 1,
     max_iterations: int = 3,
     previous_assessment: str | None = None,
+    regulatory_hints: str | None = None,
+    preliminary_legal_scan: str | None = None,
 ) -> str:
     """
     Format a prompt template with the provided context.
@@ -2241,6 +2394,8 @@ def format_prompt(
         iteration=iteration,
         max_iterations=max_iterations,
         previous_assessment=_format_previous_assessment(previous_assessment),
+        regulatory_hints=regulatory_hints or "None identified yet",
+        preliminary_legal_scan=preliminary_legal_scan or "Not yet available",
     )
 
 

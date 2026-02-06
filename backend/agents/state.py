@@ -137,6 +137,12 @@ class DiscoveryState(TypedDict, total=False):
     research_plan: Optional[dict[str, Any]]  # Planning agent output
 
     # ═══════════════════════════════════════════════════════════════════════════
+    # PARALLEL EXECUTION OUTPUTS (from parallel tracks after planner)
+    # ═══════════════════════════════════════════════════════════════════════════
+
+    preliminary_legal_scan: Optional[dict[str, Any]]  # Quick legal scan from parallel track
+
+    # ═══════════════════════════════════════════════════════════════════════════
     # AGENT OUTPUTS (Validated Pydantic Models serialized to dict)
     # ═══════════════════════════════════════════════════════════════════════════
 
@@ -147,6 +153,24 @@ class DiscoveryState(TypedDict, total=False):
     technical_architecture: Optional[dict[str, Any]]  # TechnicalArchitecture
     legal_regulatory_review: Optional[dict[str, Any]]  # LegalRegulatoryReview
     quality_assessment: Optional[dict[str, Any]]  # QualityAssessment
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # SWARM AGENT OUTPUTS (from parallel swarm execution)
+    # ═══════════════════════════════════════════════════════════════════════════
+
+    # Discovery Swarm outputs
+    competitive_analysis: Optional[dict[str, Any]]  # From Competitive Intelligence agent
+    detailed_personas: Optional[dict[str, Any]]  # From Persona Development agent
+
+    # Strategy Swarm outputs
+    gtm_plan: Optional[dict[str, Any]]  # From GTM Strategy agent
+    financial_model: Optional[dict[str, Any]]  # From Financial Modeling agent
+
+    # Delivery Swarm outputs
+    risk_assessment: Optional[dict[str, Any]]  # From Risk Assessment agent
+
+    # Facilitator context
+    contradiction_context: Optional[dict[str, Any]]  # For contradiction resolution
 
     # ═══════════════════════════════════════════════════════════════════════════
     # PRD SUB-WORKFLOW FIELDS
@@ -216,6 +240,8 @@ def create_initial_state(
         updated_at=now,
         # Planning agent output
         research_plan=None,
+        # Parallel execution outputs
+        preliminary_legal_scan=None,
         # Agent outputs (initially None)
         executive_summary=None,
         customer_research=None,
@@ -224,6 +250,13 @@ def create_initial_state(
         technical_architecture=None,
         legal_regulatory_review=None,
         quality_assessment=None,
+        # Swarm agent outputs
+        competitive_analysis=None,
+        detailed_personas=None,
+        gtm_plan=None,
+        financial_model=None,
+        risk_assessment=None,
+        contradiction_context=None,
         # PRD sub-workflow fields
         prd_iteration=0,
         prd_draft=None,

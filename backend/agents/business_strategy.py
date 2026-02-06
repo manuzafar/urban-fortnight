@@ -3,6 +3,8 @@ Business Strategy Agent for the Product Discovery Multi-Agent System.
 
 This agent creates the business case including Lean Canvas, revenue models,
 financial projections, and go-to-market strategy based on customer research.
+
+Also generates visual data for financial projection charts.
 """
 
 import json
@@ -16,6 +18,7 @@ from agents.customer_research import get_customer_research_summary
 from agents.prompts import BUSINESS_STRATEGY_PROMPT, format_prompt
 from agents.state import DiscoveryState
 from models.schemas import BusinessCase, SessionStatus
+from models.visual_schemas import FinancialProjection
 
 logger = structlog.get_logger(__name__)
 
@@ -92,7 +95,37 @@ async def run_business_strategy_agent(state: DiscoveryState) -> DiscoveryState:
         try:
             # Validate the response against our Pydantic model
             validated_data = BusinessCase.model_validate(result["data"])
-            state["business_case"] = validated_data.model_dump()
+            business_case_dict = validated_data.model_dump()
+
+            # Extract and validate financial projection visual data
+            if "financial_projection" in result["data"]:
+                try:
+                    projection = FinancialProjection.model_validate(
+                        result["data"]["financial_projection"]
+                    )
+                    business_case_dict["financial_projection"] = projection.model_dump()
+                    logger.info(
+                        "visual_data_extracted",
+                        agent=AGENT_NAME,
+                        session_id=state["session_id"],
+                        visual_type="financial_projection",
+                        months_count=len(projection.monthly_data),
+                        break_even_month=projection.break_even_month,
+                    )
+                except ValidationError as ve:
+                    logger.warning(
+                        "visual_data_validation_warning",
+                        agent=AGENT_NAME,
+                        session_id=state["session_id"],
+                        visual_type="financial_projection",
+                        error=str(ve),
+                    )
+                    # Store raw data even if validation fails
+                    business_case_dict["financial_projection"] = result["data"].get(
+                        "financial_projection"
+                    )
+
+            state["business_case"] = business_case_dict
 
             logger.info(
                 "agent_success",
@@ -100,6 +133,7 @@ async def run_business_strategy_agent(state: DiscoveryState) -> DiscoveryState:
                 session_id=state["session_id"],
                 revenue_streams_count=len(validated_data.revenue_streams),
                 risks_count=len(validated_data.risks_and_mitigations),
+                has_visual_data="financial_projection" in business_case_dict,
             )
 
         except ValidationError as e:

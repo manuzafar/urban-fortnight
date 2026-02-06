@@ -4,6 +4,8 @@ Market Hypothesis Generator for the Product Discovery Multi-Agent System.
 This agent generates hypotheses about target users, pain points,
 market segments, and competitive landscape. These are AI-generated
 assumptions that require validation through customer interviews.
+
+Also generates visual data for competitive positioning charts.
 """
 
 import json
@@ -16,6 +18,7 @@ from agents.base_agent import call_llm_with_grounding, extract_feedback_for_agen
 from agents.prompts import CUSTOMER_RESEARCH_PROMPT, format_prompt
 from agents.state import DiscoveryState
 from models.schemas import CustomerResearch, SessionStatus
+from models.visual_schemas import CompetitivePositioning
 
 logger = structlog.get_logger(__name__)
 
@@ -87,7 +90,36 @@ async def run_customer_research_agent(state: DiscoveryState) -> DiscoveryState:
         try:
             # Validate the response against our Pydantic model
             validated_data = CustomerResearch.model_validate(result["data"])
-            state["customer_research"] = validated_data.model_dump()
+            customer_research_dict = validated_data.model_dump()
+
+            # Extract and validate competitive positioning visual data
+            if "competitive_positioning" in result["data"]:
+                try:
+                    positioning = CompetitivePositioning.model_validate(
+                        result["data"]["competitive_positioning"]
+                    )
+                    customer_research_dict["competitive_positioning"] = positioning.model_dump()
+                    logger.info(
+                        "visual_data_extracted",
+                        agent=AGENT_NAME,
+                        session_id=state["session_id"],
+                        visual_type="competitive_positioning",
+                        competitor_count=len(positioning.competitors),
+                    )
+                except ValidationError as ve:
+                    logger.warning(
+                        "visual_data_validation_warning",
+                        agent=AGENT_NAME,
+                        session_id=state["session_id"],
+                        visual_type="competitive_positioning",
+                        error=str(ve),
+                    )
+                    # Store raw data even if validation fails
+                    customer_research_dict["competitive_positioning"] = result["data"].get(
+                        "competitive_positioning"
+                    )
+
+            state["customer_research"] = customer_research_dict
 
             logger.info(
                 "agent_success",
@@ -95,6 +127,7 @@ async def run_customer_research_agent(state: DiscoveryState) -> DiscoveryState:
                 session_id=state["session_id"],
                 pain_signals_count=len(validated_data.pain_signals),
                 uncomfortable_insights_count=len(validated_data.uncomfortable_insights),
+                has_visual_data="competitive_positioning" in customer_research_dict,
             )
 
         except ValidationError as e:

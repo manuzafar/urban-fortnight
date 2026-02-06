@@ -23,7 +23,14 @@ import {
 import { exportPdf, exportDocx } from '../api/client';
 import type { InceptionPack, EvidenceTier } from '../types/api';
 import { MermaidDiagram } from './MermaidDiagram';
+import {
+  CompetitivePositionChart,
+  FinancialProjectionChart,
+  RiskMatrixChart,
+  LeanCanvasVisual,
+} from './charts';
 import './PackViewer.css';
+import './charts/charts.css';
 
 export interface PackViewerProps {
   pack: InceptionPack;
@@ -373,8 +380,21 @@ function SummarySection({ summary }: { summary: InceptionPack['executive_summary
 function ResearchSection({ research }: { research: InceptionPack['customer_research'] }) {
   if (!research) return <EmptySection message="No customer research available" />;
 
+  // Type assertion for competitive_positioning since it may come from visual data
+  const competitivePositioning = (research as Record<string, unknown>).competitive_positioning as
+    | { competitors: unknown[]; x_axis_label: string; y_axis_label: string }
+    | undefined;
+
   return (
     <div className="section-grid">
+      {/* Competitive Positioning Chart */}
+      {competitivePositioning && competitivePositioning.competitors && (
+        <div className="content-card full-width">
+          <h3>Competitive Positioning</h3>
+          <CompetitivePositionChart data={competitivePositioning as Parameters<typeof CompetitivePositionChart>[0]['data']} />
+        </div>
+      )}
+
       {/* Pain Signals */}
       {research.pain_signals && research.pain_signals.length > 0 && (
         <div className="content-card full-width">
@@ -474,46 +494,26 @@ function ResearchSection({ research }: { research: InceptionPack['customer_resea
 function BusinessSection({ business }: { business: InceptionPack['business_case'] }) {
   if (!business) return <EmptySection message="No business case available" />;
 
+  // Type assertion for financial_projection since it may come from visual data
+  const financialProjection = (business as Record<string, unknown>).financial_projection as
+    | { monthly_data: unknown[]; break_even_month: number | null }
+    | undefined;
+
   return (
     <div className="section-grid">
-      {/* Lean Canvas */}
+      {/* Financial Projection Chart */}
+      {financialProjection && financialProjection.monthly_data && (
+        <div className="content-card full-width">
+          <h3>Financial Projections</h3>
+          <FinancialProjectionChart data={financialProjection as Parameters<typeof FinancialProjectionChart>[0]['data']} />
+        </div>
+      )}
+
+      {/* Lean Canvas Visual */}
       {business.lean_canvas && (
         <div className="content-card full-width">
           <h3>Lean Canvas</h3>
-          <div className="lean-canvas">
-            <div className="canvas-cell problem">
-              <h4>Problem</h4>
-              <ul>
-                {business.lean_canvas.problem?.map((p, i) => (
-                  <li key={i}>{p}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="canvas-cell solution">
-              <h4>Solution</h4>
-              <ul>
-                {business.lean_canvas.solution?.map((s, i) => (
-                  <li key={i}>{s}</li>
-                ))}
-              </ul>
-            </div>
-            <div className="canvas-cell uvp">
-              <h4>Unique Value Proposition</h4>
-              <p>{business.lean_canvas.unique_value_proposition}</p>
-            </div>
-            <div className="canvas-cell unfair">
-              <h4>Unfair Advantage</h4>
-              <p>{business.lean_canvas.unfair_advantage}</p>
-            </div>
-            <div className="canvas-cell segments">
-              <h4>Customer Segments</h4>
-              <ul>
-                {business.lean_canvas.customer_segments?.map((s, i) => (
-                  <li key={i}>{s}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
+          <LeanCanvasVisual data={business.lean_canvas as Parameters<typeof LeanCanvasVisual>[0]['data']} />
         </div>
       )}
 
@@ -677,8 +677,21 @@ function TechSection({ tech }: { tech: InceptionPack['technical_architecture'] }
 function LegalSection({ legal }: { legal: InceptionPack['legal_regulatory_review'] }) {
   if (!legal) return <EmptySection message="No legal review available" />;
 
+  // Type assertion for risk_matrix since it may come from visual data
+  const riskMatrix = (legal as Record<string, unknown>).risk_matrix as
+    | { risks: unknown[]; high_priority_count: number; overall_risk_level: string }
+    | undefined;
+
   return (
     <div className="section-grid">
+      {/* Risk Matrix Chart */}
+      {riskMatrix && riskMatrix.risks && riskMatrix.risks.length > 0 && (
+        <div className="content-card full-width">
+          <h3>Risk Matrix</h3>
+          <RiskMatrixChart data={riskMatrix as Parameters<typeof RiskMatrixChart>[0]['data']} />
+        </div>
+      )}
+
       {/* Risk Assessment */}
       {legal.overall_risk_assessment && (
         <div className="content-card highlight">

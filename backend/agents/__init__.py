@@ -23,6 +23,7 @@ from agents.prompts import (
     PRODUCT_REQUIREMENTS_PROMPT,
     TECHNICAL_ARCHITECT_PROMPT,
     LEGAL_REGULATORY_PROMPT,
+    LEGAL_PRELIMINARY_PROMPT,
     CRITIQUE_PROMPT,
     EXECUTIVE_SUMMARY_PROMPT,
     format_prompt,
@@ -53,6 +54,7 @@ from agents.technical_architect import (
 )
 from agents.legal_regulatory import (
     run_legal_regulatory_agent,
+    run_legal_preliminary_scan,
     get_legal_regulatory_summary,
 )
 from agents.critique import (
@@ -65,6 +67,16 @@ from agents.orchestrator import (
     create_discovery_workflow,
     run_discovery_workflow,
     get_workflow_state,
+)
+from agents.facilitator import (
+    FacilitatorAgent,
+    run_facilitator,
+)
+from agents.swarms import (
+    BaseSwarm,
+    DiscoverySwarm,
+    StrategySwarm,
+    DeliverySwarm,
 )
 
 __all__ = [
@@ -81,6 +93,7 @@ __all__ = [
     "PRODUCT_REQUIREMENTS_PROMPT",
     "TECHNICAL_ARCHITECT_PROMPT",
     "LEGAL_REGULATORY_PROMPT",
+    "LEGAL_PRELIMINARY_PROMPT",
     "CRITIQUE_PROMPT",
     "EXECUTIVE_SUMMARY_PROMPT",
     "format_prompt",
@@ -101,6 +114,7 @@ __all__ = [
     "run_technical_architect_agent",
     "get_technical_architecture_summary",
     "run_legal_regulatory_agent",
+    "run_legal_preliminary_scan",
     "get_legal_regulatory_summary",
     "run_critique_agent",
     "should_revise",
@@ -110,4 +124,12 @@ __all__ = [
     "create_discovery_workflow",
     "run_discovery_workflow",
     "get_workflow_state",
+    # Facilitator
+    "FacilitatorAgent",
+    "run_facilitator",
+    # Swarms
+    "BaseSwarm",
+    "DiscoverySwarm",
+    "StrategySwarm",
+    "DeliverySwarm",
 ]

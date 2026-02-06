@@ -68,10 +68,20 @@ AGENT_INFO = {
         "icon": "compass",
         "description": "Creating research strategy and plan",
     },
+    "legal_preliminary": {
+        "name": "Legal Scout",
+        "icon": "shield-check",
+        "description": "Quick regulatory landscape scan",
+    },
     "customer_research": {
         "name": "Customer Research",
         "icon": "search",
         "description": "Analyzing market and customer needs",
+    },
+    "convergence": {
+        "name": "Synthesis",
+        "icon": "git-merge",
+        "description": "Merging parallel research tracks",
     },
     "business_strategy": {
         "name": "Business Strategy",

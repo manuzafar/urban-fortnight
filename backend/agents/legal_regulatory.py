@@ -4,6 +4,10 @@ Legal & Regulatory Review Agent for the Product Discovery Multi-Agent System.
 This agent stress tests product ideas against legal and regulatory requirements
 for specific industries, helping teams understand compliance obligations,
 potential legal risks, and regulatory barriers before building.
+
+Includes both:
+- Preliminary scan (lightweight, runs in parallel with customer research)
+- Full review (comprehensive, runs after all other agents)
 """
 
 import json
@@ -11,14 +15,96 @@ from datetime import datetime
 import structlog
 from pydantic import ValidationError
 
-from agents.base_agent import call_llm_with_grounding, extract_feedback_for_agent
-from agents.prompts import LEGAL_REGULATORY_PROMPT, format_prompt
+from agents.base_agent import call_llm, call_llm_with_grounding, extract_feedback_for_agent
+from agents.prompts import LEGAL_REGULATORY_PROMPT, LEGAL_PRELIMINARY_PROMPT, format_prompt
 from agents.state import DiscoveryState
 from models.schemas import LegalRegulatoryReview, SessionStatus
 
 logger = structlog.get_logger(__name__)
 
 AGENT_NAME = "Legal & Regulatory Review"
+PRELIMINARY_AGENT_NAME = "Legal Preliminary Scan"
+
+
+async def run_legal_preliminary_scan(state: DiscoveryState) -> DiscoveryState:
+    """
+    Execute a quick preliminary legal scan in parallel with customer research.
+
+    This lightweight scan identifies:
+    - Primary regulatory domains (GDPR, HIPAA, PCI-DSS, etc.)
+    - Jurisdiction requirements
+    - Critical compliance blockers
+    - Initial risk assessment
+
+    This runs early to provide legal context to downstream agents.
+
+    Args:
+        state: Current discovery state with product idea and research plan.
+
+    Returns:
+        DiscoveryState: Updated state with preliminary_legal_scan.
+    """
+    logger.info(
+        "agent_start",
+        agent=PRELIMINARY_AGENT_NAME,
+        session_id=state["session_id"],
+    )
+
+    # Update state
+    state["current_agent"] = PRELIMINARY_AGENT_NAME
+    state["updated_at"] = datetime.utcnow().isoformat()
+
+    # Get research plan context if available
+    research_plan = state.get("research_plan") or {}
+    regulatory_domains = research_plan.get("regulatory_domains", [])
+
+    # Format the preliminary scan prompt
+    prompt = format_prompt(
+        template=LEGAL_PRELIMINARY_PROMPT,
+        product_idea=state["product_idea"],
+        industry=state.get("industry"),
+        target_market=state.get("target_market"),
+        constraints=state.get("constraints"),
+        additional_context=state.get("additional_context"),
+        regulatory_hints=json.dumps(regulatory_domains, indent=2) if regulatory_domains else "None identified yet",
+    )
+
+    # Call LLM (lightweight, no grounding needed for preliminary scan)
+    result = await call_llm(prompt, PRELIMINARY_AGENT_NAME, model_override="gemini-2.0-flash")
+
+    # Update tracking
+    state["total_tokens_used"] = state.get("total_tokens_used", 0) + result.get("tokens_used", 0)
+    state["total_duration_seconds"] = state.get("total_duration_seconds", 0.0) + result.get(
+        "duration_seconds", 0.0
+    )
+
+    if result["success"]:
+        state["preliminary_legal_scan"] = result["data"]
+        logger.info(
+            "agent_success",
+            agent=PRELIMINARY_AGENT_NAME,
+            session_id=state["session_id"],
+            domains_identified=len(result["data"].get("regulatory_domains", [])),
+        )
+    else:
+        error_msg = result.get("error", "Unknown error")
+        logger.error(
+            "agent_failed",
+            agent=PRELIMINARY_AGENT_NAME,
+            session_id=state["session_id"],
+            error=error_msg,
+        )
+        # Non-blocking - set empty scan result
+        state["preliminary_legal_scan"] = {
+            "regulatory_domains": [],
+            "jurisdiction_notes": [],
+            "blocking_issues": [],
+            "initial_risk_level": "unknown",
+            "error": error_msg,
+        }
+
+    state["updated_at"] = datetime.utcnow().isoformat()
+    return state
 
 
 async def run_legal_regulatory_agent(state: DiscoveryState) -> DiscoveryState:

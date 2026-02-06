@@ -568,6 +568,105 @@ def estimate_tokens(prompt: str, response: str) -> int:
     return total_chars // 4
 
 
+async def call_llm_with_memory(
+    prompt: str,
+    agent_name: str,
+    product_idea: str,
+    domain_type: str | None = None,
+    user_id: str | None = None,
+    use_grounding: bool = False,
+    model_override: str | None = None,
+) -> dict[str, Any]:
+    """
+    Call LLM with relevant memories injected into context.
+
+    This memory-augmented version:
+    1. Retrieves similar high-quality examples from past runs
+    2. Injects them into the prompt as context
+    3. Makes the standard LLM call
+
+    Args:
+        prompt: The base prompt to augment.
+        agent_name: Name of the calling agent.
+        product_idea: The product idea (used for similarity matching).
+        domain_type: Optional domain type filter for memories.
+        user_id: Optional user ID filter for memories.
+        use_grounding: Whether to use grounding for the LLM call.
+        model_override: Optional model override.
+
+    Returns:
+        dict: LLM result with additional memory_used field.
+    """
+    try:
+        # Import here to avoid circular imports
+        from services.memory_pipeline import retrieve_memories_for_agent
+        from services.embeddings import format_memories_for_prompt
+
+        # Retrieve similar memories
+        memories = await retrieve_memories_for_agent(
+            product_idea=product_idea,
+            agent_name=agent_name,
+            domain_type=domain_type,
+            user_id=user_id,
+            limit=3,
+        )
+
+        # Inject memories into prompt if found
+        if memories:
+            memory_context = format_memories_for_prompt(memories)
+            augmented_prompt = (
+                f"{prompt}\n\n"
+                "## HIGH-QUALITY EXAMPLES FROM SIMILAR PRODUCTS\n"
+                "Learn from these successful outputs for similar products:\n\n"
+                f"{memory_context}\n"
+                "Use these examples to inform your analysis while adapting "
+                "to the specific context of the current product.\n"
+            )
+            logger.info(
+                "prompt_augmented_with_memories",
+                agent=agent_name,
+                memory_count=len(memories),
+            )
+        else:
+            augmented_prompt = prompt
+
+        # Make the LLM call
+        if use_grounding:
+            result = await call_llm_with_grounding(
+                augmented_prompt,
+                agent_name,
+                model_override=model_override,
+            )
+        else:
+            result = await call_llm(
+                augmented_prompt,
+                agent_name,
+                model_override=model_override,
+            )
+
+        # Add memory usage info
+        result["memory_used"] = len(memories) > 0
+        result["memories_retrieved"] = len(memories)
+
+        return result
+
+    except Exception as e:
+        logger.warning(
+            "memory_augmentation_failed",
+            agent=agent_name,
+            error=str(e),
+        )
+        # Fallback to standard call without memories
+        if use_grounding:
+            result = await call_llm_with_grounding(prompt, agent_name, model_override)
+        else:
+            result = await call_llm(prompt, agent_name, model_override)
+
+        result["memory_used"] = False
+        result["memories_retrieved"] = 0
+        return result
+
+
 def extract_feedback_for_agent(
     critique_feedback: dict[str, Any] | None,
     agent_key: str,
