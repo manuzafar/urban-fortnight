@@ -2,6 +2,7 @@
 Authentication utilities for Supabase JWT verification.
 """
 
+import os
 from typing import Optional
 
 import structlog
@@ -12,6 +13,16 @@ from jose import JWTError, jwt
 from config import settings
 
 logger = structlog.get_logger(__name__)
+
+
+def get_jwt_secret() -> str:
+    """Get JWT secret from settings or environment with fallback."""
+    secret = (
+        settings.supabase_jwt_secret
+        or os.environ.get("SUPABASE_JWT_SECRET", "")
+        or os.environ.get("SUPABASE_JWT_SECRET ", "")  # Railway trailing space bug
+    )
+    return secret
 
 security = HTTPBearer()
 optional_security = HTTPBearer(auto_error=False)
@@ -44,9 +55,14 @@ def decode_supabase_jwt(token: str) -> dict:
             allowed_algorithms.append(token_alg)
             logger.info("jwt_allowing_extra_alg", extra_alg=token_alg)
 
+        jwt_secret = get_jwt_secret()
+        if not jwt_secret:
+            logger.error("jwt_secret_not_configured")
+            raise JWTError("JWT secret not configured")
+
         payload = jwt.decode(
             token,
-            settings.supabase_jwt_secret,
+            jwt_secret,
             algorithms=allowed_algorithms,
             audience="authenticated",
         )
@@ -61,13 +77,14 @@ def decode_supabase_jwt(token: str) -> dict:
             header = jwt.get_unverified_header(token)
             # Also try decoding without verification to see the payload
             unverified = jwt.get_unverified_claims(token)
+            jwt_secret = get_jwt_secret()
             logger.warning(
                 "jwt_debug_info",
                 token_alg=header.get("alg"),
                 token_aud=unverified.get("aud"),
                 token_iss=unverified.get("iss"),
-                has_secret=bool(settings.supabase_jwt_secret),
-                secret_length=len(settings.supabase_jwt_secret) if settings.supabase_jwt_secret else 0,
+                has_secret=bool(jwt_secret),
+                secret_length=len(jwt_secret) if jwt_secret else 0,
             )
         except Exception as debug_err:
             logger.warning("jwt_debug_failed", error=str(debug_err))
