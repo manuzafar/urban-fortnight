@@ -65,7 +65,18 @@ def generate_pack_html(state: dict, output_path: Path) -> Path:
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-    <script>mermaid.initialize({{ startOnLoad: true, theme: 'neutral' }});</script>
+    <script>
+        mermaid.initialize({{
+            startOnLoad: true,
+            theme: 'neutral',
+            securityLevel: 'loose',
+            flowchart: {{ useMaxWidth: true, htmlLabels: true }}
+        }});
+        // Re-run mermaid after page load to catch any missed diagrams
+        document.addEventListener('DOMContentLoaded', function() {{
+            mermaid.run();
+        }});
+    </script>
     <style>
         .tier-E1 {{ background-color: #dcfce7; color: #166534; }}
         .tier-E2 {{ background-color: #dbeafe; color: #1e40af; }}
