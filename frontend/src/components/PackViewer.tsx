@@ -19,6 +19,7 @@ import {
   Clock,
   Award,
   ChevronDown,
+  AlertTriangle,
 } from 'lucide-react';
 import { exportPdf, exportDocx } from '../api/client';
 import type { InceptionPack, EvidenceTier } from '../types/api';
@@ -29,6 +30,10 @@ import {
   RiskMatrixChart,
   LeanCanvasVisual,
 } from './charts';
+import { WireframeViewer } from './PackViewer/WireframeViewer';
+import { PrototypeViewer } from './PackViewer/PrototypeViewer';
+import { StakeholderViewSelector } from './PackViewer/StakeholderViewSelector';
+import { ValidationPlaybook } from './PackViewer/ValidationPlaybook';
 import './PackViewer.css';
 import './charts/charts.css';
 
@@ -38,18 +43,67 @@ export interface PackViewerProps {
   onBack: () => void;
 }
 
-// Section configuration
+// Section configuration (V3.0 - 16 tabs)
 const SECTIONS = [
-  { key: 'summary', label: 'Summary' },
-  { key: 'research', label: 'Research' },
-  { key: 'business', label: 'Business' },
-  { key: 'product', label: 'Product' },
-  { key: 'tech', label: 'Tech' },
-  { key: 'legal', label: 'Legal' },
-  { key: 'quality', label: 'QA' },
+  { key: 'summary', label: 'Summary', category: 'Overview' },
+  { key: 'research', label: 'Research', category: 'Discovery' },
+  { key: 'competitive', label: 'Competitive', category: 'Discovery' },
+  { key: 'personas', label: 'Personas', category: 'Discovery' },
+  { key: 'business', label: 'Business', category: 'Strategy' },
+  { key: 'gtm', label: 'Go-to-Market', category: 'Strategy' },
+  { key: 'financial', label: 'Financial', category: 'Strategy' },
+  { key: 'product', label: 'Product', category: 'Delivery' },
+  { key: 'tech', label: 'Tech', category: 'Delivery' },
+  { key: 'legal', label: 'Legal', category: 'Delivery' },
+  { key: 'risks', label: 'Risks', category: 'Delivery' },
+  { key: 'wireframes', label: 'Wireframes', category: 'Design' },
+  { key: 'prototype', label: 'Prototype', category: 'Design' },
+  { key: 'stakeholders', label: 'Stakeholders', category: 'Synthesis' },
+  { key: 'validation', label: 'Validation', category: 'Synthesis' },
+  { key: 'quality', label: 'QA', category: 'Quality' },
 ] as const;
 
 type SectionKey = (typeof SECTIONS)[number]['key'];
+
+// Helper to check if a section has content
+function checkSectionHasContent(pack: InceptionPack, sectionKey: SectionKey): boolean {
+  switch (sectionKey) {
+    case 'summary':
+      return !!pack.executive_summary;
+    case 'research':
+      return !!pack.customer_research;
+    case 'competitive':
+      return !!pack.competitive_analysis?.competitors?.length;
+    case 'personas':
+      return !!(pack.detailed_personas?.personas?.length || pack.customer_research?.user_personas?.length);
+    case 'business':
+      return !!pack.business_case;
+    case 'gtm':
+      return !!pack.gtm_strategy;
+    case 'financial':
+      return !!pack.financial_model;
+    case 'product':
+      return !!pack.product_requirements_document;
+    case 'tech':
+      return !!pack.technical_architecture;
+    case 'legal':
+      return !!pack.legal_regulatory_review;
+    case 'risks':
+      return !!pack.risk_assessment?.risks?.length;
+    case 'wireframes':
+      return !!pack.wireframes?.screens?.length;
+    case 'prototype':
+      return !!pack.prototype?.react_component_code;
+    case 'stakeholders':
+      return !!pack.stakeholder_views?.views?.length;
+    case 'validation':
+      return !!pack.validation_playbook?.experiments?.length;
+    case 'quality':
+      return !!pack.quality_assessment;
+    default:
+      return false;
+  }
+}
 
 // Evidence tier configuration
 const EVIDENCE_TIERS: Record<
@@ -281,15 +335,20 @@ export function PackViewer({ pack, sessionId, onBack }: PackViewerProps) {
 
       {/* Section Navigation */}
       <nav className="section-nav">
-        {SECTIONS.map((section) => (
-          <button
-            key={section.key}
-            className={`section-tab ${activeSection === section.key ? 'active' : ''}`}
-            onClick={() => setActiveSection(section.key)}
-          >
-            {section.label}
-          </button>
-        ))}
+        {SECTIONS.map((section) => {
+          const hasContent = checkSectionHasContent(pack, section.key);
+          return (
+            <button
+              key={section.key}
+              className={`section-tab ${activeSection === section.key ? 'active' : ''} ${!hasContent ? 'disabled' : ''}`}
+              onClick={() => hasContent && setActiveSection(section.key)}
+              disabled={!hasContent}
+              title={!hasContent ? 'No content available' : undefined}
+            >
+              {section.label}
+            </button>
+          );
+        })}
       </nav>
 
       {/* Section Content */}
@@ -300,8 +359,23 @@ export function PackViewer({ pack, sessionId, onBack }: PackViewerProps) {
         {activeSection === 'research' && (
           <ResearchSection research={pack.customer_research} />
         )}
+        {activeSection === 'competitive' && (
+          <CompetitiveSection analysis={pack.competitive_analysis} />
+        )}
+        {activeSection === 'personas' && (
+          <PersonasSection
+            personas={pack.detailed_personas}
+            legacyPersonas={pack.customer_research?.user_personas}
+          />
+        )}
         {activeSection === 'business' && (
           <BusinessSection business={pack.business_case} />
+        )}
+        {activeSection === 'gtm' && (
+          <GTMSection gtm={pack.gtm_strategy} />
+        )}
+        {activeSection === 'financial' && (
+          <FinancialSection financial={pack.financial_model} />
         )}
         {activeSection === 'product' && (
           <ProductSection prd={pack.product_requirements_document} />
@@ -311,6 +385,21 @@ export function PackViewer({ pack, sessionId, onBack }: PackViewerProps) {
         )}
         {activeSection === 'legal' && (
           <LegalSection legal={pack.legal_regulatory_review} />
+        )}
+        {activeSection === 'risks' && (
+          <RisksSection risks={pack.risk_assessment} />
+        )}
+        {activeSection === 'wireframes' && (
+          <WireframesSection wireframes={pack.wireframes} />
+        )}
+        {activeSection === 'prototype' && (
+          <PrototypeSection prototype={pack.prototype} />
+        )}
+        {activeSection === 'stakeholders' && (
+          <StakeholdersSection stakeholders={pack.stakeholder_views} />
+        )}
+        {activeSection === 'validation' && (
+          <ValidationSection playbook={pack.validation_playbook} />
         )}
         {activeSection === 'quality' && (
           <QualitySection quality={pack.quality_assessment} />
@@ -817,6 +906,614 @@ function QualitySection({ quality }: { quality: InceptionPack['quality_assessmen
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// New V3.0 Section Components
+
+function CompetitiveSection({ analysis }: { analysis: InceptionPack['competitive_analysis'] }) {
+  if (!analysis) return <EmptySection message="No competitive analysis available" />;
+
+  return (
+    <div className="section-grid">
+      {/* Summary */}
+      {analysis.summary && (
+        <div className="content-card full-width">
+          <h3>Competitive Landscape</h3>
+          <p>{analysis.summary}</p>
+        </div>
+      )}
+
+      {/* Competitors */}
+      {analysis.competitors && analysis.competitors.length > 0 && (
+        <div className="content-card full-width">
+          <h3>Competitor Analysis</h3>
+          <div className="competitor-grid">
+            {analysis.competitors.map((competitor, i) => (
+              <div key={i} className="competitor-card">
+                <div className="competitor-header">
+                  <h4>{competitor.name}</h4>
+                  <span className={`threat-badge ${competitor.threat_level}`}>
+                    {competitor.threat_level} threat
+                  </span>
+                </div>
+                <p className="competitor-desc">{competitor.description}</p>
+                <div className="competitor-details">
+                  <div className="detail-group">
+                    <span className="detail-label">Strengths</span>
+                    <ul className="detail-list">
+                      {competitor.strengths?.slice(0, 3).map((s, j) => (
+                        <li key={j}>{s}</li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="detail-group">
+                    <span className="detail-label">Weaknesses</span>
+                    <ul className="detail-list warning">
+                      {competitor.weaknesses?.slice(0, 3).map((w, j) => (
+                        <li key={j}>{w}</li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+                {competitor.differentiation_opportunity && (
+                  <div className="differentiation-note">
+                    <strong>Opportunity:</strong> {competitor.differentiation_opportunity}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Competitive Moat */}
+      {analysis.competitive_moat && analysis.competitive_moat.length > 0 && (
+        <div className="content-card">
+          <h3>Our Competitive Moat</h3>
+          <ul className="bullet-list success">
+            {analysis.competitive_moat.map((moat, i) => (
+              <li key={i}>{moat}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Market Gaps */}
+      {analysis.market_gaps && analysis.market_gaps.length > 0 && (
+        <div className="content-card">
+          <h3>Market Gaps</h3>
+          <ul className="bullet-list">
+            {analysis.market_gaps.map((gap, i) => (
+              <li key={i}>{gap}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PersonasSection({
+  personas,
+  legacyPersonas,
+}: {
+  personas: InceptionPack['detailed_personas'];
+  legacyPersonas?: InceptionPack['customer_research']['user_personas'];
+}) {
+  const personaList = personas?.personas || [];
+  const hasDetailedPersonas = personaList.length > 0;
+
+  if (!hasDetailedPersonas && !legacyPersonas?.length) {
+    return <EmptySection message="No personas available" />;
+  }
+
+  return (
+    <div className="section-grid">
+      {/* Key Insights */}
+      {personas?.key_insights && personas.key_insights.length > 0 && (
+        <div className="content-card full-width highlight">
+          <h3>Key Insights</h3>
+          <ul className="bullet-list">
+            {personas.key_insights.map((insight, i) => (
+              <li key={i}>{insight}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Detailed Personas */}
+      {hasDetailedPersonas ? (
+        <div className="content-card full-width">
+          <h3>Detailed Personas</h3>
+          <div className="persona-grid detailed">
+            {personaList.map((persona, i) => (
+              <div key={i} className="persona-card detailed">
+                <div className="persona-header">
+                  <h4>{persona.name}</h4>
+                  <span className="persona-role">{persona.role}</span>
+                </div>
+                {persona.quote && (
+                  <blockquote className="persona-quote">"{persona.quote}"</blockquote>
+                )}
+                <div className="persona-details">
+                  {persona.demographics && (
+                    <div className="detail-group">
+                      <span className="detail-label">Demographics</span>
+                      <p>
+                        {persona.demographics.age_range}, {persona.demographics.location}
+                      </p>
+                    </div>
+                  )}
+                  {persona.jobs_to_be_done && persona.jobs_to_be_done.length > 0 && (
+                    <div className="detail-group">
+                      <span className="detail-label">Jobs to be Done</span>
+                      <ul className="jtbd-list">
+                        {persona.jobs_to_be_done.map((jtbd, j) => (
+                          <li key={j}>
+                            <span className={`importance-badge ${jtbd.importance}`}>
+                              {jtbd.importance}
+                            </span>
+                            {jtbd.job}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {persona.pain_points && persona.pain_points.length > 0 && (
+                    <div className="detail-group">
+                      <span className="detail-label">Pain Points</span>
+                      <ul className="detail-list warning">
+                        {persona.pain_points.slice(0, 3).map((pain, j) => (
+                          <li key={j}>{pain}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {persona.goals && persona.goals.length > 0 && (
+                    <div className="detail-group">
+                      <span className="detail-label">Goals</span>
+                      <ul className="detail-list success">
+                        {persona.goals.slice(0, 3).map((goal, j) => (
+                          <li key={j}>{goal}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        // Fallback to legacy personas
+        legacyPersonas && legacyPersonas.length > 0 && (
+          <div className="content-card full-width">
+            <h3>Personas</h3>
+            <div className="persona-grid">
+              {legacyPersonas.map((persona, i) => (
+                <div key={i} className="persona-card">
+                  <h4>{persona.name}</h4>
+                  <p className="persona-role">{persona.role}</p>
+                  <div className="persona-details">
+                    <p>
+                      <strong>Goals:</strong> {persona.goals?.join(', ')}
+                    </p>
+                    <p>
+                      <strong>Pain Points:</strong> {persona.frustrations?.join(', ')}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      )}
+    </div>
+  );
+}
+
+function GTMSection({ gtm }: { gtm: InceptionPack['gtm_strategy'] }) {
+  if (!gtm) return <EmptySection message="No go-to-market strategy available" />;
+
+  return (
+    <div className="section-grid">
+      {/* Positioning */}
+      {gtm.positioning_statement && (
+        <div className="content-card full-width highlight">
+          <h3>Positioning Statement</h3>
+          <p className="positioning-statement">{gtm.positioning_statement}</p>
+        </div>
+      )}
+
+      {/* Launch Phases */}
+      {gtm.launch_phases && gtm.launch_phases.length > 0 && (
+        <div className="content-card full-width">
+          <h3>Launch Phases</h3>
+          <div className="phase-timeline">
+            {gtm.launch_phases.map((phase, i) => (
+              <div key={i} className="phase-card">
+                <div className="phase-header">
+                  <span className="phase-number">{i + 1}</span>
+                  <div className="phase-title">
+                    <h4>{phase.phase_name}</h4>
+                    <span className="phase-duration">{phase.duration}</span>
+                  </div>
+                </div>
+                <div className="phase-content">
+                  {phase.objectives && phase.objectives.length > 0 && (
+                    <div className="phase-section">
+                      <span className="section-label">Objectives</span>
+                      <ul>
+                        {phase.objectives.map((obj, j) => (
+                          <li key={j}>{obj}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {phase.key_activities && phase.key_activities.length > 0 && (
+                    <div className="phase-section">
+                      <span className="section-label">Activities</span>
+                      <ul>
+                        {phase.key_activities.slice(0, 3).map((act, j) => (
+                          <li key={j}>{act}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Channel Strategy */}
+      {gtm.channel_strategy && gtm.channel_strategy.length > 0 && (
+        <div className="content-card full-width">
+          <h3>Channel Strategy</h3>
+          <div className="channel-grid">
+            {gtm.channel_strategy.map((channel, i) => (
+              <div key={i} className="channel-card">
+                <h4>{channel.channel}</h4>
+                <p className="channel-purpose">{channel.purpose}</p>
+                {channel.tactics && channel.tactics.length > 0 && (
+                  <ul className="channel-tactics">
+                    {channel.tactics.slice(0, 3).map((tactic, j) => (
+                      <li key={j}>{tactic}</li>
+                    ))}
+                  </ul>
+                )}
+                {channel.expected_roi && (
+                  <span className="channel-roi">Expected ROI: {channel.expected_roi}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Messaging Framework */}
+      {gtm.messaging_framework && (
+        <div className="content-card">
+          <h3>Messaging Framework</h3>
+          <div className="messaging-framework">
+            <h4 className="headline">{gtm.messaging_framework.headline}</h4>
+            {gtm.messaging_framework.subheadline && (
+              <p className="subheadline">{gtm.messaging_framework.subheadline}</p>
+            )}
+            {gtm.messaging_framework.key_benefits && (
+              <ul className="benefits-list">
+                {gtm.messaging_framework.key_benefits.map((benefit, i) => (
+                  <li key={i}>{benefit}</li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Target Segments */}
+      {gtm.target_segments && gtm.target_segments.length > 0 && (
+        <div className="content-card">
+          <h3>Target Segments</h3>
+          <ul className="bullet-list">
+            {gtm.target_segments.map((segment, i) => (
+              <li key={i}>{segment}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FinancialSection({ financial }: { financial: InceptionPack['financial_model'] }) {
+  if (!financial) return <EmptySection message="No financial model available" />;
+
+  return (
+    <div className="section-grid">
+      {/* Summary */}
+      {financial.summary && (
+        <div className="content-card full-width">
+          <h3>Financial Summary</h3>
+          <p>{financial.summary}</p>
+        </div>
+      )}
+
+      {/* Projections Table */}
+      {financial.projections && financial.projections.length > 0 && (
+        <div className="content-card full-width">
+          <h3>Financial Projections</h3>
+          <div className="projection-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Period</th>
+                  <th>Revenue</th>
+                  <th>Costs</th>
+                  <th>Profit</th>
+                  <th>Cumulative</th>
+                </tr>
+              </thead>
+              <tbody>
+                {financial.projections.map((proj, i) => (
+                  <tr key={i}>
+                    <td>{proj.period}</td>
+                    <td className="currency">${proj.revenue?.toLocaleString()}</td>
+                    <td className="currency">${proj.costs?.toLocaleString()}</td>
+                    <td className={`currency ${proj.profit >= 0 ? 'positive' : 'negative'}`}>
+                      ${proj.profit?.toLocaleString()}
+                    </td>
+                    <td className={`currency ${proj.cumulative_profit >= 0 ? 'positive' : 'negative'}`}>
+                      ${proj.cumulative_profit?.toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* Unit Economics */}
+      {financial.unit_economics && financial.unit_economics.length > 0 && (
+        <div className="content-card">
+          <h3>Unit Economics</h3>
+          <div className="unit-economics">
+            {financial.unit_economics.map((metric, i) => (
+              <div key={i} className="unit-metric">
+                <span className="metric-name">{metric.metric}</span>
+                <span className="metric-value">{metric.value}</span>
+                {metric.benchmark && (
+                  <span className="metric-benchmark">Benchmark: {metric.benchmark}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Assumptions */}
+      {financial.assumptions && financial.assumptions.length > 0 && (
+        <div className="content-card">
+          <h3>Key Assumptions</h3>
+          <ul className="assumptions-list">
+            {financial.assumptions.map((assumption, i) => (
+              <li key={i}>{assumption}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Break-even */}
+      {financial.break_even_analysis && (
+        <div className="content-card highlight">
+          <h3>Break-Even Analysis</h3>
+          <p>{financial.break_even_analysis}</p>
+        </div>
+      )}
+
+      {/* Funding Requirements */}
+      {financial.funding_requirements && (
+        <div className="content-card">
+          <h3>Funding Requirements</h3>
+          <p>{financial.funding_requirements}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RisksSection({ risks }: { risks: InceptionPack['risk_assessment'] }) {
+  if (!risks) return <EmptySection message="No risk assessment available" />;
+
+  return (
+    <div className="section-grid">
+      {/* Summary */}
+      {risks.summary && (
+        <div className="content-card full-width">
+          <h3>Risk Overview</h3>
+          <div className="risk-overview">
+            <p>{risks.summary}</p>
+            {risks.overall_risk_level && (
+              <span className={`overall-risk-badge ${risks.overall_risk_level}`}>
+                Overall: {risks.overall_risk_level?.toUpperCase()} RISK
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Top Risks */}
+      {risks.top_risks && risks.top_risks.length > 0 && (
+        <div className="content-card full-width highlight">
+          <h3>
+            <AlertTriangle size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+            Top Risks
+          </h3>
+          <ul className="bullet-list warning">
+            {risks.top_risks.map((risk, i) => (
+              <li key={i}>{risk}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Risk Table */}
+      {risks.risks && risks.risks.length > 0 && (
+        <div className="content-card full-width">
+          <h3>Risk Register</h3>
+          <div className="risk-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Category</th>
+                  <th>Risk</th>
+                  <th>Likelihood</th>
+                  <th>Impact</th>
+                  <th>Mitigation</th>
+                </tr>
+              </thead>
+              <tbody>
+                {risks.risks.map((risk, i) => (
+                  <tr key={i}>
+                    <td className="category">{risk.category}</td>
+                    <td className="description">{risk.description}</td>
+                    <td>
+                      <span className={`risk-level-badge ${risk.likelihood}`}>
+                        {risk.likelihood}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={`risk-level-badge ${risk.impact}`}>
+                        {risk.impact}
+                      </span>
+                    </td>
+                    <td className="mitigation">{risk.mitigation_strategy}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function WireframesSection({ wireframes }: { wireframes: InceptionPack['wireframes'] }) {
+  if (!wireframes?.screens?.length) {
+    return <EmptySection message="No wireframes available" />;
+  }
+
+  return (
+    <div className="section-grid">
+      <div className="content-card full-width wireframe-container">
+        <h3>UI Wireframes</h3>
+        <WireframeViewer wireframes={wireframes} />
+      </div>
+
+      {/* User Flows */}
+      {wireframes.user_flows && wireframes.user_flows.length > 0 && (
+        <div className="content-card full-width">
+          <h3>User Flows</h3>
+          <div className="user-flows">
+            {wireframes.user_flows.map((flow, i) => (
+              <div key={i} className="flow-item">
+                <h4>{flow.flow_name}</h4>
+                <p>{flow.description}</p>
+                <div className="flow-screens">
+                  {flow.screens.map((screen, j) => (
+                    <span key={j} className="flow-screen">
+                      {screen}
+                      {j < flow.screens.length - 1 && ' → '}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Design Notes */}
+      {wireframes.design_system_notes && wireframes.design_system_notes.length > 0 && (
+        <div className="content-card">
+          <h3>Design System Notes</h3>
+          <ul className="bullet-list">
+            {wireframes.design_system_notes.map((note, i) => (
+              <li key={i}>{note}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PrototypeSection({ prototype }: { prototype: InceptionPack['prototype'] }) {
+  if (!prototype?.react_component_code) {
+    return <EmptySection message="No prototype available" />;
+  }
+
+  return (
+    <div className="section-grid">
+      <div className="content-card full-width prototype-container">
+        <h3>Interactive Prototype</h3>
+        <PrototypeViewer prototype={prototype} />
+      </div>
+    </div>
+  );
+}
+
+function StakeholdersSection({ stakeholders }: { stakeholders: InceptionPack['stakeholder_views'] }) {
+  if (!stakeholders?.views?.length) {
+    return <EmptySection message="No stakeholder views available" />;
+  }
+
+  return (
+    <div className="section-grid">
+      <div className="content-card full-width stakeholder-container">
+        <h3>Stakeholder Views</h3>
+        <StakeholderViewSelector views={stakeholders.views} />
+      </div>
+
+      {/* Common Concerns */}
+      {stakeholders.common_concerns && stakeholders.common_concerns.length > 0 && (
+        <div className="content-card">
+          <h3>Common Concerns</h3>
+          <ul className="bullet-list warning">
+            {stakeholders.common_concerns.map((concern, i) => (
+              <li key={i}>{concern}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Cross-Stakeholder Alignment */}
+      {stakeholders.cross_stakeholder_alignment && (
+        <div className="content-card">
+          <h3>Cross-Stakeholder Alignment</h3>
+          <p>{stakeholders.cross_stakeholder_alignment}</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ValidationSection({ playbook }: { playbook: InceptionPack['validation_playbook'] }) {
+  if (!playbook?.experiments?.length) {
+    return <EmptySection message="No validation playbook available" />;
+  }
+
+  return (
+    <div className="section-grid">
+      <div className="content-card full-width validation-container">
+        <h3>Validation Playbook</h3>
+        <ValidationPlaybook playbook={playbook} />
+      </div>
     </div>
   );
 }

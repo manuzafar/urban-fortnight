@@ -45,31 +45,58 @@ export interface AgentState {
   status: 'pending' | 'running' | 'completed' | 'error';
   displayName: string;
   icon: string;
+  phase: string;
   message?: string;
   summary?: string;
   insightsCount: number;
 }
 
-// Agent display configuration
-const AGENT_CONFIG: Record<string, { name: string; icon: string }> = {
-  customer_research: { name: 'Customer Research', icon: 'search' },
-  business_strategy: { name: 'Business Strategy', icon: 'trending-up' },
-  product_requirements: { name: 'Product Requirements', icon: 'file-text' },
-  technical_architect: { name: 'Technical Architecture', icon: 'cpu' },
-  legal_regulatory: { name: 'Legal Review', icon: 'shield' },
-  critique: { name: 'Quality Check', icon: 'check-circle' },
-  executive_summary: { name: 'Summary', icon: 'file-check' },
+// Agent display configuration (V3.0 - 17 agents across 7 phases)
+const AGENT_CONFIG: Record<string, { name: string; icon: string; phase: string }> = {
+  // Planning
+  planner: { name: 'Research Planner', icon: 'clipboard-list', phase: 'Planning' },
+
+  // Discovery (parallel)
+  customer_research: { name: 'Customer Research', icon: 'search', phase: 'Discovery' },
+  competitive_intelligence: { name: 'Competitive Intel', icon: 'target', phase: 'Discovery' },
+  persona_development: { name: 'Persona Development', icon: 'users', phase: 'Discovery' },
+
+  // Strategy (parallel)
+  business_strategy: { name: 'Business Strategy', icon: 'trending-up', phase: 'Strategy' },
+  gtm_strategy: { name: 'GTM Strategy', icon: 'rocket', phase: 'Strategy' },
+  financial_modeling: { name: 'Financial Model', icon: 'dollar-sign', phase: 'Strategy' },
+
+  // Delivery (parallel)
+  product_requirements: { name: 'Product Requirements', icon: 'file-text', phase: 'Delivery' },
+  technical_architect: { name: 'Technical Architecture', icon: 'cpu', phase: 'Delivery' },
+  legal_regulatory: { name: 'Legal Review', icon: 'shield', phase: 'Delivery' },
+  risk_assessment: { name: 'Risk Assessment', icon: 'alert-triangle', phase: 'Delivery' },
+
+  // Design (sequential)
+  wireframe_agent: { name: 'Wireframes', icon: 'layout', phase: 'Design' },
+  prototype_agent: { name: 'Prototype', icon: 'play-circle', phase: 'Design' },
+
+  // Quality
+  critique: { name: 'Quality Check', icon: 'check-circle', phase: 'Quality' },
+
+  // Synthesis (parallel)
+  stakeholder_agent: { name: 'Stakeholder Views', icon: 'briefcase', phase: 'Synthesis' },
+  validation_agent: { name: 'Validation Playbook', icon: 'clipboard-check', phase: 'Synthesis' },
+  executive_summary_agent: { name: 'Executive Summary', icon: 'file-check', phase: 'Synthesis' },
+
+  // Legacy agent name mapping for backward compatibility
+  executive_summary: { name: 'Executive Summary', icon: 'file-check', phase: 'Synthesis' },
 };
 
-// Agent execution order
+// Agent execution order (V3.0 - 17 agents)
 const AGENT_ORDER = [
-  'customer_research',
-  'business_strategy',
-  'product_requirements',
-  'technical_architect',
-  'legal_regulatory',
+  'planner',
+  'customer_research', 'competitive_intelligence', 'persona_development',
+  'business_strategy', 'gtm_strategy', 'financial_modeling',
+  'product_requirements', 'technical_architect', 'legal_regulatory', 'risk_assessment',
+  'wireframe_agent', 'prototype_agent',
   'critique',
-  'executive_summary',
+  'stakeholder_agent', 'validation_agent', 'executive_summary_agent',
 ];
 
 export interface UseSSEResult {
@@ -126,11 +153,12 @@ export function useSSE(
   useEffect(() => {
     const initialStates: Record<string, AgentState> = {};
     for (const agent of AGENT_ORDER) {
-      const config = AGENT_CONFIG[agent] || { name: agent, icon: 'cpu' };
+      const config = AGENT_CONFIG[agent] || { name: agent, icon: 'cpu', phase: 'Unknown' };
       initialStates[agent] = {
         status: 'pending',
         displayName: config.name,
         icon: config.icon,
+        phase: config.phase,
         insightsCount: 0,
       };
     }
@@ -163,9 +191,11 @@ export function useSSE(
     setAgentStates((prev) => {
       const reset: Record<string, AgentState> = {};
       for (const agent of AGENT_ORDER) {
+        const config = AGENT_CONFIG[agent] || { name: agent, icon: 'cpu', phase: 'Unknown' };
         reset[agent] = {
           ...prev[agent],
           status: 'pending',
+          phase: config.phase,
           message: undefined,
           summary: undefined,
           insightsCount: 0,
@@ -207,12 +237,16 @@ export function useSSE(
             const agent = parsed.agent;
             if (agent) {
               setCurrentAgent(agent);
+              const config = AGENT_CONFIG[agent] || { name: agent, icon: 'cpu', phase: 'Unknown' };
               setAgentStates((prev) => ({
                 ...prev,
                 [agent]: {
-                  ...prev[agent],
                   status: 'running',
+                  displayName: prev[agent]?.displayName || config.name,
+                  icon: prev[agent]?.icon || config.icon,
+                  phase: prev[agent]?.phase || config.phase,
                   message: (parsed.data.message as string) || 'Processing...',
+                  insightsCount: prev[agent]?.insightsCount || 0,
                 },
               }));
             }
@@ -245,12 +279,16 @@ export function useSSE(
           case 'agent_complete': {
             const agent = parsed.agent;
             if (agent) {
+              const config = AGENT_CONFIG[agent] || { name: agent, icon: 'cpu', phase: 'Unknown' };
               setAgentStates((prev) => ({
                 ...prev,
                 [agent]: {
-                  ...prev[agent],
                   status: 'completed',
+                  displayName: prev[agent]?.displayName || config.name,
+                  icon: prev[agent]?.icon || config.icon,
+                  phase: prev[agent]?.phase || config.phase,
                   summary: (parsed.data.summary as string) || 'Complete',
+                  insightsCount: prev[agent]?.insightsCount || 0,
                 },
               }));
             }

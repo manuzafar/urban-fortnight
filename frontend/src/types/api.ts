@@ -67,7 +67,273 @@ export interface SessionStatusResponse {
 // Inception Pack Types
 // ═══════════════════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// V3.0 New Section Types
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// Go-To-Market Strategy
+export interface LaunchPhase {
+  phase_name: string;
+  duration: string;
+  objectives: string[];
+  key_activities: string[];
+  success_metrics: string[];
+}
+
+export interface ChannelStrategy {
+  channel: string;
+  purpose: string;
+  tactics: string[];
+  budget_allocation: string;
+  expected_roi: string;
+}
+
+export interface GoToMarket {
+  positioning_statement: string;
+  target_segments: string[];
+  launch_phases: LaunchPhase[];
+  channel_strategy: ChannelStrategy[];
+  messaging_framework: {
+    headline: string;
+    subheadline: string;
+    key_benefits: string[];
+    proof_points: string[];
+  };
+  pricing_strategy: string;
+  partnership_approach: string;
+}
+
+// Financial Model
+export interface FinancialProjection {
+  period: string;
+  revenue: number;
+  costs: number;
+  profit: number;
+  cumulative_profit: number;
+}
+
+export interface UnitEconomics {
+  metric: string;
+  value: string;
+  benchmark: string;
+  assessment: string;
+}
+
+export interface FinancialModel {
+  summary: string;
+  projections: FinancialProjection[];
+  unit_economics: UnitEconomics[];
+  assumptions: string[];
+  sensitivity_analysis: {
+    optimistic: string;
+    base_case: string;
+    pessimistic: string;
+  };
+  funding_requirements: string;
+  break_even_analysis: string;
+}
+
+// Stakeholder Views
+export interface StakeholderView {
+  stakeholder_role: string;
+  tailored_summary: string;
+  key_questions_answered?: string[];
+  key_question_answered?: string;
+  anticipated_objections: Array<{
+    objection: string;
+    response: string;
+    supporting_claim_ids: string[];
+  }>;
+  evidence_confidence: string;
+  key_metrics?: string[];
+  key_metrics_for_role?: string[];
+  decision_criteria?: string[];
+  decision_recommendation?: string;
+}
+
+export interface StakeholderViews {
+  views: StakeholderView[];
+  common_concerns: string[];
+  cross_stakeholder_alignment: string;
+}
+
+// Validation Playbook
+export interface ValidationExperiment {
+  experiment_id: string;
+  hypothesis_claim_id: string;
+  experiment_name: string;
+  target_profile: string;
+  specific_instructions: string;
+  success_criteria: string;
+  failure_criteria: string;
+  upgrade_path: string[];
+  effort_level: 'quick' | 'moderate' | 'significant';
+  priority: 'critical' | 'high' | 'medium' | 'low';
+  sample_size?: string;
+  timeline?: string;
+}
+
+export interface ValidationPlaybook {
+  experiments: ValidationExperiment[];
+  prioritization_rationale: string;
+  quick_wins: string[];
+  critical_path: string[];
+}
+
+// Wireframes
+export interface WireframeScreen {
+  screen_id: string;
+  screen_name: string;
+  purpose: string;
+  user_stories_covered: string[];
+  key_components: string[];
+  navigation_to: string[];
+  react_code: string;
+}
+
+export interface Wireframes {
+  screens: WireframeScreen[];
+  user_flows: Array<{
+    flow_name: string;
+    description: string;
+    screens: string[];
+  }>;
+  user_flow_description?: string;
+  user_flow_mermaid?: string;
+  design_system_notes: string[];
+}
+
+// Prototype
+export interface Prototype {
+  prototype_name: string;
+  primary_persona: string;
+  key_user_story: string;
+  react_component_code: string;
+  css_code?: string;
+  color_palette: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    background: string;
+    text: string;
+  };
+  interactivity_notes: string[];
+  demo_scenario: string;
+}
+
+// Competitive Analysis
+export interface CompetitorDetail {
+  name: string;
+  description: string;
+  strengths: string[];
+  weaknesses: string[];
+  market_share: string;
+  pricing: string;
+  threat_level: 'high' | 'medium' | 'low';
+  differentiation_opportunity: string;
+}
+
+export interface CompetitiveAnalysis {
+  summary: string;
+  competitors: CompetitorDetail[];
+  positioning_map: {
+    x_axis: string;
+    y_axis: string;
+    our_position: { x: number; y: number };
+    competitor_positions: Array<{ name: string; x: number; y: number }>;
+  };
+  competitive_moat: string[];
+  market_gaps: string[];
+}
+
+// Detailed Personas
+export interface DetailedPersona {
+  persona_id: string;
+  name: string;
+  role: string;
+  demographics: {
+    age_range: string;
+    location: string;
+    income_level: string;
+    education: string;
+  };
+  jobs_to_be_done: Array<{
+    job: string;
+    importance: 'critical' | 'high' | 'medium' | 'low';
+    current_solution: string;
+  }>;
+  pain_points: string[];
+  goals: string[];
+  behaviors: string[];
+  quote: string;
+  day_in_life: string;
+  decision_factors: string[];
+  channels: string[];
+}
+
+export interface DetailedPersonas {
+  personas: DetailedPersona[];
+  key_insights: string[];
+  prioritization: string;
+}
+
+// Risk Assessment
+export interface RiskItem {
+  risk_id: string;
+  category: string;
+  description: string;
+  likelihood: 'high' | 'medium' | 'low';
+  impact: 'high' | 'medium' | 'low';
+  risk_score: number;
+  mitigation_strategy: string;
+  contingency_plan: string;
+  owner: string;
+  status: 'identified' | 'mitigating' | 'accepted' | 'resolved';
+}
+
+export interface RiskAssessment {
+  summary: string;
+  risks: RiskItem[];
+  risk_matrix: {
+    high_high: string[];
+    high_medium: string[];
+    high_low: string[];
+    medium_high: string[];
+    medium_medium: string[];
+    medium_low: string[];
+    low_high: string[];
+    low_medium: string[];
+    low_low: string[];
+  };
+  top_risks: string[];
+  overall_risk_level: 'high' | 'medium' | 'low';
+}
+
+// Cross-Reference Index
+export interface CrossReferenceClaim {
+  claim_id: string;
+  claim_text: string;
+  evidence_tier: EvidenceTier;
+  source_section: string;
+  supporting_data: string[];
+  confidence_score: number;
+  validation_status: 'validated' | 'pending' | 'disputed';
+}
+
+export interface CrossReferenceIndex {
+  claims: CrossReferenceClaim[];
+  evidence_score: number;
+  validation_summary: string;
+  key_validated_claims: string[];
+  claims_needing_validation: string[];
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// Inception Pack (Updated for V3.0)
+// ═══════════════════════════════════════════════════════════════════════════════
+
 export interface InceptionPack {
+  // Core sections (existing)
   executive_summary: ExecutiveSummary;
   customer_research: CustomerResearch;
   business_case: BusinessCase;
@@ -75,6 +341,19 @@ export interface InceptionPack {
   technical_architecture: TechnicalArchitecture;
   legal_regulatory_review: LegalRegulatoryReview;
   quality_assessment: QualityAssessment;
+
+  // V3.0 additions (optional for backward compatibility)
+  competitive_analysis?: CompetitiveAnalysis | null;
+  detailed_personas?: DetailedPersonas | null;
+  gtm_strategy?: GoToMarket | null;
+  financial_model?: FinancialModel | null;
+  risk_assessment?: RiskAssessment | null;
+  wireframes?: Wireframes | null;
+  prototype?: Prototype | null;
+  stakeholder_views?: StakeholderViews | null;
+  validation_playbook?: ValidationPlaybook | null;
+  cross_reference_index?: CrossReferenceIndex | null;
+
   metadata: InceptionPackMetadata;
 }
 

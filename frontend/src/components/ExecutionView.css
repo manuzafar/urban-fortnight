@@ -156,6 +156,33 @@
   padding: 0;
   display: flex;
   flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* Phase Groups */
+.agent-phase-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.phase-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0;
+  padding-left: var(--space-2);
+  border-left: 2px solid var(--color-accent);
+}
+
+.phase-agents {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
   gap: var(--space-2);
 }
 
@@ -425,6 +452,17 @@
   }
 
   .agent-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+
+  .agent-phase-group {
+    flex: 1;
+    min-width: 200px;
+  }
+
+  .phase-agents {
     flex-direction: row;
     flex-wrap: wrap;
     gap: var(--space-2);

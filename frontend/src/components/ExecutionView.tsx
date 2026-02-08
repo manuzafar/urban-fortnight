@@ -20,6 +20,16 @@ import {
   Loader2,
   Clock,
   AlertCircle,
+  Target,
+  Users,
+  Rocket,
+  DollarSign,
+  AlertTriangle,
+  Layout,
+  PlayCircle,
+  Briefcase,
+  ClipboardCheck,
+  ClipboardList,
 } from 'lucide-react';
 import { useSSE, type AgentState } from '../hooks/useSSE';
 import { getInceptionPack } from '../api/client';
@@ -34,14 +44,36 @@ export interface ExecutionViewProps {
 }
 
 const AGENT_ICONS: Record<string, React.ReactNode> = {
+  // Planning
+  planner: <ClipboardList size={18} />,
+  // Discovery
   customer_research: <Search size={18} />,
+  competitive_intelligence: <Target size={18} />,
+  persona_development: <Users size={18} />,
+  // Strategy
   business_strategy: <TrendingUp size={18} />,
+  gtm_strategy: <Rocket size={18} />,
+  financial_modeling: <DollarSign size={18} />,
+  // Delivery
   product_requirements: <FileText size={18} />,
   technical_architect: <Cpu size={18} />,
   legal_regulatory: <Shield size={18} />,
+  risk_assessment: <AlertTriangle size={18} />,
+  // Design
+  wireframe_agent: <Layout size={18} />,
+  prototype_agent: <PlayCircle size={18} />,
+  // Quality
   critique: <CheckCircle size={18} />,
+  // Synthesis
+  stakeholder_agent: <Briefcase size={18} />,
+  validation_agent: <ClipboardCheck size={18} />,
+  executive_summary_agent: <FileCheck size={18} />,
+  // Legacy
   executive_summary: <FileCheck size={18} />,
 };
+
+// Phase display order
+const PHASE_ORDER = ['Planning', 'Discovery', 'Strategy', 'Delivery', 'Design', 'Quality', 'Synthesis'];
 
 function formatTime(seconds: number): string {
   const mins = Math.floor(seconds / 60);
@@ -151,43 +183,58 @@ export function ExecutionView({
         {/* Agent Panel */}
         <aside className="agent-panel">
           <h2>Agents</h2>
-          <ul className="agent-list">
-            {agentOrder.map((agentKey) => {
-              const state = agentStates[agentKey];
-              if (!state) return null;
+          <div className="agent-list">
+            {PHASE_ORDER.map((phase) => {
+              const phaseAgents = agentOrder.filter(
+                (agentKey) => agentStates[agentKey]?.phase === phase
+              );
+
+              if (phaseAgents.length === 0) return null;
 
               return (
-                <li
-                  key={agentKey}
-                  className={`agent-card ${getAgentStatusClass(state)} ${
-                    currentAgent === agentKey ? 'active' : ''
-                  }`}
-                >
-                  <div className="agent-icon">
-                    {state.status === 'running' ? (
-                      <Loader2 size={18} className="spin" />
-                    ) : (
-                      AGENT_ICONS[agentKey] || <Cpu size={18} />
-                    )}
-                  </div>
-                  <div className="agent-info">
-                    <span className="agent-name">{state.displayName}</span>
-                    <span className="agent-status-text">
-                      {state.status === 'running' && (state.message || 'Processing...')}
-                      {state.status === 'completed' && (state.summary || 'Complete')}
-                      {state.status === 'pending' && 'Waiting...'}
-                      {state.status === 'error' && 'Failed'}
-                    </span>
-                  </div>
-                  {state.status === 'completed' && (
-                    <div className="agent-check">
-                      <CheckCircle size={16} />
-                    </div>
-                  )}
-                </li>
+                <div key={phase} className="agent-phase-group">
+                  <h3 className="phase-label">{phase}</h3>
+                  <ul className="phase-agents">
+                    {phaseAgents.map((agentKey) => {
+                      const state = agentStates[agentKey];
+                      if (!state) return null;
+
+                      return (
+                        <li
+                          key={agentKey}
+                          className={`agent-card ${getAgentStatusClass(state)} ${
+                            currentAgent === agentKey ? 'active' : ''
+                          }`}
+                        >
+                          <div className="agent-icon">
+                            {state.status === 'running' ? (
+                              <Loader2 size={18} className="spin" />
+                            ) : (
+                              AGENT_ICONS[agentKey] || <Cpu size={18} />
+                            )}
+                          </div>
+                          <div className="agent-info">
+                            <span className="agent-name">{state.displayName}</span>
+                            <span className="agent-status-text">
+                              {state.status === 'running' && (state.message || 'Processing...')}
+                              {state.status === 'completed' && (state.summary || 'Complete')}
+                              {state.status === 'pending' && 'Waiting...'}
+                              {state.status === 'error' && 'Failed'}
+                            </span>
+                          </div>
+                          {state.status === 'completed' && (
+                            <div className="agent-check">
+                              <CheckCircle size={16} />
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
               );
             })}
-          </ul>
+          </div>
         </aside>
 
         {/* Pack Preview */}
