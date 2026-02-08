@@ -32,6 +32,64 @@ def _to_list(data):
     return []
 
 
+def _sanitize_mermaid(code: str) -> str:
+    """Sanitize Mermaid diagram code for browser rendering.
+
+    Fixes common syntax issues:
+    1. Quotes subgraph names that contain spaces
+    2. Quotes node labels that contain parentheses (but not shape syntax)
+    """
+    if not code:
+        return code
+
+    lines = code.split('\n')
+    sanitized_lines = []
+
+    for line in lines:
+        # Fix subgraph names with spaces (but not already quoted)
+        # e.g., "subgraph Digital Channels" -> 'subgraph "Digital Channels"'
+        subgraph_match = re.match(r'^(\s*subgraph\s+)([^"\n]+)$', line)
+        if subgraph_match:
+            prefix, name = subgraph_match.groups()
+            name = name.strip()
+            if ' ' in name and not name.startswith('"'):
+                line = f'{prefix}"{name}"'
+
+        # Fix node labels with parentheses in the TEXT (not shape syntax)
+        # e.g., "BANKAPI[Bank APIs (CDR)]" -> 'BANKAPI["Bank APIs (CDR)"]'
+        # BUT NOT "DB[(PostgreSQL)]" - the [( is shape syntax for cylinder
+        def quote_label_if_needed(match):
+            node_id = match.group(1)
+            open_bracket = match.group(2)
+            label = match.group(3)
+            close_bracket = match.group(4)
+
+            # Skip if this is special shape syntax:
+            # [( )] = cylinder/database shape - parentheses are structural
+            # [[ ]] = subroutine shape
+            # (( )) = circle shape
+            # {{ }} = hexagon shape
+            if open_bracket == '[' and label.startswith('(') and label.endswith(')'):
+                # This is [(...)] cylinder syntax - don't modify
+                return match.group(0)
+            if open_bracket == '[' and label.startswith('[') and label.endswith(']'):
+                # This is [[...]] subroutine syntax - don't modify
+                return match.group(0)
+
+            # Only quote if contains parentheses and not already quoted
+            if ('(' in label or ')' in label) and not label.startswith('"'):
+                return f'{node_id}{open_bracket}"{label}"{close_bracket}'
+            return match.group(0)
+
+        # Match node definitions: ID[label] or ID{label}
+        line = re.sub(r'(\w+)(\[)([^\]"]+)(\])', quote_label_if_needed, line)
+        line = re.sub(r'(\w+)(\{)([^}"]+)(\})', quote_label_if_needed, line)
+
+        sanitized_lines.append(line)
+
+    return '\n'.join(sanitized_lines)
+
+
 def generate_pack_html(state: dict, output_path: Path) -> Path:
     """Generate an HTML document from an inception pack state."""
 
@@ -64,17 +122,12 @@ def generate_pack_html(state: dict, output_path: Path) -> Path:
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@9.4.3/dist/mermaid.min.js"></script>
     <script>
         mermaid.initialize({{
             startOnLoad: true,
             theme: 'neutral',
-            securityLevel: 'loose',
-            flowchart: {{ useMaxWidth: true, htmlLabels: true }}
-        }});
-        // Re-run mermaid after page load to catch any missed diagrams
-        document.addEventListener('DOMContentLoaded', function() {{
-            mermaid.run();
+            securityLevel: 'loose'
         }});
     </script>
     <style>
@@ -899,8 +952,8 @@ def _build_tech_architecture(state: dict) -> str:
 
     arch_style = ta.get("architecture_style", ta.get("architecture_pattern", ""))
     arch_desc = ta.get("architecture_diagram_description", "")
-    arch_mermaid = ta.get("architecture_diagram_mermaid", "")
-    seq_mermaid = ta.get("sequence_diagram_mermaid", "")
+    arch_mermaid = _sanitize_mermaid(ta.get("architecture_diagram_mermaid", ""))
+    seq_mermaid = _sanitize_mermaid(ta.get("sequence_diagram_mermaid", ""))
     tech_stack = _to_list(ta.get("tech_stack", [])) or _to_list(ta.get("technology_stack", []))
     components = _to_list(ta.get("system_components", []))
     integrations = _to_list(ta.get("integration_points", []))
@@ -923,7 +976,9 @@ def _build_tech_architecture(state: dict) -> str:
             <div class="mb-6">
                 <h3 class="font-semibold text-slate-800 mb-3">System Architecture</h3>
                 <div class="bg-white border rounded-lg p-4">
-                    <div class="mermaid">{arch_mermaid}</div>
+                    <pre class="mermaid">
+{arch_mermaid}
+                    </pre>
                 </div>
             </div>
 '''
@@ -1049,7 +1104,7 @@ def _build_wireframes(state: dict) -> str:
 
     screens = _to_list(wf.get("screens", []))
     user_flow = wf.get("user_flow_description", "")
-    user_flow_mermaid = wf.get("user_flow_mermaid", "")
+    user_flow_mermaid = _sanitize_mermaid(wf.get("user_flow_mermaid", ""))
     user_flows = _to_list(wf.get("user_flows", []))
 
     html = f"""
@@ -1064,7 +1119,7 @@ def _build_wireframes(state: dict) -> str:
         for flow in user_flows[:5]:
             flow_name = flow.get("flow_name", "User Flow")
             persona = flow.get("persona", "")
-            mermaid_code = flow.get("mermaid_code", "")
+            mermaid_code = _sanitize_mermaid(flow.get("mermaid_code", ""))
             screens_ref = flow.get("screens_referenced", [])
             notes = flow.get("notes", "")
 
@@ -1076,7 +1131,7 @@ def _build_wireframes(state: dict) -> str:
                     </div>
 '''
             if mermaid_code:
-                html += f'<div class="mermaid">{mermaid_code}</div>'
+                html += f'<pre class="mermaid">\n{mermaid_code}\n</pre>'
             if screens_ref:
                 html += '<div class="mt-2 flex gap-1">'
                 for sid in screens_ref:
@@ -1093,7 +1148,9 @@ def _build_wireframes(state: dict) -> str:
             <div class="mb-6">
                 <h3 class="font-semibold text-slate-800 mb-3">User Flow</h3>
                 <div class="bg-white border rounded-lg p-4 overflow-x-auto">
-                    <div class="mermaid">{user_flow_mermaid}</div>
+                    <pre class="mermaid">
+{user_flow_mermaid}
+                    </pre>
                 </div>
             </div>
 '''
