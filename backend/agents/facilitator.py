@@ -160,37 +160,53 @@ class FacilitatorAgent:
             # ═══════════════════════════════════════════════════════════════
             # PHASE 4: DELIVERY (Parallel: PRD + TA + RC → Sequential: Risk)
             # ═══════════════════════════════════════════════════════════════
-            state = await self._run_delivery_phase(state)
-            if state.get("status") == SessionStatus.FAILED:
-                return state
+            try:
+                state = await self._run_delivery_phase(state)
+                if state.get("status") == SessionStatus.FAILED:
+                    return state
+            except Exception as e:
+                self.logger.error("delivery_phase_exception", error=str(e), exc_info=True)
+                raise Exception(f"Delivery phase failed: {str(e)}")
 
             # ═══════════════════════════════════════════════════════════════
             # PHASE 5: DESIGN (Sequential: Wireframes → Prototype)
             # ═══════════════════════════════════════════════════════════════
-            state = await self._run_design_phase(state)
+            try:
+                state = await self._run_design_phase(state)
+            except Exception as e:
+                self.logger.error("design_phase_exception", error=str(e), exc_info=True)
+                raise Exception(f"Design phase failed: {str(e)}")
 
             # ═══════════════════════════════════════════════════════════════
             # PHASE 6: QUALITY CHECK (Critique with revision loop)
             # ═══════════════════════════════════════════════════════════════
-            state = await self._run_quality_check(state)
-
-            # Handle revision loop if needed (max 2 iterations)
-            revision_count = 0
-            while state.get("requires_revision") and revision_count < 2:
-                self.logger.info(
-                    "revision_loop",
-                    session_id=state["session_id"],
-                    iteration=revision_count + 1,
-                )
-                # Re-run weak sections based on critique
-                state = await self._rerun_weak_sections(state)
+            try:
                 state = await self._run_quality_check(state)
-                revision_count += 1
+
+                # Handle revision loop if needed (max 2 iterations)
+                revision_count = 0
+                while state.get("requires_revision") and revision_count < 2:
+                    self.logger.info(
+                        "revision_loop",
+                        session_id=state["session_id"],
+                        iteration=revision_count + 1,
+                    )
+                    # Re-run weak sections based on critique
+                    state = await self._rerun_weak_sections(state)
+                    state = await self._run_quality_check(state)
+                    revision_count += 1
+            except Exception as e:
+                self.logger.error("quality_phase_exception", error=str(e), exc_info=True)
+                raise Exception(f"Quality phase failed: {str(e)}")
 
             # ═══════════════════════════════════════════════════════════════
             # PHASE 7: SYNTHESIS (Parallel: Stakeholder + Validation → Exec Summary)
             # ═══════════════════════════════════════════════════════════════
-            state = await self._run_synthesis_phase(state)
+            try:
+                state = await self._run_synthesis_phase(state)
+            except Exception as e:
+                self.logger.error("synthesis_phase_exception", error=str(e), exc_info=True)
+                raise Exception(f"Synthesis phase failed: {str(e)}")
 
             self.logger.info(
                 "facilitator_complete",
