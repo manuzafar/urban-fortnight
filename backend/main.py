@@ -206,15 +206,20 @@ async def run_discovery_task(
             },
         )
 
+        # Determine actual completion status
+        actual_status = final_state.get("status", SessionStatus.COMPLETED)
+        is_success = actual_status == SessionStatus.COMPLETED
+
         logger.info(
             "discovery_task_completed",
             session_id=session_id,
-            status=final_state.get("status"),
+            status=actual_status,
+            is_success=is_success,
             quality_score=(final_state.get("quality_assessment") or {}).get("overall_score"),
         )
 
-        # Emit completion event
-        await emitter.emit_done(status="completed")
+        # Emit completion event with actual status
+        await emitter.emit_done(status="completed" if is_success else "failed")
 
         # Send founder alert email (fire and forget, don't block on failure)
         if final_state.get("status") == SessionStatus.COMPLETED:

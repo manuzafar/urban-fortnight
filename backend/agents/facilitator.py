@@ -212,6 +212,14 @@ class FacilitatorAgent:
             if "errors" not in state:
                 state["errors"] = []
             state["errors"].append(f"Facilitator error: {str(e)}")
+
+            # Emit error via SSE so frontend knows what happened
+            emitter = get_current_emitter()
+            if emitter:
+                try:
+                    await emitter.emit_error(f"Workflow failed: {str(e)}")
+                except Exception:
+                    pass  # Don't fail on emit error
             return state
 
     async def _run_planning_phase(self, state: DiscoveryState) -> DiscoveryState:
