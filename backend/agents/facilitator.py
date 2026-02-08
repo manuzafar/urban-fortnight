@@ -347,12 +347,11 @@ class FacilitatorAgent:
         # Emit insights from delivery (try to extract, but always complete)
         self.logger.info("emitting_delivery_completes", session_id=state["session_id"])
 
-        # Safely extract PRD features (handle None values in nested dicts)
+        # Safely extract PRD features (functional_requirements is a LIST, not a dict)
         prd = state.get("product_requirements") or {}
-        fr = prd.get("functional_requirements") or {}
-        features = fr.get("core_features") or []
-        if features:
-            await self._emit_insight("product_requirements", "features", f"Core features: {len(features)}")
+        features = prd.get("functional_requirements") or []  # This is the list of FRs
+        if features and isinstance(features, list):
+            await self._emit_insight("product_requirements", "features", f"Functional requirements: {len(features)}")
         await self._emit_agent_complete("product_requirements", "PRD complete", insights_count=1)
         self.logger.info("emitted_prd_complete", session_id=state["session_id"])
 
