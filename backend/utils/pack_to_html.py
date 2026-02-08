@@ -1187,6 +1187,12 @@ def _build_wireframes(state: dict) -> str:
                                             const TrendingDown = createIcon(['M23 18l-9.5-9.5-5 5L1 6']);
                                             const ArrowRight = createIcon(['M5 12h14', 'M12 5l7 7-7 7']);
                                             const ArrowLeft = createIcon(['M19 12H5', 'M12 19l-7-7 7-7']);
+                                            const ArrowUp = createIcon(['M12 19V5', 'M5 12l7-7 7 7']);
+                                            const ArrowDown = createIcon(['M12 5v14', 'M19 12l-7 7-7-7']);
+                                            const BarChart2 = createIcon(['M18 20V10', 'M12 20V4', 'M6 20v-6']);
+                                            const FileText = createIcon(['M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z', 'M14 2v6h6', 'M16 13H8', 'M16 17H8', 'M10 9H8']);
+                                            const Lightbulb = createIcon(['M9 18h6', 'M10 22h4', 'M12 2a7 7 0 017 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 01-1 1H9a1 1 0 01-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 017-7z']);
+                                            const XCircle = createIcon(['M12 2a10 10 0 100 20 10 10 0 000-20z', 'M15 9l-6 6', 'M9 9l6 6']);
                                             const Check = createIcon(['M20 6L9 17l-5-5']);
                                             const X = createIcon(['M18 6L6 18', 'M6 6l12 12']);
                                             const Menu = createIcon(['M3 12h18', 'M3 6h18', 'M3 18h18']);
@@ -1385,6 +1391,12 @@ def _build_prototype(state: dict) -> str:
                                 const TrendingDown = createIcon(['M23 18l-9.5-9.5-5 5L1 6']);
                                 const ArrowRight = createIcon(['M5 12h14', 'M12 5l7 7-7 7']);
                                 const ArrowLeft = createIcon(['M19 12H5', 'M12 19l-7-7 7-7']);
+                                const ArrowUp = createIcon(['M12 19V5', 'M5 12l7-7 7 7']);
+                                const ArrowDown = createIcon(['M12 5v14', 'M19 12l-7 7-7-7']);
+                                const BarChart2 = createIcon(['M18 20V10', 'M12 20V4', 'M6 20v-6']);
+                                const FileText = createIcon(['M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z', 'M14 2v6h6', 'M16 13H8', 'M16 17H8', 'M10 9H8']);
+                                const Lightbulb = createIcon(['M9 18h6', 'M10 22h4', 'M12 2a7 7 0 017 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 01-1 1H9a1 1 0 01-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 017-7z']);
+                                const XCircle = createIcon(['M12 2a10 10 0 100 20 10 10 0 000-20z', 'M15 9l-6 6', 'M9 9l6 6']);
                                 const Check = createIcon(['M20 6L9 17l-5-5']);
                                 const X = createIcon(['M18 6L6 18', 'M6 6l12 12']);
                                 const Menu = createIcon(['M3 12h18', 'M3 6h18', 'M3 18h18']);
