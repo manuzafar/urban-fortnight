@@ -231,27 +231,25 @@ class FacilitatorAgent:
 
         state = await self.discovery_swarm.run(state)
 
-        # Emit insights from discovery
-        if state.get("customer_research"):
-            cr = state["customer_research"]
-            if cr.get("market_context", {}).get("total_addressable_market"):
-                await self._emit_insight("customer_research", "tam", f"TAM: {cr['market_context']['total_addressable_market']}")
-            await self._emit_agent_complete("customer_research", "Market research complete", insights_count=3)
+        # Emit insights from discovery (always emit complete, even if data missing)
+        cr = state.get("customer_research") or {}
+        tam = cr.get("market_context", {}).get("total_addressable_market")
+        if tam:
+            await self._emit_insight("customer_research", "tam", f"TAM: {tam}")
+        await self._emit_agent_complete("customer_research", "Market research complete", insights_count=1)
 
-        if state.get("competitive_analysis"):
-            ca = state["competitive_analysis"]
-            competitors = ca.get("direct_competitors", [])
-            if competitors:
-                names = [c.get("name", "Unknown") for c in competitors[:3]]
-                await self._emit_insight("competitive_intelligence", "competitors", f"Found: {', '.join(names)}")
-            await self._emit_agent_complete("competitive_intelligence", f"Analyzed {len(competitors)} competitors", insights_count=2)
+        ca = state.get("competitive_analysis") or {}
+        competitors = ca.get("direct_competitors", [])
+        if competitors:
+            names = [c.get("name", "Unknown") for c in competitors[:3]]
+            await self._emit_insight("competitive_intelligence", "competitors", f"Found: {', '.join(names)}")
+        await self._emit_agent_complete("competitive_intelligence", f"Analyzed {len(competitors)} competitors", insights_count=1)
 
-        if state.get("detailed_personas"):
-            dp = state["detailed_personas"]
-            primary = dp.get("primary_persona", {})
-            if primary.get("name"):
-                await self._emit_insight("persona_development", "primary_persona", f"Primary: {primary['name']} - {primary.get('archetype', '')}")
-            await self._emit_agent_complete("persona_development", "Personas created", insights_count=2)
+        dp = state.get("detailed_personas") or {}
+        primary = dp.get("primary_persona", {})
+        if primary.get("name"):
+            await self._emit_insight("persona_development", "primary_persona", f"Primary: {primary['name']} - {primary.get('archetype', '')}")
+        await self._emit_agent_complete("persona_development", "Personas created", insights_count=1)
 
         await self._emit_progress(25, "discovery")
 
@@ -266,20 +264,18 @@ class FacilitatorAgent:
 
         state = await self.strategy_swarm.run(state)
 
-        # Emit insights from strategy
-        if state.get("business_case"):
-            bc = state["business_case"]
-            if bc.get("lean_canvas", {}).get("problem"):
-                problems = bc["lean_canvas"]["problem"]
-                if problems:
-                    await self._emit_insight("business_strategy", "problem", f"Problem: {problems[0][:80]}...")
-            await self._emit_agent_complete("business_strategy", "Business case complete", insights_count=2)
+        # Emit insights from strategy (always emit complete)
+        bc = state.get("business_case") or {}
+        problems = bc.get("lean_canvas", {}).get("problem", [])
+        if problems:
+            await self._emit_insight("business_strategy", "problem", f"Problem: {problems[0][:80]}...")
+        await self._emit_agent_complete("business_strategy", "Business case complete", insights_count=1)
 
-        if state.get("gtm_plan"):
-            gtm = state["gtm_plan"]
-            if gtm.get("market_entry_strategy", {}).get("initial_segment"):
-                await self._emit_insight("gtm_strategy", "segment", f"Target: {gtm['market_entry_strategy']['initial_segment']}")
-            await self._emit_agent_complete("gtm_strategy", "GTM strategy complete", insights_count=2)
+        gtm = state.get("gtm_plan") or {}
+        initial_segment = gtm.get("market_entry_strategy", {}).get("initial_segment")
+        if initial_segment:
+            await self._emit_insight("gtm_strategy", "segment", f"Target: {initial_segment}")
+        await self._emit_agent_complete("gtm_strategy", "GTM strategy complete", insights_count=1)
 
         await self._emit_progress(40, "strategy")
 
@@ -296,35 +292,31 @@ class FacilitatorAgent:
 
         state = await self.delivery_swarm.run(state)
 
-        # Emit insights from delivery
-        if state.get("product_requirements"):
-            prd = state["product_requirements"]
-            features = prd.get("functional_requirements", {}).get("core_features", [])
-            if features:
-                await self._emit_insight("product_requirements", "features", f"Core features: {len(features)}")
-            await self._emit_agent_complete("product_requirements", "PRD complete", insights_count=2)
+        # Emit insights from delivery (try to extract, but always complete)
+        prd = state.get("product_requirements") or {}
+        features = prd.get("functional_requirements", {}).get("core_features", [])
+        if features:
+            await self._emit_insight("product_requirements", "features", f"Core features: {len(features)}")
+        await self._emit_agent_complete("product_requirements", "PRD complete", insights_count=1)
 
-        if state.get("technical_architecture"):
-            ta = state["technical_architecture"]
-            stack = ta.get("recommended_stack", {})
-            if stack.get("frontend"):
-                await self._emit_insight("technical_architect", "stack", f"Stack: {stack.get('frontend', '')} + {stack.get('backend', '')}")
-            await self._emit_agent_complete("technical_architect", "Architecture complete", insights_count=2)
+        ta = state.get("technical_architecture") or {}
+        stack = ta.get("recommended_stack", {})
+        if stack.get("frontend"):
+            await self._emit_insight("technical_architect", "stack", f"Stack: {stack.get('frontend', '')} + {stack.get('backend', '')}")
+        await self._emit_agent_complete("technical_architect", "Architecture complete", insights_count=1)
 
-        if state.get("legal_regulatory_review"):
-            lr = state["legal_regulatory_review"]
-            regs = lr.get("applicable_regulations", [])
-            if regs:
-                await self._emit_insight("legal_regulatory", "regulations", f"Regulations: {len(regs)} applicable")
-            await self._emit_agent_complete("legal_regulatory", "Legal review complete", insights_count=2)
+        lr = state.get("legal_regulatory_review") or {}
+        regs = lr.get("applicable_regulations", [])
+        if regs:
+            await self._emit_insight("legal_regulatory", "regulations", f"Regulations: {len(regs)} applicable")
+        await self._emit_agent_complete("legal_regulatory", "Legal review complete", insights_count=1)
 
-        if state.get("risk_assessment"):
-            ra = state["risk_assessment"]
-            risks = ra.get("risks", [])
-            if risks:
-                high_risks = [r for r in risks if r.get("severity") == "high"]
-                await self._emit_insight("risk_assessment", "risks", f"Risks: {len(high_risks)} high, {len(risks)} total")
-            await self._emit_agent_complete("risk_assessment", "Risk assessment complete", insights_count=2)
+        ra = state.get("risk_assessment") or {}
+        risks = ra.get("risks", [])
+        if risks:
+            high_risks = [r for r in risks if r.get("severity") == "high"]
+            await self._emit_insight("risk_assessment", "risks", f"Risks: {len(high_risks)} high, {len(risks)} total")
+        await self._emit_agent_complete("risk_assessment", "Risk assessment complete", insights_count=1)
 
         await self._emit_progress(60, "delivery")
 
