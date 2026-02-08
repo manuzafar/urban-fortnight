@@ -12,6 +12,7 @@ from typing import Any, Coroutine
 import structlog
 
 from agents.business_strategy import run_business_strategy_agent
+from agents.claim_extractor import extract_and_store_claims
 from agents.state import DiscoveryState
 from agents.swarms.base import BaseSwarm
 
@@ -181,6 +182,12 @@ CRITICAL: Respond with ONLY the JSON object. Be specific with tactics and timeli
 
     if result["success"]:
         state["gtm_plan"] = result["data"]
+
+        # Extract claims for cross-reference tracking (v3.0)
+        state = await extract_and_store_claims(
+            state, "Go-to-Market", "GM", result["data"]
+        )
+
         logger.info(
             "agent_success",
             agent=AGENT_NAME,
@@ -387,6 +394,12 @@ CRITICAL: Respond with ONLY the JSON object. Use realistic numbers based on indu
 
     if result["success"]:
         state["financial_model"] = result["data"]
+
+        # Extract claims for cross-reference tracking (v3.0)
+        state = await extract_and_store_claims(
+            state, "Financial Model", "FM", result["data"]
+        )
+
         logger.info(
             "agent_success",
             agent=AGENT_NAME,

@@ -157,6 +157,13 @@ class BaseSwarm(ABC):
                 if field in result and result[field] is not None:
                     merged[field] = result[field]
 
+            # Merge cross_reference_index from all parallel agents
+            if "cross_reference_index" in result and result["cross_reference_index"] is not None:
+                merged["cross_reference_index"] = self._merge_cross_references(
+                    merged.get("cross_reference_index"),
+                    result["cross_reference_index"],
+                )
+
             # Aggregate token usage
             merged["total_tokens_used"] = merged.get("total_tokens_used", 0) + result.get(
                 "total_tokens_used", 0
@@ -164,6 +171,12 @@ class BaseSwarm(ABC):
             merged["total_duration_seconds"] = merged.get("total_duration_seconds", 0.0) + result.get(
                 "total_duration_seconds", 0.0
             )
+
+            # Merge errors if any
+            if result.get("errors"):
+                if "errors" not in merged:
+                    merged["errors"] = []
+                merged["errors"].extend(result["errors"])
 
         merged["updated_at"] = datetime.utcnow().isoformat()
         return merged
@@ -195,3 +208,61 @@ class BaseSwarm(ABC):
             "legal_preliminary": ["preliminary_legal_scan"],
         }
         return field_mappings.get(agent_name, [agent_name])
+
+    def _merge_cross_references(
+        self,
+        current: dict | None,
+        new: dict | None,
+    ) -> dict | None:
+        """
+        Merge cross-reference indices from parallel agents.
+
+        Combines claims, avoiding duplicates, and recalculates statistics.
+
+        Args:
+            current: Current cross_reference_index (or None)
+            new: New cross_reference_index to merge (or None)
+
+        Returns:
+            Merged cross_reference_index dict
+        """
+        if current is None and new is None:
+            return None
+        if current is None:
+            return new
+        if new is None:
+            return current
+
+        # Merge claims, avoiding duplicates by claim_id
+        current_claims = current.get("claims", [])
+        new_claims = new.get("claims", [])
+
+        existing_ids = {c.get("claim_id") for c in current_claims if c.get("claim_id")}
+        merged_claims = list(current_claims)
+
+        for claim in new_claims:
+            if claim.get("claim_id") not in existing_ids:
+                merged_claims.append(claim)
+                existing_ids.add(claim.get("claim_id"))
+
+        # Recalculate statistics
+        tier_distribution: dict[str, int] = {}
+        total_weighted = 0.0
+        tier_weights = {"E1": 1.0, "E2": 0.85, "E3": 0.6, "E4": 0.3, "E5": 0.1}
+
+        for claim in merged_claims:
+            tier = claim.get("evidence_tier", "E5")
+            tier_distribution[tier] = tier_distribution.get(tier, 0) + 1
+            total_weighted += tier_weights.get(tier, 0.1)
+
+        total_claims = len(merged_claims)
+        evidence_score = total_weighted / total_claims if total_claims > 0 else 0.0
+
+        return {
+            "claims": merged_claims,
+            "total_claims": total_claims,
+            "tier_distribution": tier_distribution,
+            "evidence_score": evidence_score,
+            "unresolved_dependencies": current.get("unresolved_dependencies", [])
+            + new.get("unresolved_dependencies", []),
+        }

@@ -16,6 +16,7 @@ from typing import Literal
 import structlog
 from langgraph.graph import END, StateGraph
 
+from agents.claim_extractor import extract_and_store_claims
 from agents.prd_generator import run_prd_generator
 from agents.prd_critic import run_prd_critic
 from agents.prd_formatter import run_prd_formatter
@@ -261,6 +262,12 @@ async def run_prd_subworkflow(state: DiscoveryState) -> DiscoveryState:
 
     try:
         final_state = await workflow.ainvoke(state)
+
+        # Extract claims for cross-reference tracking (v3.0)
+        if final_state.get("product_requirements"):
+            final_state = await extract_and_store_claims(
+                final_state, "Product Requirements", "PR", final_state["product_requirements"]
+            )
 
         logger.info(
             "prd_subworkflow_complete",

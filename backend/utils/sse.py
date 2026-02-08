@@ -36,6 +36,15 @@ class StreamEventType(str, Enum):
     CITATION = "citation"  # Source citation for claim
     DECISION_POINT = "decision"  # Key decision identified
 
+    # V3.0 design and synthesis events
+    WIREFRAME_READY = "wireframe_ready"  # Wireframe screen generated
+    PROTOTYPE_READY = "prototype_ready"  # Interactive prototype ready
+    DESIGN_PHASE = "design_phase"  # Design phase started/completed
+    CLAIM_EXTRACTED = "claim_extracted"  # Cross-reference claim added
+    EVIDENCE_SCORE = "evidence_score"  # Evidence score updated
+    STAKEHOLDER_VIEW = "stakeholder_view"  # Stakeholder view generated
+    VALIDATION_EXPERIMENT = "validation_experiment"  # Experiment defined
+
 
 class StreamEvent(BaseModel):
     """A single SSE event to be streamed to the client."""
@@ -112,6 +121,42 @@ AGENT_INFO = {
         "name": "Summary",
         "icon": "file-check",
         "description": "Generating executive summary",
+    },
+    # V3.0 new agents
+    "gtm_strategy": {
+        "name": "Go-to-Market",
+        "icon": "rocket",
+        "description": "Building go-to-market strategy",
+    },
+    "financial_model": {
+        "name": "Financial Model",
+        "icon": "dollar-sign",
+        "description": "Creating financial projections",
+    },
+    "wireframe_designer": {
+        "name": "Wireframe Designer",
+        "icon": "layout",
+        "description": "Generating UI wireframes",
+    },
+    "prototype_generator": {
+        "name": "Prototype",
+        "icon": "code",
+        "description": "Creating interactive prototype",
+    },
+    "stakeholder_views": {
+        "name": "Stakeholder Views",
+        "icon": "users",
+        "description": "Generating stakeholder briefings",
+    },
+    "validation_playbook": {
+        "name": "Validation Playbook",
+        "icon": "clipboard-check",
+        "description": "Designing validation experiments",
+    },
+    "claim_extractor": {
+        "name": "Evidence Tracker",
+        "icon": "database",
+        "description": "Extracting and grading claims",
     },
 }
 

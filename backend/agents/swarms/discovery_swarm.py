@@ -11,6 +11,7 @@ from typing import Any, Coroutine
 
 import structlog
 
+from agents.claim_extractor import extract_and_store_claims
 from agents.customer_research import run_customer_research_agent
 from agents.state import DiscoveryState
 from agents.swarms.base import BaseSwarm
@@ -56,10 +57,11 @@ async def run_competitive_intelligence(state: DiscoveryState) -> DiscoveryState:
     Deep competitive analysis agent.
 
     Focuses on:
-    - Detailed competitor profiles
-    - Competitive positioning
+    - Detailed competitor profiles with pricing evidence
+    - Competitive positioning map
     - Market share analysis
     - Competitive moats and threats
+    - Differentiation thesis
     """
     from datetime import datetime
     from agents.base_agent import call_llm_with_grounding
@@ -77,7 +79,7 @@ async def run_competitive_intelligence(state: DiscoveryState) -> DiscoveryState:
     state["status"] = SessionStatus.IN_PROGRESS
     state["updated_at"] = datetime.utcnow().isoformat()
 
-    prompt = f"""You are a Competitive Intelligence Analyst. Analyze the competitive landscape for this product idea.
+    prompt = f"""You are a competitive intelligence analyst at Bain & Company. You produce competitive analysis that enables strategic differentiation decisions. Your analysis goes beyond listing competitors — you understand their strategies, predict their moves, and identify gaps no one is filling.
 
 ## PRODUCT IDEA
 {state['product_idea']}
@@ -88,16 +90,16 @@ async def run_competitive_intelligence(state: DiscoveryState) -> DiscoveryState:
 ## TARGET MARKET
 {state.get('target_market', 'Not specified')}
 
+## EVIDENCE TIER RULES (MANDATORY)
+- **E2**: Verified via Google Search with URL — USE THIS FOR COMPETITOR DATA
+- **E3**: Published industry reports (name the report)
+- **E4**: Your hypothesis (mark as "HYPOTHESIS — requires validation")
+
+For competitor data: pricing, funding, and features MUST be E2 (from their website/Crunchbase) or clearly marked E4 if estimating.
+
 ## YOUR TASK
 
-Perform deep competitive analysis:
-
-1. **Direct Competitors** - Products solving the same problem
-2. **Indirect Competitors** - Alternative solutions or workarounds
-3. **Potential Future Competitors** - Companies that could enter this space
-4. **Competitive Moats** - What makes each competitor defensible
-5. **Market Positioning** - How each competitor positions themselves
-6. **Competitive Threats** - Risks from competition
+Profile 4-6 direct competitors, 2-3 indirect, 2-3 potential entrants.
 
 ## OUTPUT FORMAT
 
@@ -106,14 +108,23 @@ Respond with ONLY valid JSON:
 {{
   "direct_competitors": [
     {{
-      "name": "string - company name",
-      "product": "string - product name",
-      "market_share": "string - estimated share",
-      "strengths": ["string"],
-      "weaknesses": ["string"],
-      "positioning": "string - how they position",
-      "pricing": "string - pricing model/range",
-      "funding": "string - known funding if applicable"
+      "name": "string - exact company name",
+      "website": "string - URL",
+      "one_liner": "string - what they do in one sentence",
+      "founded": "string - year if known",
+      "funding": "string - amount and round if known",
+      "funding_evidence_tier": "E2|E4",
+      "target_customer": "string - who they sell to specifically",
+      "pricing": {{
+        "tiers": "string - specific pricing tiers with prices",
+        "evidence_tier": "E2|E4",
+        "source": "string - URL or null"
+      }},
+      "key_features": ["string - feature with specificity"],
+      "strengths": ["string - specific strength with evidence"],
+      "weaknesses": ["string - specific weakness"],
+      "threat_level": "existential|significant|moderate|low",
+      "threat_rationale": "string - why this threat level"
     }}
   ],
   "indirect_competitors": [
@@ -123,29 +134,54 @@ Respond with ONLY valid JSON:
       "threat_level": "high|medium|low"
     }}
   ],
-  "potential_future_competitors": [
+  "potential_entrants": [
     {{
-      "company": "string",
-      "likelihood": "high|medium|low",
-      "timeline": "string - when they might enter",
-      "rationale": "string"
+      "name": "string - company that could enter",
+      "current_business": "string - what they do today",
+      "entry_likelihood": "high|moderate|low",
+      "entry_rationale": "string - why they might enter",
+      "entry_timeline": "string - when they could enter",
+      "competitive_advantage_if_enters": "string - what makes them dangerous"
     }}
   ],
-  "competitive_moats": {{
-    "strongest_moats_in_market": ["string - what protects incumbents"],
-    "potential_moats_for_new_entrant": ["string - what we could build"]
+  "positioning_map": {{
+    "x_axis": "string - meaningful axis specific to this market",
+    "y_axis": "string - meaningful axis (not generic price/features)",
+    "positions": [
+      {{
+        "name": "string - competitor or Our Product",
+        "x_score": 7.5,
+        "y_score": 6.0,
+        "is_target_product": false,
+        "rationale": "string - why this position"
+      }}
+    ],
+    "white_space": "string - where no one is positioned"
   }},
-  "market_dynamics": {{
-    "consolidation_trend": "consolidating|fragmenting|stable",
-    "winner_take_all": true,
-    "key_battlegrounds": ["string - where competition is fiercest"]
+  "competitive_gaps": [
+    {{
+      "gap": "string - what's underserved",
+      "why_unserved": "string - why no competitor addressed this",
+      "our_advantage": "string - why we can fill this gap"
+    }}
+  ],
+  "differentiation_thesis": "string - 2-3 sentences on why we win. Must be 10x better, not 10%.",
+  "moat_analysis": {{
+    "defensible": ["string - advantages hard to replicate and why"],
+    "not_defensible": ["string - advantages that could be copied"],
+    "moat_building_strategy": "string - how the moat deepens over time"
   }},
-  "strategic_recommendations": [
-    "string - recommendation for competing effectively"
+  "competitive_risks": [
+    {{
+      "risk": "string - specific competitive risk",
+      "probability": "high|moderate|low",
+      "impact": "string - what happens if this materializes",
+      "mitigation": "string - specific action to reduce risk"
+    }}
   ]
 }}
 
-CRITICAL: Respond with ONLY the JSON object. Use real company names where known.
+CRITICAL: Use Google Search to find REAL competitor data. The positioning map axes must be specific to THIS market.
 """
 
     result = await call_llm_with_grounding(prompt, AGENT_NAME)
@@ -157,6 +193,12 @@ CRITICAL: Respond with ONLY the JSON object. Use real company names where known.
 
     if result["success"]:
         state["competitive_analysis"] = result["data"]
+
+        # Extract claims for cross-reference tracking (v3.0)
+        state = await extract_and_store_claims(
+            state, "Competitive Landscape", "CL", result["data"]
+        )
+
         logger.info(
             "agent_success",
             agent=AGENT_NAME,
@@ -204,7 +246,7 @@ async def run_persona_development(state: DiscoveryState) -> DiscoveryState:
     state["status"] = SessionStatus.IN_PROGRESS
     state["updated_at"] = datetime.utcnow().isoformat()
 
-    prompt = f"""You are a User Research Specialist. Create detailed user personas for this product.
+    prompt = f"""You are a senior user researcher at IDEO. You build personas that product teams use to make real design decisions — not demographic sketches that get printed and ignored. Your personas are decision-making models: how does this person discover, evaluate, buy, adopt, and champion (or abandon) tools?
 
 ## PRODUCT IDEA
 {state['product_idea']}
@@ -215,67 +257,75 @@ async def run_persona_development(state: DiscoveryState) -> DiscoveryState:
 ## TARGET MARKET
 {state.get('target_market', 'Not specified')}
 
+## EVIDENCE TIER RULES
+- **E3**: Based on published persona research or industry reports
+- **E4**: Your inference based on role/industry knowledge — mark as HYPOTHESIS
+- **E5**: Assumption about behaviour
+
+Most persona claims will be E3 or E4. Be honest about this.
+
 ## YOUR TASK
 
-Create 3-4 detailed personas that represent the target users:
-
-1. **Primary Persona** - The main target user
-2. **Secondary Personas** - Other important user types
-3. **Anti-Persona** - Who this product is NOT for
-
-For each persona, provide deep psychographic detail.
+Create 2-3 detailed personas. Depth over breadth.
+Personas must enable design decisions: "Sarah would prefer X over Y because [specific attribute]."
 
 ## OUTPUT FORMAT
 
-Respond with ONLY valid JSON:
+Respond with ONLY valid JSON. Keep structure flat to ensure valid JSON:
 
 {{
   "primary_persona": {{
-    "name": "string - representative name",
-    "role": "string - job title or role",
-    "demographics": {{
-      "age_range": "string",
-      "location": "string",
-      "income_level": "string",
-      "education": "string"
-    }},
-    "psychographics": {{
-      "values": ["string - what they value"],
-      "fears": ["string - what they fear"],
-      "aspirations": ["string - what they aspire to"]
-    }},
-    "jobs_to_be_done": [
-      {{
-        "job": "string - what they're trying to accomplish",
-        "frequency": "daily|weekly|monthly|occasionally",
-        "importance": "critical|high|medium|low"
-      }}
-    ],
-    "current_solutions": ["string - how they solve the problem today"],
-    "pain_points": ["string - frustrations with current solutions"],
-    "decision_criteria": ["string - what matters when choosing a solution"],
-    "technology_adoption": "innovator|early_adopter|early_majority|late_majority|laggard",
-    "quote": "string - something this persona might say about the problem"
+    "name": "string - realistic full name",
+    "role": "string - specific job title",
+    "archetype": "string - one-line label like 'The Pragmatic Innovator'",
+    "organisation_type": "string - what kind of company",
+    "team_size": "string - how many people they manage",
+    "reports_to": "string - who they report to",
+    "tenure": "string - how long in this role",
+    "goals": ["string - what their boss measures them on"],
+    "frustrations": ["string - daily operational frustrations, be specific"],
+    "jobs_to_be_done": ["string - 'When [situation], I want to [action] so that [outcome]'"],
+    "discovery_channels": ["string - how they find new tools"],
+    "evaluation_criteria": ["string - what matters when choosing, ranked"],
+    "decision_authority": "sole_decision_maker|influencer|recommender|budget_approver",
+    "procurement_timeline": "string - how long from want to paid",
+    "procurement_blockers": ["string - what stops them buying"],
+    "champions_what": "string - what they advocate for internally",
+    "internal_blockers": ["string - who blocks their initiatives"],
+    "current_tools": ["string - what they use today"],
+    "satisfaction_level": "happy|tolerable|frustrated|desperate",
+    "switching_triggers": ["string - what event would make them look for alternative"],
+    "success_moment": "string - when they'd say 'this was worth it'",
+    "evidence_tier": "E3|E4",
+    "quote": "string - something this persona might say"
   }},
   "secondary_personas": [
     {{
       "name": "string",
       "role": "string",
+      "archetype": "string",
       "key_difference": "string - how they differ from primary",
-      "jobs_to_be_done": ["string"],
-      "decision_criteria": ["string"]
+      "goals": ["string"],
+      "jobs_to_be_done": ["string - 'When [situation], I want to [action] so that [outcome]'"],
+      "decision_authority": "string",
+      "evaluation_criteria": ["string"]
     }}
   ],
   "anti_persona": {{
     "description": "string - who this product is NOT for",
     "reasons": ["string - why they wouldn't benefit"]
   }},
-  "persona_insights": [
-    "string - key insight about the target users"
-  ]
+  "persona_prioritisation": {{
+    "primary_buyer": "string - which persona makes purchase decision",
+    "primary_user": "string - which persona uses product daily",
+    "primary_champion": "string - which persona advocates internally"
+  }}
 }}
 
-CRITICAL: Respond with ONLY the JSON object. Make personas realistic and specific.
+CRITICAL:
+- Keep JSON flat - no deeply nested objects
+- Internal politics matter more than demographics
+- Jobs-to-be-done in single string format: "When [situation], I want to [action] so that [outcome]"
 """
 
     result = await call_llm_with_grounding(prompt, AGENT_NAME)
@@ -287,6 +337,12 @@ CRITICAL: Respond with ONLY the JSON object. Make personas realistic and specifi
 
     if result["success"]:
         state["detailed_personas"] = result["data"]
+
+        # Extract claims for cross-reference tracking (v3.0)
+        state = await extract_and_store_claims(
+            state, "Customer Personas", "CP", result["data"]
+        )
+
         logger.info(
             "agent_success",
             agent=AGENT_NAME,

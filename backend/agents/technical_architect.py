@@ -13,6 +13,7 @@ from pydantic import ValidationError
 
 from agents.base_agent import call_llm, extract_feedback_for_agent
 from agents.business_strategy import get_business_case_summary
+from agents.claim_extractor import extract_and_store_claims
 from agents.product_requirements import get_product_requirements_summary
 from agents.prompts import TECHNICAL_ARCHITECT_PROMPT, format_prompt
 from agents.state import DiscoveryState
@@ -95,7 +96,13 @@ async def run_technical_architect_agent(state: DiscoveryState) -> DiscoveryState
         try:
             # Validate the response against our Pydantic model
             validated_data = TechnicalArchitecture.model_validate(result["data"])
-            state["technical_architecture"] = validated_data.model_dump()
+            tech_arch_dict = validated_data.model_dump()
+            state["technical_architecture"] = tech_arch_dict
+
+            # Extract claims for cross-reference tracking (v3.0)
+            state = await extract_and_store_claims(
+                state, "Technical Architecture", "TA", tech_arch_dict
+            )
 
             logger.info(
                 "agent_success",

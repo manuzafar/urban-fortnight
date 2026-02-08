@@ -53,6 +53,70 @@ def merge_errors(current: list[str], new: list[str]) -> list[str]:
     return list(set(current + new))
 
 
+def merge_cross_references(
+    current: dict[str, Any] | None,
+    new: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    """
+    Merge cross-reference indices from parallel agents.
+
+    This reducer combines claims from parallel branches, avoiding duplicates
+    and recalculating aggregate statistics.
+    """
+    if current is None and new is None:
+        return None
+    if current is None:
+        return new
+    if new is None:
+        return current
+
+    # Merge claims, avoiding duplicates by claim_id
+    current_claims = current.get("claims", [])
+    new_claims = new.get("claims", [])
+
+    existing_ids = {c.get("claim_id") for c in current_claims if c.get("claim_id")}
+    merged_claims = current_claims.copy()
+
+    for claim in new_claims:
+        if claim.get("claim_id") not in existing_ids:
+            merged_claims.append(claim)
+            existing_ids.add(claim.get("claim_id"))
+
+    # Recalculate statistics
+    tier_distribution: dict[str, int] = {}
+    for claim in merged_claims:
+        tier = claim.get("evidence_tier", "E4")
+        if isinstance(tier, str):
+            tier_distribution[tier] = tier_distribution.get(tier, 0) + 1
+
+    # Calculate evidence score
+    weights = {"E1": 1.0, "E2": 0.85, "E3": 0.6, "E4": 0.3, "E5": 0.1}
+    if merged_claims:
+        total_weight = sum(
+            weights.get(c.get("evidence_tier", "E4"), 0.3)
+            for c in merged_claims
+        )
+        evidence_score = total_weight / len(merged_claims)
+    else:
+        evidence_score = 0.0
+
+    # Find unresolved dependencies
+    all_claim_ids = {c.get("claim_id") for c in merged_claims if c.get("claim_id")}
+    unresolved = []
+    for claim in merged_claims:
+        for dep_id in claim.get("depends_on", []):
+            if dep_id not in all_claim_ids and dep_id not in unresolved:
+                unresolved.append(dep_id)
+
+    return {
+        "claims": merged_claims,
+        "total_claims": len(merged_claims),
+        "tier_distribution": tier_distribution,
+        "evidence_score": round(evidence_score, 3),
+        "unresolved_dependencies": unresolved,
+    }
+
+
 class AgentOutput(TypedDict, total=False):
     """
     Output structure from an individual agent.
@@ -207,6 +271,21 @@ class DiscoveryState(TypedDict, total=False):
     contradiction_context: Annotated[Optional[dict[str, Any]], keep_first_non_none]
 
     # ═══════════════════════════════════════════════════════════════════════════
+    # V3.0 CROSS-REFERENCE AND SYNTHESIS OUTPUTS
+    # ═══════════════════════════════════════════════════════════════════════════
+
+    # Cross-reference index for claim tracking
+    cross_reference_index: Annotated[Optional[dict[str, Any]], merge_cross_references]
+
+    # Design agents output
+    wireframes: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    prototype: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+
+    # Synthesis agents output
+    stakeholder_views: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+    validation_playbook: Annotated[Optional[dict[str, Any]], keep_first_non_none]
+
+    # ═══════════════════════════════════════════════════════════════════════════
     # PRD SUB-WORKFLOW FIELDS
     # ═══════════════════════════════════════════════════════════════════════════
 
@@ -291,6 +370,12 @@ def create_initial_state(
         financial_model=None,
         risk_assessment=None,
         contradiction_context=None,
+        # V3.0 cross-reference and synthesis
+        cross_reference_index=None,
+        wireframes=None,
+        prototype=None,
+        stakeholder_views=None,
+        validation_playbook=None,
         # PRD sub-workflow fields
         prd_iteration=0,
         prd_draft=None,

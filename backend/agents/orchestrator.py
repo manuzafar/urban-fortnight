@@ -1091,6 +1091,7 @@ async def run_discovery_workflow(
     constraints: list[str] | None = None,
     additional_context: str | None = None,
     event_emitter: Optional["SessionEventEmitter"] = None,
+    use_v3_facilitator: bool = True,
 ) -> DiscoveryState:
     """
     Execute the complete product discovery workflow.
@@ -1106,6 +1107,7 @@ async def run_discovery_workflow(
         constraints: Optional business/technical constraints.
         additional_context: Any additional context.
         event_emitter: Optional SSE event emitter for real-time streaming.
+        use_v3_facilitator: If True, use the v3.0 7-phase facilitator pipeline.
 
     Returns:
         DiscoveryState: Final state with complete inception pack.
@@ -1123,6 +1125,7 @@ async def run_discovery_workflow(
         industry=industry,
         target_market=target_market,
         has_emitter=event_emitter is not None,
+        use_v3_facilitator=use_v3_facilitator,
     )
 
     # Configure Gemini API
@@ -1138,19 +1141,26 @@ async def run_discovery_workflow(
         additional_context=additional_context,
     )
 
-    # Create workflow
-    workflow = create_discovery_workflow()
-
-    # Configuration for this run
-    config = {
-        "configurable": {
-            "thread_id": session_id,
-        }
-    }
-
     try:
-        # Execute workflow
-        final_state = await workflow.ainvoke(initial_state, config)
+        if use_v3_facilitator:
+            # Use v3.0 7-phase facilitator pipeline
+            from agents.facilitator import run_facilitator
+
+            logger.info(
+                "using_v3_facilitator",
+                session_id=session_id,
+            )
+
+            final_state = await run_facilitator(initial_state)
+        else:
+            # Use legacy LangGraph workflow
+            workflow = create_discovery_workflow()
+            config = {
+                "configurable": {
+                    "thread_id": session_id,
+                }
+            }
+            final_state = await workflow.ainvoke(initial_state, config)
 
         logger.info(
             "workflow_success",

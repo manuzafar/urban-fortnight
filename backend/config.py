@@ -344,6 +344,54 @@ AGENT_MODEL_CONFIG: dict[str, str] = {
     # Executive summary - Flash for synthesis speed
     "executive_summary": "gemini-2.0-flash",
     "Executive Summary Generator": "gemini-2.0-flash",
+
+    # V3.0 New agents
+    "claim_extractor": "gemini-2.0-flash",  # Fast extraction
+
+    # Market Intelligence (replaces customer_research for prompts)
+    "Market Intelligence": "gemini-2.0-flash",
+
+    # Competitive Landscape
+    "Competitive Landscape": "gemini-2.0-flash",
+
+    # Customer Personas
+    "Customer Personas": "gemini-2.0-flash",
+
+    # Business Case (uses Pro for deeper reasoning)
+    "Business Case": "gemini-2.5-pro",
+
+    # Go-to-Market
+    "Go-to-Market": "gemini-2.5-pro",
+
+    # Financial Model
+    "Financial Model": "gemini-2.5-pro",
+
+    # Product Requirements
+    "Product Requirements": "gemini-2.0-flash",
+
+    # Technical Architecture
+    "Technical Architecture": "gemini-2.0-flash",
+
+    # Regulatory & Compliance
+    "Regulatory & Compliance": "gemini-2.5-pro",
+
+    # Risk Assessment
+    "Risk Assessment": "gemini-2.0-flash",
+
+    # Wireframe Designer
+    "Wireframe Designer": "gemini-2.0-flash",
+
+    # Prototype Generator
+    "Prototype Generator": "gemini-2.5-pro",
+
+    # Stakeholder Views
+    "Stakeholder Views": "gemini-2.5-pro",
+
+    # Validation Playbook
+    "Validation Playbook": "gemini-2.5-pro",
+
+    # Critique (evidence-aware)
+    "Critique": "gemini-2.5-pro",
 }
 
 
@@ -358,3 +406,33 @@ def get_agent_model(agent_name: str) -> str:
         str: Model identifier to use for this agent.
     """
     return AGENT_MODEL_CONFIG.get(agent_name, settings.llm_model)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# AGENT MAX TOKENS CONFIGURATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+AGENT_MAX_TOKENS_CONFIG: dict[str, int] = {
+    # Prototype Generator needs more tokens for React component code
+    "Prototype Generator": 16384,
+
+    # Wireframe Designer also generates code
+    "Wireframe Designer": 12288,
+
+    # PRD Generator produces large outputs
+    "PRD Generator": 12288,
+    "Product Requirements Agent": 12288,
+}
+
+
+def get_agent_max_tokens(agent_name: str) -> int:
+    """
+    Get the max output tokens for a specific agent.
+
+    Args:
+        agent_name: Name of the agent.
+
+    Returns:
+        int: Max output tokens to use for this agent.
+    """
+    return AGENT_MAX_TOKENS_CONFIG.get(agent_name, settings.llm_max_tokens)

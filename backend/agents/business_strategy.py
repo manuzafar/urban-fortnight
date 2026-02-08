@@ -14,6 +14,7 @@ import structlog
 from pydantic import ValidationError
 
 from agents.base_agent import call_llm_with_grounding, extract_feedback_for_agent
+from agents.claim_extractor import extract_and_store_claims
 from agents.customer_research import get_customer_research_summary
 from agents.prompts import BUSINESS_STRATEGY_PROMPT, format_prompt
 from agents.state import DiscoveryState
@@ -126,6 +127,11 @@ async def run_business_strategy_agent(state: DiscoveryState) -> DiscoveryState:
                     )
 
             state["business_case"] = business_case_dict
+
+            # Extract claims for cross-reference tracking (v3.0)
+            state = await extract_and_store_claims(
+                state, "Business Case", "BC", business_case_dict
+            )
 
             logger.info(
                 "agent_success",

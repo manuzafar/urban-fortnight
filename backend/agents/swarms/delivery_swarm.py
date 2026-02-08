@@ -12,6 +12,7 @@ from typing import Any, Coroutine
 
 import structlog
 
+from agents.claim_extractor import extract_and_store_claims
 from agents.prd_subgraph import run_prd_subworkflow
 from agents.technical_architect import run_technical_architect_agent
 from agents.legal_regulatory import run_legal_regulatory_agent
@@ -192,6 +193,12 @@ CRITICAL: Respond with ONLY the JSON object. Include 8-15 risks across all categ
 
     if result["success"]:
         state["risk_assessment"] = result["data"]
+
+        # Extract claims for cross-reference tracking (v3.0)
+        state = await extract_and_store_claims(
+            state, "Risk Assessment", "RM", result["data"]
+        )
+
         risk_summary = result["data"].get("risk_summary", {})
         logger.info(
             "agent_success",

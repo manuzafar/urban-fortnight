@@ -20,7 +20,7 @@ from tenacity import (
     retry_if_exception_type,
 )
 
-from config import settings, get_agent_model
+from config import settings, get_agent_model, get_agent_max_tokens
 
 # Configure structured logging
 logger = structlog.get_logger(__name__)
@@ -121,10 +121,10 @@ async def call_llm(
     try:
         client = get_client()
 
-        # Configure generation settings
+        # Configure generation settings with agent-specific max tokens
         config = types.GenerateContentConfig(
             temperature=settings.llm_temperature,
-            max_output_tokens=settings.llm_max_tokens,
+            max_output_tokens=get_agent_max_tokens(agent_name),
             response_mime_type="application/json",
         )
 
@@ -265,7 +265,7 @@ async def call_llm_with_grounding(
 
         config = types.GenerateContentConfig(
             temperature=settings.llm_temperature,
-            max_output_tokens=settings.llm_max_tokens,
+            max_output_tokens=get_agent_max_tokens(agent_name),
             # Cannot use response_mime_type with grounding - Gemini API limitation
             tools=[grounding_tool],
         )
@@ -397,6 +397,34 @@ def parse_json_response(text: str, agent_name: str) -> dict[str, Any]:
     json_match = re.search(r"\{[\s\S]*\}", cleaned)
     if json_match:
         cleaned = json_match.group()
+
+    # Fix invalid escape sequences (LLM sometimes outputs \$ or \# etc.)
+    # Valid JSON escapes: \" \\ \/ \b \f \n \r \t \uXXXX
+    # Replace invalid \X with just X (where X is not a valid escape char)
+    def fix_invalid_escapes(s: str) -> str:
+        result = []
+        i = 0
+        while i < len(s):
+            if s[i] == '\\' and i + 1 < len(s):
+                next_char = s[i + 1]
+                # Valid escape characters
+                if next_char in '"\\bfnrt/':
+                    result.append(s[i:i+2])
+                    i += 2
+                elif next_char == 'u' and i + 5 < len(s):
+                    # Unicode escape \uXXXX
+                    result.append(s[i:i+6])
+                    i += 6
+                else:
+                    # Invalid escape - just include the character without backslash
+                    result.append(next_char)
+                    i += 2
+            else:
+                result.append(s[i])
+                i += 1
+        return ''.join(result)
+
+    cleaned = fix_invalid_escapes(cleaned)
 
     # First attempt: try direct parsing
     try:

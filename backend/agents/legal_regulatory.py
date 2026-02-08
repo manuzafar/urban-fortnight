@@ -16,6 +16,7 @@ import structlog
 from pydantic import ValidationError
 
 from agents.base_agent import call_llm, call_llm_with_grounding, extract_feedback_for_agent
+from agents.claim_extractor import extract_and_store_claims
 from agents.prompts import LEGAL_REGULATORY_PROMPT, LEGAL_PRELIMINARY_PROMPT, format_prompt
 from agents.state import DiscoveryState
 from models.schemas import LegalRegulatoryReview, SessionStatus
@@ -179,7 +180,13 @@ async def run_legal_regulatory_agent(state: DiscoveryState) -> DiscoveryState:
         try:
             # Validate against Pydantic model
             validated_data = LegalRegulatoryReview.model_validate(result["data"])
-            state["legal_regulatory_review"] = validated_data.model_dump()
+            legal_review_dict = validated_data.model_dump()
+            state["legal_regulatory_review"] = legal_review_dict
+
+            # Extract claims for cross-reference tracking (v3.0)
+            state = await extract_and_store_claims(
+                state, "Regulatory & Compliance", "RC", legal_review_dict
+            )
 
             logger.info(
                 "agent_success",

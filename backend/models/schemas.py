@@ -13,7 +13,7 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 # Import visual schemas for use in agent outputs
 from models.visual_schemas import (
@@ -303,11 +303,65 @@ class CompetitorReality(BaseModel):
     switching_barriers: str = Field(..., description="What makes switching hard")
 
 
+class CompetitorProfile(BaseModel):
+    """Enhanced competitor profile with evidence."""
+
+    name: str = Field(..., description="Exact company name")
+    website: Optional[str] = Field(default=None, description="Company URL")
+    one_liner: Optional[str] = Field(default=None, description="What they do in one sentence")
+    founded: Optional[str] = Field(default=None, description="Year founded")
+    funding: Optional[str] = Field(default=None, description="Funding amount and round")
+    funding_evidence_tier: str = Field(default="E4", description="Evidence tier for funding")
+    target_customer: Optional[str] = Field(default=None, description="Who they sell to")
+    pricing: Optional[dict[str, Any]] = Field(default=None, description="Pricing tiers with evidence")
+    key_features: list[str] = Field(default_factory=list, description="Key features")
+    strengths: list[str] = Field(default_factory=list, description="Specific strengths")
+    weaknesses: list[str] = Field(default_factory=list, description="Specific weaknesses")
+    threat_level: str = Field(default="moderate", description="existential|significant|moderate|low")
+    threat_rationale: Optional[str] = Field(default=None, description="Why this threat level")
+
+
+class PositioningMapPosition(BaseModel):
+    """A position on the competitive positioning map."""
+
+    name: str = Field(..., description="Competitor or Our Product")
+    x_score: float = Field(..., ge=0, le=10, description="Position on X axis")
+    y_score: float = Field(..., ge=0, le=10, description="Position on Y axis")
+    is_target_product: bool = Field(default=False, description="True if this is our product")
+    rationale: Optional[str] = Field(default=None, description="Why this position")
+
+
+class PositioningMap(BaseModel):
+    """Competitive positioning map."""
+
+    x_axis: str = Field(..., description="X axis label (meaningful to this market)")
+    y_axis: str = Field(..., description="Y axis label (meaningful to this market)")
+    positions: list[PositioningMapPosition] = Field(default_factory=list, description="Competitor positions")
+    white_space: Optional[str] = Field(default=None, description="Where no one is positioned")
+
+
+class MoatAnalysis(BaseModel):
+    """Analysis of competitive moat."""
+
+    defensible: list[str] = Field(default_factory=list, description="Advantages hard to replicate")
+    not_defensible: list[str] = Field(default_factory=list, description="Advantages that could be copied")
+    moat_building_strategy: Optional[str] = Field(default=None, description="How moat deepens over time")
+
+
 class CompetitiveLandscape(BaseModel):
     """Competitive landscape reality check."""
 
-    competitors: list[CompetitorReality] = Field(default_factory=list, description="Competitor analysis")
-    market_position: str = Field(..., description="Overall competitive assessment")
+    competitors: list[CompetitorReality] = Field(default_factory=list, description="Legacy competitor analysis")
+    market_position: str = Field(default="", description="Overall competitive assessment")
+    # Enhanced fields from Prompt Library
+    direct_competitors: list[CompetitorProfile] = Field(default_factory=list, description="Direct competitors with evidence")
+    indirect_competitors: list[dict[str, Any]] = Field(default_factory=list, description="Indirect competitors")
+    potential_entrants: list[dict[str, Any]] = Field(default_factory=list, description="Potential future entrants")
+    positioning_map: Optional[PositioningMap] = Field(default=None, description="Competitive positioning map")
+    competitive_gaps: list[dict[str, Any]] = Field(default_factory=list, description="Underserved gaps")
+    differentiation_thesis: Optional[str] = Field(default=None, description="Why we win - must be 10x better")
+    moat_analysis: Optional[MoatAnalysis] = Field(default=None, description="Moat analysis")
+    competitive_risks: list[dict[str, Any]] = Field(default_factory=list, description="Competitive risks")
 
 
 class MarketTrend(BaseModel):
@@ -477,6 +531,15 @@ class BusinessCase(BaseModel):
     go_to_market_strategy: str = Field(..., description="GTM strategy")
     key_partnerships: list[str] = Field(default_factory=list, description="Key partnerships")
     risks_and_mitigations: list[dict[str, str]] = Field(..., description="Risk/mitigation pairs")
+    # Enhanced unit economics from Prompt Library
+    unit_economics: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Detailed unit economics with CAC, LTV, ARPU, margins, and derivations",
+    )
+    sensitivity_analysis: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Base/optimistic/pessimistic scenarios with kill conditions",
+    )
     # Visual data for frontend rendering
     financial_projection: Optional[dict[str, Any]] = Field(
         default=None,
@@ -837,17 +900,36 @@ class IntellectualPropertyConsideration(BaseModel):
 class OverallRiskAssessment(BaseModel):
     """Overall legal and regulatory risk assessment."""
 
-    risk_level: RiskLevel = Field(..., description="Overall risk level")
-    key_concerns: list[str] = Field(..., min_length=1, description="Top legal concerns")
+    risk_level: RiskLevel = Field(default=RiskLevel.MEDIUM, description="Overall risk level")
+    key_concerns: list[str] = Field(default_factory=list, description="Top legal concerns")
     blocking_issues: list[str] = Field(
         default_factory=list, description="Issues that could block product launch"
     )
     recommended_timeline_buffer: str = Field(
-        ..., description="Additional timeline buffer for legal compliance"
+        default="3-6 months", description="Additional timeline buffer for legal compliance"
     )
     recommended_budget_allocation: str = Field(
-        ..., description="Recommended budget for legal/compliance"
+        default="10-15% of project budget", description="Recommended budget for legal/compliance"
     )
+
+    @field_validator("risk_level", mode="before")
+    @classmethod
+    def normalize_risk_level(cls, v):
+        """Normalize risk level values like 'medium-high' to valid enum values."""
+        if isinstance(v, str):
+            v_lower = v.lower().strip()
+            # Map variations to valid enum values
+            if v_lower in ("high", "critical", "severe"):
+                return RiskLevel.HIGH
+            elif v_lower in ("medium-high", "moderate-high"):
+                return RiskLevel.HIGH
+            elif v_lower in ("medium", "moderate"):
+                return RiskLevel.MEDIUM
+            elif v_lower in ("medium-low", "moderate-low"):
+                return RiskLevel.LOW
+            elif v_lower in ("low", "minimal"):
+                return RiskLevel.LOW
+        return v
 
 
 class LegalRegulatoryReview(BaseModel):
@@ -874,10 +956,10 @@ class LegalRegulatoryReview(BaseModel):
     """
 
     executive_summary: str = Field(
-        ..., description="High-level summary of legal/regulatory landscape"
+        default="", description="High-level summary of legal/regulatory landscape"
     )
     applicable_regulations: list[Regulation] = Field(
-        ..., min_length=0, description="Applicable regulations"
+        default_factory=list, description="Applicable regulations"
     )
     licensing_requirements: list[LicenseRequirement] = Field(
         default_factory=list, description="Required licenses and certifications"
@@ -885,7 +967,7 @@ class LegalRegulatoryReview(BaseModel):
     data_protection_requirements: list[DataProtectionRequirement] = Field(
         default_factory=list, description="Data protection requirements"
     )
-    legal_risks: list[LegalRisk] = Field(..., min_length=1, description="Legal risks identified")
+    legal_risks: list[LegalRisk] = Field(default_factory=list, description="Legal risks identified")
     intellectual_property: list[IntellectualPropertyConsideration] = Field(
         default_factory=list, description="IP considerations"
     )
@@ -896,13 +978,15 @@ class LegalRegulatoryReview(BaseModel):
         default_factory=list, description="Cross-border legal considerations"
     )
     recommended_legal_structure: str = Field(
-        ..., description="Recommended business legal structure"
+        default="", description="Recommended business legal structure"
     )
     ongoing_compliance_requirements: list[str] = Field(
-        ..., min_length=1, description="Ongoing compliance obligations"
+        default_factory=list, description="Ongoing compliance obligations"
     )
-    overall_risk_assessment: OverallRiskAssessment = Field(..., description="Overall risk assessment")
-    next_steps: list[str] = Field(..., min_length=3, description="Recommended next steps")
+    overall_risk_assessment: OverallRiskAssessment = Field(
+        default_factory=OverallRiskAssessment, description="Overall risk assessment"
+    )
+    next_steps: list[str] = Field(default_factory=list, description="Recommended next steps")
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -947,6 +1031,405 @@ class QualityAssessment(BaseModel):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# V3.0 GO-TO-MARKET STRATEGY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class ChannelStrategy(BaseModel):
+    """A channel in the GTM strategy."""
+
+    channel: str = Field(..., description="Channel name")
+    role: str = Field(..., description="Role: acquisition|activation|retention|revenue|referral")
+    expected_cac: Optional[str] = Field(default=None, description="Estimated CAC")
+    time_to_scale: Optional[str] = Field(default=None, description="Time to scale this channel")
+    priority: int = Field(default=1, ge=1, le=10, description="Priority rank")
+
+
+class PhaseTactic(BaseModel):
+    """A specific tactic within a launch phase."""
+
+    tactic: str = Field(..., description="Specific tactic description")
+    channel: str = Field(default="", description="Specific channel")
+    budget: Optional[str] = Field(default=None, description="Monthly cost")
+    expected_result: Optional[str] = Field(default=None, description="Expected measurable result")
+    measurement: Optional[str] = Field(default=None, description="How to measure")
+    timeline: Optional[str] = Field(default=None, description="When to execute")
+    evidence_tier: str = Field(default="E4", description="Evidence tier: E2-E5")
+
+
+class LaunchPhase(BaseModel):
+    """A phase in the launch plan."""
+
+    phase: str = Field(..., description="Phase name")
+    duration: str = Field(..., description="Timeline/duration")
+    objective: Optional[str] = Field(default=None, description="What success looks like at end of phase")
+    goals: list[str] = Field(default_factory=list, description="Phase goals")
+    tactics: list[dict[str, Any]] = Field(default_factory=list, description="Specific executable tactics")
+    key_activities: list[str] = Field(default_factory=list, description="Key activities")
+    success_metrics: list[str] = Field(default_factory=list, description="Success metrics")
+    total_phase_budget: Optional[str] = Field(default=None, description="Total budget for phase")
+    phase_success_criteria: Optional[str] = Field(default=None, description="Gate for next phase")
+
+
+class PersonaMessaging(BaseModel):
+    """Messaging tailored for a specific persona."""
+
+    persona_name: str = Field(..., description="Target persona name")
+    headline: str = Field(..., description="Primary headline")
+    value_proposition: str = Field(..., description="Tailored value prop")
+    key_benefits: list[str] = Field(default_factory=list, description="Key benefits to highlight")
+    objection_handling: list[str] = Field(default_factory=list, description="Common objections and responses")
+
+
+class MetricTarget(BaseModel):
+    """A metric with targets over time."""
+
+    metric: str = Field(..., description="Metric name")
+    target_month_3: Optional[str] = Field(default=None, description="3-month target")
+    target_month_6: Optional[str] = Field(default=None, description="6-month target")
+    target_month_12: Optional[str] = Field(default=None, description="12-month target")
+
+
+class GoToMarket(BaseModel):
+    """
+    Go-to-Market Strategy — executable launch playbook.
+
+    Provides detailed GTM strategy including market entry approach,
+    channel strategy, launch phases, and growth tactics.
+    """
+
+    positioning_statement: str = Field(..., description="Core positioning statement")
+    messaging_by_persona: list[PersonaMessaging] = Field(
+        default_factory=list, description="Tailored messaging per persona"
+    )
+    market_entry_strategy: Optional[dict[str, Any]] = Field(
+        default=None, description="Market entry approach details"
+    )
+    launch_phases: list[LaunchPhase] = Field(
+        default_factory=list, description="Phased launch plan"
+    )
+    channel_strategy: list[ChannelStrategy] = Field(
+        default_factory=list, description="Channel mix strategy"
+    )
+    growth_tactics: list[dict[str, Any]] = Field(
+        default_factory=list, description="Growth tactics with priority"
+    )
+    partnership_opportunities: list[dict[str, Any]] = Field(
+        default_factory=list, description="Strategic partnership opportunities"
+    )
+    metrics_dashboard: list[MetricTarget] = Field(
+        default_factory=list, description="Key metrics to track"
+    )
+    gtm_risks: list[dict[str, str]] = Field(
+        default_factory=list, description="GTM risks and mitigations"
+    )
+    competitive_response_plan: Optional[dict[str, Any]] = Field(
+        default=None, description="Plan for responding to competitive moves"
+    )
+    total_gtm_budget_estimate: Optional[str] = Field(
+        default=None, description="Estimated total GTM budget for first 12 months"
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# V3.0 FINANCIAL MODEL
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class InputAssumption(BaseModel):
+    """An input assumption for the financial model."""
+
+    name: str = Field(..., description="Assumption name")
+    value: str = Field(..., description="Assumed value")
+    evidence_tier: str = Field(default="E4", description="Evidence tier: E1-E5")
+    source: Optional[str] = Field(default=None, description="Source for this assumption")
+    sensitivity: str = Field(default="medium", description="Sensitivity: high|medium|low")
+
+
+class MonthlyProjection(BaseModel):
+    """Monthly financial projection."""
+
+    month: int = Field(..., ge=1, le=12, description="Month number (1-12)")
+    revenue: float = Field(default=0, description="Monthly revenue")
+    costs: float = Field(default=0, description="Monthly costs")
+    profit: float = Field(default=0, description="Monthly profit/loss")
+    customers: int = Field(default=0, description="Customer count")
+    mrr: float = Field(default=0, description="Monthly recurring revenue")
+
+
+class QuarterlyProjection(BaseModel):
+    """Quarterly financial projection."""
+
+    quarter: str = Field(..., description="Quarter label (e.g., Y2Q1)")
+    revenue: float = Field(default=0, description="Quarterly revenue")
+    costs: float = Field(default=0, description="Quarterly costs")
+    profit: float = Field(default=0, description="Quarterly profit/loss")
+    customers: int = Field(default=0, description="Customer count")
+    arr: float = Field(default=0, description="Annual recurring revenue run rate")
+
+
+class FundingRequirements(BaseModel):
+    """Funding requirements by stage."""
+
+    pre_seed: Optional[dict[str, Any]] = Field(default=None, description="Pre-seed requirements")
+    seed: Optional[dict[str, Any]] = Field(default=None, description="Seed requirements")
+    series_a: Optional[dict[str, Any]] = Field(default=None, description="Series A requirements")
+    total_required: Optional[str] = Field(default=None, description="Total funding required")
+
+
+class FinancialModel(BaseModel):
+    """
+    Financial Model — detailed projections with scenarios.
+
+    Provides comprehensive financial projections including revenue model,
+    cost structure, unit economics, and scenario analysis.
+    """
+
+    input_assumptions: list[InputAssumption] = Field(
+        default_factory=list, description="Key input assumptions"
+    )
+    revenue_model: Optional[dict[str, Any]] = Field(
+        default=None, description="Revenue model breakdown"
+    )
+    cost_structure: Optional[dict[str, Any]] = Field(
+        default=None, description="Cost structure details"
+    )
+    unit_economics: Optional[dict[str, Any]] = Field(
+        default=None, description="LTV, CAC, margins, etc."
+    )
+    monthly_projections_year_1: list[MonthlyProjection] = Field(
+        default_factory=list, description="12-month Year 1 projections"
+    )
+    quarterly_projections_year_2_3: list[QuarterlyProjection] = Field(
+        default_factory=list, description="Year 2-3 quarterly projections"
+    )
+    scenario_analysis: Optional[dict[str, Any]] = Field(
+        default=None, description="Base, optimistic, pessimistic scenarios"
+    )
+    funding_requirements: Optional[FundingRequirements] = Field(
+        default=None, description="Funding requirements by stage"
+    )
+    key_financial_risks: list[dict[str, str]] = Field(
+        default_factory=list, description="Financial risks and mitigations"
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# V3.0 STAKEHOLDER VIEWS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class Objection(BaseModel):
+    """An anticipated objection from a stakeholder."""
+
+    objection: str = Field(..., description="The objection/concern")
+    response: str = Field(..., description="How to address it")
+    supporting_claim_ids: list[str] = Field(
+        default_factory=list, description="Claim IDs that support the response"
+    )
+
+
+class StakeholderView(BaseModel):
+    """
+    Stakeholder-specific view of the inception pack.
+
+    Tailored summary for a specific stakeholder role (CFO, CISO, ARB, VP Product)
+    with anticipated objections and evidence confidence.
+    """
+
+    stakeholder_role: str = Field(..., description="Role: CFO|CISO|ARB|VP Product|etc.")
+    tailored_summary: str = Field(..., description="Summary tailored to this stakeholder")
+    key_questions_answered: list[str] = Field(
+        default_factory=list, description="Key questions this pack answers for them"
+    )
+    anticipated_objections: list[Objection] = Field(
+        default_factory=list, description="Likely objections and responses"
+    )
+    evidence_confidence: str = Field(
+        default="medium", description="Confidence level: high|medium|low"
+    )
+    decision_recommendation: str = Field(
+        default="", description="Specific recommendation for this stakeholder"
+    )
+    key_metrics_for_role: list[str] = Field(
+        default_factory=list, description="Metrics most relevant to this role"
+    )
+
+
+class StakeholderViews(BaseModel):
+    """Collection of stakeholder-specific views."""
+
+    views: list[StakeholderView] = Field(
+        default_factory=list, description="Individual stakeholder views"
+    )
+    common_concerns: list[str] = Field(
+        default_factory=list, description="Concerns shared across stakeholders"
+    )
+    alignment_opportunities: list[str] = Field(
+        default_factory=list, description="Areas where stakeholders align"
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# V3.0 VALIDATION PLAYBOOK
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class Experiment(BaseModel):
+    """A validation experiment for testing hypotheses."""
+
+    experiment_id: str = Field(..., description="Unique experiment ID (EXP-1, EXP-2, etc.)")
+    hypothesis_claim_id: str = Field(..., description="Claim ID being tested")
+    experiment_name: str = Field(..., description="Name of the experiment")
+    target_profile: str = Field(..., description="Who to test with")
+    experiment_type: str = Field(
+        default="interview",
+        description="Type: interview|survey|landing_page|prototype|concierge|smoke_test"
+    )
+    specific_instructions: str = Field(..., description="Detailed instructions to run")
+    sample_size: Optional[str] = Field(default=None, description="Target sample size")
+    success_criteria: str = Field(..., description="What defines success")
+    failure_criteria: str = Field(..., description="What defines failure")
+    expected_duration: str = Field(default="1 week", description="Expected time to complete")
+    cost_estimate: Optional[str] = Field(default=None, description="Cost estimate")
+    upgrade_path: list[str] = Field(
+        default_factory=list, description="Claim IDs that upgrade if validated"
+    )
+    risk_if_skipped: str = Field(
+        default="", description="Risk of not running this experiment"
+    )
+    effort_level: str = Field(
+        default="moderate", description="Effort required: quick|moderate|significant"
+    )
+    priority: str = Field(
+        default="medium", description="Priority level: critical|high|medium|low"
+    )
+    timeline: Optional[str] = Field(default=None, description="Specific timeline for the experiment")
+
+
+class ValidationPlaybook(BaseModel):
+    """
+    Validation Playbook — experiments for testing assumptions.
+
+    Provides 5-8 specific experiments to validate E4/E5 claims,
+    prioritized by impact and with clear success/failure criteria.
+    """
+
+    experiments: list[Experiment] = Field(
+        default_factory=list, description="Ordered list of experiments"
+    )
+    validation_priorities: list[dict[str, Any]] = Field(
+        default_factory=list, description="Prioritized claims to validate"
+    )
+    total_validation_budget: Optional[str] = Field(
+        default=None, description="Estimated budget for all experiments"
+    )
+    total_validation_timeline: Optional[str] = Field(
+        default=None, description="Estimated timeline to complete all"
+    )
+    critical_path_experiments: list[str] = Field(
+        default_factory=list, description="Experiment IDs on critical path"
+    )
+    validation_dashboard: Optional[dict[str, Any]] = Field(
+        default=None, description="Tracking dashboard structure"
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# V3.0 WIREFRAMES AND PROTOTYPE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class WireframeScreen(BaseModel):
+    """A wireframe screen definition."""
+
+    screen_id: str = Field(..., description="Screen ID (S1, S2, etc.)")
+    screen_name: str = Field(..., description="Screen name")
+    purpose: str = Field(..., description="Purpose of this screen")
+    user_stories_covered: list[str] = Field(
+        default_factory=list, description="User story IDs covered"
+    )
+    key_components: list[str] = Field(
+        default_factory=list, description="Key UI components"
+    )
+    navigation_to: list[str] = Field(
+        default_factory=list, description="Screen IDs this navigates to"
+    )
+    react_code: str = Field(default="", description="React component code")
+    notes: str = Field(default="", description="Design decisions and notes")
+
+
+class UserFlow(BaseModel):
+    """A user flow diagram for a specific journey."""
+
+    flow_name: str = Field(..., description="Name of the user flow")
+    persona: str = Field(default="", description="Persona this flow follows")
+    mermaid_code: str = Field(default="", description="Mermaid flowchart code")
+    screens_referenced: list[str] = Field(
+        default_factory=list, description="Screen IDs referenced in this flow"
+    )
+    notes: str = Field(default="", description="Notes about this flow")
+
+
+class Wireframes(BaseModel):
+    """Collection of wireframe screens."""
+
+    screens: list[WireframeScreen] = Field(
+        default_factory=list, description="Wireframe screens"
+    )
+    user_flows: list[UserFlow] = Field(
+        default_factory=list, description="User flow diagrams"
+    )
+    user_flow_description: str = Field(
+        default="", description="Overall user flow description"
+    )
+    user_flow_mermaid: str = Field(
+        default="", description="Mermaid diagram of user flow"
+    )
+    design_system_notes: list[str] = Field(
+        default_factory=list, description="Design system guidelines"
+    )
+    responsive_notes: str = Field(
+        default="", description="Notes on responsive/mobile adaptation"
+    )
+
+
+class ColorPalette(BaseModel):
+    """Color palette for prototype styling."""
+
+    primary: str = Field(..., description="Primary color (hex or Tailwind class)")
+    secondary: str = Field(default="", description="Secondary color")
+    accent: str = Field(default="", description="Accent color")
+    background: str = Field(default="", description="Background color")
+    text: str = Field(default="", description="Text color")
+
+
+class Prototype(BaseModel):
+    """Interactive prototype definition."""
+
+    prototype_name: str = Field(..., description="Prototype name")
+    primary_persona: str = Field(..., description="Primary persona this serves")
+    key_user_story: str = Field(..., description="Main user story demonstrated")
+    react_component_code: str = Field(..., description="Full React component code")
+    css_code: str = Field(default="", description="Additional CSS if needed")
+    state_management_notes: str = Field(
+        default="", description="Notes on state management"
+    )
+    interactivity_notes: list[str] = Field(
+        default_factory=list, description="Interactivity implementation notes"
+    )
+    screens_included: list[str] = Field(
+        default_factory=list, description="Screen IDs included"
+    )
+    color_palette: Optional[dict[str, Any]] = Field(
+        default=None, description="Color palette with primary, secondary, accent, background, text"
+    )
+    demo_scenario: str = Field(default="", description="Step-by-step demo script")
+    design_notes: str = Field(default="", description="Key design decisions and rationale")
+    story_summary: str = Field(default="", description="What story does this prototype tell and what's the aha moment")
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # INCEPTION PACK (Complete Output)
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -957,6 +1440,9 @@ class InceptionPack(BaseModel):
 
     This model represents the complete output of the discovery process,
     combining all agent outputs into a cohesive document.
+
+    V3.0 adds: cross_reference_index, gtm_strategy, financial_model,
+    stakeholder_views, validation_playbook, wireframes, prototype.
 
     Attributes:
         executive_summary: High-level product summary.
@@ -969,6 +1455,7 @@ class InceptionPack(BaseModel):
         metadata: Generation metadata.
     """
 
+    # Core sections
     executive_summary: ExecutiveSummary = Field(..., description="Executive summary")
     customer_research: CustomerResearch = Field(..., description="Customer research")
     business_case: BusinessCase = Field(..., description="Business case")
@@ -978,11 +1465,44 @@ class InceptionPack(BaseModel):
         ..., description="Legal and regulatory review"
     )
     quality_assessment: QualityAssessment = Field(..., description="Quality assessment")
+
+    # V3.0 additions
+    cross_reference_index: Optional[dict[str, Any]] = Field(
+        default=None, description="Cross-reference index with all claims"
+    )
+    competitive_analysis: Optional[dict[str, Any]] = Field(
+        default=None, description="Detailed competitive analysis"
+    )
+    detailed_personas: Optional[dict[str, Any]] = Field(
+        default=None, description="Detailed customer personas"
+    )
+    gtm_strategy: Optional[GoToMarket] = Field(
+        default=None, description="Go-to-market strategy"
+    )
+    financial_model: Optional[FinancialModel] = Field(
+        default=None, description="Detailed financial model"
+    )
+    risk_assessment: Optional[dict[str, Any]] = Field(
+        default=None, description="Comprehensive risk assessment"
+    )
+    stakeholder_views: Optional[StakeholderViews] = Field(
+        default=None, description="Stakeholder-specific views"
+    )
+    validation_playbook: Optional[ValidationPlaybook] = Field(
+        default=None, description="Validation experiments playbook"
+    )
+    wireframes: Optional[Wireframes] = Field(
+        default=None, description="UI wireframe screens"
+    )
+    prototype: Optional[Prototype] = Field(
+        default=None, description="Interactive prototype"
+    )
+
     metadata: dict[str, str] = Field(
         default_factory=lambda: {
             "generated_at": datetime.utcnow().isoformat(),
-            "version": "1.0",
-            "generator": "Product Discovery Multi-Agent System",
+            "version": "3.0",
+            "generator": "Seedcraft v3.0 Multi-Agent System",
         },
         description="Generation metadata",
     )
@@ -995,3 +1515,8 @@ class InceptionPack(BaseModel):
 # Rebuild models that use forward references
 SessionStatusResponse.model_rebuild()
 CustomerResearch.model_rebuild()
+InceptionPack.model_rebuild()
+GoToMarket.model_rebuild()
+FinancialModel.model_rebuild()
+StakeholderViews.model_rebuild()
+ValidationPlaybook.model_rebuild()

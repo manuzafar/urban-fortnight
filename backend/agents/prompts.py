@@ -666,6 +666,51 @@ You MUST respond with ONLY a valid JSON object. No markdown, no explanations, no
     }}
   ],
 
+  "unit_economics": {{
+    "cac": {{
+      "value": "$X",
+      "derivation": "Step-by-step: channel spend → leads → conversions → customers",
+      "evidence_tier": "E3|E4|E5",
+      "assumptions": ["Each assumption stated with evidence tier"]
+    }},
+    "arpu": {{
+      "value": "$X/month",
+      "derivation": "Weighted average across tiers",
+      "evidence_tier": "E4|E5"
+    }},
+    "ltv": {{
+      "value": "$X",
+      "derivation": "ARPU × gross margin × (1/monthly churn rate)",
+      "monthly_churn_assumption": "X% — state why",
+      "evidence_tier": "E4|E5"
+    }},
+    "ltv_cac_ratio": "X.Xx — above 3x is healthy",
+    "payback_period_months": 0,
+    "gross_margin_percent": 0,
+    "assessment": "healthy|warning|unhealthy",
+    "assessment_rationale": "string - why this assessment"
+  }},
+
+  "sensitivity_analysis": {{
+    "base_case": {{
+      "assumptions": ["Key assumption: value [E tier]"],
+      "year_1_revenue": "$X",
+      "year_3_revenue": "$X",
+      "break_even_month": 0
+    }},
+    "optimistic_case": {{
+      "assumptions_changed": ["What's different"],
+      "year_1_revenue": "$X",
+      "year_3_revenue": "$X"
+    }},
+    "pessimistic_case": {{
+      "assumptions_changed": ["What's different - realistic worst case"],
+      "year_1_revenue": "$X",
+      "year_3_revenue": "$X"
+    }},
+    "kill_conditions": "At what point does this not work? Be specific."
+  }},
+
   "financial_projection": {{
     "monthly_data": [
       {{"month": 1, "revenue": 0, "costs": 15000, "profit": -15000, "users": 100, "mrr": 0}},
@@ -2429,3 +2474,145 @@ This is a re-evaluation after revisions. The previous assessment was:
 
 Evaluate whether the identified issues have been adequately addressed.
 """
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# V3.0 EVIDENCE-AWARE CRITIQUE PROMPT
+# ═══════════════════════════════════════════════════════════════════════════════
+
+EVIDENCE_CRITIQUE_PROMPT = '''You are a Senior Product Consultant with expertise in evidence-based product development.
+
+## CROSS-REFERENCE INDEX
+{cross_reference_summary}
+
+## FULL PACK SUMMARY
+{full_pack_summary}
+
+## YOUR TASK
+
+Evaluate this inception pack on 5 dimensions, scoring each 0-10:
+
+### DIMENSION 1: Evidence Quality Score (Weight: 30%)
+Evaluate the distribution of evidence tiers:
+- E1 (Primary Research): 10 points per claim
+- E2 (Verified Source): 8.5 points per claim
+- E3 (Industry Data): 6 points per claim
+- E4 (Hypothesis): 3 points per claim
+- E5 (Assumption): 1 point per claim
+
+Score = (total weighted points / max possible points) × 10
+
+Look for:
+- Are market sizes grounded with sources (E2/E3)?
+- Are competitor claims verified with URLs?
+- Are financial projections based on assumptions (E4/E5) or data (E2/E3)?
+
+### DIMENSION 2: Cross-Reference Consistency (Weight: 25%)
+Check if claims are internally consistent:
+- Do financial projections use the TAM from Market Intelligence?
+- Do PRD features address the pain points identified?
+- Does technical architecture support the compliance requirements?
+- Are there circular or broken dependencies?
+
+Score 0-10 based on consistency.
+
+### DIMENSION 3: Section Coherence (Weight: 20%)
+Check if sections work together:
+- Business Case uses numbers from Market Intelligence
+- PRD accounts for regulatory constraints
+- Technical architecture supports GTM timeline
+- Financial model uses unit economics from Business Case
+
+Score 0-10 based on coherence.
+
+### DIMENSION 4: Generic Output Detection (Weight: 15%)
+Flag vague or generic phrases that add no value:
+- "leverage synergies"
+- "robust and scalable"
+- "world-class solution"
+- "industry-leading"
+- Claims without specifics (numbers, names, dates)
+
+Score 10 = no generic phrases, 0 = mostly generic.
+
+### DIMENSION 5: Stakeholder Readiness (Weight: 10%)
+Would key stakeholders accept this pack?
+- CFO: Are financials defensible?
+- CISO: Are security/compliance addressed?
+- ARB: Is architecture realistic?
+- VP Product: Is market fit convincing?
+
+Score 0-10 based on readiness.
+
+## OUTPUT FORMAT
+
+Respond with ONLY valid JSON:
+
+{{
+  "dimensions": {{
+    "evidence_quality": {{
+      "score": 7.5,
+      "rationale": "string - why this score",
+      "improvements": ["string - how to improve"]
+    }},
+    "cross_reference_consistency": {{
+      "score": 6.0,
+      "rationale": "string",
+      "inconsistencies_found": ["string - inconsistency 1"],
+      "improvements": ["string"]
+    }},
+    "section_coherence": {{
+      "score": 8.0,
+      "rationale": "string",
+      "improvements": ["string"]
+    }},
+    "generic_output_detection": {{
+      "score": 5.5,
+      "generic_phrases_found": ["string - phrase 1", "string - phrase 2"],
+      "sections_needing_specificity": ["string - section name"]
+    }},
+    "stakeholder_readiness": {{
+      "score": 7.0,
+      "stakeholder_gaps": {{
+        "cfo": "string - what CFO would question",
+        "ciso": "string - what CISO would question",
+        "arb": "string - what ARB would question",
+        "vp_product": "string - what VP Product would question"
+      }}
+    }}
+  }},
+  "overall_score": 0.66,
+  "overall_score_calculation": "Weighted average: (7.5*0.3 + 6.0*0.25 + 8.0*0.2 + 5.5*0.15 + 7.0*0.1) / 10 = 0.66",
+  "passed": false,
+  "iteration": 1,
+  "section_scores": [
+    {{"section": "Customer Research", "score": 0.7, "feedback": "Market sizing grounded but needs more E1/E2 sources", "suggestions": []}},
+    {{"section": "Business Case", "score": 0.5, "feedback": "Financial projections mostly E4/E5 assumptions", "suggestions": []}},
+    {{"section": "Product Requirements", "score": 0.8, "feedback": "Well-structured with clear stories", "suggestions": []}},
+    {{"section": "Technical Architecture", "score": 0.75, "feedback": "Solid design but generic tech choices", "suggestions": []}},
+    {{"section": "Legal", "score": 0.7, "feedback": "Key regulations identified", "suggestions": []}}
+  ],
+  "sections_needing_revision": ["string - section name"],
+  "revision_priority": [
+    {{
+      "section": "string - section to revise",
+      "issue": "string - what's wrong",
+      "suggested_fix": "string - how to fix"
+    }}
+  ],
+  "strengths": ["string - what's strong"],
+  "weaknesses": ["string - what's weak"],
+  "critical_gaps": ["string - must fix before proceeding"],
+  "ready_for_delivery": false,
+  "recommendations": ["string - overall recommendation"]
+}}
+
+CRITICAL:
+- Be specific with scores (use decimals)
+- **IMPORTANT: overall_score MUST be between 0.0 and 1.0 (not 0-10). Calculate as: weighted_avg / 10**
+- Reference actual claim IDs when discussing evidence
+- Flag specific generic phrases, not general criticisms
+- Provide actionable revision guidance
+- Set passed=true only if overall_score >= 0.7
+- Set ready_for_delivery=true only if overall_score >= 0.8
+'''

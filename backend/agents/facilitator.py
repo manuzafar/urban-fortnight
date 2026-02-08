@@ -1,13 +1,24 @@
 """
-Facilitator Agent for Swarm Orchestration.
+Facilitator Agent for Swarm Orchestration — v3.0
 
 The Facilitator is the central intelligence that:
-- Coordinates all swarms
+- Coordinates all swarms in 7 phases
 - Detects contradictions between agent outputs
 - Resolves conflicts by re-running specific agents
-- Synthesizes final outputs
+- Runs design and synthesis phases
+- Synthesizes final outputs with evidence grading
+
+v3.0 Pipeline:
+1. Planning
+2. Discovery (parallel: MI + CL + CP)
+3. Strategy (parallel: BC + GTM, then sequential: FM)
+4. Delivery (parallel: PRD + TA + RC, then sequential: Risk)
+5. Design (sequential: Wireframes → Prototype)
+6. Quality Check (Critique with revision loop)
+7. Synthesis (parallel: Stakeholder + Validation, then sequential: Exec Summary)
 """
 
+import asyncio
 from typing import Any
 
 import structlog
@@ -41,7 +52,16 @@ class FacilitatorAgent:
 
     async def run(self, state: DiscoveryState) -> DiscoveryState:
         """
-        Execute the complete swarm-based workflow.
+        Execute the complete v3.0 swarm-based workflow.
+
+        7-Phase Pipeline:
+        1. Planning
+        2. Discovery (parallel: MI + CL + CP)
+        3. Strategy (parallel: BC + GTM → sequential: FM)
+        4. Delivery (parallel: PRD + TA + RC → sequential: Risk)
+        5. Design (sequential: Wireframes → Prototype)
+        6. Quality Check (Critique with revision loop)
+        7. Synthesis (parallel: Stakeholder + Validation → sequential: Exec Summary)
 
         Args:
             state: Initial discovery state.
@@ -52,15 +72,20 @@ class FacilitatorAgent:
         self.logger.info(
             "facilitator_start",
             session_id=state["session_id"],
+            version="3.0",
         )
 
         try:
-            # Phase 1: Planning
+            # ═══════════════════════════════════════════════════════════════
+            # PHASE 1: PLANNING
+            # ═══════════════════════════════════════════════════════════════
             state = await self._run_planning_phase(state)
             if state.get("status") == SessionStatus.FAILED:
                 return state
 
-            # Phase 2: Discovery Swarm
+            # ═══════════════════════════════════════════════════════════════
+            # PHASE 2: DISCOVERY (Parallel: MI + CL + CP)
+            # ═══════════════════════════════════════════════════════════════
             state = await self._run_discovery_phase(state)
             if state.get("status") == SessionStatus.FAILED:
                 return state
@@ -70,31 +95,61 @@ class FacilitatorAgent:
             if contradictions:
                 state = await self._resolve_contradictions(state, contradictions)
 
-            # Phase 3: Strategy Swarm (depends on Discovery)
+            # ═══════════════════════════════════════════════════════════════
+            # PHASE 3: STRATEGY (Parallel: BC + GTM → Sequential: FM)
+            # ═══════════════════════════════════════════════════════════════
             state = await self._run_strategy_phase(state)
             if state.get("status") == SessionStatus.FAILED:
                 return state
+
+            # Run Financial Model AFTER BC + GTM complete
+            state = await self._run_financial_model(state)
 
             # Check for contradictions between discovery and strategy
             contradictions = self.detect_contradictions(state, phase="strategy")
             if contradictions:
                 state = await self._resolve_contradictions(state, contradictions)
 
-            # Phase 4: Delivery Swarm (depends on Discovery + Strategy)
+            # ═══════════════════════════════════════════════════════════════
+            # PHASE 4: DELIVERY (Parallel: PRD + TA + RC → Sequential: Risk)
+            # ═══════════════════════════════════════════════════════════════
             state = await self._run_delivery_phase(state)
             if state.get("status") == SessionStatus.FAILED:
                 return state
 
-            # Phase 5: Quality Check
+            # ═══════════════════════════════════════════════════════════════
+            # PHASE 5: DESIGN (Sequential: Wireframes → Prototype)
+            # ═══════════════════════════════════════════════════════════════
+            state = await self._run_design_phase(state)
+
+            # ═══════════════════════════════════════════════════════════════
+            # PHASE 6: QUALITY CHECK (Critique with revision loop)
+            # ═══════════════════════════════════════════════════════════════
             state = await self._run_quality_check(state)
 
-            # Phase 6: Executive Summary and Finalization
-            state = await self._synthesize_outputs(state)
+            # Handle revision loop if needed (max 2 iterations)
+            revision_count = 0
+            while state.get("requires_revision") and revision_count < 2:
+                self.logger.info(
+                    "revision_loop",
+                    session_id=state["session_id"],
+                    iteration=revision_count + 1,
+                )
+                # Re-run weak sections based on critique
+                state = await self._rerun_weak_sections(state)
+                state = await self._run_quality_check(state)
+                revision_count += 1
+
+            # ═══════════════════════════════════════════════════════════════
+            # PHASE 7: SYNTHESIS (Parallel: Stakeholder + Validation → Exec Summary)
+            # ═══════════════════════════════════════════════════════════════
+            state = await self._run_synthesis_phase(state)
 
             self.logger.info(
                 "facilitator_complete",
                 session_id=state["session_id"],
                 status=state.get("status"),
+                claims_count=state.get("cross_reference_index", {}).get("total_claims", 0),
             )
 
             return state
@@ -142,17 +197,127 @@ class FacilitatorAgent:
         state = await run_critique_agent(state)
         return state
 
-    async def _synthesize_outputs(self, state: DiscoveryState) -> DiscoveryState:
-        """Generate executive summary and finalize."""
-        from agents.orchestrator import executive_summary_node, finalize_node
+    async def _run_financial_model(self, state: DiscoveryState) -> DiscoveryState:
+        """Run financial model agent after BC + GTM complete."""
+        from agents.financial_model_agent import run_financial_model_agent
+
+        self.logger.info("phase_start", phase="financial_model", session_id=state["session_id"])
+        state = await run_financial_model_agent(state)
+        return state
+
+    async def _run_design_phase(self, state: DiscoveryState) -> DiscoveryState:
+        """
+        Run the design phase: Wireframes → Prototype.
+
+        This phase runs sequentially: wireframes must complete before prototype.
+        """
+        from agents.wireframe_agent import run_wireframe_agent
+        from agents.prototype_agent import run_prototype_agent
+
+        self.logger.info("phase_start", phase="design", session_id=state["session_id"])
+
+        # First: Wireframes
+        state = await run_wireframe_agent(state)
+
+        # Second: Prototype (depends on wireframes)
+        state = await run_prototype_agent(state)
+
+        return state
+
+    async def _run_synthesis_phase(self, state: DiscoveryState) -> DiscoveryState:
+        """
+        Run the synthesis phase: Stakeholder + Validation (parallel) → Exec Summary.
+
+        This produces the final outputs that synthesize all prior work.
+        """
+        from agents.stakeholder_agent import run_stakeholder_agent
+        from agents.validation_agent import run_validation_agent
+        from agents.executive_summary_agent import run_executive_summary_agent
+        from agents.orchestrator import finalize_node
 
         self.logger.info("phase_start", phase="synthesis", session_id=state["session_id"])
 
-        # Generate executive summary
-        state = await executive_summary_node(state)
+        # Parallel: Stakeholder Views + Validation Playbook
+        stakeholder_state, validation_state = await asyncio.gather(
+            run_stakeholder_agent(state.copy()),
+            run_validation_agent(state.copy()),
+        )
+
+        # Merge parallel results
+        state["stakeholder_views"] = stakeholder_state.get("stakeholder_views")
+        state["validation_playbook"] = validation_state.get("validation_playbook")
+
+        # Merge any errors
+        for s in [stakeholder_state, validation_state]:
+            if s.get("errors"):
+                if "errors" not in state:
+                    state["errors"] = []
+                state["errors"].extend(s["errors"])
+
+        # Merge cross-reference indices
+        from agents.state import merge_cross_references
+        state["cross_reference_index"] = merge_cross_references(
+            state.get("cross_reference_index"),
+            stakeholder_state.get("cross_reference_index")
+        )
+        state["cross_reference_index"] = merge_cross_references(
+            state.get("cross_reference_index"),
+            validation_state.get("cross_reference_index")
+        )
+
+        # Sequential: Executive Summary (depends on Stakeholder + Validation)
+        state = await run_executive_summary_agent(state)
 
         # Finalize
         state = await finalize_node(state)
+
+        return state
+
+    async def _rerun_weak_sections(self, state: DiscoveryState) -> DiscoveryState:
+        """
+        Re-run sections that were flagged as weak by the critique.
+
+        Uses the revision_priority from quality_assessment to determine
+        which agents to re-run.
+        """
+        quality = state.get("quality_assessment", {})
+        revision_priority = quality.get("revision_priority", [])
+
+        if not revision_priority:
+            return state
+
+        self.logger.info(
+            "rerunning_weak_sections",
+            session_id=state["session_id"],
+            sections=[r.get("section") for r in revision_priority[:3]],
+        )
+
+        # Map section names to agent runners
+        section_to_agent = {
+            "customer_research": "discovery",
+            "market_intelligence": "discovery",
+            "competitive_analysis": "discovery",
+            "business_case": "strategy",
+            "gtm_plan": "strategy",
+            "financial_model": "financial",
+            "product_requirements": "delivery",
+            "technical_architecture": "delivery",
+            "legal_regulatory_review": "delivery",
+        }
+
+        # Re-run specific agents based on priority
+        for item in revision_priority[:2]:  # Limit to top 2
+            section = item.get("section", "").lower().replace(" ", "_")
+            agent_phase = section_to_agent.get(section)
+
+            if agent_phase == "discovery":
+                state = await self.discovery_swarm.run(state)
+            elif agent_phase == "strategy":
+                state = await self.strategy_swarm.run(state)
+            elif agent_phase == "delivery":
+                state = await self.delivery_swarm.run(state)
+            elif agent_phase == "financial":
+                state = await self._run_financial_model(state)
 
         return state
 

@@ -14,9 +14,10 @@ from pydantic import ValidationError
 
 from agents.base_agent import call_llm
 from agents.business_strategy import get_business_case_summary
+from agents.context_builder import build_cross_reference_summary, build_full_pack_summary
 from agents.customer_research import get_customer_research_summary
 from agents.product_requirements import get_product_requirements_summary
-from agents.prompts import CRITIQUE_PROMPT, format_prompt
+from agents.prompts import CRITIQUE_PROMPT, EVIDENCE_CRITIQUE_PROMPT, format_prompt
 from agents.technical_architect import get_technical_architecture_summary
 from agents.state import CritiqueFeedback, DiscoveryState
 from config import settings
@@ -100,21 +101,40 @@ IMPORTANT: Only mark a section as "absent" or "missing" if it shows "NOT AVAILAB
 If a section shows "PRESENT", it contains actual content that must be evaluated.
 """
 
-    # Format the prompt with all context
-    prompt = format_prompt(
-        template=CRITIQUE_PROMPT,
-        product_idea=state["product_idea"],
-        customer_research=customer_research_json,
-        business_case=business_case_json,
-        product_requirements=product_requirements_json,
-        technical_architecture=technical_architecture_json,
-        iteration=current_iteration,
-        max_iterations=max_iterations,
-        previous_assessment=previous_assessment,
-    )
+    # Choose between v3.0 evidence-aware critique or legacy critique
+    has_cross_reference = state.get("cross_reference_index") is not None
 
-    # Prepend the content note to help the LLM understand what's available
-    prompt = content_note + "\n" + prompt
+    if has_cross_reference:
+        # V3.0: Use evidence-aware critique with 5 dimensions
+        cross_reference_summary = build_cross_reference_summary(state, 4000)
+        full_pack_summary = build_full_pack_summary(state, 8000)
+
+        prompt = EVIDENCE_CRITIQUE_PROMPT.format(
+            cross_reference_summary=cross_reference_summary,
+            full_pack_summary=full_pack_summary,
+        )
+
+        logger.info(
+            "using_evidence_critique",
+            session_id=state["session_id"],
+            claims_count=state["cross_reference_index"].get("total_claims", 0),
+        )
+    else:
+        # Legacy critique without cross-reference
+        prompt = format_prompt(
+            template=CRITIQUE_PROMPT,
+            product_idea=state["product_idea"],
+            customer_research=customer_research_json,
+            business_case=business_case_json,
+            product_requirements=product_requirements_json,
+            technical_architecture=technical_architecture_json,
+            iteration=current_iteration,
+            max_iterations=max_iterations,
+            previous_assessment=previous_assessment,
+        )
+
+        # Prepend the content note to help the LLM understand what's available
+        prompt = content_note + "\n" + prompt
 
     # Call the LLM
     result = await call_llm(prompt, AGENT_NAME)
