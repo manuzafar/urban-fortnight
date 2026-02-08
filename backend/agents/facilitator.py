@@ -208,11 +208,12 @@ class FacilitatorAgent:
                 self.logger.error("synthesis_phase_exception", error=str(e), exc_info=True)
                 raise Exception(f"Synthesis phase failed: {str(e)}")
 
+            cross_ref = state.get("cross_reference_index") or {}
             self.logger.info(
                 "facilitator_complete",
                 session_id=state["session_id"],
                 status=state.get("status"),
-                claims_count=state.get("cross_reference_index", {}).get("total_claims", 0),
+                claims_count=cross_ref.get("total_claims", 0),
             )
 
             return state
@@ -271,20 +272,21 @@ class FacilitatorAgent:
 
         # Emit insights from discovery (always emit complete, even if data missing)
         cr = state.get("customer_research") or {}
-        tam = cr.get("market_context", {}).get("total_addressable_market")
+        market_ctx = cr.get("market_context") or {}
+        tam = market_ctx.get("total_addressable_market")
         if tam:
             await self._emit_insight("customer_research", "tam", f"TAM: {tam}")
         await self._emit_agent_complete("customer_research", "Market research complete", insights_count=1)
 
         ca = state.get("competitive_analysis") or {}
-        competitors = ca.get("direct_competitors", [])
+        competitors = ca.get("direct_competitors") or []
         if competitors:
-            names = [c.get("name", "Unknown") for c in competitors[:3]]
+            names = [c.get("name", "Unknown") for c in competitors[:3] if isinstance(c, dict)]
             await self._emit_insight("competitive_intelligence", "competitors", f"Found: {', '.join(names)}")
         await self._emit_agent_complete("competitive_intelligence", f"Analyzed {len(competitors)} competitors", insights_count=1)
 
         dp = state.get("detailed_personas") or {}
-        primary = dp.get("primary_persona", {})
+        primary = dp.get("primary_persona") or {}
         if primary.get("name"):
             await self._emit_insight("persona_development", "primary_persona", f"Primary: {primary['name']} - {primary.get('archetype', '')}")
         await self._emit_agent_complete("persona_development", "Personas created", insights_count=1)
@@ -304,13 +306,16 @@ class FacilitatorAgent:
 
         # Emit insights from strategy (always emit complete)
         bc = state.get("business_case") or {}
-        problems = bc.get("lean_canvas", {}).get("problem", [])
-        if problems:
-            await self._emit_insight("business_strategy", "problem", f"Problem: {problems[0][:80]}...")
+        lean_canvas = bc.get("lean_canvas") or {}
+        problems = lean_canvas.get("problem") or []
+        if problems and len(problems) > 0:
+            problem_text = str(problems[0])[:80] if problems[0] else "Unknown"
+            await self._emit_insight("business_strategy", "problem", f"Problem: {problem_text}...")
         await self._emit_agent_complete("business_strategy", "Business case complete", insights_count=1)
 
         gtm = state.get("gtm_plan") or {}
-        initial_segment = gtm.get("market_entry_strategy", {}).get("initial_segment")
+        market_entry = gtm.get("market_entry_strategy") or {}
+        initial_segment = market_entry.get("initial_segment")
         if initial_segment:
             await self._emit_insight("gtm_strategy", "segment", f"Target: {initial_segment}")
         await self._emit_agent_complete("gtm_strategy", "GTM strategy complete", insights_count=1)
@@ -342,31 +347,36 @@ class FacilitatorAgent:
         # Emit insights from delivery (try to extract, but always complete)
         self.logger.info("emitting_delivery_completes", session_id=state["session_id"])
 
+        # Safely extract PRD features (handle None values in nested dicts)
         prd = state.get("product_requirements") or {}
-        features = prd.get("functional_requirements", {}).get("core_features", [])
+        fr = prd.get("functional_requirements") or {}
+        features = fr.get("core_features") or []
         if features:
             await self._emit_insight("product_requirements", "features", f"Core features: {len(features)}")
         await self._emit_agent_complete("product_requirements", "PRD complete", insights_count=1)
         self.logger.info("emitted_prd_complete", session_id=state["session_id"])
 
+        # Safely extract tech stack
         ta = state.get("technical_architecture") or {}
-        stack = ta.get("recommended_stack", {})
+        stack = ta.get("recommended_stack") or {}
         if stack.get("frontend"):
             await self._emit_insight("technical_architect", "stack", f"Stack: {stack.get('frontend', '')} + {stack.get('backend', '')}")
         await self._emit_agent_complete("technical_architect", "Architecture complete", insights_count=1)
         self.logger.info("emitted_ta_complete", session_id=state["session_id"])
 
+        # Safely extract regulations
         lr = state.get("legal_regulatory_review") or {}
-        regs = lr.get("applicable_regulations", [])
+        regs = lr.get("applicable_regulations") or []
         if regs:
             await self._emit_insight("legal_regulatory", "regulations", f"Regulations: {len(regs)} applicable")
         await self._emit_agent_complete("legal_regulatory", "Legal review complete", insights_count=1)
         self.logger.info("emitted_legal_complete", session_id=state["session_id"])
 
+        # Safely extract risks (ensure each item is a dict before calling .get)
         ra = state.get("risk_assessment") or {}
-        risks = ra.get("risks", [])
+        risks = ra.get("risks") or []
         if risks:
-            high_risks = [r for r in risks if r.get("severity") == "high"]
+            high_risks = [r for r in risks if isinstance(r, dict) and r.get("severity") == "high"]
             await self._emit_insight("risk_assessment", "risks", f"Risks: {len(high_risks)} high, {len(risks)} total")
         await self._emit_agent_complete("risk_assessment", "Risk assessment complete", insights_count=1)
         self.logger.info("emitted_risk_complete", session_id=state["session_id"])
@@ -407,14 +417,16 @@ class FacilitatorAgent:
 
         state = await run_financial_model_agent(state)
 
-        # Emit financial insights
-        fm = state.get("financial_model", {})
-        if fm.get("five_year_projection"):
-            y5 = fm["five_year_projection"].get("year_5", {})
+        # Emit financial insights (safely handle None values)
+        fm = state.get("financial_model") or {}
+        five_year = fm.get("five_year_projection") or {}
+        if five_year:
+            y5 = five_year.get("year_5") or {}
             if y5.get("revenue"):
                 await self._emit_insight("financial_modeling", "revenue", f"Y5 Revenue: {y5['revenue']}")
-        if fm.get("unit_economics", {}).get("ltv_cac_ratio"):
-            await self._emit_insight("financial_modeling", "ltv_cac", f"LTV:CAC = {fm['unit_economics']['ltv_cac_ratio']}")
+        unit_econ = fm.get("unit_economics") or {}
+        if unit_econ.get("ltv_cac_ratio"):
+            await self._emit_insight("financial_modeling", "ltv_cac", f"LTV:CAC = {unit_econ['ltv_cac_ratio']}")
 
         await self._emit_agent_complete("financial_modeling", "Financial model complete", insights_count=2)
         await self._emit_progress(50, "financial_modeling")
@@ -600,16 +612,18 @@ class FacilitatorAgent:
         """
         contradictions = []
 
-        # Get relevant outputs
-        customer_research = state.get("customer_research", {})
-        business_case = state.get("business_case", {})
-        financial_model = state.get("financial_model", {})
-        gtm_plan = state.get("gtm_plan", {})
+        # Get relevant outputs (use or {} to handle None values)
+        customer_research = state.get("customer_research") or {}
+        business_case = state.get("business_case") or {}
+        financial_model = state.get("financial_model") or {}
+        gtm_plan = state.get("gtm_plan") or {}
 
         # Check 1: Market size consistency
         if customer_research and business_case:
-            cr_tam = customer_research.get("market_context", {}).get("total_addressable_market", "")
-            bc_tam = business_case.get("market_size", {}).get("tam", "")
+            cr_market = customer_research.get("market_context") or {}
+            cr_tam = cr_market.get("total_addressable_market", "")
+            bc_market = business_case.get("market_size") or {}
+            bc_tam = bc_market.get("tam", "")
 
             if cr_tam and bc_tam and self._values_differ_significantly(cr_tam, bc_tam):
                 contradictions.append({
@@ -622,12 +636,14 @@ class FacilitatorAgent:
 
         # Check 2: Pricing consistency
         if business_case and financial_model:
-            bc_pricing = business_case.get("revenue_streams", [])
-            fm_pricing = financial_model.get("revenue_model", {}).get("primary_revenue_stream", {})
+            bc_pricing = business_case.get("revenue_streams") or []
+            fm_revenue = financial_model.get("revenue_model") or {}
+            fm_pricing = fm_revenue.get("primary_revenue_stream") or {}
 
             if bc_pricing and fm_pricing:
                 bc_price = self._extract_price(bc_pricing)
-                fm_price = fm_pricing.get("pricing_tiers", [{}])[0].get("price_monthly", 0)
+                pricing_tiers = fm_pricing.get("pricing_tiers") or [{}]
+                fm_price = (pricing_tiers[0] if pricing_tiers else {}).get("price_monthly", 0)
 
                 if bc_price and fm_price and abs(bc_price - fm_price) / max(bc_price, fm_price) > 0.5:
                     contradictions.append({
@@ -640,8 +656,10 @@ class FacilitatorAgent:
 
         # Check 3: Target customer consistency
         if customer_research and gtm_plan:
-            cr_segments = customer_research.get("market_context", {}).get("customer_segments", [])
-            gtm_segment = gtm_plan.get("market_entry_strategy", {}).get("initial_segment", "")
+            cr_market = customer_research.get("market_context") or {}
+            cr_segments = cr_market.get("customer_segments") or []
+            gtm_entry = gtm_plan.get("market_entry_strategy") or {}
+            gtm_segment = gtm_entry.get("initial_segment", "")
 
             if cr_segments and gtm_segment:
                 if not any(gtm_segment.lower() in str(seg).lower() for seg in cr_segments):
