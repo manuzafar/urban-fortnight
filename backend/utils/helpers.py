@@ -191,6 +191,7 @@ def build_inception_pack(state: dict[str, Any]) -> dict[str, Any]:
     Build the final InceptionPack from workflow state.
 
     Assembles all agent outputs into the final deliverable format.
+    Supports both V1.0 (7 sections) and V3.0 (16 sections) formats.
 
     Args:
         state: Completed workflow state.
@@ -198,7 +199,8 @@ def build_inception_pack(state: dict[str, Any]) -> dict[str, Any]:
     Returns:
         dict: Complete InceptionPack structure.
     """
-    return {
+    pack = {
+        # Core sections (V1.0)
         "executive_summary": state.get("executive_summary", {}),
         "customer_research": state.get("customer_research", {}),
         "business_case": state.get("business_case", {}),
@@ -206,10 +208,27 @@ def build_inception_pack(state: dict[str, Any]) -> dict[str, Any]:
         "technical_architecture": state.get("technical_architecture", {}),
         "legal_regulatory_review": state.get("legal_regulatory_review", {}),
         "quality_assessment": state.get("quality_assessment") or {},
+        # V3.0 Discovery sections
+        "competitive_analysis": state.get("competitive_analysis"),
+        "detailed_personas": state.get("detailed_personas"),
+        # V3.0 Strategy sections
+        "gtm_strategy": state.get("gtm_plan"),  # Backend uses gtm_plan, frontend expects gtm_strategy
+        "financial_model": state.get("financial_model"),
+        # V3.0 Delivery sections
+        "risk_assessment": state.get("risk_assessment"),
+        # V3.0 Design sections
+        "wireframes": state.get("wireframes"),
+        "prototype": state.get("prototype"),
+        # V3.0 Synthesis sections
+        "stakeholder_views": state.get("stakeholder_views"),
+        "validation_playbook": state.get("validation_playbook"),
+        # V3.0 Cross-reference index (from claim extractor)
+        "cross_reference_index": state.get("cross_reference_index"),
+        # Metadata
         "metadata": {
             "session_id": state.get("session_id", "unknown"),
             "generated_at": datetime.utcnow().isoformat(),
-            "version": "1.0",
+            "version": "3.0",
             "generator": "Product Discovery Multi-Agent System",
             "iterations": str(state.get("iteration", 1)),
             "total_tokens_used": str(state.get("total_tokens_used", 0)),
@@ -218,3 +237,6 @@ def build_inception_pack(state: dict[str, Any]) -> dict[str, Any]:
             "quality_passed": str(state.get("quality_passed", False)),
         },
     }
+
+    # Remove None values to keep response clean
+    return {k: v for k, v in pack.items() if v is not None}

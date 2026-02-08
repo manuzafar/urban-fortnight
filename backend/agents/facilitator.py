@@ -19,7 +19,7 @@ v3.0 Pipeline:
 """
 
 import asyncio
-from typing import Any
+from typing import Any, Optional, TYPE_CHECKING
 
 import structlog
 
@@ -29,7 +29,16 @@ from agents.state import DiscoveryState
 from agents.swarms import DiscoverySwarm, StrategySwarm, DeliverySwarm
 from models.schemas import SessionStatus
 
+if TYPE_CHECKING:
+    from utils.sse import SessionEventEmitter
+
 logger = structlog.get_logger(__name__)
+
+
+def get_current_emitter() -> Optional["SessionEventEmitter"]:
+    """Get the current event emitter from the orchestrator."""
+    from agents.orchestrator import _current_emitter
+    return _current_emitter
 
 
 class FacilitatorAgent:
@@ -49,6 +58,30 @@ class FacilitatorAgent:
         self.discovery_swarm = DiscoverySwarm()
         self.strategy_swarm = StrategySwarm()
         self.delivery_swarm = DeliverySwarm()
+
+    async def _emit_agent_start(self, agent: str, message: str = "Processing..."):
+        """Emit agent start event."""
+        emitter = get_current_emitter()
+        if emitter:
+            await emitter.emit_agent_start(agent, message)
+
+    async def _emit_insight(self, agent: str, key: str, value: str):
+        """Emit an insight from an agent."""
+        emitter = get_current_emitter()
+        if emitter:
+            await emitter.emit_insight(agent, key, value)
+
+    async def _emit_agent_complete(self, agent: str, summary: str, insights_count: int = 1):
+        """Emit agent completion event."""
+        emitter = get_current_emitter()
+        if emitter:
+            await emitter.emit_agent_complete(agent, summary, insights_count=insights_count)
+
+    async def _emit_progress(self, percentage: int, agent: str):
+        """Emit progress update."""
+        emitter = get_current_emitter()
+        if emitter:
+            await emitter.emit_progress(percentage, agent)
 
     async def run(self, state: DiscoveryState) -> DiscoveryState:
         """
@@ -170,31 +203,152 @@ class FacilitatorAgent:
     async def _run_planning_phase(self, state: DiscoveryState) -> DiscoveryState:
         """Run the planning agent."""
         self.logger.info("phase_start", phase="planning", session_id=state["session_id"])
+
+        await self._emit_agent_start("planner", "Creating research plan...")
         state = await run_planner_agent(state)
+
+        # Emit insights from research plan
+        plan = state.get("research_plan", {})
+        if plan.get("domain_type"):
+            await self._emit_insight("planner", "domain_type", f"Domain: {plan['domain_type']}")
+        if plan.get("competitors_to_analyze"):
+            names = [c.get("name", "Unknown") for c in plan["competitors_to_analyze"][:3]]
+            await self._emit_insight("planner", "competitors", f"Competitors: {', '.join(names)}")
+
+        await self._emit_agent_complete("planner", "Research plan created", insights_count=2)
+        await self._emit_progress(5, "planner")
+
         return state
 
     async def _run_discovery_phase(self, state: DiscoveryState) -> DiscoveryState:
         """Run the discovery swarm."""
         self.logger.info("phase_start", phase="discovery", session_id=state["session_id"])
+
+        # Emit start for discovery agents
+        await self._emit_agent_start("customer_research", "Analyzing market...")
+        await self._emit_agent_start("competitive_intelligence", "Researching competitors...")
+        await self._emit_agent_start("persona_development", "Building personas...")
+
         state = await self.discovery_swarm.run(state)
+
+        # Emit insights from discovery
+        if state.get("customer_research"):
+            cr = state["customer_research"]
+            if cr.get("market_context", {}).get("total_addressable_market"):
+                await self._emit_insight("customer_research", "tam", f"TAM: {cr['market_context']['total_addressable_market']}")
+            await self._emit_agent_complete("customer_research", "Market research complete", insights_count=3)
+
+        if state.get("competitive_analysis"):
+            ca = state["competitive_analysis"]
+            competitors = ca.get("direct_competitors", [])
+            if competitors:
+                names = [c.get("name", "Unknown") for c in competitors[:3]]
+                await self._emit_insight("competitive_intelligence", "competitors", f"Found: {', '.join(names)}")
+            await self._emit_agent_complete("competitive_intelligence", f"Analyzed {len(competitors)} competitors", insights_count=2)
+
+        if state.get("detailed_personas"):
+            dp = state["detailed_personas"]
+            primary = dp.get("primary_persona", {})
+            if primary.get("name"):
+                await self._emit_insight("persona_development", "primary_persona", f"Primary: {primary['name']} - {primary.get('archetype', '')}")
+            await self._emit_agent_complete("persona_development", "Personas created", insights_count=2)
+
+        await self._emit_progress(25, "discovery")
+
         return state
 
     async def _run_strategy_phase(self, state: DiscoveryState) -> DiscoveryState:
         """Run the strategy swarm."""
         self.logger.info("phase_start", phase="strategy", session_id=state["session_id"])
+
+        await self._emit_agent_start("business_strategy", "Developing business case...")
+        await self._emit_agent_start("gtm_strategy", "Creating go-to-market strategy...")
+
         state = await self.strategy_swarm.run(state)
+
+        # Emit insights from strategy
+        if state.get("business_case"):
+            bc = state["business_case"]
+            if bc.get("lean_canvas", {}).get("problem"):
+                problems = bc["lean_canvas"]["problem"]
+                if problems:
+                    await self._emit_insight("business_strategy", "problem", f"Problem: {problems[0][:80]}...")
+            await self._emit_agent_complete("business_strategy", "Business case complete", insights_count=2)
+
+        if state.get("gtm_plan"):
+            gtm = state["gtm_plan"]
+            if gtm.get("market_entry_strategy", {}).get("initial_segment"):
+                await self._emit_insight("gtm_strategy", "segment", f"Target: {gtm['market_entry_strategy']['initial_segment']}")
+            await self._emit_agent_complete("gtm_strategy", "GTM strategy complete", insights_count=2)
+
+        await self._emit_progress(40, "strategy")
+
         return state
 
     async def _run_delivery_phase(self, state: DiscoveryState) -> DiscoveryState:
         """Run the delivery swarm."""
         self.logger.info("phase_start", phase="delivery", session_id=state["session_id"])
+
+        await self._emit_agent_start("product_requirements", "Writing requirements...")
+        await self._emit_agent_start("technical_architect", "Designing architecture...")
+        await self._emit_agent_start("legal_regulatory", "Reviewing compliance...")
+        await self._emit_agent_start("risk_assessment", "Assessing risks...")
+
         state = await self.delivery_swarm.run(state)
+
+        # Emit insights from delivery
+        if state.get("product_requirements"):
+            prd = state["product_requirements"]
+            features = prd.get("functional_requirements", {}).get("core_features", [])
+            if features:
+                await self._emit_insight("product_requirements", "features", f"Core features: {len(features)}")
+            await self._emit_agent_complete("product_requirements", "PRD complete", insights_count=2)
+
+        if state.get("technical_architecture"):
+            ta = state["technical_architecture"]
+            stack = ta.get("recommended_stack", {})
+            if stack.get("frontend"):
+                await self._emit_insight("technical_architect", "stack", f"Stack: {stack.get('frontend', '')} + {stack.get('backend', '')}")
+            await self._emit_agent_complete("technical_architect", "Architecture complete", insights_count=2)
+
+        if state.get("legal_regulatory_review"):
+            lr = state["legal_regulatory_review"]
+            regs = lr.get("applicable_regulations", [])
+            if regs:
+                await self._emit_insight("legal_regulatory", "regulations", f"Regulations: {len(regs)} applicable")
+            await self._emit_agent_complete("legal_regulatory", "Legal review complete", insights_count=2)
+
+        if state.get("risk_assessment"):
+            ra = state["risk_assessment"]
+            risks = ra.get("risks", [])
+            if risks:
+                high_risks = [r for r in risks if r.get("severity") == "high"]
+                await self._emit_insight("risk_assessment", "risks", f"Risks: {len(high_risks)} high, {len(risks)} total")
+            await self._emit_agent_complete("risk_assessment", "Risk assessment complete", insights_count=2)
+
+        await self._emit_progress(60, "delivery")
+
         return state
 
     async def _run_quality_check(self, state: DiscoveryState) -> DiscoveryState:
         """Run the critique agent for quality assessment."""
         self.logger.info("phase_start", phase="quality_check", session_id=state["session_id"])
+
+        await self._emit_agent_start("critique", "Checking quality...")
+
         state = await run_critique_agent(state)
+
+        # Emit quality insights
+        qa = state.get("quality_assessment", {})
+        if qa.get("overall_score"):
+            await self._emit_insight("critique", "score", f"Quality score: {qa['overall_score']:.1f}/10")
+        if qa.get("quality_passed") is not None:
+            status = "PASSED" if qa["quality_passed"] else "NEEDS REVISION"
+            await self._emit_insight("critique", "status", f"Status: {status}")
+
+        await self._emit_agent_complete("critique", f"Quality: {qa.get('overall_score', 0):.1f}/10", insights_count=2)
+        await self._emit_progress(80, "critique")
+
         return state
 
     async def _run_financial_model(self, state: DiscoveryState) -> DiscoveryState:
@@ -202,7 +356,23 @@ class FacilitatorAgent:
         from agents.financial_model_agent import run_financial_model_agent
 
         self.logger.info("phase_start", phase="financial_model", session_id=state["session_id"])
+
+        await self._emit_agent_start("financial_modeling", "Building financial model...")
+
         state = await run_financial_model_agent(state)
+
+        # Emit financial insights
+        fm = state.get("financial_model", {})
+        if fm.get("five_year_projection"):
+            y5 = fm["five_year_projection"].get("year_5", {})
+            if y5.get("revenue"):
+                await self._emit_insight("financial_modeling", "revenue", f"Y5 Revenue: {y5['revenue']}")
+        if fm.get("unit_economics", {}).get("ltv_cac_ratio"):
+            await self._emit_insight("financial_modeling", "ltv_cac", f"LTV:CAC = {fm['unit_economics']['ltv_cac_ratio']}")
+
+        await self._emit_agent_complete("financial_modeling", "Financial model complete", insights_count=2)
+        await self._emit_progress(50, "financial_modeling")
+
         return state
 
     async def _run_design_phase(self, state: DiscoveryState) -> DiscoveryState:
@@ -217,10 +387,25 @@ class FacilitatorAgent:
         self.logger.info("phase_start", phase="design", session_id=state["session_id"])
 
         # First: Wireframes
+        await self._emit_agent_start("wireframe_agent", "Designing wireframes...")
         state = await run_wireframe_agent(state)
 
+        wf = state.get("wireframes", {})
+        screens = wf.get("screens", [])
+        if screens:
+            await self._emit_insight("wireframe_agent", "screens", f"Designed {len(screens)} screens")
+        await self._emit_agent_complete("wireframe_agent", f"{len(screens)} wireframes created", insights_count=1)
+        await self._emit_progress(70, "wireframe_agent")
+
         # Second: Prototype (depends on wireframes)
+        await self._emit_agent_start("prototype_agent", "Generating prototype code...")
         state = await run_prototype_agent(state)
+
+        proto = state.get("prototype", {})
+        if proto.get("react_code"):
+            await self._emit_insight("prototype_agent", "code", "React prototype generated")
+        await self._emit_agent_complete("prototype_agent", "Interactive prototype ready", insights_count=1)
+        await self._emit_progress(75, "prototype_agent")
 
         return state
 
@@ -238,6 +423,9 @@ class FacilitatorAgent:
         self.logger.info("phase_start", phase="synthesis", session_id=state["session_id"])
 
         # Parallel: Stakeholder Views + Validation Playbook
+        await self._emit_agent_start("stakeholder_agent", "Creating stakeholder views...")
+        await self._emit_agent_start("validation_agent", "Building validation playbook...")
+
         stakeholder_state, validation_state = await asyncio.gather(
             run_stakeholder_agent(state.copy()),
             run_validation_agent(state.copy()),
@@ -246,6 +434,20 @@ class FacilitatorAgent:
         # Merge parallel results
         state["stakeholder_views"] = stakeholder_state.get("stakeholder_views")
         state["validation_playbook"] = validation_state.get("validation_playbook")
+
+        # Emit stakeholder insights
+        sv = state.get("stakeholder_views", {})
+        if sv.get("views"):
+            await self._emit_insight("stakeholder_agent", "views", f"Created {len(sv['views'])} stakeholder views")
+        await self._emit_agent_complete("stakeholder_agent", "Stakeholder views ready", insights_count=1)
+
+        # Emit validation insights
+        vp = state.get("validation_playbook", {})
+        if vp.get("experiments"):
+            await self._emit_insight("validation_agent", "experiments", f"Designed {len(vp['experiments'])} experiments")
+        await self._emit_agent_complete("validation_agent", "Validation playbook ready", insights_count=1)
+
+        await self._emit_progress(90, "synthesis")
 
         # Merge any errors
         for s in [stakeholder_state, validation_state]:
@@ -266,10 +468,20 @@ class FacilitatorAgent:
         )
 
         # Sequential: Executive Summary (depends on Stakeholder + Validation)
+        await self._emit_agent_start("executive_summary_agent", "Writing executive summary...")
         state = await run_executive_summary_agent(state)
+
+        es = state.get("executive_summary", {})
+        if es.get("product_name"):
+            await self._emit_insight("executive_summary_agent", "product", f"Product: {es['product_name']}")
+        await self._emit_agent_complete("executive_summary_agent", "Executive summary complete", insights_count=1)
+
+        await self._emit_progress(95, "executive_summary_agent")
 
         # Finalize
         state = await finalize_node(state)
+
+        await self._emit_progress(100, "complete")
 
         return state
 
