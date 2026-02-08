@@ -90,8 +90,10 @@ function checkSectionHasContent(pack: InceptionPack, sectionKey: SectionKey): bo
     case 'legal':
       return !!pack.legal_regulatory_review;
     case 'risks':
-      // Backend uses risk_matrix, not risks
-      return !!(pack.risk_assessment?.risk_matrix?.length || pack.risk_assessment?.risks?.length);
+      // Backend uses risk_matrix as array, check both formats
+      const riskMatrix = pack.risk_assessment?.risk_matrix;
+      const risks = pack.risk_assessment?.risks;
+      return !!(Array.isArray(riskMatrix) && riskMatrix.length) || !!(risks?.length);
     case 'wireframes':
       return !!pack.wireframes?.screens?.length;
     case 'prototype':
@@ -1336,12 +1338,10 @@ function FinancialSection({ financial }: { financial: InceptionPack['financial_m
 function RisksSection({ risks }: { risks: InceptionPack['risk_assessment'] }) {
   if (!risks) return <EmptySection message="No risk assessment available" />;
 
-  // Backend uses risk_matrix, support both for compatibility
-  const riskList = (risks as Record<string, unknown>).risk_matrix as Array<Record<string, unknown>> ||
-                   (risks as Record<string, unknown>).risks as Array<Record<string, unknown>> || [];
-  const riskSummary = (risks as Record<string, unknown>).risk_summary as Record<string, unknown> || {};
-  const topRisks = (risks as Record<string, unknown>).top_3_risks as Array<Record<string, unknown>> ||
-                   (risks as Record<string, unknown>).top_risks as string[] || [];
+  // Backend uses risk_matrix as array, support both for compatibility
+  const riskList = risks.risk_matrix || risks.risks || [];
+  const riskSummary = risks.risk_summary || {};
+  const topRisks = risks.top_3_risks || risks.top_risks || [];
 
   return (
     <div className="section-grid">
@@ -1373,11 +1373,17 @@ function RisksSection({ risks }: { risks: InceptionPack['risk_assessment'] }) {
             Top Risks
           </h3>
           <ul className="bullet-list warning">
-            {topRisks.map((risk, i) => (
-              <li key={i}>
-                {typeof risk === 'string' ? risk : `${risk.name}: ${risk.why_critical || risk.immediate_action || ''}`}
-              </li>
-            ))}
+            {topRisks.map((risk, i) => {
+              if (typeof risk === 'string') {
+                return <li key={i}>{risk}</li>;
+              }
+              const riskObj = risk as { name?: string; why_critical?: string; immediate_action?: string };
+              return (
+                <li key={i}>
+                  {riskObj.name ? `${riskObj.name}: ` : ''}{riskObj.why_critical || riskObj.immediate_action || ''}
+                </li>
+              );
+            })}
           </ul>
         </div>
       )}
@@ -1398,23 +1404,28 @@ function RisksSection({ risks }: { risks: InceptionPack['risk_assessment'] }) {
                 </tr>
               </thead>
               <tbody>
-                {riskList.map((risk, i) => (
-                  <tr key={i}>
-                    <td className="category">{String(risk.category || '')}</td>
-                    <td className="description">{String(risk.name || risk.description || '')}</td>
-                    <td>
-                      <span className={`risk-level-badge level-${risk.likelihood}`}>
-                        {String(risk.likelihood || '')}
-                      </span>
-                    </td>
-                    <td>
-                      <span className={`risk-level-badge level-${risk.impact}`}>
-                        {String(risk.impact || '')}
-                      </span>
-                    </td>
-                    <td className="mitigation">{String(risk.mitigation_strategy || '')}</td>
-                  </tr>
-                ))}
+                {riskList.map((risk, i) => {
+                  // Handle both RiskItem and RiskMatrixItem structures
+                  const name = 'name' in risk ? risk.name : '';
+                  const desc = risk.description || '';
+                  return (
+                    <tr key={i}>
+                      <td className="category">{String(risk.category || '')}</td>
+                      <td className="description">{String(name || desc)}</td>
+                      <td>
+                        <span className={`risk-level-badge level-${risk.likelihood}`}>
+                          {String(risk.likelihood || '')}
+                        </span>
+                      </td>
+                      <td>
+                        <span className={`risk-level-badge level-${risk.impact}`}>
+                          {String(risk.impact || '')}
+                        </span>
+                      </td>
+                      <td className="mitigation">{String(risk.mitigation_strategy || '')}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -1525,15 +1536,26 @@ function StakeholdersSection({ stakeholders }: { stakeholders: InceptionPack['st
 }
 
 function ValidationSection({ playbook }: { playbook: InceptionPack['validation_playbook'] }) {
-  if (!playbook?.experiments?.length) {
+  // Support both field names from backend
+  const experiments = playbook?.experiments || playbook?.validation_experiments || [];
+
+  if (!experiments.length) {
     return <EmptySection message="No validation playbook available" />;
   }
+
+  // Create a normalized playbook object for the ValidationPlaybook component
+  const normalizedPlaybook = {
+    experiments,
+    prioritization_rationale: playbook?.prioritization_rationale,
+    quick_wins: playbook?.quick_wins,
+    critical_path: playbook?.critical_path,
+  };
 
   return (
     <div className="section-grid">
       <div className="content-card full-width validation-container">
         <h3>Validation Playbook</h3>
-        <ValidationPlaybook playbook={playbook} />
+        <ValidationPlaybook playbook={normalizedPlaybook} />
       </div>
     </div>
   );

@@ -1,0 +1,1276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seedcraft - Turn ideas into discovery roadmaps</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       SEEDCRAFT v6 - Landing Page
+       Inspired by Superagent journey
+       ═══════════════════════════════════════════════════════════════ */
+
+    :root {
+      --bg: #faf8f5;
+      --bg-card: #ffffff;
+      --bg-dark: #1a1a1a;
+
+      --text: #1a1a1a;
+      --text-secondary: #6b6b6b;
+      --text-muted: #9a9a9a;
+
+      --accent-green: #22c55e;
+      --accent-blue: #3b82f6;
+      --accent-orange: #f59e0b;
+      --accent-purple: #8b5cf6;
+      --accent-pink: #ec4899;
+      --accent-teal: #14b8a6;
+
+      --border: rgba(0,0,0,0.08);
+      --border-hover: rgba(0,0,0,0.15);
+
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --container: 1200px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: var(--container);
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       NAVIGATION
+       ═══════════════════════════════════════════════════════════════ */
+
+    .nav {
+      padding: 20px 0;
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 100;
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+    }
+
+    .logo-text {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--text);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      font-size: 14px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .btn-primary:hover {
+      background: #333;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       HERO
+       ═══════════════════════════════════════════════════════════════ */
+
+    .hero {
+      padding: 60px 0 40px;
+      text-align: center;
+    }
+
+    .hero-brand {
+      font-size: clamp(56px, 10vw, 120px);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 0.95;
+      margin-bottom: 32px;
+      color: var(--text);
+    }
+
+    /* Persona Filters */
+    .persona-filters {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 40px;
+      flex-wrap: wrap;
+    }
+
+    .persona-filter {
+      padding: 10px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .persona-filter:hover {
+      border-color: var(--border-hover);
+    }
+
+    .persona-filter.active {
+      background: var(--text);
+      color: var(--bg);
+      border-color: var(--text);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       LIVE DEMO CARDS
+       ═══════════════════════════════════════════════════════════════ */
+
+    .demo-section {
+      padding: 0 0 80px;
+    }
+
+    .demo-cards {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      overflow-x: auto;
+      padding: 20px 0;
+    }
+
+    .demo-card {
+      flex-shrink: 0;
+      width: 400px;
+      min-height: 480px;
+      border-radius: 20px;
+      padding: 32px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .demo-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    }
+
+    .demo-card.gold {
+      background: linear-gradient(135deg, #d4a853 0%, #b8860b 100%);
+      color: white;
+    }
+
+    .demo-card.teal {
+      background: linear-gradient(135deg, #0d9488 0%, #115e59 100%);
+      color: white;
+    }
+
+    .demo-card.purple {
+      background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%);
+      color: white;
+    }
+
+    .demo-card-cta {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      color: white;
+      text-decoration: none;
+      backdrop-filter: blur(10px);
+    }
+
+    .demo-card-cta:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    .demo-card-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.95);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: auto;
+      align-self: flex-start;
+    }
+
+    .status-icon {
+      width: 20px;
+      height: 20px;
+      animation: spin 2s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .demo-card-preview {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 24px;
+      color: var(--text);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    .preview-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .preview-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .preview-subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .preview-agents {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .preview-agent {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+    }
+
+    .agent-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .agent-dot.research { background: var(--accent-purple); }
+    .agent-dot.business { background: var(--accent-pink); }
+    .agent-dot.product { background: var(--accent-orange); }
+    .agent-dot.tech { background: var(--accent-teal); }
+    .agent-dot.legal { background: var(--accent-blue); }
+    .agent-dot.quality { background: #6b7280; }
+
+    .agent-status {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--accent-green);
+      font-weight: 600;
+    }
+
+    .agent-status.working {
+      color: var(--accent-orange);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       VALUE PROPOSITION
+       ═══════════════════════════════════════════════════════════════ */
+
+    .value-prop {
+      padding: 80px 0;
+    }
+
+    .value-prop-header {
+      max-width: 700px;
+      margin-bottom: 48px;
+    }
+
+    .value-prop-eyebrow {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+
+    .value-prop-title {
+      font-size: clamp(32px, 5vw, 48px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .value-prop-title .gradient {
+      background: linear-gradient(135deg, var(--accent-pink) 0%, var(--accent-orange) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .value-prop-subtitle {
+      font-size: 18px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Feature Cards */
+    .feature-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-hover);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+    }
+
+    .feature-card-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .feature-card-desc {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .feature-card-visual {
+      margin-top: auto;
+      padding: 20px;
+      background: var(--bg);
+      border-radius: 12px;
+    }
+
+    /* Agent Pills */
+    .agent-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .agent-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: white;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid var(--border);
+    }
+
+    /* Evidence Tiers */
+    .evidence-tiers {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .evidence-tier {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .evidence-badge {
+      width: 32px;
+      height: 24px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .evidence-badge.e1 { background: var(--accent-green); }
+    .evidence-badge.e2 { background: var(--accent-blue); }
+    .evidence-badge.e3 { background: var(--accent-orange); }
+    .evidence-badge.e4 { background: #9ca3af; }
+
+    .evidence-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* Dimension Grid */
+    .dimension-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .dimension-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 12px;
+      background: white;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid var(--border);
+    }
+
+    .dimension-icon {
+      width: 20px;
+      height: 20px;
+      color: var(--text-muted);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       DISCOVER SECTION
+       ═══════════════════════════════════════════════════════════════ */
+
+    .discover {
+      padding: 80px 0;
+    }
+
+    .discover-header {
+      margin-bottom: 32px;
+    }
+
+    .discover-title {
+      font-size: 48px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+
+    .discover-subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+    }
+
+    /* Output Type Filters */
+    .output-filters {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .output-filter {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .output-filter:hover {
+      border-color: var(--border-hover);
+    }
+
+    .output-filter.active {
+      border-color: var(--text);
+    }
+
+    .output-filter-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--bg);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Pack Gallery */
+    .pack-gallery {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .pack-card {
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .pack-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(0,0,0,0.15);
+    }
+
+    .pack-card-hero {
+      padding: 24px;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pack-card.blue .pack-card-hero {
+      background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+      color: white;
+    }
+
+    .pack-card.teal .pack-card-hero {
+      background: linear-gradient(135deg, #134e4a 0%, #042f2e 100%);
+      color: white;
+    }
+
+    .pack-card.white .pack-card-hero {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      color: var(--text);
+    }
+
+    .pack-card-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      opacity: 0.7;
+      margin-bottom: 12px;
+    }
+
+    .pack-card-title {
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+
+    .pack-card-subtitle {
+      font-size: 13px;
+      opacity: 0.8;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
+
+    .pack-card-metrics {
+      display: flex;
+      gap: 16px;
+      margin-top: auto;
+    }
+
+    .pack-metric {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pack-metric-value {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .pack-metric-label {
+      font-size: 10px;
+      opacity: 0.6;
+      text-transform: uppercase;
+    }
+
+    /* Pack Content Preview */
+    .pack-card-content {
+      background: var(--bg-card);
+      padding: 20px 24px;
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 16px 16px;
+    }
+
+    .pack-card.white .pack-card-content {
+      border-top: 1px solid var(--border);
+    }
+
+    .content-section {
+      margin-bottom: 16px;
+    }
+
+    .content-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .content-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .content-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .content-evidence {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .evidence-tag {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .evidence-tag.e1 { background: var(--accent-green); }
+    .evidence-tag.e2 { background: var(--accent-blue); }
+    .evidence-tag.e3 { background: var(--accent-orange); }
+
+    .pack-card-prompt {
+      padding: 16px 24px;
+      background: var(--bg);
+      font-size: 13px;
+      color: var(--text-secondary);
+      border-radius: 0 0 16px 16px;
+    }
+
+    /* Mini Chart */
+    .mini-chart {
+      display: flex;
+      align-items: flex-end;
+      gap: 4px;
+      height: 40px;
+      margin-top: 12px;
+    }
+
+    .mini-bar {
+      flex: 1;
+      background: var(--accent-blue);
+      border-radius: 2px;
+      opacity: 0.7;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════════════════════════ */
+
+    .footer {
+      padding: 100px 0 60px;
+      text-align: center;
+    }
+
+    .footer-brand {
+      font-size: clamp(48px, 10vw, 100px);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      margin-bottom: 60px;
+    }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+
+    .footer-logo-icon {
+      width: 24px;
+      height: 24px;
+    }
+
+    .footer-tagline {
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 32px;
+    }
+
+    .footer-link {
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-link:hover {
+      color: var(--text);
+    }
+
+    .footer-copy {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════════════════════════════ */
+
+    @media (max-width: 1024px) {
+      .feature-cards { grid-template-columns: 1fr; }
+      .pack-gallery { grid-template-columns: repeat(2, 1fr); }
+      .demo-cards { justify-content: flex-start; padding-left: 40px; }
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 0 24px; }
+      .hero-brand { font-size: 48px; }
+      .persona-filters { gap: 8px; }
+      .persona-filter { padding: 8px 16px; font-size: 13px; }
+      .demo-card { width: 320px; min-height: 420px; }
+      .pack-gallery { grid-template-columns: 1fr; }
+      .output-filters { flex-wrap: wrap; }
+      .footer-bottom { flex-direction: column; gap: 24px; }
+      .footer-links { flex-wrap: wrap; justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="container">
+      <div class="nav-inner">
+        <a href="#" class="logo">
+          <svg class="logo-icon" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="14" fill="#1a1a1a"/>
+            <path d="M16 8v16M16 8c0 0-4 4-4 8s4 8 4 8M16 8c0 0 4 4 4 8s-4 8-4 8" stroke="#faf8f5" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="16" cy="10" r="2" fill="#faf8f5"/>
+          </svg>
+          <span class="logo-text">Seedcraft</span>
+        </a>
+        <div class="nav-right">
+          <a href="#" class="nav-link">Log in</a>
+          <a href="#" class="btn btn-primary">Sign Up</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <h1 class="hero-brand">Seedcraft</h1>
+
+      <!-- Persona Filters -->
+      <div class="persona-filters">
+        <button class="persona-filter active">PMs</button>
+        <button class="persona-filter">Founders</button>
+        <button class="persona-filter">Innovation Teams</button>
+        <button class="persona-filter">Consultants</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Demo Cards -->
+  <section class="demo-section">
+    <div class="demo-cards">
+      <!-- Card 1: Active -->
+      <div class="demo-card gold">
+        <a href="#" class="demo-card-cta">Try it out →</a>
+        <div class="demo-card-status">
+          <svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+          </svg>
+          Generating pack...
+        </div>
+        <div class="demo-card-preview">
+          <div class="preview-label">Inception Pack</div>
+          <div class="preview-title">AI Inventory Management</div>
+          <div class="preview-subtitle">B2B SaaS for small retailers</div>
+          <div class="preview-agents">
+            <div class="preview-agent">
+              <span class="agent-dot research"></span>
+              Customer Research
+              <span class="agent-status">✓ Done</span>
+            </div>
+            <div class="preview-agent">
+              <span class="agent-dot business"></span>
+              Business Case
+              <span class="agent-status">✓ Done</span>
+            </div>
+            <div class="preview-agent">
+              <span class="agent-dot tech"></span>
+              Tech Architecture
+              <span class="agent-status working">Working...</span>
+            </div>
+            <div class="preview-agent">
+              <span class="agent-dot legal"></span>
+              Legal & Compliance
+              <span class="agent-status" style="color: var(--text-muted);">Pending</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2 -->
+      <div class="demo-card teal">
+        <a href="#" class="demo-card-cta">Try it out →</a>
+        <div class="demo-card-status">
+          <svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+          </svg>
+          Analyzing market...
+        </div>
+        <div class="demo-card-preview">
+          <div class="preview-label">Inception Pack</div>
+          <div class="preview-title">Healthcare Scheduling App</div>
+          <div class="preview-subtitle">Patient booking for clinics</div>
+          <div class="preview-agents">
+            <div class="preview-agent">
+              <span class="agent-dot research"></span>
+              Customer Research
+              <span class="agent-status working">Working...</span>
+            </div>
+            <div class="preview-agent">
+              <span class="agent-dot business"></span>
+              Business Case
+              <span class="agent-status" style="color: var(--text-muted);">Pending</span>
+            </div>
+            <div class="preview-agent">
+              <span class="agent-dot legal"></span>
+              HIPAA Compliance
+              <span class="agent-status" style="color: var(--text-muted);">Pending</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3 -->
+      <div class="demo-card purple">
+        <a href="#" class="demo-card-cta">Try it out →</a>
+        <div class="demo-card-status">
+          <svg class="status-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/>
+          </svg>
+          Scanning regulations...
+        </div>
+        <div class="demo-card-preview">
+          <div class="preview-label">Inception Pack</div>
+          <div class="preview-title">Fintech Lending Platform</div>
+          <div class="preview-subtitle">SMB credit assessment</div>
+          <div class="preview-agents">
+            <div class="preview-agent">
+              <span class="agent-dot research"></span>
+              Market Research
+              <span class="agent-status">✓ Done</span>
+            </div>
+            <div class="preview-agent">
+              <span class="agent-dot legal"></span>
+              Regulatory Scan
+              <span class="agent-status working">Working...</span>
+            </div>
+            <div class="preview-agent">
+              <span class="agent-dot tech"></span>
+              Tech Feasibility
+              <span class="agent-status" style="color: var(--text-muted);">Pending</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Value Proposition -->
+  <section class="value-prop">
+    <div class="container">
+      <div class="value-prop-header">
+        <h2 class="value-prop-title">
+          Know what to validate.<br>
+          <span class="gradient">Before your first call.</span>
+        </h2>
+        <p class="value-prop-subtitle">
+          From product idea to discovery roadmap in minutes. Seedcraft gives you a 360° view — customers, market, legal, tech — so you know exactly what to test.
+        </p>
+      </div>
+
+      <div class="feature-cards">
+        <!-- Card 1: Agents -->
+        <div class="feature-card">
+          <h3 class="feature-card-title">Six specialist agents</h3>
+          <p class="feature-card-desc">
+            Research, Business, Product, Tech, Legal, and Quality agents work in parallel to build your complete inception pack.
+          </p>
+          <div class="feature-card-visual">
+            <div class="agent-pills">
+              <span class="agent-pill"><span class="agent-dot research"></span>Research</span>
+              <span class="agent-pill"><span class="agent-dot business"></span>Business</span>
+              <span class="agent-pill"><span class="agent-dot product"></span>Product</span>
+              <span class="agent-pill"><span class="agent-dot tech"></span>Tech</span>
+              <span class="agent-pill"><span class="agent-dot legal"></span>Legal</span>
+              <span class="agent-pill"><span class="agent-dot quality"></span>Quality</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Evidence Tiers -->
+        <div class="feature-card">
+          <h3 class="feature-card-title">Evidence-tiered insights</h3>
+          <p class="feature-card-desc">
+            Every insight labeled E1-E4. Know what's validated, what's a hypothesis, and what needs testing.
+          </p>
+          <div class="feature-card-visual">
+            <div class="evidence-tiers">
+              <div class="evidence-tier">
+                <span class="evidence-badge e1">E1</span>
+                <span class="evidence-label">Validated — real data confirms this</span>
+              </div>
+              <div class="evidence-tier">
+                <span class="evidence-badge e2">E2</span>
+                <span class="evidence-label">Strong hypothesis — credible sources</span>
+              </div>
+              <div class="evidence-tier">
+                <span class="evidence-badge e3">E3</span>
+                <span class="evidence-label">Assumption — needs customer validation</span>
+              </div>
+              <div class="evidence-tier">
+                <span class="evidence-badge e4">E4</span>
+                <span class="evidence-label">Speculation — test this first</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: 360° View -->
+        <div class="feature-card">
+          <h3 class="feature-card-title">360° view</h3>
+          <p class="feature-card-desc">
+            Customer pain, market size, competitive landscape, regulatory risk, tech feasibility — all in one pack.
+          </p>
+          <div class="feature-card-visual">
+            <div class="dimension-grid">
+              <div class="dimension-item">
+                <svg class="dimension-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                </svg>
+                Customers
+              </div>
+              <div class="dimension-item">
+                <svg class="dimension-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                </svg>
+                Market
+              </div>
+              <div class="dimension-item">
+                <svg class="dimension-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                Legal
+              </div>
+              <div class="dimension-item">
+                <svg class="dimension-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="3" width="20" height="14" rx="2"/>
+                  <path d="M8 21h8M12 17v4"/>
+                </svg>
+                Tech
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Discover Section -->
+  <section class="discover" id="discover">
+    <div class="container">
+      <div class="discover-header">
+        <h2 class="discover-title">Discover</h2>
+        <p class="discover-subtitle">Explore inception packs others have built</p>
+      </div>
+
+      <!-- Output Type Filters -->
+      <div class="output-filters">
+        <div class="output-filter active">
+          <div class="output-filter-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+            </svg>
+          </div>
+          Full Pack
+        </div>
+        <div class="output-filter">
+          <div class="output-filter-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+          </div>
+          Research Focus
+        </div>
+        <div class="output-filter">
+          <div class="output-filter-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          Compliance Check
+        </div>
+        <div class="output-filter">
+          <div class="output-filter-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2"/>
+              <path d="M8 21h8M12 17v4"/>
+            </svg>
+          </div>
+          Tech Assessment
+        </div>
+      </div>
+
+      <!-- Pack Gallery -->
+      <div class="pack-gallery">
+        <!-- Pack 1 -->
+        <div class="pack-card blue">
+          <div class="pack-card-hero">
+            <div class="pack-card-label">B2B SaaS</div>
+            <h3 class="pack-card-title">InventoryAI Pro</h3>
+            <p class="pack-card-subtitle">AI-powered inventory management for small retailers</p>
+            <div class="pack-card-metrics">
+              <div class="pack-metric">
+                <span class="pack-metric-value">$2.4B</span>
+                <span class="pack-metric-label">TAM</span>
+              </div>
+              <div class="pack-metric">
+                <span class="pack-metric-value">82</span>
+                <span class="pack-metric-label">Pack Score</span>
+              </div>
+              <div class="pack-metric">
+                <span class="pack-metric-value">14</span>
+                <span class="pack-metric-label">Hypotheses</span>
+              </div>
+            </div>
+          </div>
+          <div class="pack-card-content">
+            <div class="content-section">
+              <div class="content-label">Key Pain Point</div>
+              <div class="content-text">Small retailers lose $112B annually to stockouts and overstock. Manual tracking causes 23% revenue loss.</div>
+              <div class="content-evidence">
+                <span class="evidence-tag e2">E2</span>
+                Industry research
+              </div>
+            </div>
+            <div class="content-section">
+              <div class="content-label">Regulatory</div>
+              <div class="content-text">No major compliance barriers. Standard data privacy (GDPR/CCPA) applies.</div>
+            </div>
+          </div>
+          <div class="pack-card-prompt">
+            "Help me validate an AI inventory tool for convenience stores"
+          </div>
+        </div>
+
+        <!-- Pack 2 -->
+        <div class="pack-card teal">
+          <div class="pack-card-hero">
+            <div class="pack-card-label">Healthcare</div>
+            <h3 class="pack-card-title">MedScribe AI</h3>
+            <p class="pack-card-subtitle">Automated clinical documentation for physicians</p>
+            <div class="pack-card-metrics">
+              <div class="pack-metric">
+                <span class="pack-metric-value">$8.1B</span>
+                <span class="pack-metric-label">TAM</span>
+              </div>
+              <div class="pack-metric">
+                <span class="pack-metric-value">91</span>
+                <span class="pack-metric-label">Pack Score</span>
+              </div>
+              <div class="pack-metric">
+                <span class="pack-metric-value">18</span>
+                <span class="pack-metric-label">Hypotheses</span>
+              </div>
+            </div>
+          </div>
+          <div class="pack-card-content">
+            <div class="content-section">
+              <div class="content-label">Key Pain Point</div>
+              <div class="content-text">Physicians spend 2+ hours daily on documentation. 49% report burnout from admin burden.</div>
+              <div class="content-evidence">
+                <span class="evidence-tag e1">E1</span>
+                AMA survey data
+              </div>
+            </div>
+            <div class="content-section">
+              <div class="content-label">Regulatory</div>
+              <div class="content-text">HIPAA compliance required. BAA needed with cloud providers. State-level variations.</div>
+            </div>
+          </div>
+          <div class="pack-card-prompt">
+            "Build a business case for AI-powered medical transcription"
+          </div>
+        </div>
+
+        <!-- Pack 3 -->
+        <div class="pack-card white">
+          <div class="pack-card-hero">
+            <div class="pack-card-label">Fintech</div>
+            <h3 class="pack-card-title">LendSmart</h3>
+            <p class="pack-card-subtitle">SMB credit assessment using alternative data</p>
+            <div class="pack-card-metrics">
+              <div class="pack-metric">
+                <span class="pack-metric-value">$4.2B</span>
+                <span class="pack-metric-label">TAM</span>
+              </div>
+              <div class="pack-metric">
+                <span class="pack-metric-value">76</span>
+                <span class="pack-metric-label">Pack Score</span>
+              </div>
+              <div class="pack-metric">
+                <span class="pack-metric-value">22</span>
+                <span class="pack-metric-label">Hypotheses</span>
+              </div>
+            </div>
+          </div>
+          <div class="pack-card-content">
+            <div class="content-section">
+              <div class="content-label">Key Pain Point</div>
+              <div class="content-text">45% of SMBs rejected for credit due to thin files. Traditional scoring misses $380B lending opportunity.</div>
+              <div class="content-evidence">
+                <span class="evidence-tag e2">E2</span>
+                Fed Reserve study
+              </div>
+            </div>
+            <div class="content-section">
+              <div class="content-label">Regulatory</div>
+              <div class="content-text">ECOA, FCRA, state lending licenses required. Fair lending audits mandatory. High barrier.</div>
+            </div>
+          </div>
+          <div class="pack-card-prompt">
+            "What's the regulatory risk for an AI lending platform?"
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-brand">Seedcraft</div>
+      <div class="footer-bottom">
+        <a href="#" class="footer-logo">
+          <svg class="footer-logo-icon" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="14" fill="#1a1a1a"/>
+            <path d="M16 8v16M16 8c0 0-4 4-4 8s4 8 4 8M16 8c0 0 4 4 4 8s-4 8-4 8" stroke="#faf8f5" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="16" cy="10" r="2" fill="#faf8f5"/>
+          </svg>
+          <span class="footer-tagline">Know what to validate.</span>
+        </a>
+        <div class="footer-links">
+          <a href="#" class="footer-link">Terms</a>
+          <a href="#" class="footer-link">Privacy</a>
+          <a href="#" class="footer-link">LinkedIn</a>
+          <a href="#" class="footer-link">X</a>
+        </div>
+        <span class="footer-copy">© 2026 Seedcraft</span>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

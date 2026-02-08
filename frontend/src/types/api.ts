@@ -174,10 +174,11 @@ export interface ValidationExperiment {
 }
 
 export interface ValidationPlaybook {
-  experiments: ValidationExperiment[];
-  prioritization_rationale: string;
-  quick_wins: string[];
-  critical_path: string[];
+  experiments?: ValidationExperiment[];
+  validation_experiments?: ValidationExperiment[]; // Alternative field name from backend
+  prioritization_rationale?: string;
+  quick_wins?: string[];
+  critical_path?: string[];
 }
 
 // Wireframes
@@ -205,20 +206,21 @@ export interface Wireframes {
 
 // Prototype
 export interface Prototype {
-  prototype_name: string;
-  primary_persona: string;
-  key_user_story: string;
-  react_component_code: string;
+  prototype_name?: string;
+  primary_persona?: string;
+  key_user_story?: string;
+  react_component_code?: string;
+  react_code?: string; // Alternative field name from backend
   css_code?: string;
-  color_palette: {
+  color_palette?: {
     primary: string;
     secondary: string;
     accent: string;
     background: string;
     text: string;
   };
-  interactivity_notes: string[];
-  demo_scenario: string;
+  interactivity_notes?: string[];
+  demo_scenario?: string;
 }
 
 // Competitive Analysis
@@ -299,22 +301,63 @@ export interface RiskItem {
   status: 'identified' | 'mitigating' | 'accepted' | 'resolved';
 }
 
+// Risk item from backend's risk_matrix array
+export interface RiskMatrixItem {
+  id?: string;
+  name?: string;
+  description?: string;
+  category?: string;
+  likelihood?: number;
+  impact?: number;
+  risk_score?: number;
+  triggers?: string[];
+  early_warning_signs?: string[];
+  mitigation_strategy?: string;
+  contingency_plan?: string;
+  owner?: string;
+  review_frequency?: string;
+}
+
+export interface RiskSummary {
+  total_risks?: number;
+  critical_risks?: number;
+  high_risks?: number;
+  medium_risks?: number;
+  low_risks?: number;
+  overall_risk_level?: 'low' | 'medium' | 'high' | 'critical';
+}
+
+export interface TopRiskItem {
+  risk_id?: string;
+  name?: string;
+  why_critical?: string;
+  immediate_action?: string;
+}
+
 export interface RiskAssessment {
-  summary: string;
-  risks: RiskItem[];
-  risk_matrix: {
-    high_high: string[];
-    high_medium: string[];
-    high_low: string[];
-    medium_high: string[];
-    medium_medium: string[];
-    medium_low: string[];
-    low_high: string[];
-    low_medium: string[];
-    low_low: string[];
+  summary?: string;
+  risks?: RiskItem[];
+  // Backend uses risk_matrix as array of risk objects
+  risk_matrix?: RiskMatrixItem[];
+  risk_summary?: RiskSummary;
+  top_risks?: string[];
+  top_3_risks?: TopRiskItem[];
+  overall_risk_level?: 'high' | 'medium' | 'low' | 'critical';
+  risk_appetite_recommendation?: {
+    risk_tolerance_level?: string;
+    rationale?: string;
+    go_no_go_recommendation?: string;
+    conditions_for_go?: string[];
   };
-  top_risks: string[];
-  overall_risk_level: 'high' | 'medium' | 'low';
+  monitoring_plan?: {
+    key_risk_indicators?: Array<{
+      indicator?: string;
+      threshold?: string;
+      action_if_exceeded?: string;
+    }>;
+    review_cadence?: string;
+    escalation_process?: string;
+  };
 }
 
 // Cross-Reference Index

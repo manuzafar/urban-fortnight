@@ -1,0 +1,451 @@
+[
+  {
+    "pack_id": "banking",
+    "pack_name": "AI Cash Flow Forecasting for SME Banking",
+    "session_id": "disc_20260207_5d4656a9",
+    "status": "completed",
+    "duration_seconds": 616.064789,
+    "iterations": 1,
+    "total_tokens": 566681,
+    "cross_reference": {
+      "valid": true,
+      "total_claims": 143,
+      "tier_distribution": {
+        "E5": 37,
+        "E3": 18,
+        "E4": 80,
+        "E2": 5,
+        "E1": 3
+      },
+      "evidence_score": 0.31993006993006995,
+      "prefixes_found": [
+        "GM",
+        "CP",
+        "MI",
+        "PR",
+        "CL",
+        "RM",
+        "RC",
+        "BC",
+        "FM",
+        "ES"
+      ],
+      "grounded_claims": 26,
+      "hypothesis_claims": 117,
+      "claims_with_sources": 15,
+      "claims_with_validation": 143,
+      "warning": "Low grounded claim percentage: 18.2% (expected 30%+)"
+    },
+    "sections": {
+      "sections": {
+        "customer_research": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "competitive_analysis": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "detailed_personas": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "business_case": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "gtm_plan": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "financial_model": {
+          "present": true,
+          "has_content": true,
+          "type": "dict",
+          "monthly_projections": 12
+        },
+        "product_requirements": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "technical_architecture": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "legal_regulatory_review": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "risk_assessment": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "wireframes": {
+          "present": true,
+          "has_content": true,
+          "type": "dict",
+          "screen_count": 8
+        },
+        "prototype": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "stakeholder_views": {
+          "present": true,
+          "has_content": true,
+          "type": "dict",
+          "view_roles": [
+            "CFO",
+            "CISO",
+            "ARB",
+            "VP Product"
+          ]
+        },
+        "validation_playbook": {
+          "present": true,
+          "has_content": true,
+          "type": "dict",
+          "experiment_count": 6
+        },
+        "executive_summary": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        }
+      },
+      "missing": [],
+      "warnings": []
+    },
+    "quality": {
+      "valid": true,
+      "overall_score": 0.56,
+      "dimensions": {},
+      "sections_needing_revision": [],
+      "quality_passed": false
+    },
+    "errors": [
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting",
+      "PRD Formatter failed: LLM call failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'Resource exhausted. Please try again later. Please refer to https://cloud.google.com/vertex-ai/generative-ai/docs/error-code-429 for more details.', 'status': 'RESOURCE_EXHAUSTED'}} - using fallback formatting"
+    ],
+    "state_file": "/Users/manuzafarabdulla/Fun Projects/Product LifeCycle/backend/test_outputs/20260207_171413/banking_state.json",
+    "html_file": "/Users/manuzafarabdulla/Fun Projects/Product LifeCycle/backend/test_outputs/20260207_171413/banking_pack.html"
+  },
+  {
+    "pack_id": "healthcare",
+    "pack_name": "AI Clinical Trial Matching Platform",
+    "session_id": "disc_20260207_04b92875",
+    "status": "completed",
+    "duration_seconds": 599.377798,
+    "iterations": 1,
+    "total_tokens": 563472,
+    "cross_reference": {
+      "valid": true,
+      "total_claims": 172,
+      "tier_distribution": {
+        "E3": 13,
+        "E4": 81,
+        "E5": 61,
+        "E1": 8,
+        "E2": 9
+      },
+      "evidence_score": 0.3130813953488372,
+      "prefixes_found": [
+        "GM",
+        "CP",
+        "MI",
+        "PR",
+        "TA",
+        "CL",
+        "RM",
+        "RC",
+        "BC",
+        "FM",
+        "ES"
+      ],
+      "grounded_claims": 30,
+      "hypothesis_claims": 142,
+      "claims_with_sources": 43,
+      "claims_with_validation": 172,
+      "warning": "Low grounded claim percentage: 17.4% (expected 30%+)"
+    },
+    "sections": {
+      "sections": {
+        "customer_research": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "competitive_analysis": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "detailed_personas": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "business_case": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "gtm_plan": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "financial_model": {
+          "present": true,
+          "has_content": true,
+          "type": "dict",
+          "monthly_projections": 12
+        },
+        "product_requirements": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "technical_architecture": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "legal_regulatory_review": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "risk_assessment": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "wireframes": {
+          "present": true,
+          "has_content": true,
+          "type": "dict",
+          "screen_count": 7
+        },
+        "prototype": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "stakeholder_views": {
+          "present": true,
+          "has_content": true,
+          "type": "dict",
+          "view_roles": [
+            "CFO",
+            "CISO",
+            "ARB",
+            "VP Product"
+          ]
+        },
+        "validation_playbook": {
+          "present": true,
+          "has_content": true,
+          "type": "dict",
+          "experiment_count": 5
+        },
+        "executive_summary": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        }
+      },
+      "missing": [],
+      "warnings": []
+    },
+    "quality": {
+      "valid": true,
+      "overall_score": 0.56,
+      "dimensions": {},
+      "sections_needing_revision": [],
+      "quality_passed": false
+    },
+    "errors": [],
+    "state_file": "/Users/manuzafarabdulla/Fun Projects/Product LifeCycle/backend/test_outputs/20260207_171413/healthcare_state.json",
+    "html_file": "/Users/manuzafarabdulla/Fun Projects/Product LifeCycle/backend/test_outputs/20260207_171413/healthcare_pack.html"
+  },
+  {
+    "pack_id": "insurance",
+    "pack_name": "Automated Insurance Claims with Fraud Detection",
+    "session_id": "disc_20260207_96facc8f",
+    "status": "completed",
+    "duration_seconds": 660.388135,
+    "iterations": 1,
+    "total_tokens": 584164,
+    "cross_reference": {
+      "valid": true,
+      "total_claims": 165,
+      "tier_distribution": {
+        "E3": 18,
+        "E4": 85,
+        "E5": 44,
+        "E1": 10,
+        "E2": 8
+      },
+      "evidence_score": 0.3484848484848485,
+      "prefixes_found": [
+        "GM",
+        "CP",
+        "MI",
+        "PR",
+        "TA",
+        "CL",
+        "RM",
+        "RC",
+        "BC",
+        "FM",
+        "ES"
+      ],
+      "grounded_claims": 36,
+      "hypothesis_claims": 129,
+      "claims_with_sources": 9,
+      "claims_with_validation": 165,
+      "warning": "Low grounded claim percentage: 21.8% (expected 30%+)"
+    },
+    "sections": {
+      "sections": {
+        "customer_research": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "competitive_analysis": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "detailed_personas": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "business_case": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "gtm_plan": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "financial_model": {
+          "present": true,
+          "has_content": true,
+          "type": "dict",
+          "monthly_projections": 12
+        },
+        "product_requirements": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "technical_architecture": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "legal_regulatory_review": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "risk_assessment": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "wireframes": {
+          "present": true,
+          "has_content": true,
+          "type": "dict",
+          "screen_count": 7
+        },
+        "prototype": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "stakeholder_views": {
+          "present": true,
+          "has_content": true,
+          "type": "dict",
+          "view_roles": [
+            "CFO",
+            "CISO",
+            "ARB",
+            "VP Product"
+          ]
+        },
+        "validation_playbook": {
+          "present": true,
+          "has_content": true,
+          "type": "dict",
+          "experiment_count": 5
+        },
+        "executive_summary": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        }
+      },
+      "missing": [],
+      "warnings": []
+    },
+    "quality": {
+      "valid": true,
+      "overall_score": 0.57,
+      "dimensions": {},
+      "sections_needing_revision": [],
+      "quality_passed": false
+    },
+    "errors": [],
+    "state_file": "/Users/manuzafarabdulla/Fun Projects/Product LifeCycle/backend/test_outputs/20260207_171413/insurance_state.json",
+    "html_file": "/Users/manuzafarabdulla/Fun Projects/Product LifeCycle/backend/test_outputs/20260207_171413/insurance_pack.html"
+  }
+]

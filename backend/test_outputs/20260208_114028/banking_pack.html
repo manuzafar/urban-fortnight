@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inception Pack - 
+AI-powered cash flow forecasting platform for SME</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({ startOnLoad: true, theme: 'neutral' });</script>
+    <style>
+        .tier-E1 { background-color: #dcfce7; color: #166534; }
+        .tier-E2 { background-color: #dbeafe; color: #1e40af; }
+        .tier-E3 { background-color: #fef9c3; color: #854d0e; }
+        .tier-E4 { background-color: #fed7aa; color: #9a3412; }
+        .tier-E5 { background-color: #fecaca; color: #991b1b; }
+        pre code { font-size: 0.85em; }
+        .section-card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white border-b sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-xl font-bold text-slate-800">Seedcraft Inception Pack</h1>
+                    <p class="text-sm text-slate-500">Session: disc_20260208_96901617</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="px-3 py-1 rounded-full text-sm font-medium" style="background:#f1f5f9; color:#475569">
+                        N/A
+                    </span>
+                    <span class="text-sm text-slate-600">122 claims | 28% evidence</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-6 py-8">
+
+        <!-- Product Idea -->
+        <div class="section-card">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Product Idea</h2>
+            <p class="text-slate-700 whitespace-pre-line">AI-powered cash flow forecasting platform for SME banking customers. The platform
+integrates with accounting software (Xero, MYOB, QuickBooks) and bank transaction
+data to provide:
+- 90-day cash flow predictions with confidence intervals
+- Early warning alerts for potential cash shortfalls
+- Scenario modeling for business decisions
+- Automated recommendations for credit line adjustments
+
+Target market: Australian SME banking sector (businesses with $1M-$50M annual revenue)
+Key stakeholders: CFOs, Bank relationship managers, Credit risk teams</p>
+        </div>
+
+        <!-- Evidence Overview -->
+        <div class="section-card">
+            <h2 class="text-lg font-semibold text-slate-800 mb-4">Evidence Overview</h2>
+            <div class="flex gap-2 flex-wrap">
+                <span class="tier-E1 px-4 py-2 rounded-lg text-sm font-medium">E1 Primary: 0</span>
+                <span class="tier-E2 px-4 py-2 rounded-lg text-sm font-medium">E2 Verified: 11</span>
+                <span class="tier-E3 px-4 py-2 rounded-lg text-sm font-medium">E3 Industry: 5</span>
+                <span class="tier-E4 px-4 py-2 rounded-lg text-sm font-medium">E4 Hypothesis: 55</span>
+                <span class="tier-E5 px-4 py-2 rounded-lg text-sm font-medium">E5 Assumption: 51</span>
+            </div>
+        </div>
+
+        <div class="section-card" id="market-intelligence">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Market Intelligence</h2>
+
+            <div class="grid md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-indigo-50 rounded-lg p-4 text-center">
+                    <div class="text-xl font-bold text-indigo-600">Estimated TAM for SME banking in Australia is $10 Billion AUD based on number of SMEs with $1M-$50M revenue and average banking fees [cite: Hypothesis...</div>
+                    <div class="text-sm text-slate-600">Total Addressable Market</div>
+                </div>
+                <div class="bg-indigo-50 rounded-lg p-4 text-center">
+                    <div class="text-xl font-bold text-indigo-600">Estimated SAM is $1 Billion AUD, assuming 10% of SMEs would adopt an AI-powered cash flow forecasting platform [cite: Hypothesis].</div>
+                    <div class="text-sm text-slate-600">Serviceable Market</div>
+                </div>
+                <div class="bg-indigo-50 rounded-lg p-4 text-center">
+                    <div class="text-xl font-bold text-indigo-600">Estimated SOM is $100 Million AUD, assuming 10% market share within the SAM [cite: Hypothesis].</div>
+                    <div class="text-sm text-slate-600">Target Market</div>
+                </div>
+            </div>
+<div class="mb-6"><h3 class="font-semibold text-slate-800 mb-3">Pain Signals</h3><div class="space-y-2"><div class="border-l-4 border-red-400 bg-red-50 p-3 rounded-r"><p class="text-slate-700">Significant time spent on manual cash flow forecasting, pulling data from multiple sources (bank statements, accounting software, etc.).</p></div><div class="border-l-4 border-red-400 bg-red-50 p-3 rounded-r"><p class="text-slate-700">Inaccurate cash flow forecasts leading to unexpected cash shortfalls and difficulty in meeting financial obligations.</p></div><div class="border-l-4 border-red-400 bg-red-50 p-3 rounded-r"><p class="text-slate-700">Lack of real-time visibility into cash flow position, making it difficult to make informed decisions quickly.</p></div><div class="border-l-4 border-red-400 bg-red-50 p-3 rounded-r"><p class="text-slate-700">Difficulty understanding and interpreting complex financial data, leading to reliance on external advisors.</p></div><div class="border-l-4 border-red-400 bg-red-50 p-3 rounded-r"><p class="text-slate-700">Reluctance to share detailed financial data with a third-party platform due to security and privacy concerns.</p></div></div></div></div>
+        <div class="section-card" id="competitive-landscape">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Competitive Landscape</h2>
+<div class="mb-6 p-4 bg-purple-50 rounded-lg border-l-4 border-purple-500"><strong>Differentiation Thesis:</strong> Our AI-powered platform provides 90-day cash flow predictions with confidence intervals, giving SMEs unparalleled visibility into their financial future. Unlike generic accounting software or basic forecasting tools, we offer automated credit line adjustments, ensuring businesses have the financial flexibility to thrive. This proactive, data-driven approach transforms cash flow management from a reactive task to a strategic advantage.</div>
+            <div class="mb-6">
+                <h3 class="font-semibold text-slate-800 mb-3">Competitive Positioning</h3>
+                <div class="bg-white border rounded-lg p-4">
+                    <div class="flex justify-between text-sm text-slate-500 mb-2">
+                        <span>Forecasting Accuracy</span>
+                    </div>
+                    <div class="relative h-64 bg-slate-50 rounded border">
+<div class="absolute w-3 h-3 rounded-full bg-slate-500" style="left: 50.0%; top: 30.0%;" title="Fathom"></div><span class="absolute text-xs text-slate-600" style="left: 50.0%; top: calc(30.0% + 8px);">Fathom</span><div class="absolute w-3 h-3 rounded-full bg-slate-500" style="left: 70.0%; top: 20.0%;" title="Fluidly"></div><span class="absolute text-xs text-slate-600" style="left: 70.0%; top: calc(20.0% + 8px);">Fluidly</span><div class="absolute w-3 h-3 rounded-full bg-slate-500" style="left: 80.0%; top: 60.0%;" title="Xero"></div><span class="absolute text-xs text-slate-600" style="left: 80.0%; top: calc(60.0% + 8px);">Xero</span><div class="absolute w-3 h-3 rounded-full bg-slate-500" style="left: 60.0%; top: 50.0%;" title="MYOB"></div><span class="absolute text-xs text-slate-600" style="left: 60.0%; top: calc(50.0% + 8px);">MYOB</span><div class="absolute w-3 h-3 rounded-full bg-slate-500" style="left: 90.0%; top: 70.0%;" title="Cashflow M"></div><span class="absolute text-xs text-slate-600" style="left: 90.0%; top: calc(70.0% + 8px);">Cashflow M</span><div class="absolute w-3 h-3 rounded-full bg-indigo-500" style="left: 75.0%; top: 10.0%;" title="Our Produc"></div><span class="absolute text-xs text-indigo-600" style="left: 75.0%; top: calc(10.0% + 8px);">Our Produc</span>
+                    </div>
+                    <div class="text-center text-sm text-slate-500 mt-2">Ease of Use</div>
+<p class="mt-3 text-sm text-green-700 bg-green-50 p-2 rounded"><strong>White Space:</strong> Highly accurate, easy-to-use forecasting with automated credit line adjustments.</p></div></div>
+            <div class="overflow-x-auto mb-6">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-medium text-slate-600">Competitor</th>
+                            <th class="px-4 py-3 text-left font-medium text-slate-600">Strengths</th>
+                            <th class="px-4 py-3 text-left font-medium text-slate-600">Weaknesses</th>
+                            <th class="px-4 py-3 text-left font-medium text-slate-600">Threat</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+
+                        <tr>
+                            <td class="px-4 py-3 font-medium text-slate-800">Fathom</td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Comprehensive financial analysis features</li><li>Strong reporting capabilities</li></ul></td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Can be complex to set up initially</li><li>Potentially higher cost than simpler solutions</li></ul></td>
+                            <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs bg-orange-100 text-orange-700">significant</span></td>
+                        </tr>
+
+                        <tr>
+                            <td class="px-4 py-3 font-medium text-slate-800">Fluidly</td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>AI-powered forecasting for increased accuracy</li><li>Focus on automation to save time</li></ul></td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Relatively newer compared to incumbents</li><li>May require user training to maximize benefits</li></ul></td>
+                            <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs bg-orange-100 text-orange-700">significant</span></td>
+                        </tr>
+
+                        <tr>
+                            <td class="px-4 py-3 font-medium text-slate-800">Xero</td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Widely used and trusted accounting software</li><li>Large ecosystem of add-ons and integrations</li></ul></td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Cash flow forecasting is not as advanced as dedicated solutions</li><li>Can be expensive for larger businesses</li></ul></td>
+                            <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs bg-red-100 text-red-700">existential</span></td>
+                        </tr>
+
+                        <tr>
+                            <td class="px-4 py-3 font-medium text-slate-800">MYOB</td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Strong presence in the Australian market</li><li>Comprehensive accounting features</li></ul></td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Can be complex to use</li><li>Cash flow forecasting capabilities not as advanced as dedicated solutions</li></ul></td>
+                            <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs bg-orange-100 text-orange-700">significant</span></td>
+                        </tr>
+
+                        <tr>
+                            <td class="px-4 py-3 font-medium text-slate-800">Cashflow Manager</td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Very simple and easy to use</li><li>Affordable one-off price</li></ul></td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Limited features compared to more comprehensive solutions</li><li>Not suitable for larger or more complex businesses</li></ul></td>
+                            <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs bg-green-100 text-green-700">low</span></td>
+                        </tr>
+</tbody></table></div><div class="mb-6"><h3 class="font-semibold text-slate-800 mb-3">Moat Analysis</h3><div class="grid md:grid-cols-2 gap-4"><div class="bg-green-50 rounded-lg p-4"><h4 class="font-medium text-green-800 mb-2">Defensible</h4><ul class="list-disc list-inside text-slate-700"><li>AI-powered forecasting model: Hard to replicate the accuracy and insights without significant investment in data science and machine learning.</li><li>Bank partnerships: Exclusive agreements with banks create a barrier to entry for competitors.</li><li>Data network effects: As more SMEs use the platform, the AI model becomes more accurate, attracting more users and creating a virtuous cycle.</li></ul></div><div class="bg-amber-50 rounded-lg p-4"><h4 class="font-medium text-amber-800 mb-2">Not Defensible</h4><ul class="list-disc list-inside text-slate-700"><li>Integration with accounting software: Relatively easy for competitors to replicate.</li><li>Basic forecasting features: Competitors can add similar features to their existing platforms.</li></ul></div></div><p class="mt-3 text-sm text-slate-600"><strong>Strategy:</strong> Continuously improve the AI model with more data and advanced algorithms. Expand bank partnerships to increase market reach. Develop proprietary data sources to enhance forecasting accuracy.</p></div><div class="mb-4"><h3 class="font-semibold text-slate-800 mb-3">Competitive Gaps</h3><div class="space-y-2"><div class="bg-blue-50 rounded-lg p-3"><p class="text-slate-800">Automated credit line adjustments based on forecasts</p><p class="text-sm text-blue-700 mt-1"><strong>Our advantage:</strong> We can partner with banks to provide this integration and offer automated recommendations.</p></div><div class="bg-blue-50 rounded-lg p-3"><p class="text-slate-800">Confidence intervals for cash flow forecasts</p><p class="text-sm text-blue-700 mt-1"><strong>Our advantage:</strong> We can leverage AI and machine learning to provide confidence intervals, increasing trust in the forecasts.</p></div></div></div></div>
+        <div class="section-card" id="business-case">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Business Case</h2>
+<div class="mb-6 p-4 bg-green-50 rounded-lg border-l-4 border-green-500"><strong>Value Proposition:</strong> Intelligent cash flow forecasting for Australian SMEs. Get automated, accurate 90-day predictions to eliminate surprises and make confident financial decisions.</div><div class="mb-6"><h3 class="font-semibold text-slate-800 mb-3">Lean Canvas</h3><div class="grid md:grid-cols-3 gap-4"><div class="bg-slate-50 rounded-lg p-3"><h4 class="text-sm font-medium text-slate-600 mb-1">Problem</h4><p class="text-slate-800 text-sm">Time-consuming and error-prone manual cash flow forecasting using spreadsheets., Inaccurate forecasts leading to unexpected cash shortfalls and increa</p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="text-sm font-medium text-slate-600 mb-1">Solution</h4><p class="text-slate-800 text-sm">AI-powered 90-day cash flow predictions with confidence intervals, integrating with Xero, MYOB, and QuickBooks., Automated early warning alerts for po</p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="text-sm font-medium text-slate-600 mb-1">Unfair Advantage</h4><p class="text-slate-800 text-sm">Proprietary AI/ML models trained specifically on Australian SME financial data, combined with deep, compliant integration with the Australian Open Ban</p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="text-sm font-medium text-slate-600 mb-1">Customer Segments</h4><p class="text-slate-800 text-sm">Australian SMEs with $1M-$50M annual revenue who use cloud accounting software (Xero, MYOB, QuickBooks)., Relationship managers at Australian banks se</p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="text-sm font-medium text-slate-600 mb-1">Channels</h4><p class="text-slate-800 text-sm">Direct sales to Australian mid-tier banks (B2B2C model)., Partnerships with accounting and bookkeeping firms., Digital marketing targeting SME owners </p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="text-sm font-medium text-slate-600 mb-1">Key Metrics</h4><p class="text-slate-800 text-sm">Monthly Recurring Revenue (MRR), Customer Acquisition Cost (CAC), Customer Lifetime Value (LTV)</p></div></div></div><div class="grid md:grid-cols-2 gap-4"><div class="bg-indigo-50 rounded-lg p-4"><h4 class="font-medium text-indigo-800 mb-2">Year 1 Projection</h4><p class="text-slate-700 text-sm">[MODELED] Year 1 is focused on market entry and initial user acquisition, targeting 640 paying SME customers by EOY. Total Revenue: $433,000. Total Costs: $597,000 (including initial development). Net Loss: ($164,000).</p></div><div class="bg-indigo-50 rounded-lg p-4"><h4 class="font-medium text-indigo-800 mb-2">Year 3 Projection</h4><p class="text-slate-700 text-sm">[MODELED] Year 3 focuses on scaling through banking partnerships and direct channels, targeting 4,500 paying customers. Total Annual Revenue: $4,860,000. Gross Profit: $4,131,000 (at 85% margin). Estimated Net Profit: $1,500,000.</p></div></div><div class="mt-4 p-3 bg-amber-50 rounded-lg"><strong>Break-even:</strong> [MODELED] Based on the financial projections, break-even is expected to occur in Month 11. This requires acquiring approximately 450 paying SME customers with a blended Average Revenue Per User (ARPU)</div><div class="mb-4 inline-block px-4 py-2 bg-green-50 rounded-lg"><span class="font-medium text-green-800">✓ Unit Economics: HEALTHY</span></div><div class="grid md:grid-cols-4 gap-4 mt-4"><div class="bg-slate-50 rounded-lg p-4 text-center"><div class="text-xl font-bold text-slate-800">$800</div><div class="text-sm text-slate-600">CAC</div></div><div class="bg-slate-50 rounded-lg p-4 text-center"><div class="text-xl font-bold text-slate-800">$3,672</div><div class="text-sm text-slate-600">LTV</div></div><div class="bg-slate-50 rounded-lg p-4 text-center"><div class="text-xl font-bold text-slate-800">4.59x — above 3x is healthy [BENCHMARKED from search result 16, data from 2025]</div><div class="text-sm text-slate-600">LTV:CAC</div></div><div class="bg-slate-50 rounded-lg p-4 text-center"><div class="text-xl font-bold text-slate-800">8</div><div class="text-sm text-slate-600">Payback (months)</div></div></div><div class="mt-3 text-sm text-slate-600">Gross Margin: 85%</div><div class="mt-6"><h3 class="font-semibold text-slate-800 mb-3">Sensitivity Analysis</h3><div class="grid md:grid-cols-3 gap-4"><div class="bg-blue-50 rounded-lg p-4"><h4 class="font-medium text-blue-800 mb-2">Base Case</h4><div class="text-sm text-slate-700"><div>Y1 Revenue: $433,000</div><div>Y3 Revenue: $4,860,000</div></div></div><div class="bg-green-50 rounded-lg p-4"><h4 class="font-medium text-green-800 mb-2">Optimistic Case</h4><div class="text-sm text-slate-700"><div>Y1 Revenue: $550,000</div><div>Y3 Revenue: $6,500,000</div></div></div><div class="bg-red-50 rounded-lg p-4"><h4 class="font-medium text-red-800 mb-2">Pessimistic Case</h4><div class="text-sm text-slate-700"><div>Y1 Revenue: $310,000</div><div>Y3 Revenue: $2,900,000</div></div></div></div><div class="mt-3 p-3 bg-red-50 rounded-lg border-l-4 border-red-500"><strong class="text-red-800">Kill Conditions:</strong> <span class="text-slate-700">The business model becomes unviable if the LTV:CAC ratio drops below 2:1 for a sustained period (e.g., over 6 months). This could happen if CAC rises above $1,500 while churn remains at ~4%, extending the payback period beyond 18 months and making profitable growth unattainable with the current funding model.</span></div></div></div>
+        <div class="section-card" id="gtm">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Go-to-Market Strategy</h2>
+<div class="mb-6 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500"><strong>Approach:</strong> hybrid | <strong>Initial Segment:</strong> SMEs in the $1M-$5M annual revenue range, particularly those already using Xero, MYOB, or QuickBooks. | <strong>Beachhead Market:</strong> Sydney and Melbourne metropolitan areas, focusing on businesses in the retail and hospitality sectors. | <strong>Expansion Path:</strong> Expand to other major Australian cities (Brisbane, Perth, Adelaide)., Target SMEs in other industries (e.g., construction, professional services)., Incre</div>
+            <div class="mb-6">
+                <h3 class="font-semibold text-slate-800 mb-3">Channel Strategy</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-medium text-slate-600">Channel</th>
+                                <th class="px-4 py-3 text-left font-medium text-slate-600">Role</th>
+                                <th class="px-4 py-3 text-left font-medium text-slate-600">Expected CAC</th>
+                                <th class="px-4 py-3 text-left font-medium text-slate-600">Time to Scale</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+<tr><td class="px-4 py-3 font-medium text-slate-800">Direct Sales (Inside Sales)</td><td class="px-4 py-3 text-slate-600">acquisition</td><td class="px-4 py-3 text-green-600">$500-$1000</td><td class="px-4 py-3 text-slate-600">6-12 months</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">Partnerships with Accounting Software Providers (Xero, MYOB, QuickBooks)</td><td class="px-4 py-3 text-slate-600">acquisition</td><td class="px-4 py-3 text-green-600">$0 (revenue share model)</td><td class="px-4 py-3 text-slate-600">9-18 months</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">Content Marketing (Blog, Case Studies, Webinars)</td><td class="px-4 py-3 text-slate-600">acquisition</td><td class="px-4 py-3 text-green-600">$50-$200</td><td class="px-4 py-3 text-slate-600">3-6 months</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">Referral Program</td><td class="px-4 py-3 text-slate-600">acquisition</td><td class="px-4 py-3 text-green-600">$50 (incentive per referral)</td><td class="px-4 py-3 text-slate-600">1-3 months</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">Bank Relationship Manager Referrals</td><td class="px-4 py-3 text-slate-600">acquisition</td><td class="px-4 py-3 text-green-600">$0</td><td class="px-4 py-3 text-slate-600">6-12 months</td></tr></tbody></table></div><p class="mt-3 text-sm text-slate-600 italic">A multi-channel approach is crucial to reach the diverse SME market. Direct sales provide targeted outreach, while partnerships leverage existing networks and reduce CAC. Content marketing builds brand awareness and thought leadership, and a referral program incentivizes customer advocacy. Bank RM r</p></div><div class="mb-6"><h3 class="font-semibold text-slate-800 mb-3">Launch Plan</h3><div class="space-y-3"><div class="border rounded-lg p-4"><div class="flex justify-between items-center mb-2"><h4 class="font-medium text-slate-800">Phase 1: Beta Program</h4><span class="text-sm text-slate-500">3 months</span></div><ul class="list-disc list-inside text-sm text-slate-600"><li>Test platform functionality and usability with a small group of users (20-30 SMEs).</li><li>Gather feedback and iterate on the product based on user input.</li><li>Validate key assumptions about user needs and pain points.</li></ul></div><div class="border rounded-lg p-4"><div class="flex justify-between items-center mb-2"><h4 class="font-medium text-slate-800">Phase 2: Soft Launch</h4><span class="text-sm text-slate-500">3 months</span></div><ul class="list-disc list-inside text-sm text-slate-600"><li>Expand user base to a larger audience (100-200 SMEs).</li><li>Test marketing and sales strategies.</li><li>Monitor platform performance and scalability.</li></ul></div><div class="border rounded-lg p-4"><div class="flex justify-between items-center mb-2"><h4 class="font-medium text-slate-800">Phase 3: Public Launch</h4><span class="text-sm text-slate-500">Ongoing</span></div><ul class="list-disc list-inside text-sm text-slate-600"><li>Achieve significant market penetration and brand recognition.</li><li>Generate sustainable revenue growth.</li><li>Establish the platform as the leading cash flow forecasting solution for Australian SMEs.</li></ul></div></div></div><div><h3 class="font-semibold text-slate-800 mb-3">Growth Tactics</h3><div class="grid md:grid-cols-2 gap-3"><div class="bg-slate-50 rounded-lg p-3"><h4 class="font-medium text-slate-800">Implement a robust referral program incentivizing existing customers to refer new users.</h4><p class="text-sm text-slate-600"></p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="font-medium text-slate-800">Create high-quality content (blog posts, webinars, ebooks) addressing the cash flow management challenges of SMEs.</h4><p class="text-sm text-slate-600"></p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="font-medium text-slate-800">Offer free trials or freemium version of the platform to attract new users.</h4><p class="text-sm text-slate-600"></p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="font-medium text-slate-800">Run targeted advertising campaigns on social media and search engines.</h4><p class="text-sm text-slate-600"></p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="font-medium text-slate-800">Develop strategic partnerships with banks and accounting firms.</h4><p class="text-sm text-slate-600"></p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="font-medium text-slate-800">Implement customer onboarding and training programs to improve user activation and retention.</h4><p class="text-sm text-slate-600"></p></div></div></div></div>
+        <div class="section-card" id="financial-model">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Financial Model</h2>
+
+            <div class="mb-6">
+                <h3 class="font-semibold text-slate-800 mb-3">12-Month Projections</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="px-3 py-2 text-left">Month</th>
+                                <th class="px-3 py-2 text-right">Revenue</th>
+                                <th class="px-3 py-2 text-right">Costs</th>
+                                <th class="px-3 py-2 text-right">Customers</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+<tr><td class="px-3 py-2">1</td><td class="px-3 py-2 text-right text-green-600">1823.0</td><td class="px-3 py-2 text-right text-red-600">333490.0</td><td class="px-3 py-2 text-right">15</td></tr><tr><td class="px-3 py-2">2</td><td class="px-3 py-2 text-right text-green-600">4223.0</td><td class="px-3 py-2 text-right text-red-600">99741.0</td><td class="px-3 py-2 text-right">35</td></tr><tr><td class="px-3 py-2">3</td><td class="px-3 py-2 text-right text-green-600">7786.0</td><td class="px-3 py-2 text-right text-red-600">110051.0</td><td class="px-3 py-2 text-right">65</td></tr><tr><td class="px-3 py-2">4</td><td class="px-3 py-2 text-right text-green-600">12437.0</td><td class="px-3 py-2 text-right text-red-600">120864.0</td><td class="px-3 py-2 text-right">103</td></tr><tr><td class="px-3 py-2">5</td><td class="px-3 py-2 text-right text-green-600">18296.0</td><td class="px-3 py-2 text-right text-red-600">132145.0</td><td class="px-3 py-2 text-right">151</td></tr><tr><td class="px-3 py-2">6</td><td class="px-3 py-2 text-right text-green-600">25470.0</td><td class="px-3 py-2 text-right text-red-600">143929.0</td><td class="px-3 py-2 text-right">210</td></tr><tr><td class="px-3 py-2">7</td><td class="px-3 py-2 text-right text-green-600">34064.0</td><td class="px-3 py-2 text-right text-red-600">156221.0</td><td class="px-3 py-2 text-right">281</td></tr><tr><td class="px-3 py-2">8</td><td class="px-3 py-2 text-right text-green-600">44183.0</td><td class="px-3 py-2 text-right text-red-600">169025.0</td><td class="px-3 py-2 text-right">365</td></tr><tr><td class="px-3 py-2">9</td><td class="px-3 py-2 text-right text-green-600">55931.0</td><td class="px-3 py-2 text-right text-red-600">182346.0</td><td class="px-3 py-2 text-right">462</td></tr><tr><td class="px-3 py-2">10</td><td class="px-3 py-2 text-right text-green-600">69415.0</td><td class="px-3 py-2 text-right text-red-600">196189.0</td><td class="px-3 py-2 text-right">574</td></tr><tr><td class="px-3 py-2">11</td><td class="px-3 py-2 text-right text-green-600">84740.0</td><td class="px-3 py-2 text-right text-red-600">210558.0</td><td class="px-3 py-2 text-right">701</td></tr><tr><td class="px-3 py-2">12</td><td class="px-3 py-2 text-right text-green-600">101999.0</td><td class="px-3 py-2 text-right text-red-600">225458.0</td><td class="px-3 py-2 text-right">843</td></tr></tbody></table></div></div><div class="bg-amber-50 rounded-lg p-4"><h3 class="font-semibold text-slate-800">Funding Required</h3><p class="text-2xl font-bold text-amber-600">$13.25M to reach sustained profitability</p></div></div>
+        <div class="section-card" id="prd">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Product Requirements</h2>
+            
+<div class="space-y-4"><div class="border rounded-lg p-4"><h3 class="font-semibold text-slate-800 mb-3">Data Integration & Processing</h3><div class="space-y-2"><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-001</span><span class="text-slate-700 flex-1">Connect to Accounting Software</span><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">critical</span></div><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-002</span><span class="text-slate-700 flex-1">Import Bank Transaction Data</span><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">critical</span></div><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-003</span><span class="text-slate-700 flex-1">Data Transformation and Storage</span><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">critical</span></div></div></div><div class="border rounded-lg p-4"><h3 class="font-semibold text-slate-800 mb-3">Cash Flow Forecasting</h3><div class="space-y-2"><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-004</span><span class="text-slate-700 flex-1">Generate Cash Flow Forecast</span><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">critical</span></div><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-005</span><span class="text-slate-700 flex-1">Display Confidence Intervals</span><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">high</span></div><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-006</span><span class="text-slate-700 flex-1">AI Model Training</span><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">high</span></div></div></div><div class="border rounded-lg p-4"><h3 class="font-semibold text-slate-800 mb-3">Alerting and Scenario Modeling</h3><div class="space-y-2"><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-007</span><span class="text-slate-700 flex-1">Receive Early Warning Alerts</span><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">high</span></div><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-008</span><span class="text-slate-700 flex-1">Model Business Scenarios</span><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">high</span></div></div></div><div class="border rounded-lg p-4"><h3 class="font-semibold text-slate-800 mb-3">User Management and Security</h3><div class="space-y-2"><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-009</span><span class="text-slate-700 flex-1">Secure User Login</span><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">critical</span></div><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-010</span><span class="text-slate-700 flex-1">Role-Based Access Control</span><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">critical</span></div></div></div></div></div>
+        <div class="section-card" id="tech-architecture">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Technical Architecture</h2>
+<div class="mb-4 p-4 bg-indigo-50 rounded-lg border-l-4 border-indigo-500"><strong>Architecture Style:</strong> Microservices. This architecture allows for independent scaling, deployment, and fault isolation of different components. It aligns well with the need for integrating with various accounting software and banking APIs, as each integration can be a separate service. It also enables different teams to work on different parts of the system concurrently, reducing time-to-market. While microservices introduce complexity in terms of service discovery and inter-service communication, the benefits of scalability and maintainability outweigh the costs for a platform with multiple integrations and evolving business requirements.</div><p class="text-slate-700 mb-6">The architecture consists of several microservices, each responsible for a specific function. The API Gateway acts as the entry point for all external requests, routing them to the appropriate service. The Authentication Service handles user authentication and authorization. The Accounting Integration Services are responsible for connecting to Xero, MYOB, and QuickBooks. The Bank Integration Service connects to bank transaction data via Open Banking (CDR). The Cash Flow Forecasting Service uses </p>
+            <div class="mb-6">
+                <h3 class="font-semibold text-slate-800 mb-3">System Architecture</h3>
+                <div class="bg-white border rounded-lg p-4">
+                    <div class="mermaid">graph TB
+    subgraph Digital Channels
+        WEB[Web Portal]
+    end
+    subgraph Integration Layer
+        API[API Gateway]
+        AUTH[Auth Service]
+    end
+    subgraph Core Services
+        ACC_XERO[Accounting Integration - Xero]
+        ACC_MYOB[Accounting Integration - MYOB]
+        ACC_QB[Accounting Integration - QuickBooks]
+        BANK_CDR[Bank Integration - CDR]
+        FORECAST[Cash Flow Forecasting]
+        ALERT[Alerting Service]
+        SCENARIO[Scenario Modeling]
+    end
+    subgraph Data Layer
+        DB[(Primary DB)]
+        CACHE[(Redis Cache)]
+        QUEUE[Message Queue]
+    end
+    subgraph External Services
+        XERO[Xero API]
+        MYOB[MYOB API]
+        QB[QuickBooks API]
+        CDR[CDR API]
+    end
+
+    WEB --> API
+    API --> AUTH
+    API --> ACC_XERO
+    API --> ACC_MYOB
+    API --> ACC_QB
+    API --> BANK_CDR
+    API --> FORECAST
+    API --> SCENARIO
+    FORECAST --> ALERT
+
+    ACC_XERO --> XERO
+    ACC_MYOB --> MYOB
+    ACC_QB --> QB
+    BANK_CDR --> CDR
+
+    ACC_XERO --> QUEUE
+    ACC_MYOB --> QUEUE
+    ACC_QB --> QUEUE
+    BANK_CDR --> QUEUE
+    FORECAST --> QUEUE
+    ALERT --> QUEUE
+    SCENARIO --> QUEUE
+
+    QUEUE --> DB
+    FORECAST --> CACHE</div>
+                </div>
+            </div>
+<div class="mb-6"><h3 class="font-semibold text-slate-800 mb-3">System Components</h3><div class="grid md:grid-cols-2 gap-4"><div class="border rounded-lg p-4"><h4 class="font-medium text-slate-800">API Gateway</h4><p class="text-sm text-slate-600 mt-1">The API Gateway acts as the entry point for all external requests to the platform. It routes requests to the appropriate microservice, handles authent</p></div><div class="border rounded-lg p-4"><h4 class="font-medium text-slate-800">Authentication Service</h4><p class="text-sm text-slate-600 mt-1">The Authentication Service handles user authentication and authorization. It verifies user credentials, generates JWT tokens, and manages user roles a</p></div><div class="border rounded-lg p-4"><h4 class="font-medium text-slate-800">Cash Flow Forecasting Service</h4><p class="text-sm text-slate-600 mt-1">The Cash Flow Forecasting Service generates cash flow predictions based on historical data, accounting data, and bank transaction data. It uses AI/ML </p></div><div class="border rounded-lg p-4"><h4 class="font-medium text-slate-800">Accounting Integration Services</h4><p class="text-sm text-slate-600 mt-1">The Accounting Integration Services connect to Xero, MYOB, and QuickBooks. They retrieve accounting data, such as invoices, bills, and bank transactio</p></div><div class="border rounded-lg p-4"><h4 class="font-medium text-slate-800">Bank Integration Service (CDR)</h4><p class="text-sm text-slate-600 mt-1">The Bank Integration Service connects to bank transaction data via Open Banking (CDR). It retrieves transaction data from various banks and transforms</p></div><div class="border rounded-lg p-4"><h4 class="font-medium text-slate-800">Alerting Service</h4><p class="text-sm text-slate-600 mt-1">The Alerting Service sends early warning alerts for potential cash shortfalls. It monitors forecast results and sends alerts via email and SMS.</p></div><div class="border rounded-lg p-4"><h4 class="font-medium text-slate-800">Scenario Modeling Service</h4><p class="text-sm text-slate-600 mt-1">The Scenario Modeling Service allows users to model business decisions and visualize the impact on future cash flow.</p></div></div></div><div class="mb-6"><h3 class="font-semibold text-slate-800 mb-3">Technology Stack</h3><div class="flex flex-wrap gap-2"><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">React</span><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">Python with FastAPI</span><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">PostgreSQL</span><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">Redis</span><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">RabbitMQ</span><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">AWS (Amazon Web Services)</span><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">GitHub Actions</span><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">Prometheus and Grafana</span><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">Auth0</span></div></div><div class="mb-6"><h3 class="font-semibold text-slate-800 mb-3">Integration Points</h3><div class="space-y-2"><div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg"><span class="font-medium text-slate-800">Xero Integration</span><span class="text-slate-400">→</span><span class="text-slate-600"></span></div><div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg"><span class="font-medium text-slate-800">MYOB Integration</span><span class="text-slate-400">→</span><span class="text-slate-600"></span></div><div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg"><span class="font-medium text-slate-800">QuickBooks Integration</span><span class="text-slate-400">→</span><span class="text-slate-600"></span></div><div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg"><span class="font-medium text-slate-800">Open Banking (CDR) Integration</span><span class="text-slate-400">→</span><span class="text-slate-600"></span></div><div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg"><span class="font-medium text-slate-800">Auth0 Integration</span><span class="text-slate-400">→</span><span class="text-slate-600"></span></div><div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg"><span class="font-medium text-slate-800">Email Service Integration</span><span class="text-slate-400">→</span><span class="text-slate-600"></span></div></div></div></div>
+        <div class="section-card" id="regulatory">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Regulatory & Compliance</h2>
+            <div class="mb-4 px-4 py-2 bg-amber-50 rounded-lg inline-block">
+                <span class="font-medium text-amber-800">Risk Level: RISKLEVEL.MEDIUM</span>
+            </div>
+<div class="space-y-2"><div class="border-l-4 border-indigo-400 bg-indigo-50 p-3 rounded-r text-slate-700">APRA Prudential Standards</div><div class="border-l-4 border-indigo-400 bg-indigo-50 p-3 rounded-r text-slate-700">Consumer Data Right (CDR)</div><div class="border-l-4 border-indigo-400 bg-indigo-50 p-3 rounded-r text-slate-700">Privacy Act 1988 (including the Australian Privacy Principles)</div><div class="border-l-4 border-indigo-400 bg-indigo-50 p-3 rounded-r text-slate-700">Australian Consumer Law (ACL)</div><div class="border-l-4 border-indigo-400 bg-indigo-50 p-3 rounded-r text-slate-700">Financial Accountability Regime Act 2023 (FAR)</div><div class="border-l-4 border-indigo-400 bg-indigo-50 p-3 rounded-r text-slate-700">Anti-Money Laundering and Counter-Terrorism Financing Act 2006 (AML/CTF Act)</div></div></div>
+        <div class="section-card" id="risk">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Risk Assessment</h2>
+            <div class="mb-4 px-4 py-2 bg-amber-50 rounded-lg inline-block">
+                <span class="font-medium text-amber-800">Overall: MEDIUM</span>
+            </div>
+</div>
+        <div class="section-card" id="wireframes">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Wireframes</h2>
+            <p class='text-slate-600 mb-4'>These user flows illustrate the key actions a user takes to connect data sources, view cash flow forecasts, receive alerts, and model different business scenarios.</p>
+<div class="mb-6"><h3 class="font-semibold text-slate-800 mb-3">User Flows</h3><div class="space-y-4">
+                <div class="bg-white border rounded-lg p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="font-medium text-slate-800">Sarah Chen: Connecting to Accounting Software and Viewing Forecast</h4>
+                        <span class='text-sm text-slate-500'>Persona: Sarah Chen</span>
+                    </div>
+<div class="mermaid">flowchart TD
+    A[Sarah opens Data Integration & Processing S1] --> B{Connected to Xero?}
+    B -->|No| C[Click 'Connect to Xero' button S1]
+    C --> D[Xero Authentication Screen (External)]
+    D --> E[Return to Data Integration & Processing S1]
+    E --> F[Click 'Cash Flow Forecasting' in Nav S2]
+    F --> G[View 90-Day Cash Flow S2]</div><div class="mt-2 flex gap-1"><span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded text-xs">S1</span><span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded text-xs">S2</span></div><p class="mt-2 text-sm text-slate-600 italic">Happy path for connecting to Xero and viewing the cash flow forecast.</p></div>
+                <div class="bg-white border rounded-lg p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="font-medium text-slate-800">Sarah Chen: Receiving Cash Shortfall Alert and Modeling a Scenario</h4>
+                        <span class='text-sm text-slate-500'>Persona: Sarah Chen</span>
+                    </div>
+<div class="mermaid">flowchart TD
+    A[Sarah opens Alerting & Scenario Modeling S3] --> B{Alerts Present?}
+    B -->|Yes| C[View Cash Shortfall Alert S3]
+    C --> D[Enter Marketing Campaign Cost in Scenario Modeling S3]
+    D --> E[Click 'Run Scenario' S3]
+    E --> F[View Updated Cash Flow Forecast (Implied - Future Screen)]</div><div class="mt-2 flex gap-1"><span class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded text-xs">S3</span></div><p class="mt-2 text-sm text-slate-600 italic">Flow for receiving an alert and using scenario modeling. Assumes a future screen to display the updated forecast.</p></div></div></div><div class="grid md:grid-cols-2 gap-6">
+                <div class="border rounded-lg overflow-hidden bg-white">
+                    <div class="bg-slate-100 px-4 py-2 border-b flex justify-between items-center">
+                        <div>
+                            <span class="font-mono text-sm text-slate-500">S1</span>
+                            <span class="font-medium text-slate-800 ml-2">Data Integration & Processing</span>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-sm text-slate-600 mb-3">This screen allows users to connect to accounting software and import bank transaction data.</p>
+<div class="mb-3"><p class="text-xs font-medium text-slate-500 uppercase mb-1">Components</p><div class="flex flex-wrap gap-1"><span class="px-2 py-0.5 bg-slate-100 rounded text-xs text-slate-600">Header with navigation</span><span class="px-2 py-0.5 bg-slate-100 rounded text-xs text-slate-600">Accounting software connection</span><span class="px-2 py-0.5 bg-slate-100 rounded text-xs text-slate-600">Bank data import</span></div></div>
+                        <div class="border rounded-lg overflow-hidden bg-gray-50">
+                            <iframe id="wireframe-S1" class="w-full" style="height: 300px; border: none;"></iframe>
+                        </div>
+                        <script>
+                            (function() {
+                                const code = `
+function DataIntegration() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow">
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900">Data Integration</h1>
+          <div className="space-x-4 flex items-center">
+            <button className="text-gray-400 hover:text-gray-600"><Search /></button>
+            <button className="text-gray-400 hover:text-gray-600"><Bell /></button>
+            <button className="text-gray-400 hover:text-gray-600"><Settings /></button>
+          </div>
+        </div>
+      </header>
+      <main>
+        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="space-y-4">
+            <div className="bg-white shadow overflow-hidden sm:rounded-md">
+              <div className="bg-white px-4 py-5 sm:p-6">
+                <h3 className="text-lg font-medium text-gray-900">Connect Accounting Software</h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-600">Connect to Xero, MYOB, or QuickBooks to automatically import your accounting data.</p>
+                <div className="mt-4">
+                  <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-900 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"> {/* onClick: connectToAccountingSoftware() */}
+                    <Plus className="mr-2 h-5 w-5" /> Connect to Xero
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div className="bg-white shadow overflow-hidden sm:rounded-md">
+              <div className="bg-white px-4 py-5 sm:p-6">
+                <h3 className="text-lg font-medium text-gray-900">Import Bank Transaction Data</h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-600">Import your bank transaction data to enrich your cash flow forecast.</p>
+                <div className="mt-4">
+                  <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-900 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"> {/* onClick: importBankData() */}
+                    <Plus className="mr-2 h-5 w-5" /> Import Bank Data
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}`;
+                                const componentName = "DataIntegration";
+                                const iframe = document.getElementById("wireframe-S1");
+                                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                                doc.open();
+                                doc.write(`
+                                    <!DOCTYPE html>
+                                    <html>
+                                    <head>
+                                        <script src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
+                                        <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
+                                        <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
+                                        <script src="https://cdn.tailwindcss.com"><\/script>
+                                        <style>body { margin: 0; padding: 8px; font-family: system-ui, sans-serif; background: #f9fafb; } .error { color: #991b1b; background: #fee2e2; padding: 16px; border-radius: 8px; }</style>
+                                    </head>
+                                    <body>
+                                        <div id="root"></div>
+                                        <script type="text/babel">
+                                            // Simple SVG icon components (Lucide-style)
+                                            const createIcon = (paths) => ({ className, ...props }) =>
+                                                React.createElement('svg', {
+                                                    xmlns: 'http://www.w3.org/2000/svg',
+                                                    width: 24, height: 24, viewBox: '0 0 24 24',
+                                                    fill: 'none', stroke: 'currentColor', strokeWidth: 2,
+                                                    strokeLinecap: 'round', strokeLinejoin: 'round',
+                                                    className, ...props
+                                                }, ...paths.map((d, i) => React.createElement('path', { key: i, d })));
+
+                                            const Search = createIcon(['M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z']);
+                                            const Bell = createIcon(['M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9', 'M13.73 21a2 2 0 01-3.46 0']);
+                                            const Settings = createIcon(['M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42']);
+                                            const Plus = createIcon(['M12 5v14', 'M5 12h14']);
+                                            const Filter = createIcon(['M22 3H2l8 9.46V19l4 2v-8.54L22 3z']);
+                                            const BarChart3 = createIcon(['M18 20V10', 'M12 20V4', 'M6 20v-6']);
+                                            const ChevronRight = createIcon(['M9 18l6-6-6-6']);
+                                            const ChevronDown = createIcon(['M6 9l6 6 6-6']);
+                                            const ChevronUp = createIcon(['M18 15l-6-6-6 6']);
+                                            const ChevronLeft = createIcon(['M15 18l-6-6 6-6']);
+                                            const AlertTriangle = createIcon(['M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z', 'M12 9v4', 'M12 17h.01']);
+                                            const TrendingUp = createIcon(['M23 6l-9.5 9.5-5-5L1 18']);
+                                            const TrendingDown = createIcon(['M23 18l-9.5-9.5-5 5L1 6']);
+                                            const ArrowRight = createIcon(['M5 12h14', 'M12 5l7 7-7 7']);
+                                            const ArrowLeft = createIcon(['M19 12H5', 'M12 19l-7-7 7-7']);
+                                            const Check = createIcon(['M20 6L9 17l-5-5']);
+                                            const X = createIcon(['M18 6L6 18', 'M6 6l12 12']);
+                                            const Menu = createIcon(['M3 12h18', 'M3 6h18', 'M3 18h18']);
+                                            const Home = createIcon(['M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z']);
+                                            const User = createIcon(['M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2', 'M12 3a4 4 0 100 8 4 4 0 000-8z']);
+                                            const Users = createIcon(['M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2', 'M23 21v-2a4 4 0 00-3-3.87', 'M16 3.13a4 4 0 010 7.75', 'M9 7a4 4 0 100 8 4 4 0 000-8z']);
+                                            const Mail = createIcon(['M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z', 'M22 6l-10 7L2 6']);
+                                            const Calendar = createIcon(['M19 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2z', 'M16 2v4', 'M8 2v4', 'M3 10h18']);
+                                            const Clock = createIcon(['M12 2a10 10 0 100 20 10 10 0 000-20z', 'M12 6v6l4 2']);
+                                            const Edit = createIcon(['M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7', 'M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z']);
+                                            const Trash = createIcon(['M3 6h18', 'M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2']);
+                                            const Save = createIcon(['M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z', 'M17 21v-8H7v8', 'M7 3v5h8']);
+                                            const Download = createIcon(['M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4', 'M7 10l5 5 5-5', 'M12 15V3']);
+                                            const Upload = createIcon(['M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4', 'M17 8l-5-5-5 5', 'M12 3v12']);
+                                            const RefreshCw = createIcon(['M23 4v6h-6', 'M1 20v-6h6', 'M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15']);
+                                            const Eye = createIcon(['M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z', 'M12 9a3 3 0 100 6 3 3 0 000-6z']);
+                                            const Info = createIcon(['M12 2a10 10 0 100 20 10 10 0 000-20z', 'M12 16v-4', 'M12 8h.01']);
+                                            const AlertCircle = createIcon(['M12 2a10 10 0 100 20 10 10 0 000-20z', 'M12 8v4', 'M12 16h.01']);
+                                            const CheckCircle = createIcon(['M22 11.08V12a10 10 0 11-5.93-9.14', 'M22 4L12 14.01l-3-3']);
+                                            const DollarSign = createIcon(['M12 1v22', 'M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6']);
+                                            const CreditCard = createIcon(['M21 4H3a2 2 0 00-2 2v12a2 2 0 002 2h18a2 2 0 002-2V6a2 2 0 00-2-2z', 'M1 10h22']);
+                                            const PieChart = createIcon(['M21.21 15.89A10 10 0 118 2.83', 'M22 12A10 10 0 0012 2v10z']);
+                                            const LineChart = createIcon(['M23 6l-9.5 9.5-5-5L1 18']);
+                                            const Activity = createIcon(['M22 12h-4l-3 9L9 3l-3 9H2']);
+                                            const Zap = createIcon(['M13 2L3 14h9l-1 8 10-12h-9l1-8z']);
+                                            const Wallet = createIcon(['M21 5H3a2 2 0 00-2 2v10a2 2 0 002 2h18a2 2 0 002-2V7a2 2 0 00-2-2z', 'M1 10h22']);
+                                            const Phone = createIcon(['M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z']);
+                                            const Star = createIcon(['M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z']);
+                                            const Heart = createIcon(['M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z']);
+                                            const ExternalLink = createIcon(['M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6', 'M15 3h6v6', 'M10 14L21 3']);
+                                            const Link = createIcon(['M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71', 'M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71']);
+                                            const MoreHorizontal = createIcon(['M12 13a1 1 0 100-2 1 1 0 000 2z', 'M19 13a1 1 0 100-2 1 1 0 000 2z', 'M5 13a1 1 0 100-2 1 1 0 000 2z']);
+                                            const Loader = createIcon(['M12 2v4', 'M12 18v4', 'M4.93 4.93l2.83 2.83', 'M16.24 16.24l2.83 2.83', 'M2 12h4', 'M18 12h4', 'M4.93 19.07l2.83-2.83', 'M16.24 7.76l2.83-2.83']);
+                                            const Play = createIcon(['M5 3l14 9-14 9V3z']);
+                                            const Pause = createIcon(['M6 4h4v16H6z', 'M14 4h4v16h-4z']);
+                                            const Copy = createIcon(['M20 9h-9a2 2 0 00-2 2v9a2 2 0 002 2h9a2 2 0 002-2v-9a2 2 0 00-2-2z', 'M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1']);
+                                            const Share = createIcon(['M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8', 'M16 6l-4-4-4 4', 'M12 2v13']);
+                                            const Lock = createIcon(['M19 11H5a2 2 0 00-2 2v7a2 2 0 002 2h14a2 2 0 002-2v-7a2 2 0 00-2-2z', 'M7 11V7a5 5 0 0110 0v4']);
+                                            const Unlock = createIcon(['M19 11H5a2 2 0 00-2 2v7a2 2 0 002 2h14a2 2 0 002-2v-7a2 2 0 00-2-2z', 'M7 11V7a5 5 0 019.9-1']);
+
+                                            try {
+                                                // Define the component
+                                                ${code}
+                                                // Render it
+                                                const root = ReactDOM.createRoot(document.getElementById('root'));
+                                                root.render(React.createElement(${componentName}));
+                                            } catch(e) {
+                                                document.getElementById('root').innerHTML = '<div class="error"><strong>Render Error:</strong> ' + e.message + '</div>';
+                                                console.error('Wireframe error:', e);
+                                            }
+                                        <\/script>
+                                    </body>
+                                    </html>
+                                `);
+                                doc.close();
+                            })();
+                        </script>
+</div></div>
+                <div class="border rounded-lg overflow-hidden bg-white">
+                    <div class="bg-slate-100 px-4 py-2 border-b flex justify-between items-center">
+                        <div>
+                            <span class="font-mono text-sm text-slate-500">S2</span>
+                            <span class="font-medium text-slate-800 ml-2">Cash Flow Forecasting</span>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-sm text-slate-600 mb-3">This screen displays the cash flow forecast with confidence intervals.</p>
+<div class="mb-3"><p class="text-xs font-medium text-slate-500 uppercase mb-1">Components</p><div class="flex flex-wrap gap-1"><span class="px-2 py-0.5 bg-slate-100 rounded text-xs text-slate-600">Cash flow chart</span><span class="px-2 py-0.5 bg-slate-100 rounded text-xs text-slate-600">Confidence intervals</span><span class="px-2 py-0.5 bg-slate-100 rounded text-xs text-slate-600">Key metrics</span></div></div>
+                        <div class="border rounded-lg overflow-hidden bg-gray-50">
+                            <iframe id="wireframe-S2" class="w-full" style="height: 300px; border: none;"></iframe>
+                        </div>
+                        <script>
+                            (function() {
+                                const code = `
+function CashFlowForecasting() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow">
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900">Cash Flow Forecast</h1>
+          <div className="space-x-4 flex items-center">
+            <button className="text-gray-400 hover:text-gray-600"><Search /></button>
+            <button className="text-gray-400 hover:text-gray-600"><Bell /></button>
+            <button className="text-gray-400 hover:text-gray-600"><Settings /></button>
+          </div>
+        </div>
+      </header>
+      <main>
+        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="space-y-4">
+            <div className="bg-white shadow overflow-hidden sm:rounded-md">
+              <div className="bg-white px-4 py-5 sm:p-6">
+                <h3 className="text-lg font-medium text-gray-900">90-Day Cash Flow</h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-600">Predicted cash flow for Melbourne Plumbing Co. with 95% confidence intervals.</p>
+                <div className="mt-4">
+                  <BarChart3 className="h-64 w-full text-gray-400" /> {/* Placeholder for chart */}
+                </div>
+              </div>
+            </div>
+            <div className="bg-white shadow overflow-hidden sm:rounded-md">
+              <div className="bg-white px-4 py-5 sm:p-6">
+                <h3 className="text-lg font-medium text-gray-900">Key Metrics</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Projected Ending Balance</p>
+                    <p className="text-3xl font-bold text-gray-900">$67,500</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Days Cash on Hand</p>
+                    <p className="text-3xl font-bold text-gray-900">45 Days</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Burn Rate</p>
+                    <p className="text-3xl font-bold text-gray-900">$1,500/Day</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}`;
+                                const componentName = "CashFlowForecasting";
+                                const iframe = document.getElementById("wireframe-S2");
+                                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                                doc.open();
+                                doc.write(`
+                                    <!DOCTYPE html>
+                                    <html>
+                                    <head>
+                                        <script src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
+                                        <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
+                                        <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
+                                        <script src="https://cdn.tailwindcss.com"><\/script>
+                                        <style>body { margin: 0; padding: 8px; font-family: system-ui, sans-serif; background: #f9fafb; } .error { color: #991b1b; background: #fee2e2; padding: 16px; border-radius: 8px; }</style>
+                                    </head>
+                                    <body>
+                                        <div id="root"></div>
+                                        <script type="text/babel">
+                                            // Simple SVG icon components (Lucide-style)
+                                            const createIcon = (paths) => ({ className, ...props }) =>
+                                                React.createElement('svg', {
+                                                    xmlns: 'http://www.w3.org/2000/svg',
+                                                    width: 24, height: 24, viewBox: '0 0 24 24',
+                                                    fill: 'none', stroke: 'currentColor', strokeWidth: 2,
+                                                    strokeLinecap: 'round', strokeLinejoin: 'round',
+                                                    className, ...props
+                                                }, ...paths.map((d, i) => React.createElement('path', { key: i, d })));
+
+                                            const Search = createIcon(['M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z']);
+                                            const Bell = createIcon(['M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9', 'M13.73 21a2 2 0 01-3.46 0']);
+                                            const Settings = createIcon(['M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42']);
+                                            const Plus = createIcon(['M12 5v14', 'M5 12h14']);
+                                            const Filter = createIcon(['M22 3H2l8 9.46V19l4 2v-8.54L22 3z']);
+                                            const BarChart3 = createIcon(['M18 20V10', 'M12 20V4', 'M6 20v-6']);
+                                            const ChevronRight = createIcon(['M9 18l6-6-6-6']);
+                                            const ChevronDown = createIcon(['M6 9l6 6 6-6']);
+                                            const ChevronUp = createIcon(['M18 15l-6-6-6 6']);
+                                            const ChevronLeft = createIcon(['M15 18l-6-6 6-6']);
+                                            const AlertTriangle = createIcon(['M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z', 'M12 9v4', 'M12 17h.01']);
+                                            const TrendingUp = createIcon(['M23 6l-9.5 9.5-5-5L1 18']);
+                                            const TrendingDown = createIcon(['M23 18l-9.5-9.5-5 5L1 6']);
+                                            const ArrowRight = createIcon(['M5 12h14', 'M12 5l7 7-7 7']);
+                                            const ArrowLeft = createIcon(['M19 12H5', 'M12 19l-7-7 7-7']);
+                                            const Check = createIcon(['M20 6L9 17l-5-5']);
+                                            const X = createIcon(['M18 6L6 18', 'M6 6l12 12']);
+                                            const Menu = createIcon(['M3 12h18', 'M3 6h18', 'M3 18h18']);
+                                            const Home = createIcon(['M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z']);
+                                            const User = createIcon(['M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2', 'M12 3a4 4 0 100 8 4 4 0 000-8z']);
+                                            const Users = createIcon(['M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2', 'M23 21v-2a4 4 0 00-3-3.87', 'M16 3.13a4 4 0 010 7.75', 'M9 7a4 4 0 100 8 4 4 0 000-8z']);
+                                            const Mail = createIcon(['M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z', 'M22 6l-10 7L2 6']);
+                                            const Calendar = createIcon(['M19 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2z', 'M16 2v4', 'M8 2v4', 'M3 10h18']);
+                                            const Clock = createIcon(['M12 2a10 10 0 100 20 10 10 0 000-20z', 'M12 6v6l4 2']);
+                                            const Edit = createIcon(['M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7', 'M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z']);
+                                            const Trash = createIcon(['M3 6h18', 'M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2']);
+                                            const Save = createIcon(['M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z', 'M17 21v-8H7v8', 'M7 3v5h8']);
+                                            const Download = createIcon(['M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4', 'M7 10l5 5 5-5', 'M12 15V3']);
+                                            const Upload = createIcon(['M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4', 'M17 8l-5-5-5 5', 'M12 3v12']);
+                                            const RefreshCw = createIcon(['M23 4v6h-6', 'M1 20v-6h6', 'M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15']);
+                                            const Eye = createIcon(['M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z', 'M12 9a3 3 0 100 6 3 3 0 000-6z']);
+                                            const Info = createIcon(['M12 2a10 10 0 100 20 10 10 0 000-20z', 'M12 16v-4', 'M12 8h.01']);
+                                            const AlertCircle = createIcon(['M12 2a10 10 0 100 20 10 10 0 000-20z', 'M12 8v4', 'M12 16h.01']);
+                                            const CheckCircle = createIcon(['M22 11.08V12a10 10 0 11-5.93-9.14', 'M22 4L12 14.01l-3-3']);
+                                            const DollarSign = createIcon(['M12 1v22', 'M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6']);
+                                            const CreditCard = createIcon(['M21 4H3a2 2 0 00-2 2v12a2 2 0 002 2h18a2 2 0 002-2V6a2 2 0 00-2-2z', 'M1 10h22']);
+                                            const PieChart = createIcon(['M21.21 15.89A10 10 0 118 2.83', 'M22 12A10 10 0 0012 2v10z']);
+                                            const LineChart = createIcon(['M23 6l-9.5 9.5-5-5L1 18']);
+                                            const Activity = createIcon(['M22 12h-4l-3 9L9 3l-3 9H2']);
+                                            const Zap = createIcon(['M13 2L3 14h9l-1 8 10-12h-9l1-8z']);
+                                            const Wallet = createIcon(['M21 5H3a2 2 0 00-2 2v10a2 2 0 002 2h18a2 2 0 002-2V7a2 2 0 00-2-2z', 'M1 10h22']);
+                                            const Phone = createIcon(['M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z']);
+                                            const Star = createIcon(['M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z']);
+                                            const Heart = createIcon(['M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z']);
+                                            const ExternalLink = createIcon(['M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6', 'M15 3h6v6', 'M10 14L21 3']);
+                                            const Link = createIcon(['M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71', 'M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71']);
+                                            const MoreHorizontal = createIcon(['M12 13a1 1 0 100-2 1 1 0 000 2z', 'M19 13a1 1 0 100-2 1 1 0 000 2z', 'M5 13a1 1 0 100-2 1 1 0 000 2z']);
+                                            const Loader = createIcon(['M12 2v4', 'M12 18v4', 'M4.93 4.93l2.83 2.83', 'M16.24 16.24l2.83 2.83', 'M2 12h4', 'M18 12h4', 'M4.93 19.07l2.83-2.83', 'M16.24 7.76l2.83-2.83']);
+                                            const Play = createIcon(['M5 3l14 9-14 9V3z']);
+                                            const Pause = createIcon(['M6 4h4v16H6z', 'M14 4h4v16h-4z']);
+                                            const Copy = createIcon(['M20 9h-9a2 2 0 00-2 2v9a2 2 0 002 2h9a2 2 0 002-2v-9a2 2 0 00-2-2z', 'M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1']);
+                                            const Share = createIcon(['M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8', 'M16 6l-4-4-4 4', 'M12 2v13']);
+                                            const Lock = createIcon(['M19 11H5a2 2 0 00-2 2v7a2 2 0 002 2h14a2 2 0 002-2v-7a2 2 0 00-2-2z', 'M7 11V7a5 5 0 0110 0v4']);
+                                            const Unlock = createIcon(['M19 11H5a2 2 0 00-2 2v7a2 2 0 002 2h14a2 2 0 002-2v-7a2 2 0 00-2-2z', 'M7 11V7a5 5 0 019.9-1']);
+
+                                            try {
+                                                // Define the component
+                                                ${code}
+                                                // Render it
+                                                const root = ReactDOM.createRoot(document.getElementById('root'));
+                                                root.render(React.createElement(${componentName}));
+                                            } catch(e) {
+                                                document.getElementById('root').innerHTML = '<div class="error"><strong>Render Error:</strong> ' + e.message + '</div>';
+                                                console.error('Wireframe error:', e);
+                                            }
+                                        <\/script>
+                                    </body>
+                                    </html>
+                                `);
+                                doc.close();
+                            })();
+                        </script>
+</div></div>
+                <div class="border rounded-lg overflow-hidden bg-white">
+                    <div class="bg-slate-100 px-4 py-2 border-b flex justify-between items-center">
+                        <div>
+                            <span class="font-mono text-sm text-slate-500">S3</span>
+                            <span class="font-medium text-slate-800 ml-2">Alerting and Scenario Modeling</span>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-sm text-slate-600 mb-3">This screen provides early warning alerts and enables scenario modeling.</p>
+<div class="mb-3"><p class="text-xs font-medium text-slate-500 uppercase mb-1">Components</p><div class="flex flex-wrap gap-1"><span class="px-2 py-0.5 bg-slate-100 rounded text-xs text-slate-600">Alert list</span><span class="px-2 py-0.5 bg-slate-100 rounded text-xs text-slate-600">Scenario modeling inputs</span><span class="px-2 py-0.5 bg-slate-100 rounded text-xs text-slate-600">Impact visualization</span></div></div>
+                        <div class="border rounded-lg overflow-hidden bg-gray-50">
+                            <iframe id="wireframe-S3" class="w-full" style="height: 300px; border: none;"></iframe>
+                        </div>
+                        <script>
+                            (function() {
+                                const code = `
+function AlertingScenarioModeling() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow">
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900">Alerts & Scenario Modeling</h1>
+          <div className="space-x-4 flex items-center">
+            <button className="text-gray-400 hover:text-gray-600"><Search /></button>
+            <button className="text-gray-400 hover:text-gray-600"><Bell /></button>
+            <button className="text-gray-400 hover:text-gray-600"><Settings /></button>
+          </div>
+        </div>
+      </header>
+      <main>
+        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="space-y-4">
+            <div className="bg-white shadow overflow-hidden sm:rounded-md">
+              <div className="bg-white px-4 py-5 sm:p-6">
+                <h3 className="text-lg font-medium text-gray-900">Early Warning Alerts</h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-600">Potential cash shortfall alerts for Melbourne Plumbing Co.</p>
+                <ul className="mt-4 space-y-2">
+                  <li className="flex items-center">
+                    <AlertTriangle className="h-5 w-5 text-yellow-500 mr-2" />
+                    <span className="text-sm text-gray-900">Cash shortfall predicted in 30 days: $12,000</span>
+                  </li>
+                  <li className="flex items-center">
+                    <AlertTriangle className="h-5 w-5 text-yellow-500 mr-2" />
+                    <span className="text-sm text-gray-900">Accounts receivable overdue by 60 days: $8,500</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div className="bg-white shadow overflow-hidden sm:rounded-md">
+              <div className="bg-white px-4 py-5 sm:p-6">
+                <h3 className="text-lg font-medium text-gray-900">Scenario Modeling</h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-600">Model different business scenarios to understand their impact on your cash flow.</p>
+                <div className="mt-4">
+                  <label htmlFor="scenario-input" className="block text-sm font-medium text-gray-700">New Marketing Campaign Cost:</label>
+                  <input type="number" name="scenario-input" id="scenario-input" className="mt-1 focus:ring-gray-500 focus:border-gray-500 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="$10,000" />
+                  <button className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-900 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"> {/* onClick: runScenario() */}
+                    Run Scenario
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}`;
+                                const componentName = "AlertingScenarioModeling";
+                                const iframe = document.getElementById("wireframe-S3");
+                                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                                doc.open();
+                                doc.write(`
+                                    <!DOCTYPE html>
+                                    <html>
+                                    <head>
+                                        <script src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
+                                        <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
+                                        <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
+                                        <script src="https://cdn.tailwindcss.com"><\/script>
+                                        <style>body { margin: 0; padding: 8px; font-family: system-ui, sans-serif; background: #f9fafb; } .error { color: #991b1b; background: #fee2e2; padding: 16px; border-radius: 8px; }</style>
+                                    </head>
+                                    <body>
+                                        <div id="root"></div>
+                                        <script type="text/babel">
+                                            // Simple SVG icon components (Lucide-style)
+                                            const createIcon = (paths) => ({ className, ...props }) =>
+                                                React.createElement('svg', {
+                                                    xmlns: 'http://www.w3.org/2000/svg',
+                                                    width: 24, height: 24, viewBox: '0 0 24 24',
+                                                    fill: 'none', stroke: 'currentColor', strokeWidth: 2,
+                                                    strokeLinecap: 'round', strokeLinejoin: 'round',
+                                                    className, ...props
+                                                }, ...paths.map((d, i) => React.createElement('path', { key: i, d })));
+
+                                            const Search = createIcon(['M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z']);
+                                            const Bell = createIcon(['M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9', 'M13.73 21a2 2 0 01-3.46 0']);
+                                            const Settings = createIcon(['M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42']);
+                                            const Plus = createIcon(['M12 5v14', 'M5 12h14']);
+                                            const Filter = createIcon(['M22 3H2l8 9.46V19l4 2v-8.54L22 3z']);
+                                            const BarChart3 = createIcon(['M18 20V10', 'M12 20V4', 'M6 20v-6']);
+                                            const ChevronRight = createIcon(['M9 18l6-6-6-6']);
+                                            const ChevronDown = createIcon(['M6 9l6 6 6-6']);
+                                            const ChevronUp = createIcon(['M18 15l-6-6-6 6']);
+                                            const ChevronLeft = createIcon(['M15 18l-6-6 6-6']);
+                                            const AlertTriangle = createIcon(['M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z', 'M12 9v4', 'M12 17h.01']);
+                                            const TrendingUp = createIcon(['M23 6l-9.5 9.5-5-5L1 18']);
+                                            const TrendingDown = createIcon(['M23 18l-9.5-9.5-5 5L1 6']);
+                                            const ArrowRight = createIcon(['M5 12h14', 'M12 5l7 7-7 7']);
+                                            const ArrowLeft = createIcon(['M19 12H5', 'M12 19l-7-7 7-7']);
+                                            const Check = createIcon(['M20 6L9 17l-5-5']);
+                                            const X = createIcon(['M18 6L6 18', 'M6 6l12 12']);
+                                            const Menu = createIcon(['M3 12h18', 'M3 6h18', 'M3 18h18']);
+                                            const Home = createIcon(['M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z']);
+                                            const User = createIcon(['M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2', 'M12 3a4 4 0 100 8 4 4 0 000-8z']);
+                                            const Users = createIcon(['M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2', 'M23 21v-2a4 4 0 00-3-3.87', 'M16 3.13a4 4 0 010 7.75', 'M9 7a4 4 0 100 8 4 4 0 000-8z']);
+                                            const Mail = createIcon(['M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z', 'M22 6l-10 7L2 6']);
+                                            const Calendar = createIcon(['M19 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2z', 'M16 2v4', 'M8 2v4', 'M3 10h18']);
+                                            const Clock = createIcon(['M12 2a10 10 0 100 20 10 10 0 000-20z', 'M12 6v6l4 2']);
+                                            const Edit = createIcon(['M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7', 'M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z']);
+                                            const Trash = createIcon(['M3 6h18', 'M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2']);
+                                            const Save = createIcon(['M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z', 'M17 21v-8H7v8', 'M7 3v5h8']);
+                                            const Download = createIcon(['M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4', 'M7 10l5 5 5-5', 'M12 15V3']);
+                                            const Upload = createIcon(['M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4', 'M17 8l-5-5-5 5', 'M12 3v12']);
+                                            const RefreshCw = createIcon(['M23 4v6h-6', 'M1 20v-6h6', 'M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15']);
+                                            const Eye = createIcon(['M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z', 'M12 9a3 3 0 100 6 3 3 0 000-6z']);
+                                            const Info = createIcon(['M12 2a10 10 0 100 20 10 10 0 000-20z', 'M12 16v-4', 'M12 8h.01']);
+                                            const AlertCircle = createIcon(['M12 2a10 10 0 100 20 10 10 0 000-20z', 'M12 8v4', 'M12 16h.01']);
+                                            const CheckCircle = createIcon(['M22 11.08V12a10 10 0 11-5.93-9.14', 'M22 4L12 14.01l-3-3']);
+                                            const DollarSign = createIcon(['M12 1v22', 'M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6']);
+                                            const CreditCard = createIcon(['M21 4H3a2 2 0 00-2 2v12a2 2 0 002 2h18a2 2 0 002-2V6a2 2 0 00-2-2z', 'M1 10h22']);
+                                            const PieChart = createIcon(['M21.21 15.89A10 10 0 118 2.83', 'M22 12A10 10 0 0012 2v10z']);
+                                            const LineChart = createIcon(['M23 6l-9.5 9.5-5-5L1 18']);
+                                            const Activity = createIcon(['M22 12h-4l-3 9L9 3l-3 9H2']);
+                                            const Zap = createIcon(['M13 2L3 14h9l-1 8 10-12h-9l1-8z']);
+                                            const Wallet = createIcon(['M21 5H3a2 2 0 00-2 2v10a2 2 0 002 2h18a2 2 0 002-2V7a2 2 0 00-2-2z', 'M1 10h22']);
+                                            const Phone = createIcon(['M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z']);
+                                            const Star = createIcon(['M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z']);
+                                            const Heart = createIcon(['M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z']);
+                                            const ExternalLink = createIcon(['M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6', 'M15 3h6v6', 'M10 14L21 3']);
+                                            const Link = createIcon(['M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71', 'M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71']);
+                                            const MoreHorizontal = createIcon(['M12 13a1 1 0 100-2 1 1 0 000 2z', 'M19 13a1 1 0 100-2 1 1 0 000 2z', 'M5 13a1 1 0 100-2 1 1 0 000 2z']);
+                                            const Loader = createIcon(['M12 2v4', 'M12 18v4', 'M4.93 4.93l2.83 2.83', 'M16.24 16.24l2.83 2.83', 'M2 12h4', 'M18 12h4', 'M4.93 19.07l2.83-2.83', 'M16.24 7.76l2.83-2.83']);
+                                            const Play = createIcon(['M5 3l14 9-14 9V3z']);
+                                            const Pause = createIcon(['M6 4h4v16H6z', 'M14 4h4v16h-4z']);
+                                            const Copy = createIcon(['M20 9h-9a2 2 0 00-2 2v9a2 2 0 002 2h9a2 2 0 002-2v-9a2 2 0 00-2-2z', 'M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1']);
+                                            const Share = createIcon(['M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8', 'M16 6l-4-4-4 4', 'M12 2v13']);
+                                            const Lock = createIcon(['M19 11H5a2 2 0 00-2 2v7a2 2 0 002 2h14a2 2 0 002-2v-7a2 2 0 00-2-2z', 'M7 11V7a5 5 0 0110 0v4']);
+                                            const Unlock = createIcon(['M19 11H5a2 2 0 00-2 2v7a2 2 0 002 2h14a2 2 0 002-2v-7a2 2 0 00-2-2z', 'M7 11V7a5 5 0 019.9-1']);
+
+                                            try {
+                                                // Define the component
+                                                ${code}
+                                                // Render it
+                                                const root = ReactDOM.createRoot(document.getElementById('root'));
+                                                root.render(React.createElement(${componentName}));
+                                            } catch(e) {
+                                                document.getElementById('root').innerHTML = '<div class="error"><strong>Render Error:</strong> ' + e.message + '</div>';
+                                                console.error('Wireframe error:', e);
+                                            }
+                                        <\/script>
+                                    </body>
+                                    </html>
+                                `);
+                                doc.close();
+                            })();
+                        </script>
+</div></div>
+                <div class="border rounded-lg overflow-hidden bg-white">
+                    <div class="bg-slate-100 px-4 py-2 border-b flex justify-between items-center">
+                        <div>
+                            <span class="font-mono text-sm text-slate-500">S4</span>
+                            <span class="font-medium text-slate-800 ml-2">User Management and Security</span>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <p class="text-sm text-slate-600 mb-3">This screen manages user accounts and security settings.</p>
+<div class="mb-3"><p class="text-xs font-medium text-slate-500 uppercase mb-1">Components</p><div class="flex flex-wrap gap-1"><span class="px-2 py-0.5 bg-slate-100 rounded text-xs text-slate-600">User list</span><span class="px-2 py-0.5 bg-slate-100 rounded text-xs text-slate-600">Role management</span><span class="px-2 py-0.5 bg-slate-100 rounded text-xs text-slate-600">Security settings</span></div></div>
+                        <div class="border rounded-lg overflow-hidden bg-gray-50">
+                            <iframe id="wireframe-S4" class="w-full" style="height: 300px; border: none;"></iframe>
+                        </div>
+                        <script>
+                            (function() {
+                                const code = `
+function UserManagement() {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <header className="bg-white shadow">
+        <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
+          <div className="space-x-4 flex items-center">
+            <button className="text-gray-400 hover:text-gray-600"><Search /></button>
+            <button className="text-gray-400 hover:text-gray-600"><Bell /></button>
+            <button className="text-gray-400 hover:text-gray-600"><Settings /></button>
+          </div>
+        </div>
+      </header>
+      <main>
+        <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+          <div className="space-y-4">
+            <div className="bg-white shadow overflow-hidden sm:rounded-md">
+              <div className="bg-white px-4 py-5 sm:p-6">
+                <h3 className="text-lg font-medium text-gray-900">User Accounts</h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-600">Manage user accounts and roles for Melbourne Plumbing Co.</p>
+                <ul className="mt-4 space-y-2">
+                  <li className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Users className="h-5 w-5 text-gray-400 mr-2" />
+                      <span className="text-sm text-gray-900">Sarah Chen</span>
+                    </div>
+                    <span className="text-sm text-gray-600">CFO</span>
+                  </li>
+                  <li className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Users className="h-5 w-5 text-gray-400 mr-2" />
+                      <span className="text-sm text-gray-900">David Lee</span>
+                    </div>
+                    <span className="text-sm text-gray-600">Accountant</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+            <div className="bg-white shadow overflow-hidden sm:rounded-md">
+              <div className="bg-white px-4 py-5 sm:p-6">
+                <h3 className="text-lg font-medium text-gray-900">Security Settings</h3>
+                <p className="mt-1 max-w-2xl text-sm text-gray-600">Configure security settings for your organization.</p>
+                <div className="mt-4">
+                  <label htmlFor="two-factor" className="flex items-center">
+                    <input type="checkbox" name="two-factor" id="two-factor" className="focus:ring-gray-500 h-4 w-4 text-gray-600 border-gray-300 rounded" />
+                    <span className="ml-2 block text-sm text-gray-900">Enable Two-Factor Authentication</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}`;
+                                const componentName = "UserManagement";
+                                const iframe = document.getElementById("wireframe-S4");
+                                const doc = iframe.contentDocument || iframe.contentWindow.document;
+                                doc.open();
+                                doc.write(`
+                                    <!DOCTYPE html>
+                                    <html>
+                                    <head>
+                                        <script src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
+                                        <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
+                                        <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
+                                        <script src="https://cdn.tailwindcss.com"><\/script>
+                                        <style>body { margin: 0; padding: 8px; font-family: system-ui, sans-serif; background: #f9fafb; } .error { color: #991b1b; background: #fee2e2; padding: 16px; border-radius: 8px; }</style>
+                                    </head>
+                                    <body>
+                                        <div id="root"></div>
+                                        <script type="text/babel">
+                                            // Simple SVG icon components (Lucide-style)
+                                            const createIcon = (paths) => ({ className, ...props }) =>
+                                                React.createElement('svg', {
+                                                    xmlns: 'http://www.w3.org/2000/svg',
+                                                    width: 24, height: 24, viewBox: '0 0 24 24',
+                                                    fill: 'none', stroke: 'currentColor', strokeWidth: 2,
+                                                    strokeLinecap: 'round', strokeLinejoin: 'round',
+                                                    className, ...props
+                                                }, ...paths.map((d, i) => React.createElement('path', { key: i, d })));
+
+                                            const Search = createIcon(['M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z']);
+                                            const Bell = createIcon(['M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9', 'M13.73 21a2 2 0 01-3.46 0']);
+                                            const Settings = createIcon(['M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42']);
+                                            const Plus = createIcon(['M12 5v14', 'M5 12h14']);
+                                            const Filter = createIcon(['M22 3H2l8 9.46V19l4 2v-8.54L22 3z']);
+                                            const BarChart3 = createIcon(['M18 20V10', 'M12 20V4', 'M6 20v-6']);
+                                            const ChevronRight = createIcon(['M9 18l6-6-6-6']);
+                                            const ChevronDown = createIcon(['M6 9l6 6 6-6']);
+                                            const ChevronUp = createIcon(['M18 15l-6-6-6 6']);
+                                            const ChevronLeft = createIcon(['M15 18l-6-6 6-6']);
+                                            const AlertTriangle = createIcon(['M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z', 'M12 9v4', 'M12 17h.01']);
+                                            const TrendingUp = createIcon(['M23 6l-9.5 9.5-5-5L1 18']);
+                                            const TrendingDown = createIcon(['M23 18l-9.5-9.5-5 5L1 6']);
+                                            const ArrowRight = createIcon(['M5 12h14', 'M12 5l7 7-7 7']);
+                                            const ArrowLeft = createIcon(['M19 12H5', 'M12 19l-7-7 7-7']);
+                                            const Check = createIcon(['M20 6L9 17l-5-5']);
+                                            const X = createIcon(['M18 6L6 18', 'M6 6l12 12']);
+                                            const Menu = createIcon(['M3 12h18', 'M3 6h18', 'M3 18h18']);
+                                            const Home = createIcon(['M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z']);
+                                            const User = createIcon(['M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2', 'M12 3a4 4 0 100 8 4 4 0 000-8z']);
+                                            const Users = createIcon(['M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2', 'M23 21v-2a4 4 0 00-3-3.87', 'M16 3.13a4 4 0 010 7.75', 'M9 7a4 4 0 100 8 4 4 0 000-8z']);
+                                            const Mail = createIcon(['M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z', 'M22 6l-10 7L2 6']);
+                                            const Calendar = createIcon(['M19 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2z', 'M16 2v4', 'M8 2v4', 'M3 10h18']);
+                                            const Clock = createIcon(['M12 2a10 10 0 100 20 10 10 0 000-20z', 'M12 6v6l4 2']);
+                                            const Edit = createIcon(['M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7', 'M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z']);
+                                            const Trash = createIcon(['M3 6h18', 'M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2']);
+                                            const Save = createIcon(['M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z', 'M17 21v-8H7v8', 'M7 3v5h8']);
+                                            const Download = createIcon(['M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4', 'M7 10l5 5 5-5', 'M12 15V3']);
+                                            const Upload = createIcon(['M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4', 'M17 8l-5-5-5 5', 'M12 3v12']);
+                                            const RefreshCw = createIcon(['M23 4v6h-6', 'M1 20v-6h6', 'M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15']);
+                                            const Eye = createIcon(['M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z', 'M12 9a3 3 0 100 6 3 3 0 000-6z']);
+                                            const Info = createIcon(['M12 2a10 10 0 100 20 10 10 0 000-20z', 'M12 16v-4', 'M12 8h.01']);
+                                            const AlertCircle = createIcon(['M12 2a10 10 0 100 20 10 10 0 000-20z', 'M12 8v4', 'M12 16h.01']);
+                                            const CheckCircle = createIcon(['M22 11.08V12a10 10 0 11-5.93-9.14', 'M22 4L12 14.01l-3-3']);
+                                            const DollarSign = createIcon(['M12 1v22', 'M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6']);
+                                            const CreditCard = createIcon(['M21 4H3a2 2 0 00-2 2v12a2 2 0 002 2h18a2 2 0 002-2V6a2 2 0 00-2-2z', 'M1 10h22']);
+                                            const PieChart = createIcon(['M21.21 15.89A10 10 0 118 2.83', 'M22 12A10 10 0 0012 2v10z']);
+                                            const LineChart = createIcon(['M23 6l-9.5 9.5-5-5L1 18']);
+                                            const Activity = createIcon(['M22 12h-4l-3 9L9 3l-3 9H2']);
+                                            const Zap = createIcon(['M13 2L3 14h9l-1 8 10-12h-9l1-8z']);
+                                            const Wallet = createIcon(['M21 5H3a2 2 0 00-2 2v10a2 2 0 002 2h18a2 2 0 002-2V7a2 2 0 00-2-2z', 'M1 10h22']);
+                                            const Phone = createIcon(['M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z']);
+                                            const Star = createIcon(['M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z']);
+                                            const Heart = createIcon(['M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z']);
+                                            const ExternalLink = createIcon(['M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6', 'M15 3h6v6', 'M10 14L21 3']);
+                                            const Link = createIcon(['M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71', 'M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71']);
+                                            const MoreHorizontal = createIcon(['M12 13a1 1 0 100-2 1 1 0 000 2z', 'M19 13a1 1 0 100-2 1 1 0 000 2z', 'M5 13a1 1 0 100-2 1 1 0 000 2z']);
+                                            const Loader = createIcon(['M12 2v4', 'M12 18v4', 'M4.93 4.93l2.83 2.83', 'M16.24 16.24l2.83 2.83', 'M2 12h4', 'M18 12h4', 'M4.93 19.07l2.83-2.83', 'M16.24 7.76l2.83-2.83']);
+                                            const Play = createIcon(['M5 3l14 9-14 9V3z']);
+                                            const Pause = createIcon(['M6 4h4v16H6z', 'M14 4h4v16h-4z']);
+                                            const Copy = createIcon(['M20 9h-9a2 2 0 00-2 2v9a2 2 0 002 2h9a2 2 0 002-2v-9a2 2 0 00-2-2z', 'M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1']);
+                                            const Share = createIcon(['M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8', 'M16 6l-4-4-4 4', 'M12 2v13']);
+                                            const Lock = createIcon(['M19 11H5a2 2 0 00-2 2v7a2 2 0 002 2h14a2 2 0 002-2v-7a2 2 0 00-2-2z', 'M7 11V7a5 5 0 0110 0v4']);
+                                            const Unlock = createIcon(['M19 11H5a2 2 0 00-2 2v7a2 2 0 002 2h14a2 2 0 002-2v-7a2 2 0 00-2-2z', 'M7 11V7a5 5 0 019.9-1']);
+
+                                            try {
+                                                // Define the component
+                                                ${code}
+                                                // Render it
+                                                const root = ReactDOM.createRoot(document.getElementById('root'));
+                                                root.render(React.createElement(${componentName}));
+                                            } catch(e) {
+                                                document.getElementById('root').innerHTML = '<div class="error"><strong>Render Error:</strong> ' + e.message + '</div>';
+                                                console.error('Wireframe error:', e);
+                                            }
+                                        <\/script>
+                                    </body>
+                                    </html>
+                                `);
+                                doc.close();
+                            })();
+                        </script>
+</div></div></div></div>
+        <div class="section-card" id="claims">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Cross-Reference Claims</h2>
+            <p class="text-slate-600 mb-4">All claims extracted with evidence grading.</p>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-3 py-2 text-left">ID</th>
+                            <th class="px-3 py-2 text-left">Claim</th>
+                            <th class="px-3 py-2 text-center">Tier</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+<tr><td class="px-3 py-2 font-mono text-slate-500">MI-1</td><td class="px-3 py-2 text-slate-700">SMEs in Australia with $1M-$50M annual revenue are a segment examined in this research....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E5_ASSUMPTION px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E5_ASSUMPTION</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-2</td><td class="px-3 py-2 text-slate-700">A 2023 report by the Australian Small Business and Family Enterprise Ombudsman found that SMEs spend an average of 10-15...</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E3_INDUSTRY px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E3_INDUSTRY</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-3</td><td class="px-3 py-2 text-slate-700">A study by Dun & Bradstreet found that 90% of business failures are attributed to poor cash flow management....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E3_INDUSTRY px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E3_INDUSTRY</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-4</td><td class="px-3 py-2 text-slate-700">Xero provides basic cash flow reporting and forecasting tools within their accounting software....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-5</td><td class="px-3 py-2 text-slate-700">MYOB offers similar cash flow reporting and forecasting features as Xero....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-6</td><td class="px-3 py-2 text-slate-700">QuickBooks offers similar cash flow reporting and forecasting features as Xero and MYOB....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-7</td><td class="px-3 py-2 text-slate-700">Fathom provides more advanced financial analysis and reporting tools, including cash flow forecasting....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-8</td><td class="px-3 py-2 text-slate-700">Castaway offers sophisticated cash flow forecasting and financial modeling capabilities....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-9</td><td class="px-3 py-2 text-slate-700">Estimated TAM for SME banking in Australia is $10 Billion AUD based on number of SMEs with $1M-$50M revenue and average ...</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-10</td><td class="px-3 py-2 text-slate-700">Estimated SAM is $1 Billion AUD, assuming 10% of SMEs would adopt an AI-powered cash flow forecasting platform....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-11</td><td class="px-3 py-2 text-slate-700">Estimated SOM is $100 Million AUD, assuming 10% market share within the SAM....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-12</td><td class="px-3 py-2 text-slate-700">Xero has a market share of 40%....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-13</td><td class="px-3 py-2 text-slate-700">MYOB has a market share of 30%....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-14</td><td class="px-3 py-2 text-slate-700">QuickBooks has a market share of 20%....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-15</td><td class="px-3 py-2 text-slate-700">Fathom has a market share of 5%....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-1</td><td class="px-3 py-2 text-slate-700">Fathom is a financial analysis and reporting software for SMEs and advisors, including cash flow forecasting....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-2</td><td class="px-3 py-2 text-slate-700">Fathom was founded in 2010....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-3</td><td class="px-3 py-2 text-slate-700">Fathom's pricing starts from $44/month for small businesses, scaling up with more features and users....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E2_VERIFIED px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E2_VERIFIED</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-4</td><td class="px-3 py-2 text-slate-700">Fluidly is an AI-powered cash flow forecasting and management platform for SMEs....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-5</td><td class="px-3 py-2 text-slate-700">Fluidly was founded in 2016....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E2_VERIFIED px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E2_VERIFIED</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-6</td><td class="px-3 py-2 text-slate-700">Fluidly has Series A funding....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E2_VERIFIED px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E2_VERIFIED</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-7</td><td class="px-3 py-2 text-slate-700">Xero is cloud-based accounting software with cash flow management features....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-8</td><td class="px-3 py-2 text-slate-700">Xero was founded in 2006....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E2_VERIFIED px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E2_VERIFIED</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-9</td><td class="px-3 py-2 text-slate-700">Xero is publicly traded....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E2_VERIFIED px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E2_VERIFIED</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-10</td><td class="px-3 py-2 text-slate-700">Xero's pricing ranges from $32/month (Starter) to $95/month (Premium)....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E2_VERIFIED px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E2_VERIFIED</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-11</td><td class="px-3 py-2 text-slate-700">MYOB is accounting software with cash flow management tools for Australian businesses....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-12</td><td class="px-3 py-2 text-slate-700">MYOB was founded in 1991....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-13</td><td class="px-3 py-2 text-slate-700">MYOB is privately held....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-14</td><td class="px-3 py-2 text-slate-700">MYOB's pricing ranges from $35/month (Business Lite) to $140/month (AccountRight Plus)....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E2_VERIFIED px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E2_VERIFIED</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-15</td><td class="px-3 py-2 text-slate-700">Cashflow Manager is simple cashbook software designed for small businesses....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td colspan="3" class="px-3 py-2 text-center text-slate-500">... and 92 more claims</td></tr></tbody></table></div></div>
+    </main>
+
+    <footer class="bg-white border-t py-6">
+        <div class="max-w-6xl mx-auto px-6 text-center text-slate-500 text-sm">
+            Generated by Seedcraft v3.0 | 2026-02-08 11:45:54
+        </div>
+    </footer>
+
+    <script>hljs.highlightAll();</script>
+</body>
+</html>

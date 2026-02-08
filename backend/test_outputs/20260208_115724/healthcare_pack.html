@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inception Pack - 
+AI platform that matches cancer patients with eli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>mermaid.initialize({ startOnLoad: true, theme: 'neutral' });</script>
+    <style>
+        .tier-E1 { background-color: #dcfce7; color: #166534; }
+        .tier-E2 { background-color: #dbeafe; color: #1e40af; }
+        .tier-E3 { background-color: #fef9c3; color: #854d0e; }
+        .tier-E4 { background-color: #fed7aa; color: #9a3412; }
+        .tier-E5 { background-color: #fecaca; color: #991b1b; }
+        pre code { font-size: 0.85em; }
+        .section-card { background: white; border-radius: 12px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white border-b sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-xl font-bold text-slate-800">Seedcraft Inception Pack</h1>
+                    <p class="text-sm text-slate-500">Session: disc_20260208_4e4ae35e</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="px-3 py-1 rounded-full text-sm font-medium" style="background:#fef3c7; color:#92400e">
+                        PIVOT
+                    </span>
+                    <span class="text-sm text-slate-600">128 claims | 38% evidence</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto px-6 py-8">
+
+        <!-- Product Idea -->
+        <div class="section-card">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Product Idea</h2>
+            <p class="text-slate-700 whitespace-pre-line">AI platform that matches cancer patients with eligible clinical trials. The system:
+- Analyzes patient medical records (EHRs) using NLP
+- Matches against trial eligibility criteria from ClinicalTrials.gov
+- Provides matching confidence scores with explanation
+- Generates pre-screening packages for trial coordinators
+- Supports both patient-initiated and physician-initiated workflows
+
+Target users: Oncologists, clinical trial coordinators, cancer patients
+Market: Initially Australia, expanding to US and EU
+Key challenge: Accurate extraction of eligibility criteria from unstructured trial protocols</p>
+        </div>
+
+        <!-- Evidence Overview -->
+        <div class="section-card">
+            <h2 class="text-lg font-semibold text-slate-800 mb-4">Evidence Overview</h2>
+            <div class="flex gap-2 flex-wrap">
+                <span class="tier-E1 px-4 py-2 rounded-lg text-sm font-medium">E1 Primary: 8</span>
+                <span class="tier-E2 px-4 py-2 rounded-lg text-sm font-medium">E2 Verified: 12</span>
+                <span class="tier-E3 px-4 py-2 rounded-lg text-sm font-medium">E3 Industry: 15</span>
+                <span class="tier-E4 px-4 py-2 rounded-lg text-sm font-medium">E4 Hypothesis: 59</span>
+                <span class="tier-E5 px-4 py-2 rounded-lg text-sm font-medium">E5 Assumption: 34</span>
+            </div>
+        </div>
+
+        <div class="section-card" id="executive-summary">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Executive Summary</h2>
+
+            <div class="mb-6 p-4 bg-slate-50 rounded-lg border-l-4 border-indigo-500">
+                <p class="text-slate-700">TrialMatch AI is a SaaS platform that uses AI-powered matching algorithms to automatically identify and screen patients for clinical trial eligibility, streamlining the trial enrollment process for oncologists and coordinators.</p>
+            </div>
+<div class="mb-6"><h3 class="font-semibold text-slate-800 mb-3">Key Insights</h3><ul class="space-y-2"><li class="flex gap-2"><span class="text-green-500">✓</span><span class="text-slate-700">AI-powered matching algorithm with superior accuracy and comprehensive trial database.</span></li><li class="flex gap-2"><span class="text-green-500">✓</span><span class="text-slate-700">User-friendly platform designed to integrate seamlessly into existing EHR workflows.</span></li><li class="flex gap-2"><span class="text-green-500">✓</span><span class="text-slate-700">Focus on personalized trial recommendations and patient education to improve enrollment rates.</span></li></ul></div><div><h3 class="font-semibold text-slate-800 mb-3">Next Steps</h3><ol class="list-decimal list-inside space-y-1"><li class="text-slate-700">Oncologists in large academic hospitals and oncology clinics seeking to improve patient outcomes and increase clinical trial enrollment.</li><li class="text-slate-700">Clinical trial coordinators overwhelmed with the administrative burden of screening patients for trial eligibility.</li></ol></div></div>
+        <div class="section-card" id="market-intelligence">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Market Intelligence</h2>
+
+            <div class="grid md:grid-cols-3 gap-4 mb-6">
+                <div class="bg-indigo-50 rounded-lg p-4 text-center">
+                    <div class="text-xl font-bold text-indigo-600">The global oncology clinical trials market was valued at $16.4 billion in 2023 and is projected to reach $26.7 billion by 2033. [CONFIRMED]</div>
+                    <div class="text-sm text-slate-600">Total Addressable Market</div>
+                </div>
+                <div class="bg-indigo-50 rounded-lg p-4 text-center">
+                    <div class="text-xl font-bold text-indigo-600">Assuming 10% of global market is addressable initially (Australia and US), SAM is $1.64 billion. [ESTIMATED]</div>
+                    <div class="text-sm text-slate-600">Serviceable Market</div>
+                </div>
+                <div class="bg-indigo-50 rounded-lg p-4 text-center">
+                    <div class="text-xl font-bold text-indigo-600">Assuming initial target of 1% market share within SAM, SOM is $16.4 million. [ESTIMATED]</div>
+                    <div class="text-sm text-slate-600">Target Market</div>
+                </div>
+            </div>
+<div class="mb-6"><h3 class="font-semibold text-slate-800 mb-3">Pain Signals</h3><div class="space-y-2"><div class="border-l-4 border-red-400 bg-red-50 p-3 rounded-r"><p class="text-slate-700">Oncologists spend a significant amount of time manually searching for clinical trials for their patients, taking away from time spent on direct patient care.</p></div><div class="border-l-4 border-red-400 bg-red-50 p-3 rounded-r"><p class="text-slate-700">Clinical trial coordinators are overwhelmed with the administrative burden of screening patients for eligibility, leading to delays in trial enrollment.</p></div><div class="border-l-4 border-red-400 bg-red-50 p-3 rounded-r"><p class="text-slate-700">Patients struggle to understand complex clinical trial protocols and eligibility criteria, making it difficult for them to advocate for their own care.</p></div><div class="border-l-4 border-red-400 bg-red-50 p-3 rounded-r"><p class="text-slate-700">Inaccurate or incomplete data in EHR systems can lead to missed opportunities for clinical trial enrollment.</p></div><div class="border-l-4 border-red-400 bg-red-50 p-3 rounded-r"><p class="text-slate-700">The lack of interoperability between different EHR systems and clinical trial databases makes it difficult to share patient data securely and efficiently.</p></div></div></div></div>
+        <div class="section-card" id="competitive-landscape">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Competitive Landscape</h2>
+<div class="mb-6 p-4 bg-purple-50 rounded-lg border-l-4 border-purple-500"><strong>Differentiation Thesis:</strong> Our AI platform revolutionizes clinical trial matching by combining unparalleled accuracy in eligibility criteria extraction with streamlined pre-screening package generation, reducing the administrative burden on trial coordinators. By offering transparent matching rationales, we empower physicians to confidently initiate trial referrals, resulting in faster enrollment and improved patient outcomes.</div>
+            <div class="mb-6">
+                <h3 class="font-semibold text-slate-800 mb-3">Competitive Positioning</h3>
+                <div class="bg-white border rounded-lg p-4">
+                    <div class="flex justify-between text-sm text-slate-500 mb-2">
+                        <span>Breadth of Patient Support (beyond matching)</span>
+                    </div>
+                    <div class="relative h-64 bg-slate-50 rounded border">
+<div class="absolute w-3 h-3 rounded-full bg-slate-500" style="left: 65.0%; top: 20.0%;" title="Trialjecto"></div><span class="absolute text-xs text-slate-600" style="left: 65.0%; top: calc(20.0% + 8px);">Trialjecto</span><div class="absolute w-3 h-3 rounded-full bg-slate-500" style="left: 70.0%; top: 50.0%;" title="Antidote.m"></div><span class="absolute text-xs text-slate-600" style="left: 70.0%; top: calc(50.0% + 8px);">Antidote.m</span><div class="absolute w-3 h-3 rounded-full bg-slate-500" style="left: 80.0%; top: 70.0%;" title="Deep Lens"></div><span class="absolute text-xs text-slate-600" style="left: 80.0%; top: calc(70.0% + 8px);">Deep Lens</span><div class="absolute w-3 h-3 rounded-full bg-slate-500" style="left: 75.0%; top: 30.0%;" title="Massive Bi"></div><span class="absolute text-xs text-slate-600" style="left: 75.0%; top: calc(30.0% + 8px);">Massive Bi</span><div class="absolute w-3 h-3 rounded-full bg-slate-500" style="left: 50.0%; top: 40.0%;" title="Clara Heal"></div><span class="absolute text-xs text-slate-600" style="left: 50.0%; top: calc(40.0% + 8px);">Clara Heal</span><div class="absolute w-3 h-3 rounded-full bg-indigo-500" style="left: 90.0%; top: 45.0%;" title="Our Produc"></div><span class="absolute text-xs text-indigo-600" style="left: 90.0%; top: calc(45.0% + 8px);">Our Produc</span>
+                    </div>
+                    <div class="text-center text-sm text-slate-500 mt-2">Accuracy of Trial Matching (NLP and structured data)</div>
+<p class="mt-3 text-sm text-green-700 bg-green-50 p-2 rounded"><strong>White Space:</strong> High accuracy trial matching with strong physician integration but without extensive direct patient support.</p></div></div>
+            <div class="overflow-x-auto mb-6">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-4 py-3 text-left font-medium text-slate-600">Competitor</th>
+                            <th class="px-4 py-3 text-left font-medium text-slate-600">Strengths</th>
+                            <th class="px-4 py-3 text-left font-medium text-slate-600">Weaknesses</th>
+                            <th class="px-4 py-3 text-left font-medium text-slate-600">Threat</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+
+                        <tr>
+                            <td class="px-4 py-3 font-medium text-slate-800">Trialjectory</td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Strong patient focus and engagement</li><li>Comprehensive trial database</li></ul></td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Potentially limited geographic coverage</li><li>Reliance on patient self-reporting</li></ul></td>
+                            <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs bg-orange-100 text-orange-700">significant</span></td>
+                        </tr>
+
+                        <tr>
+                            <td class="px-4 py-3 font-medium text-slate-800">Antidote.me</td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Extensive network of trial sponsors</li><li>Strong focus on patient recruitment</li></ul></td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Matching accuracy can vary</li><li>Limited transparency in matching criteria</li></ul></td>
+                            <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs bg-yellow-100 text-yellow-700">moderate</span></td>
+                        </tr>
+
+                        <tr>
+                            <td class="px-4 py-3 font-medium text-slate-800">Deep Lens</td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Strong focus on automation and efficiency</li><li>EHR integration capabilities</li></ul></td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Potentially limited patient engagement</li><li>Reliance on accurate EHR data</li></ul></td>
+                            <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs bg-orange-100 text-orange-700">significant</span></td>
+                        </tr>
+
+                        <tr>
+                            <td class="px-4 py-3 font-medium text-slate-800">Massive Bio</td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Focus on precision oncology and personalized medicine</li><li>Global reach and multilingual support</li></ul></td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Complexity of precision oncology may limit adoption</li><li>Potential challenges in scaling global operations</li></ul></td>
+                            <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs bg-red-100 text-red-700">existential</span></td>
+                        </tr>
+
+                        <tr>
+                            <td class="px-4 py-3 font-medium text-slate-800">Clara Health (acquired by Luminate Health)</td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Integration with existing healthcare ecosystems</li><li>Focus on patient engagement and adherence</li></ul></td>
+                            <td class="px-4 py-3"><ul class="list-disc list-inside text-slate-600"><li>Clinical trial matching may be a secondary focus</li><li>Potential for conflicts of interest with payers</li></ul></td>
+                            <td class="px-4 py-3"><span class="px-2 py-1 rounded text-xs bg-yellow-100 text-yellow-700">moderate</span></td>
+                        </tr>
+</tbody></table></div><div class="mb-6"><h3 class="font-semibold text-slate-800 mb-3">Moat Analysis</h3><div class="grid md:grid-cols-2 gap-4"><div class="bg-green-50 rounded-lg p-4"><h4 class="font-medium text-green-800 mb-2">Defensible</h4><ul class="list-disc list-inside text-slate-700"><li>Proprietary NLP algorithms for accurate eligibility criteria extraction: Hard to replicate the accuracy and efficiency of our NLP model.</li><li>Network effects with trial sites: As more sites use our platform, the value increases for pharmaceutical companies seeking to enroll patients.</li><li>Data flywheel: As more patients and trials are matched, our algorithms become more accurate and personalized.</li></ul></div><div class="bg-amber-50 rounded-lg p-4"><h4 class="font-medium text-amber-800 mb-2">Not Defensible</h4><ul class="list-disc list-inside text-slate-700"><li>User-friendly interface: Can be copied by competitors.</li><li>Comprehensive trial database: Can be built over time by competitors.</li></ul></div></div><p class="mt-3 text-sm text-slate-600"><strong>Strategy:</strong> Continuously improve NLP algorithms with new data, expand the network of trial sites, and develop deeper integrations with EHR systems.</p></div><div class="mb-4"><h3 class="font-semibold text-slate-800 mb-3">Competitive Gaps</h3><div class="space-y-2"><div class="bg-blue-50 rounded-lg p-3"><p class="text-slate-800">Automated pre-screening package generation for trial coordinators</p><p class="text-sm text-blue-700 mt-1"><strong>Our advantage:</strong> NLP-powered extraction of eligibility criteria enables efficient package generation, saving coordinators time and improving enrollment rates.</p></div><div class="bg-blue-50 rounded-lg p-3"><p class="text-slate-800">High-confidence matching with clear explanations for physicians</p><p class="text-sm text-blue-700 mt-1"><strong>Our advantage:</strong> Explainable AI provides clear rationales for matches, building trust and facilitating physician-initiated workflows.</p></div></div></div></div>
+        <div class="section-card" id="personas">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Customer Personas</h2>
+<div class="mb-6 p-4 bg-indigo-50 rounded-lg grid md:grid-cols-3 gap-4"><div><span class="text-xs font-medium text-indigo-600 uppercase">Primary Buyer</span><p class="text-slate-800 font-medium">Dr. Eleanor Ainsworth</p></div><div><span class="text-xs font-medium text-indigo-600 uppercase">Primary User</span><p class="text-slate-800 font-medium">Ben Carter</p></div><div><span class="text-xs font-medium text-indigo-600 uppercase">Internal Champion</span><p class="text-slate-800 font-medium">Dr. Eleanor Ainsworth</p></div></div><div class="grid md:grid-cols-2 gap-4">
+                <div class="bg-slate-50 rounded-lg p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">👤</div>
+                        <div>
+                            <h3 class="font-semibold text-slate-800">Dr. Eleanor Ainsworth</h3>
+                            <p class="text-sm text-slate-500">Principal Investigator, Medical Oncologist</p>
+<p class="text-xs text-indigo-600 italic">The Evidence-Driven Advocate</p></div></div><div class="mb-2"><p class="text-xs font-medium text-slate-500 uppercase mb-1">Goals</p><ul class="text-sm space-y-1"><li class="text-slate-700">• Increase patient enrollment in clinical trials</li><li class="text-slate-700">• Publish high-impact research findings</li><li class="text-slate-700">• Improve patient outcomes and quality of life</li></ul></div><div class="mb-2"><p class="text-xs font-medium text-slate-500 uppercase mb-1">Jobs to be Done</p><div class="text-sm text-slate-700 mb-1 bg-white p-2 rounded">When I have a patient with advanced cancer, I want to quickly identify all relevant clinical trials so that I can offer them the best possible treatment options [cite: E4]</div><div class="text-sm text-slate-700 mb-1 bg-white p-2 rounded">When a new clinical trial opens, I want to efficiently screen my patient population for potential candidates so that I can meet enrollment targets [cite: E4]</div></div><div class="mb-2"><p class="text-xs font-medium text-slate-500 uppercase mb-1">Pain Points</p><ul class="text-sm space-y-1"><li class="text-red-600">• Spending excessive time manually screening patients for trial eligibility [cite: E4]</li><li class="text-red-600">• Difficulty keeping up with the rapidly changing landscape of clinical trials [cite: E4]</li><li class="text-red-600">• Limited resources and staff to manage the growing volume of clinical trial data [cite: E4]</li></ul></div><div class="mb-2 text-xs"><span class="font-medium text-slate-500">Buying:</span> <span class="text-slate-700">Recommender</span> • <span class="text-slate-500">Timeline:</span> 6-12 months</div><div class="text-xs text-slate-600 bg-amber-50 p-2 rounded"><span class="font-medium">Champions:</span> Innovative technologies that improve patient care and research efficiency [cite:... <span class="font-medium">Blockers:</span> IT department (security concerns, integration challenges) [cite: E4], Hospital administration (budgetary constraints) [cite: E4]</div></div>
+                <div class="bg-slate-50 rounded-lg p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">👤</div>
+                        <div>
+                            <h3 class="font-semibold text-slate-800">Ben Carter</h3>
+                            <p class="text-sm text-slate-500">Clinical Trial Coordinator</p>
+<p class="text-xs text-indigo-600 italic">The Detail-Oriented Gatekeeper</p></div></div><div class="mb-2"><p class="text-xs font-medium text-slate-500 uppercase mb-1">Goals</p><ul class="text-sm space-y-1"><li class="text-slate-700">• Ensure accurate and complete data collection for clinical trials [cite: E4]</li><li class="text-slate-700">• Streamline the patient screening and enrollment process [cite: E4]</li><li class="text-slate-700">• Maintain compliance with regulatory requirements [cite: E4]</li></ul></div><div class="mb-2"><p class="text-xs font-medium text-slate-500 uppercase mb-1">Jobs to be Done</p><div class="text-sm text-slate-700 mb-1 bg-white p-2 rounded">When a physician identifies a potential trial candidate, I want to quickly verify their eligibility against the protocol so that we don't waste resources on ineligible patients [cite: E4]</div></div><div class="mb-2 text-xs"><span class="font-medium text-slate-500">Buying:</span> <span class="text-slate-700">Influencer</span></div></div></div></div>
+        <div class="section-card" id="business-case">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Business Case</h2>
+<div class="mb-6 p-4 bg-green-50 rounded-lg border-l-4 border-green-500"><strong>Value Proposition:</strong> An AI platform that instantly matches cancer patients to eligible clinical trials, saving oncologists hours of manual work and accelerating patient access to cutting-edge treatments.</div><div class="mb-6"><h3 class="font-semibold text-slate-800 mb-3">Lean Canvas</h3><div class="grid md:grid-cols-3 gap-4"><div class="bg-slate-50 rounded-lg p-3"><h4 class="text-sm font-medium text-slate-600 mb-1">Problem</h4><p class="text-slate-800 text-sm">Oncologists and coordinators spend excessive time manually searching and screening for clinical trials, detracting from patient care., The administrat</p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="text-sm font-medium text-slate-600 mb-1">Solution</h4><p class="text-slate-800 text-sm">AI-powered analysis of Electronic Health Records (EHRs) using NLP to automatically extract key patient data., An intelligent matching engine that comp</p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="text-sm font-medium text-slate-600 mb-1">Unfair Advantage</h4><p class="text-slate-800 text-sm">Proprietary NLP models trained specifically on the nuanced language of clinical trial protocols and oncology EHR data, combined with exclusive integra</p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="text-sm font-medium text-slate-600 mb-1">Customer Segments</h4><p class="text-slate-800 text-sm">Oncology departments within medium-to-large hospital networks and cancer research centers., Contract Research Organizations (CROs) managing multiple c</p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="text-sm font-medium text-slate-600 mb-1">Channels</h4><p class="text-slate-800 text-sm">Direct B2B sales team targeting hospital administrators and heads of oncology., Partnerships with major EHR providers for integrated solutions., Conte</p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="text-sm font-medium text-slate-600 mb-1">Key Metrics</h4><p class="text-slate-800 text-sm">Monthly Recurring Revenue (MRR), Customer Acquisition Cost (CAC), Customer Lifetime Value (LTV)</p></div></div></div><div class="grid md:grid-cols-2 gap-4"><div class="bg-indigo-50 rounded-lg p-4"><h4 class="font-medium text-indigo-800 mb-2">Year 1 Projection</h4><p class="text-slate-700 text-sm">Year 1 will focus on product finalization, clinical validation, and securing 5-10 pilot customers in Australia. The projection anticipates a net loss as the company invests heavily in R&D and building its go-to-market team. Total Year 1 Revenue: $180,000. Total Year 1 Costs: $2,160,000. Net Loss: ($</p></div><div class="bg-indigo-50 rounded-lg p-4"><h4 class="font-medium text-indigo-800 mb-2">Year 3 Projection</h4><p class="text-slate-700 text-sm">By Year 3, the product will be established in the Australian market and expanding into the US. The projection assumes a customer base of 60-80 hospital accounts. The focus will be on scaling revenue, achieving profitability, and expanding the data analytics revenue stream. Total Year 3 Revenue: $3,5</p></div></div><div class="mt-4 p-3 bg-amber-50 rounded-lg"><strong>Break-even:</strong> Based on the financial projections, the company is expected to reach break-even in Month 18. This requires acquiring approximately 45 mid-tier hospital/clinic accounts, generating an MRR of over $180,</div><div class="mb-4 inline-block px-4 py-2 bg-green-50 rounded-lg"><span class="font-medium text-green-800">✓ Unit Economics: HEALTHY</span></div><div class="grid md:grid-cols-4 gap-4 mt-4"><div class="bg-slate-50 rounded-lg p-4 text-center"><div class="text-xl font-bold text-slate-800">$25,000</div><div class="text-sm text-slate-600">CAC</div></div><div class="bg-slate-50 rounded-lg p-4 text-center"><div class="text-xl font-bold text-slate-800">$320,000</div><div class="text-sm text-slate-600">LTV</div></div><div class="bg-slate-50 rounded-lg p-4 text-center"><div class="text-xl font-bold text-slate-800">12.8x — above 3x is healthy.</div><div class="text-sm text-slate-600">LTV:CAC</div></div><div class="bg-slate-50 rounded-lg p-4 text-center"><div class="text-xl font-bold text-slate-800">8</div><div class="text-sm text-slate-600">Payback (months)</div></div></div><div class="mt-3 text-sm text-slate-600">Gross Margin: 80%</div><div class="mt-6"><h3 class="font-semibold text-slate-800 mb-3">Sensitivity Analysis</h3><div class="grid md:grid-cols-3 gap-4"><div class="bg-blue-50 rounded-lg p-4"><h4 class="font-medium text-blue-800 mb-2">Base Case</h4><div class="text-sm text-slate-700"><div>Y1 Revenue: $180,000</div><div>Y3 Revenue: $3,500,000</div></div></div><div class="bg-green-50 rounded-lg p-4"><h4 class="font-medium text-green-800 mb-2">Optimistic Case</h4><div class="text-sm text-slate-700"><div>Y1 Revenue: $300,000</div><div>Y3 Revenue: $6,000,000</div></div></div><div class="bg-red-50 rounded-lg p-4"><h4 class="font-medium text-red-800 mb-2">Pessimistic Case</h4><div class="text-sm text-slate-700"><div>Y1 Revenue: $90,000</div><div>Y3 Revenue: $1,800,000</div></div></div></div><div class="mt-3 p-3 bg-red-50 rounded-lg border-l-4 border-red-500"><strong class="text-red-800">Kill Conditions:</strong> <span class="text-slate-700">The business becomes non-viable if: 1) Clinical validation fails to demonstrate a statistically significant improvement in matching accuracy or time saved over the manual standard of care. 2) We cannot secure at least two paid pilot customers within the first 12 months. 3) The blended CAC exceeds $80,000, which would make the unit economics unsustainable.</span></div></div></div>
+        <div class="section-card" id="gtm">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Go-to-Market Strategy</h2>
+<div class="mb-6 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500"><strong>Approach:</strong> direct_sales | <strong>Initial Segment:</strong> Oncologists in Australia | <strong>Beachhead Market:</strong> Major oncology centers in Sydney and Melbourne, Australia | <strong>Expansion Path:</strong> Expand to other oncology centers in Australia, Clinical trial coordinators in Australia, Oncologists in the US (starting with states with favorable regulatory environments)</div>
+            <div class="mb-6">
+                <h3 class="font-semibold text-slate-800 mb-3">Channel Strategy</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left font-medium text-slate-600">Channel</th>
+                                <th class="px-4 py-3 text-left font-medium text-slate-600">Role</th>
+                                <th class="px-4 py-3 text-left font-medium text-slate-600">Expected CAC</th>
+                                <th class="px-4 py-3 text-left font-medium text-slate-600">Time to Scale</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+<tr><td class="px-4 py-3 font-medium text-slate-800">Direct Sales Team (Oncologist-focused)</td><td class="px-4 py-3 text-slate-600">acquisition</td><td class="px-4 py-3 text-green-600">$5,000 - $10,000</td><td class="px-4 py-3 text-slate-600">6-12 months</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">Conferences and Industry Events (Oncology)</td><td class="px-4 py-3 text-slate-600">acquisition</td><td class="px-4 py-3 text-green-600">$2,000 - $5,000</td><td class="px-4 py-3 text-slate-600">3-6 months</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">Online Webinars and Educational Content</td><td class="px-4 py-3 text-slate-600">acquisition</td><td class="px-4 py-3 text-green-600">$500 - $1,000</td><td class="px-4 py-3 text-slate-600">1-3 months</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">Partnerships with EHR Vendors</td><td class="px-4 py-3 text-slate-600">acquisition</td><td class="px-4 py-3 text-green-600">Varies significantly (partnership dependent)</td><td class="px-4 py-3 text-slate-600">6-12 months</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">Referral Program (Oncologists referring other Oncologists)</td><td class="px-4 py-3 text-slate-600">referral</td><td class="px-4 py-3 text-green-600">$100 - $500 (incentives)</td><td class="px-4 py-3 text-slate-600">3-6 months</td></tr><tr><td class="px-4 py-3 font-medium text-slate-800">Customer Success Team</td><td class="px-4 py-3 text-slate-600">retention</td><td class="px-4 py-3 text-green-600">N/A</td><td class="px-4 py-3 text-slate-600">Immediate</td></tr></tbody></table></div><p class="mt-3 text-sm text-slate-600 italic">Focus on direct sales to build relationships with oncologists, complemented by scalable digital channels and strategic partnerships to expand reach and reduce CAC. Customer success is critical for long-term retention in the healthcare space.</p></div><div class="mb-6"><h3 class="font-semibold text-slate-800 mb-3">Launch Plan</h3><div class="space-y-3"><div class="border rounded-lg p-4"><div class="flex justify-between items-center mb-2"><h4 class="font-medium text-slate-800">Phase 1: Limited Beta (Australia)</h4><span class="text-sm text-slate-500">3 months</span></div><ul class="list-disc list-inside text-sm text-slate-600"><li>Validate NLP accuracy with real-world EHR data</li><li>Refine matching algorithm based on oncologist feedback</li><li>Establish initial relationships with key opinion leaders</li></ul></div><div class="border rounded-lg p-4"><div class="flex justify-between items-center mb-2"><h4 class="font-medium text-slate-800">Phase 2: Expanded Beta (Australia)</h4><span class="text-sm text-slate-500">3 months</span></div><ul class="list-disc list-inside text-sm text-slate-600"><li>Scale beta program to a larger group of users</li><li>Test different pricing models</li><li>Develop marketing materials and sales collateral</li></ul></div><div class="border rounded-lg p-4"><div class="flex justify-between items-center mb-2"><h4 class="font-medium text-slate-800">Phase 3: Public Launch (Australia)</h4><span class="text-sm text-slate-500">Ongoing</span></div><ul class="list-disc list-inside text-sm text-slate-600"><li>Acquire new customers</li><li>Generate revenue</li><li>Establish market presence</li></ul></div></div></div><div><h3 class="font-semibold text-slate-800 mb-3">Growth Tactics</h3><div class="grid md:grid-cols-2 gap-3"><div class="bg-slate-50 rounded-lg p-3"><h4 class="font-medium text-slate-800">SEO Optimization</h4><p class="text-sm text-slate-600"></p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="font-medium text-slate-800">Content Marketing (Blog posts, white papers, case studies)</h4><p class="text-sm text-slate-600"></p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="font-medium text-slate-800">Referral Program (Incentivize existing users to refer new users)</h4><p class="text-sm text-slate-600"></p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="font-medium text-slate-800">Partnerships with Patient Advocacy Groups</h4><p class="text-sm text-slate-600"></p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="font-medium text-slate-800">Upselling/Cross-selling (Offer additional features or services)</h4><p class="text-sm text-slate-600"></p></div><div class="bg-slate-50 rounded-lg p-3"><h4 class="font-medium text-slate-800">Dedicated Customer Success Manager</h4><p class="text-sm text-slate-600"></p></div></div></div></div>
+        <div class="section-card" id="financial-model">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Financial Model</h2>
+
+            <div class="mb-6">
+                <h3 class="font-semibold text-slate-800 mb-3">12-Month Projections</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-slate-50">
+                            <tr>
+                                <th class="px-3 py-2 text-left">Month</th>
+                                <th class="px-3 py-2 text-right">Revenue</th>
+                                <th class="px-3 py-2 text-right">Costs</th>
+                                <th class="px-3 py-2 text-right">Customers</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-200">
+<tr><td class="px-3 py-2">1</td><td class="px-3 py-2 text-right text-green-600">0.0</td><td class="px-3 py-2 text-right text-red-600">175000.0</td><td class="px-3 py-2 text-right">0</td></tr><tr><td class="px-3 py-2">2</td><td class="px-3 py-2 text-right text-green-600">0.0</td><td class="px-3 py-2 text-right text-red-600">275000.0</td><td class="px-3 py-2 text-right">0</td></tr><tr><td class="px-3 py-2">3</td><td class="px-3 py-2 text-right text-green-600">0.0</td><td class="px-3 py-2 text-right text-red-600">175000.0</td><td class="px-3 py-2 text-right">0</td></tr><tr><td class="px-3 py-2">4</td><td class="px-3 py-2 text-right text-green-600">7100.0</td><td class="px-3 py-2 text-right text-red-600">183500.0</td><td class="px-3 py-2 text-right">2</td></tr><tr><td class="px-3 py-2">5</td><td class="px-3 py-2 text-right text-green-600">14200.0</td><td class="px-3 py-2 text-right text-red-600">192000.0</td><td class="px-3 py-2 text-right">4</td></tr><tr><td class="px-3 py-2">6</td><td class="px-3 py-2 text-right text-green-600">24850.0</td><td class="px-3 py-2 text-right text-red-600">209000.0</td><td class="px-3 py-2 text-right">7</td></tr><tr><td class="px-3 py-2">7</td><td class="px-3 py-2 text-right text-green-600">35500.0</td><td class="px-3 py-2 text-right text-red-600">226000.0</td><td class="px-3 py-2 text-right">10</td></tr><tr><td class="px-3 py-2">8</td><td class="px-3 py-2 text-right text-green-600">49700.0</td><td class="px-3 py-2 text-right text-red-600">243000.0</td><td class="px-3 py-2 text-right">14</td></tr><tr><td class="px-3 py-2">9</td><td class="px-3 py-2 text-right text-green-600">67450.0</td><td class="px-3 py-2 text-right text-red-600">268500.0</td><td class="px-3 py-2 text-right">19</td></tr><tr><td class="px-3 py-2">10</td><td class="px-3 py-2 text-right text-green-600">88750.0</td><td class="px-3 py-2 text-right text-red-600">294000.0</td><td class="px-3 py-2 text-right">25</td></tr><tr><td class="px-3 py-2">11</td><td class="px-3 py-2 text-right text-green-600">113600.0</td><td class="px-3 py-2 text-right text-red-600">328000.0</td><td class="px-3 py-2 text-right">32</td></tr><tr><td class="px-3 py-2">12</td><td class="px-3 py-2 text-right text-green-600">142000.0</td><td class="px-3 py-2 text-right text-red-600">362000.0</td><td class="px-3 py-2 text-right">40</td></tr></tbody></table></div></div><div class="bg-amber-50 rounded-lg p-4"><h3 class="font-semibold text-slate-800">Funding Required</h3><p class="text-2xl font-bold text-amber-600">$13.25M to reach profitability.</p></div></div>
+        <div class="section-card" id="prd">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Product Requirements</h2>
+            
+<div class="space-y-4"><div class="border rounded-lg p-4"><h3 class="font-semibold text-slate-800 mb-3">EHR Data Extraction and NLP Analysis</h3><div class="space-y-2"><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-001</span><span class="text-slate-700 flex-1">EHR Data Extraction</span><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">critical</span></div><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-002</span><span class="text-slate-700 flex-1">NLP-Based Eligibility Criteria Extraction</span><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">critical</span></div><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-003</span><span class="text-slate-700 flex-1">Data Standardization</span><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">high</span></div></div></div><div class="border rounded-lg p-4"><h3 class="font-semibold text-slate-800 mb-3">Clinical Trial Matching</h3><div class="space-y-2"><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-004</span><span class="text-slate-700 flex-1">Trial Eligibility Matching</span><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">critical</span></div><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-005</span><span class="text-slate-700 flex-1">Matching Confidence Scores</span><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">high</span></div><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-006</span><span class="text-slate-700 flex-1">ClinicalTrials.gov Integration</span><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">critical</span></div></div></div><div class="border rounded-lg p-4"><h3 class="font-semibold text-slate-800 mb-3">User Interface and Workflow Support</h3><div class="space-y-2"><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-007</span><span class="text-slate-700 flex-1">Oncologist Trial Matching Workflow</span><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">high</span></div><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-008</span><span class="text-slate-700 flex-1">Clinical Trial Coordinator Workflow</span><span class="px-2 py-0.5 rounded text-xs bg-red-100 text-red-700">high</span></div><div class="flex items-center gap-2 text-sm"><span class="text-slate-400">US-009</span><span class="text-slate-700 flex-1">Patient-Initiated Search</span><span class="px-2 py-0.5 rounded text-xs bg-amber-100 text-amber-700">medium</span></div></div></div></div></div>
+        <div class="section-card" id="tech-architecture">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Technical Architecture</h2>
+<div class="mb-4 p-4 bg-indigo-50 rounded-lg border-l-4 border-indigo-500"><strong>Architecture Style:</strong> Microservices. This architecture allows for independent scaling, deployment, and development of individual services. Given the complexity of the NLP component and the need for regulatory compliance, isolating services improves maintainability and reduces the blast radius of potential issues. It also supports the planned expansion to multiple geographic regions by allowing services to be deployed closer to users.</div><p class="text-slate-700 mb-6">The system is composed of several microservices: a Patient Data Service for managing patient EHR data, a Trial Data Service for managing clinical trial information from ClinicalTrials.gov, an NLP Service for extracting relevant information from EHRs, a Matching Service for comparing patient data against trial criteria, a Pre-screening Service for generating pre-screening packages, an API Gateway for routing requests, an Authentication Service for managing user authentication and authorization, a</p>
+            <div class="mb-6">
+                <h3 class="font-semibold text-slate-800 mb-3">System Architecture</h3>
+                <div class="bg-white border rounded-lg p-4">
+                    <div class="mermaid">graph TB
+    subgraph Digital Channels
+        PATIENT[Patient Portal]
+        PHYSICIAN[Physician Portal]
+        COORDINATOR[Trial Coordinator Portal]
+    end
+    subgraph API Layer
+        API[API Gateway]
+        AUTH[Authentication Service]
+    end
+    subgraph Core Services
+        PATIENT_DATA[Patient Data Service]
+        TRIAL_DATA[Trial Data Service]
+        NLP[NLP Service]
+        MATCHING[Matching Service]
+        PRESCREEN[Pre-screening Service]
+        NOTIFICATION[Notification Service]
+    end
+    subgraph Data Layer
+        PATIENT_DB[(Patient Data DB)]
+        TRIAL_DB[(Trial Data DB)]
+        MATCH_DB[(Match Results DB)]
+    end
+    subgraph External Services
+        EHR[EHR Systems]
+        CLINICALTRIALS[(ClinicalTrials.gov)]
+    end
+
+    PATIENT --> API
+    PHYSICIAN --> API
+    COORDINATOR --> API
+
+    API --> AUTH
+    API --> PATIENT_DATA
+    API --> TRIAL_DATA
+    API --> NLP
+    API --> MATCHING
+    API --> PRESCREEN
+    API --> NOTIFICATION
+
+    PATIENT_DATA --> PATIENT_DB
+    TRIAL_DATA --> TRIAL_DB
+    MATCHING --> MATCH_DB
+
+    EHR --> PATIENT_DATA
+    CLINICALTRIALS --> TRIAL_DATA</div>
+                </div>
+            </div>
+<div class="mb-6"><h3 class="font-semibold text-slate-800 mb-3">System Components</h3><div class="grid md:grid-cols-2 gap-4"><div class="border rounded-lg p-4"><h4 class="font-medium text-slate-800">Patient Data Service</h4><p class="text-sm text-slate-600 mt-1">Manages patient EHR data, including storage, retrieval, and updates.</p></div><div class="border rounded-lg p-4"><h4 class="font-medium text-slate-800">Trial Data Service</h4><p class="text-sm text-slate-600 mt-1">Manages clinical trial information from ClinicalTrials.gov, including storage, retrieval, and updates.</p></div><div class="border rounded-lg p-4"><h4 class="font-medium text-slate-800">NLP Service</h4><p class="text-sm text-slate-600 mt-1">Extracts relevant information from EHRs using NLP techniques.</p></div><div class="border rounded-lg p-4"><h4 class="font-medium text-slate-800">Matching Service</h4><p class="text-sm text-slate-600 mt-1">Compares patient data against trial criteria to generate matches.</p></div><div class="border rounded-lg p-4"><h4 class="font-medium text-slate-800">Pre-screening Service</h4><p class="text-sm text-slate-600 mt-1">Generates pre-screening packages for trial coordinators.</p></div><div class="border rounded-lg p-4"><h4 class="font-medium text-slate-800">API Gateway</h4><p class="text-sm text-slate-600 mt-1">Handles all external requests and routes them to the appropriate services.</p></div></div></div><div class="mb-6"><h3 class="font-semibold text-slate-800 mb-3">Technology Stack</h3><div class="flex flex-wrap gap-2"><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">React</span><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">Python with FastAPI</span><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">PostgreSQL</span><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">Redis</span><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">RabbitMQ</span><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">Elasticsearch</span><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">AWS (Amazon Web Services)</span><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">Jenkins</span><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">Prometheus and Grafana</span><span class="px-3 py-1 bg-indigo-100 rounded-full text-sm text-indigo-700">Auth0</span></div></div><div class="mb-6"><h3 class="font-semibold text-slate-800 mb-3">Integration Points</h3><div class="space-y-2"><div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg"><span class="font-medium text-slate-800">EHR Integration</span><span class="text-slate-400">→</span><span class="text-slate-600"></span></div><div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg"><span class="font-medium text-slate-800">ClinicalTrials.gov Integration</span><span class="text-slate-400">→</span><span class="text-slate-600"></span></div><div class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg"><span class="font-medium text-slate-800">Auth0 Integration</span><span class="text-slate-400">→</span><span class="text-slate-600"></span></div></div></div></div>
+        <div class="section-card" id="regulatory">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Regulatory & Compliance</h2>
+            <div class="mb-4 px-4 py-2 bg-red-50 rounded-lg inline-block">
+                <span class="font-medium text-red-800">Risk Level: RISKLEVEL.HIGH</span>
+            </div>
+<div class="space-y-2"><div class="border-l-4 border-indigo-400 bg-indigo-50 p-3 rounded-r text-slate-700">HIPAA (Health Insurance Portability and Accountability Act)</div><div class="border-l-4 border-indigo-400 bg-indigo-50 p-3 rounded-r text-slate-700">Therapeutic Goods Act 1989 (TGA)</div><div class="border-l-4 border-indigo-400 bg-indigo-50 p-3 rounded-r text-slate-700">GDPR (General Data Protection Regulation)</div></div></div>
+        <div class="section-card" id="risk">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Risk Assessment</h2>
+            <div class="mb-4 px-4 py-2 bg-amber-50 rounded-lg inline-block">
+                <span class="font-medium text-amber-800">Overall: MEDIUM</span>
+            </div>
+</div>
+        <div class="section-card" id="wireframes">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Wireframes</h2>
+            <p class='text-slate-600 mb-4'>Wireframe generation failed</p>
+<div class="grid md:grid-cols-2 gap-6"></div></div>
+        <div class="section-card" id="prototype">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Interactive Prototype</h2>
+            <h3 class='text-lg font-semibold text-indigo-600 mb-2'>TrialMatch AI Platform</h3>
+<div class="mb-4 grid md:grid-cols-2 gap-4"><div class="bg-slate-50 rounded-lg p-3"><span class="text-xs font-medium text-slate-500 uppercase">Primary Persona</span><p class="text-slate-800">Dr. Eleanor Ainsworth — Principal Investigator, Medical Oncologist</p></div><div class="bg-slate-50 rounded-lg p-3"><span class="text-xs font-medium text-slate-500 uppercase">User Story</span><p class="text-slate-800">As an oncologist, I want to quickly identify and act on high-confidence clinical trial matches for my patients, so I can save time and improve their treatment options.</p></div></div><div class="mb-4 p-4 bg-blue-50 rounded-lg border-l-4 border-blue-500"><strong>Demo Scenario:</strong> 1. Start on the 'Dashboard'. Point out the professional, clean layout and the key metrics. 
+2. Direct attention to the yellow alert banner at the top: 'New High-Confidence Matches Found'. Explain this is the AI drawing the user's attention to what matters.
+3. Click the alert. The view smoothly transitions to the 'Trial Matches for Robert Miller' screen.
+4. On the detail screen, highlight the top card, which is emphasized visually. Point out the 92% confidence score and the clear, readable lists of 'Matching Criteria Met' and 'Potential Mismatches'. Explain this transparency builds trust.
+5. Click the 'Generate Pre-Screening Package' button.
+6. The view changes to the 'Confirmation' screen. Announce the 'aha moment': 'And just like that, a task that used to take hours of chart review and paperwork is done. The complete package is on its way to the trial team.'
+7. Click 'Return to Dashboard' to complete the loop.</div><div class="mb-4"><span class="text-xs font-medium text-slate-500 uppercase">Color Palette</span><div class="flex gap-2 mt-2"><div class="flex flex-col items-center"><div class="w-10 h-10 rounded-lg shadow-sm" style="background-color: #2b6cb0"></div><span class="text-xs text-slate-500 mt-1">primary</span></div><div class="flex flex-col items-center"><div class="w-10 h-10 rounded-lg shadow-sm" style="background-color: #a0aec0"></div><span class="text-xs text-slate-500 mt-1">secondary</span></div><div class="flex flex-col items-center"><div class="w-10 h-10 rounded-lg shadow-sm" style="background-color: #38b2ac"></div><span class="text-xs text-slate-500 mt-1">accent</span></div><div class="flex flex-col items-center"><div class="w-10 h-10 rounded-lg shadow-sm" style="background-color: #f7fafc"></div><span class="text-xs text-slate-500 mt-1">background</span></div><div class="flex flex-col items-center"><div class="w-10 h-10 rounded-lg shadow-sm" style="background-color: #1a202c"></div><span class="text-xs text-slate-500 mt-1">text</span></div></div></div>
+            <div class="mb-4">
+                <h3 class="font-semibold text-slate-800 mb-3">Live Preview</h3>
+                <div class="border-2 border-indigo-200 rounded-xl overflow-hidden shadow-lg">
+                    <iframe id="prototype-frame" class="w-full" style="height: 600px; border: none;"></iframe>
+                </div>
+            </div>
+            <script>
+                (function() {
+                    const code = `
+
+// --- Mock Data --- //
+const patientData = {
+  name: 'Robert Miller',
+  id: 'RM-48291',
+  age: 68,
+  diagnosis: 'Stage IV Non-Small Cell Lung Cancer (NSCLC)',
+  biomarkers: ['EGFR Exon 19 Deletion', 'PD-L1 TPS < 1%'],
+  lastUpdate: '2 hours ago',
+};
+
+const trialMatches = [
+  {
+    nctId: 'NCT04886800',
+    title: 'A Study of Amivantamab and Lazertinib in EGFR-Mutated Advanced NSCLC',
+    confidence: 92,
+    status: 'Recruiting',
+    matchReasons: ['Patient has confirmed EGFR mutation', 'Age > 18 years', 'ECOG performance status 0-1'],
+    mismatchReasons: [],
+  },
+  {
+    nctId: 'NCT05333794',
+    title: 'A Study of Patritumab Deruxtecan for Metastatic EGFR-Mutated NSCLC',
+    confidence: 78,
+    status: 'Recruiting',
+    matchReasons: ['Patient has confirmed EGFR mutation', 'Received prior TKI therapy'],
+    mismatchReasons: ['Requires brain metastasis screening'],
+  },
+  {
+    nctId: 'NCT04429029',
+    title: 'A Study of Telisotuzumab Vedotin in c-Met+ Advanced/Metastatic NSCLC',
+    confidence: 45,
+    status: 'Recruiting',
+    matchReasons: ['Stage IV NSCLC diagnosis'],
+    mismatchReasons: ['Patient c-Met status is unknown/negative'],
+  },
+];
+
+// --- Main Component --- //
+function TrialMatchPrototype() {
+  const [currentScreen, setCurrentScreen] = React.useState('dashboard');
+  const [activePatient, setActivePatient] = React.useState(null);
+
+  const navigateToPatient = (patient) => {
+    setActivePatient(patient);
+    setCurrentScreen('patientDetail');
+  };
+
+  const SideBar = () => (
+    <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+      <div className="p-4 border-b border-gray-200">
+        <h1 className="text-xl font-bold text-blue-800">TrialMatch AI</h1>
+      </div>
+      <nav className="flex-1 p-4 space-y-2">
+        <NavItem icon={<LayoutDashboard size={20} />} label="Dashboard" screen="dashboard" />
+        <NavItem icon={<Users size={20} />} label="My Patients" screen="patients" />
+        <NavItem icon={<FlaskConical size={20} />} label="Clinical Trials" screen="trials" />
+        <NavItem icon={<Settings size={20} />} label="Settings" screen="settings" />
+      </nav>
+      <div className="p-4 border-t border-gray-200">
+        <div className="flex items-center">
+          <img src="https://i.pravatar.cc/40?u=drAinsworth" alt="Dr. Eleanor Ainsworth" className="w-10 h-10 rounded-full" />
+          <div className="ml-3">
+            <p className="font-semibold text-sm">Dr. E. Ainsworth</p>
+            <p className="text-xs text-gray-500">Oncologist</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const NavItem = ({ icon, label, screen }) => (
+    <button
+      onClick={() => setCurrentScreen(screen)}
+      className={\`w-full flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 \${currentScreen === screen ? 'bg-blue-50 text-blue-700' : 'text-gray-600 hover:bg-gray-100'}\`}>
+      {icon}
+      <span>{label}</span>
+    </button>
+  );
+
+  const DashboardScreen = () => (
+    <div className="space-y-8">
+      <header>
+        <h2 className="text-3xl font-bold text-gray-800">Dr. Ainsworth's Dashboard</h2>
+        <p className="text-gray-500 mt-1">Welcome back, here's your clinical trial overview.</p>
+      </header>
+
+      {/* Key Action Alert */}
+      <div
+        onClick={() => navigateToPatient(patientData)}
+        className="bg-yellow-50 border-l-4 border-yellow-400 p-4 flex items-start space-x-4 rounded-r-lg cursor-pointer hover:shadow-lg transition-shadow duration-200">
+        <AlertTriangle className="text-yellow-500 mt-1 flex-shrink-0" size={24} />
+        <div>
+          <h3 className="font-semibold text-yellow-800">New High-Confidence Matches Found</h3>
+          <p className="text-sm text-yellow-700 mt-1">Our AI has identified new potential trial matches for 2 of your patients based on recent EHR updates. Patient <span className="font-semibold">Robert Miller</span> has a 92% confidence match.</p>
+          <div className="text-sm font-semibold text-blue-600 mt-2 flex items-center">View Match Details <ArrowRight size={16} className="ml-1"/></div>
+        </div>
+      </div>
+      
+      {/* Metrics */}
+       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <MetricCard title="Active Patients Monitored" value="87" />
+        <MetricCard title="Patients Enrolled (Q2)" value="14" change="+2" />
+        <MetricCard title="Pending Pre-Screenings" value="3" />
+      </div>
+
+      {/* Enrollment Chart Placeholder */}
+      <div>
+        <h3 className="text-lg font-semibold text-gray-700 mb-3">Trial Enrollment Trend (Last 6 Months)</h3>
+        <div className="bg-white p-4 rounded-lg border border-gray-200 flex items-end justify-between h-48 space-x-4">
+            <Bar month="Jan" value={4} max={10} />
+            <Bar month="Feb" value={6} max={10} />
+            <Bar month="Mar" value={5} max={10} />
+            <Bar month="Apr" value={8} max={10} />
+            <Bar month="May" value={9} max={10} />
+            <Bar month="Jun" value={7} max={10} />
+        </div>
+      </div>
+    </div>
+  );
+
+  const MetricCard = ({ title, value, change }) => (
+    <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
+      <p className="text-sm text-gray-500">{title}</p>
+      <div className="flex items-baseline space-x-2 mt-1">
+        <p className="text-3xl font-bold text-gray-800">{value}</p>
+        {change && <p className="text-sm font-semibold text-teal-600">{change}</p>}
+      </div>
+    </div>
+  );
+
+  const Bar = ({ month, value, max }) => (
+    <div className="flex-1 flex flex-col items-center">
+        <div className="w-full h-full flex items-end">
+            <div style={{ height: \`\${(value / max) * 100}%\` }} className="w-full bg-blue-500 rounded-t-md hover:bg-blue-600 transition-colors duration-200"></div>
+        </div>
+        <p className="text-xs text-gray-500 mt-2">{month}</p>
+    </div>
+  );
+
+  const PatientDetailScreen = () => (
+    <div className="space-y-6">
+      <header>
+        <button onClick={() => setCurrentScreen('dashboard')} className="text-sm text-blue-600 hover:underline mb-2">← Back to Dashboard</button>
+        <h2 className="text-3xl font-bold text-gray-800">Trial Matches for {activePatient?.name}</h2>
+        <p className="text-gray-500 mt-1">{activePatient?.diagnosis} (ID: {activePatient?.id})</p>
+      </header>
+
+      {trialMatches.map((trial, index) => (
+        <TrialCard key={trial.nctId} trial={trial} isTopMatch={index === 0} />
+      ))}
+    </div>
+  );
+
+  const TrialCard = ({ trial, isTopMatch }) => (
+    <div className={\`bg-white rounded-lg border \${isTopMatch ? 'border-blue-500 shadow-lg' : 'border-gray-200 shadow-sm'} overflow-hidden transition-all duration-200\`}>
+      {isTopMatch && <div className="bg-blue-500 text-white text-xs font-bold uppercase p-2 text-center tracking-wider">Highest Confidence Match</div>}
+      <div className="p-6">
+        <div className="flex justify-between items-start">
+          <div>
+            <p className="font-semibold text-lg text-gray-800">{trial.title}</p>
+            <p className="text-sm text-gray-500 mt-1">{trial.nctId} · <span className="font-medium text-teal-600">{trial.status}</span></p>
+          </div>
+          <div className="text-center ml-6 flex-shrink-0">
+            <p className="text-3xl font-bold text-blue-600">{trial.confidence}%</p>
+            <p className="text-xs text-gray-500">Match Score</p>
+          </div>
+        </div>
+
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+          <div>
+            <h4 className="text-sm font-semibold text-gray-600">Matching Criteria Met:</h4>
+            <ul className="mt-1 list-disc list-inside space-y-1 text-sm text-gray-700">
+              {trial.matchReasons.map(reason => <li key={reason}>{reason}</li>)}
+            </ul>
+          </div>
+          <div>
+            <h4 className={\`text-sm font-semibold \${trial.mismatchReasons.length > 0 ? 'text-red-600' : 'text-gray-600'}">Potential Mismatches:</h4>
+            {trial.mismatchReasons.length > 0 ? (
+              <ul className="mt-1 list-disc list-inside space-y-1 text-sm text-red-700">
+                {trial.mismatchReasons.map(reason => <li key={reason}>{reason}</li>)}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500 mt-1">None identified.</p>
+            )}
+          </div>
+        </div>
+
+        {isTopMatch && (
+          <div className="mt-6 pt-4 border-t border-gray-200 flex justify-end">
+            <button 
+              onClick={() => setCurrentScreen('confirmation')}
+              className="bg-blue-600 text-white font-semibold py-2 px-5 rounded-lg flex items-center space-x-2 hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md">
+              <FileText size={18} />
+              <span>Generate Pre-Screening Package</span>
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const ConfirmationScreen = () => (
+    <div className="text-center bg-white p-12 rounded-lg border border-gray-200 shadow-sm">
+      <CheckCircle2 className="mx-auto text-teal-500" size={64} />
+      <h2 className="mt-6 text-2xl font-bold text-gray-800">Pre-Screening Package Generated</h2>
+      <p className="mt-2 text-gray-600 max-w-md mx-auto">
+        The package for <span className="font-semibold">{activePatient?.name}</span> and trial <span className="font-semibold">{trialMatches[0].nctId}</span> has been securely sent to your clinical trial coordination team.
+      </p>
+      <button onClick={() => setCurrentScreen('dashboard')} className="mt-8 bg-gray-100 text-gray-700 font-semibold py-2 px-5 rounded-lg hover:bg-gray-200 transition-all duration-200">
+        Return to Dashboard
+      </button>
+    </div>
+  );
+  
+  const PlaceholderScreen = ({title}) => (
+      <div>
+          <h2 className="text-3xl font-bold text-gray-800">{title}</h2>
+          <p className="text-gray-500 mt-2">This section is under development.</p>
+      </div>
+  );
+
+
+  const renderScreen = () => {
+    switch (currentScreen) {
+      case 'dashboard': return <DashboardScreen />;
+      case 'patientDetail': return <PatientDetailScreen />;
+      case 'confirmation': return <ConfirmationScreen />;
+      case 'patients': return <PlaceholderScreen title="My Patients" />;
+      case 'trials': return <PlaceholderScreen title="Clinical Trials" />;
+      case 'settings': return <PlaceholderScreen title="Settings" />;
+      default: return <DashboardScreen />;
+    }
+  };
+
+  return (
+    <div className="flex h-screen bg-gray-50 font-sans text-gray-900" style={{ fontFamily: \`-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif\` }}>
+      <SideBar />
+      <main className="flex-1 p-8 overflow-y-auto">
+        <div className="max-w-5xl mx-auto">
+          {renderScreen()}
+        </div>
+      </main>
+    </div>
+  );
+}
+`;
+                    const componentName = "TrialMatchPrototype";
+                    const cssCode = ``;
+                    const iframe = document.getElementById("prototype-frame");
+                    const doc = iframe.contentDocument || iframe.contentWindow.document;
+                    doc.open();
+                    doc.write(`
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <script src="https://unpkg.com/react@18/umd/react.development.js"><\/script>
+                            <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"><\/script>
+                            <script src="https://unpkg.com/@babel/standalone/babel.min.js"><\/script>
+                            <script src="https://cdn.tailwindcss.com"><\/script>
+                            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+                            <style>
+                                body { margin: 0; font-family: 'Inter', system-ui, sans-serif; }
+                                .error { color: #991b1b; background: #fee2e2; padding: 20px; border-radius: 8px; margin: 20px; }
+                                ${cssCode}
+                            </style>
+                        </head>
+                        <body>
+                            <div id="root"></div>
+                            <script type="text/babel">
+                                // Simple SVG icon components (Lucide-style)
+                                const createIcon = (paths) => ({ className, ...props }) =>
+                                    React.createElement('svg', {
+                                        xmlns: 'http://www.w3.org/2000/svg',
+                                        width: 24, height: 24, viewBox: '0 0 24 24',
+                                        fill: 'none', stroke: 'currentColor', strokeWidth: 2,
+                                        strokeLinecap: 'round', strokeLinejoin: 'round',
+                                        className, ...props
+                                    }, ...paths.map((d, i) => React.createElement('path', { key: i, d })));
+
+                                // Common icons
+                                const Search = createIcon(['M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z']);
+                                const Bell = createIcon(['M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9', 'M13.73 21a2 2 0 01-3.46 0']);
+                                const Settings = createIcon(['M12.22 2h-.44a2 2 0 00-2 2v.18a2 2 0 01-1 1.73l-.43.25a2 2 0 01-2 0l-.15-.08a2 2 0 00-2.73.73l-.22.38a2 2 0 00.73 2.73l.15.1a2 2 0 011 1.72v.51a2 2 0 01-1 1.74l-.15.09a2 2 0 00-.73 2.73l.22.38a2 2 0 002.73.73l.15-.08a2 2 0 012 0l.43.25a2 2 0 011 1.73V20a2 2 0 002 2h.44a2 2 0 002-2v-.18a2 2 0 011-1.73l.43-.25a2 2 0 012 0l.15.08a2 2 0 002.73-.73l.22-.39a2 2 0 00-.73-2.73l-.15-.08a2 2 0 01-1-1.74v-.5a2 2 0 011-1.74l.15-.09a2 2 0 00.73-2.73l-.22-.38a2 2 0 00-2.73-.73l-.15.08a2 2 0 01-2 0l-.43-.25a2 2 0 01-1-1.73V4a2 2 0 00-2-2z', 'M12 8a4 4 0 100 8 4 4 0 000-8z']);
+                                const Plus = createIcon(['M12 5v14', 'M5 12h14']);
+                                const Filter = createIcon(['M22 3H2l8 9.46V19l4 2v-8.54L22 3z']);
+                                const BarChart3 = createIcon(['M18 20V10', 'M12 20V4', 'M6 20v-6']);
+                                const ChevronRight = createIcon(['M9 18l6-6-6-6']);
+                                const ChevronDown = createIcon(['M6 9l6 6 6-6']);
+                                const ChevronUp = createIcon(['M18 15l-6-6-6 6']);
+                                const ChevronLeft = createIcon(['M15 18l-6-6 6-6']);
+                                const AlertTriangle = createIcon(['M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z', 'M12 9v4', 'M12 17h.01']);
+                                const TrendingUp = createIcon(['M23 6l-9.5 9.5-5-5L1 18']);
+                                const TrendingDown = createIcon(['M23 18l-9.5-9.5-5 5L1 6']);
+                                const ArrowRight = createIcon(['M5 12h14', 'M12 5l7 7-7 7']);
+                                const ArrowLeft = createIcon(['M19 12H5', 'M12 19l-7-7 7-7']);
+                                const Check = createIcon(['M20 6L9 17l-5-5']);
+                                const X = createIcon(['M18 6L6 18', 'M6 6l12 12']);
+                                const Menu = createIcon(['M3 12h18', 'M3 6h18', 'M3 18h18']);
+                                const Home = createIcon(['M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z']);
+                                const User = createIcon(['M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2', 'M12 3a4 4 0 100 8 4 4 0 000-8z']);
+                                const Users = createIcon(['M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2', 'M23 21v-2a4 4 0 00-3-3.87', 'M16 3.13a4 4 0 010 7.75', 'M9 7a4 4 0 100 8 4 4 0 000-8z']);
+                                const Mail = createIcon(['M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z', 'M22 6l-10 7L2 6']);
+                                const Calendar = createIcon(['M19 4H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2z', 'M16 2v4', 'M8 2v4', 'M3 10h18']);
+                                const Clock = createIcon(['M12 2a10 10 0 100 20 10 10 0 000-20z', 'M12 6v6l4 2']);
+                                const Edit = createIcon(['M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7', 'M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z']);
+                                const Trash = createIcon(['M3 6h18', 'M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2']);
+                                const Save = createIcon(['M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z', 'M17 21v-8H7v8', 'M7 3v5h8']);
+                                const Download = createIcon(['M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4', 'M7 10l5 5 5-5', 'M12 15V3']);
+                                const Upload = createIcon(['M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4', 'M17 8l-5-5-5 5', 'M12 3v12']);
+                                const RefreshCw = createIcon(['M23 4v6h-6', 'M1 20v-6h6', 'M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15']);
+                                const Eye = createIcon(['M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z', 'M12 9a3 3 0 100 6 3 3 0 000-6z']);
+                                const Info = createIcon(['M12 2a10 10 0 100 20 10 10 0 000-20z', 'M12 16v-4', 'M12 8h.01']);
+                                const AlertCircle = createIcon(['M12 2a10 10 0 100 20 10 10 0 000-20z', 'M12 8v4', 'M12 16h.01']);
+                                const CheckCircle = createIcon(['M22 11.08V12a10 10 0 11-5.93-9.14', 'M22 4L12 14.01l-3-3']);
+                                const CheckCircle2 = createIcon(['M12 2a10 10 0 100 20 10 10 0 000-20z', 'M9 12l2 2 4-4']);
+                                const DollarSign = createIcon(['M12 1v22', 'M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6']);
+                                const CreditCard = createIcon(['M21 4H3a2 2 0 00-2 2v12a2 2 0 002 2h18a2 2 0 002-2V6a2 2 0 00-2-2z', 'M1 10h22']);
+                                const PieChart = createIcon(['M21.21 15.89A10 10 0 118 2.83', 'M22 12A10 10 0 0012 2v10z']);
+                                const LineChart = createIcon(['M23 6l-9.5 9.5-5-5L1 18']);
+                                const Activity = createIcon(['M22 12h-4l-3 9L9 3l-3 9H2']);
+                                const Zap = createIcon(['M13 2L3 14h9l-1 8 10-12h-9l1-8z']);
+                                const Wallet = createIcon(['M21 5H3a2 2 0 00-2 2v10a2 2 0 002 2h18a2 2 0 002-2V7a2 2 0 00-2-2z', 'M1 10h22']);
+                                const Banknote = createIcon(['M2 6h20v12H2z', 'M12 12a3 3 0 100-1 3 3 0 000 1z']);
+                                const LayoutDashboard = createIcon(['M3 3h7v9H3z', 'M14 3h7v5h-7z', 'M14 12h7v9h-7z', 'M3 16h7v5H3z']);
+                                const FileCog = createIcon(['M4 6V4a2 2 0 012-2h8.5L20 7.5V20a2 2 0 01-2 2H6a2 2 0 01-2-2v-2', 'M14 2v6h6', 'M12 12a3 3 0 100 6 3 3 0 000-6z']);
+                                const Plug = createIcon(['M12 22v-5', 'M9 8V2', 'M15 8V2', 'M18 8v5a6 6 0 01-12 0V8z']);
+                                const Phone = createIcon(['M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z']);
+                                const Star = createIcon(['M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z']);
+                                const Heart = createIcon(['M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z']);
+                                const ExternalLink = createIcon(['M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6', 'M15 3h6v6', 'M10 14L21 3']);
+                                const Link = createIcon(['M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71', 'M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71']);
+                                const MoreHorizontal = createIcon(['M12 13a1 1 0 100-2 1 1 0 000 2z', 'M19 13a1 1 0 100-2 1 1 0 000 2z', 'M5 13a1 1 0 100-2 1 1 0 000 2z']);
+                                const Loader = createIcon(['M12 2v4', 'M12 18v4', 'M4.93 4.93l2.83 2.83', 'M16.24 16.24l2.83 2.83', 'M2 12h4', 'M18 12h4', 'M4.93 19.07l2.83-2.83', 'M16.24 7.76l2.83-2.83']);
+
+                                try {
+                                    // Define the component
+                                    ${code}
+                                    // Render it
+                                    const root = ReactDOM.createRoot(document.getElementById('root'));
+                                    root.render(React.createElement(${componentName}));
+                                } catch(e) {
+                                    document.getElementById('root').innerHTML = '<div class="error"><strong>Prototype Render Error:</strong> ' + e.message + '</div>';
+                                    console.error('Prototype error:', e);
+                                }
+                            <\/script>
+                        </body>
+                        </html>
+                    `);
+                    doc.close();
+                })();
+            </script>
+<div class="mt-4 p-3 bg-slate-50 rounded-lg"><span class="text-xs font-medium text-slate-500 uppercase">Interactivity</span><p class="text-sm text-slate-700 mt-1">['Clickable sidebar navigation items change the main content view by updating the `currentScreen` state.', "The prominent dashboard alert is clickable, triggering a state change that navigates the user to a specific patient's detail screen.", "The 'Generate Pre-Screening Package' button on the patie</p></div></div>
+        <div class="section-card" id="stakeholders">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Stakeholder Views</h2>
+            <div class="space-y-4">
+
+                <div class="border rounded-lg p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="text-2xl">💰</span>
+                        <h3 class="text-lg font-semibold text-slate-800">CFO</h3>
+                    </div>
+                    <p class="text-slate-700 mb-4">This initiative targets a clear, high-pain market need with a recurring revenue model projected to contribute 90% of total income. The primary revenue stream is a B2B SaaS subscription for oncology providers, supplemented by a secondary data and analytics offering. The cost structure is heavily weighted towards personnel and essential HIPAA-compliant infrastructure, representing a significant upfront investment. The financial model projects a burn rate of approximately $140,000 per month in the first year, with a total Year 1 cost of $2.16M against a projected revenue of $180,000.
+
+While the business case is compelling, it's crucial to acknowledge the current evidence base. The financial projections, including pricing tiers, customer adoption rates, and time to break-even (projected Month 18), are largely based on E4-level hypotheses. The top validation priorities identified in the evidence index are all financial metrics. This represents a calculated risk: investing in building a defensible platform to capture a valuable market, with the understanding that key revenue assumptions must be rigorously tested and validated in the initial go-to-market phase.</p>
+<div><h4 class="font-medium text-slate-800 mb-2">Anticipated Objections</h4><div class="space-y-2"><div class="border-l-4 border-amber-400 bg-amber-50 p-3 rounded-r"><p class="text-slate-800"><strong>Q:</strong> The revenue projections seem aggressive and are based on weak evidence (hypotheses).</p><p class="text-slate-600 mt-1"><strong>A:</strong> This is a valid concern. The projections are intentionally modeled to show the potential scale of the opportunity. However, they are explicitly flagged as hypotheses needing validation. Our go-to-market strategy, starting with a focused beachhead market in Australia, is designed to test and refine these assumptions—specifically pricing and sales cycle length—with a controlled initial investment before scaling.</p></div><div class="border-l-4 border-amber-400 bg-amber-50 p-3 rounded-r"><p class="text-slate-800"><strong>Q:</strong> The Customer Acquisition Cost (CAC) of $5k-$10k for direct sales feels low for enterprise healthcare.</p><p class="text-slate-600 mt-1"><strong>A:</strong> The direct sales CAC reflects a blended model. While direct outreach to large hospital systems will be at the higher end of that range, our channel strategy also includes lower-cost acquisition through industry conferences and webinars. These channels serve to warm leads and reduce the effort required from the direct sales team, thereby lowering the blended average CAC.</p></div><div class="border-l-4 border-amber-400 bg-amber-50 p-3 rounded-r"><p class="text-slate-800"><strong>Q:</strong> A $2M+ annual burn rate is substantial before we have significant product-market fit.</p><p class="text-slate-600 mt-1"><strong>A:</strong> We agree this is a significant investment. The cost structure is driven by two foundational necessities: attracting a top-tier technical and product team, and establishing a secure, HIPAA-compliant infrastructure from day one. Postponing these investments would incur greater technical debt and compliance risk, ultimately hindering our ability to scale and secure enterprise customers.</p></div></div></div></div>
+                <div class="border rounded-lg p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="text-2xl">🔒</span>
+                        <h3 class="text-lg font-semibold text-slate-800">CISO</h3>
+                    </div>
+                    <p class="text-slate-700 mb-4">This project's core function involves processing Protected Health Information (PHI) extracted directly from hospital EHR systems, placing it squarely under HIPAA regulations in the US market. The platform will act as a Business Associate to our healthcare provider clients. The technical and regulatory plans explicitly acknowledge this high-risk environment. The architecture is designed to be HIPAA-compliant from the outset, with budget allocated for compliant hosting, and the regulatory section outlines key requirements like implementing technical safeguards, entering into BAAs, and complying with breach notification rules.
+
+The proposed microservices architecture aids in risk mitigation by isolating the high-risk services that handle PHI (e.g., EHR data ingestion, NLP analysis) from other parts of the application. This reduces the potential blast radius of a security incident. While the high-level strategy is sound, detailed implementation plans for security controls, data governance, and incident response are necessary next steps.</p>
+<div><h4 class="font-medium text-slate-800 mb-2">Anticipated Objections</h4><div class="space-y-2"><div class="border-l-4 border-amber-400 bg-amber-50 p-3 rounded-r"><p class="text-slate-800"><strong>Q:</strong> Stating the need for HIPAA compliance is simple, but the implementation is complex and costly. What's the concrete plan?</p><p class="text-slate-600 mt-1"><strong>A:</strong> You are correct; this is a non-trivial undertaking. The plan treats compliance as a foundational requirement, not an add-on. We have budgeted for HIPAA-compliant hosting and identified the need for BAAs and specific safeguards per the Security Rule. The immediate next step post-approval is to develop a detailed security roadmap, including selection of a compliant cloud partner and drafting our specific security policies.</p></div><div class="border-l-4 border-amber-400 bg-amber-50 p-3 rounded-r"><p class="text-slate-800"><strong>Q:</strong> Direct EHR integration is our single greatest point of failure and attack vector.</p><p class="text-slate-600 mt-1"><strong>A:</strong> We agree. This is the most sensitive part of the system. The microservices architecture is specifically designed to isolate this functionality. The 'EHR Data Extraction' service will have its own security controls, limited permissions, and will be the only component that interacts directly with hospital systems. All data will be encrypted in transit and at rest, and we will enter into comprehensive BAAs that clearly define security responsibilities.</p></div><div class="border-l-4 border-amber-400 bg-amber-50 p-3 rounded-r"><p class="text-slate-800"><strong>Q:</strong> A data breach seems inevitable. Where is the incident response plan?</p><p class="text-slate-600 mt-1"><strong>A:</strong> The current plan acknowledges our obligations under the HIPAA Breach Notification Rule. A detailed, actionable Incident Response Plan is a top priority deliverable for the CISO/Security Lead, to be developed in the first 90 days. This plan will include protocols for identification, containment, eradication, recovery, and post-incident analysis and reporting.</p></div></div></div></div>
+                <div class="border rounded-lg p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="text-2xl">🏛️</span>
+                        <h3 class="text-lg font-semibold text-slate-800">ARB</h3>
+                    </div>
+                    <p class="text-slate-700 mb-4">The proposed technical solution is a microservices architecture built on a modern, robust technology stack: Python with FastAPI for the backend and React for the frontend. The choice of a microservices architecture is justified by the need to isolate the complex, regulated NLP and EHR integration components, which allows for independent scaling, deployment, and fault tolerance. This approach directly supports the business's need for a secure and maintainable platform that can expand geographically.
+
+The technology stack leverages Python's strengths in data science and NLP, which is core to the product's value proposition, while FastAPI provides high-performance API capabilities. React is a sound choice for building the interactive UIs required for the various user portals. The most significant technical challenge identified is the EHR integration, which is appropriately prioritized as the first and most critical epic (EPIC-001) in the product requirements. This epic represents the largest technical risk and will require significant focus to de-risk early in the development lifecycle.</p>
+<div><h4 class="font-medium text-slate-800 mb-2">Anticipated Objections</h4><div class="space-y-2"><div class="border-l-4 border-amber-400 bg-amber-50 p-3 rounded-r"><p class="text-slate-800"><strong>Q:</strong> Microservices introduce significant operational overhead and complexity, especially for a small initial team.</p><p class="text-slate-600 mt-1"><strong>A:</strong> This is a valid trade-off. We believe the upfront complexity is justified. Isolating the HIPAA-regulated EHR/NLP service from the core application logic is not just a scalability choice, but a critical architectural decision for security and compliance. This separation allows us to apply stricter controls and monitoring to the sensitive data service while allowing the user-facing applications to evolve more rapidly.</p></div><div class="border-l-4 border-amber-400 bg-amber-50 p-3 rounded-r"><p class="text-slate-800"><strong>Q:</strong> The user story 'integrate with the Cerner EHR system' grossly underestimates the complexity of EHR integration.</p><p class="text-slate-600 mt-1"><strong>A:</strong> We completely agree. The user story title is a simplification for the epic. The high story point estimate (8) for this initial story reflects this complexity. This epic (EPIC-001) is our top priority because it carries the most risk. Our plan is to build a dedicated team for this and create a proof-of-concept with a sandbox environment before we write a single line of application code.</p></div><div class="border-l-4 border-amber-400 bg-amber-50 p-3 rounded-r"><p class="text-slate-800"><strong>Q:</strong> Why not use a more established enterprise stack like Java/Spring or .NET, which are common in healthcare IT?</p><p class="text-slate-600 mt-1"><strong>A:</strong> While those stacks are viable, our choice of Python was deliberate. The core value of our platform lies in our NLP and data analysis capabilities. Python is the de facto standard for the data science community, giving us access to the best libraries, tools, and talent. FastAPI provides the performance we need for our API layer, making the Python ecosystem a superior choice for our specific use case.</p></div></div></div></div>
+                <div class="border rounded-lg p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="text-2xl">📦</span>
+                        <h3 class="text-lg font-semibold text-slate-800">VP Product</h3>
+                    </div>
+                    <p class="text-slate-700 mb-4">This initiative is grounded in a well-defined and severe market pain: oncologists and their staff are overwhelmed by the manual, time-consuming process of screening patients for clinical trials. Our primary persona, Dr. Eleanor Ainsworth, encapsulates this frustration, and her 'jobs to be done' align directly with our core value proposition: automating patient data analysis to rapidly identify eligible trial candidates. This focus on the provider's workflow is our key differentiator.
+
+While competitors like Trialjectory are patient-centric, we aim to become an indispensable tool within the clinical setting by integrating with the EHR. This B2B focus creates a stickier product and a more defensible market position. The initial product roadmap, led by the critical 'EHR Data Extraction and NLP Analysis' epic, is designed to deliver the highest value feature first. While the persona itself is a hypothesis (E4), it is strongly supported by industry data (E3) on physician burnout and administrative burden. Our go-to-market strategy allows us to validate this persona in a contained beachhead market before scaling.</p>
+<div><h4 class="font-medium text-slate-800 mb-2">Anticipated Objections</h4><div class="space-y-2"><div class="border-l-4 border-amber-400 bg-amber-50 p-3 rounded-r"><p class="text-slate-800"><strong>Q:</strong> This market seems crowded. How can we win against established players like Trialjectory?</p><p class="text-slate-600 mt-1"><strong>A:</strong> Our differentiation is our business model and point of integration. Competitors are primarily B2C, focused on patient empowerment. We are B2B, focused on clinician workflow efficiency. By integrating with the EHR, we solve the problem at its source, saving the care team time directly. We are selling shovels to the gold miners, not maps to the prospectors. This focus on the provider is our unique wedge into the market.</p></div><div class="border-l-4 border-amber-400 bg-amber-50 p-3 rounded-r"><p class="text-slate-800"><strong>Q:</strong> Dr. Ainsworth is a hypothesis. What if oncologists don't actually want this or aren't willing to pay for it?</p><p class="text-slate-600 mt-1"><strong>A:</strong> This is the most critical product risk. While the persona is a hypothesis (E4), it's built on a foundation of industry-level evidence (E3) about physician pain points. Our GTM strategy is designed to mitigate this risk by starting with deep customer discovery in a small number of target hospitals in Sydney and Melbourne. Validating Dr. Ainsworth's pains and her organization's willingness to pay is the primary goal of our first six months.</p></div><div class="border-l-4 border-amber-400 bg-amber-50 p-3 rounded-r"><p class="text-slate-800"><strong>Q:</strong> The first epic is a massive backend integration project. Won't it take too long to deliver tangible user value?</p><p class="text-slate-600 mt-1"><strong>A:</strong> For our persona, the backend integration *is* the tangible user value. The output of EPIC-001 is a generated pre-screening package that replaces hours of manual chart review. This isn't just a technical prerequisite; it's the 'magic moment' for our user. We will deliver value by showing them the output of this process on test patients long before the full UI is polished, proving the core value proposition early.</p></div></div></div></div></div></div>
+        <div class="section-card" id="validation">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Validation Playbook</h2>
+            <div class="space-y-4">
+
+                <div class="border rounded-lg p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold">1</span>
+                        <h3 class="font-semibold text-slate-800">Oncologist & Coordinator Problem Discovery Interviews</h3>
+                    </div>
+                    <p class='text-sm text-slate-500 mb-2'>Validates: PS-1</p>
+                    <p class="text-slate-700 mb-3">Conduct 30-45 minute semi-structured remote interviews. Use a prepared script focused on their current process for identifying and screening patients for trials. Do NOT pitch the product. Focus on understanding their current workflow, tools, time spent per patient, biggest frustrations, and the impact of failing to enroll patients.</p>
+                    <div class="grid md:grid-cols-2 gap-3">
+                        <div class='bg-green-50 p-3 rounded'><strong class='text-green-800'>Success:</strong> At least 7/10 interviewees independently identify 'manual review of eligibility criteria' as a top 3 workflow bottleneck and report spending >5 hours per week on screening-related activities.</div>
+                        <div class='bg-red-50 p-3 rounded'><strong class='text-red-800'>Failure:</strong> Fewer than 4/10 interviewees consider trial matching a significant pain point, or they indicate existing solutions are 'good enough'.</div>
+                    </div>
+                </div>
+
+                <div class="border rounded-lg p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold">2</span>
+                        <h3 class="font-semibold text-slate-800">Concierge 'Human-Powered AI' Matching Service</h3>
+                    </div>
+                    <p class='text-sm text-slate-500 mb-2'>Validates: T-1</p>
+                    <p class="text-slate-700 mb-3">1. Sign a BAA to handle de-identified patient data. 2. Receive 2-3 anonymized patient profiles from each participating oncologist. 3. Manually (using a human expert) parse the patient data and search ClinicalTrials.gov. 4. Produce a 'Pre-Screening Package' for each patient, mimicking the final product's output (top 3 trials, confidence scores, explanation of match). 5. Schedule a 30-minute review session to present the results and gather feedback on accuracy, utility, and time saved.</p>
+                    <div class="grid md:grid-cols-2 gap-3">
+                        <div class='bg-green-50 p-3 rounded'><strong class='text-green-800'>Success:</strong> At least 3/5 participating oncologists agree that the generated package is >90% accurate and would save them at least 1-2 hours of work per patient.</div>
+                        <div class='bg-red-50 p-3 rounded'><strong class='text-red-800'>Failure:</strong> Participants consistently find major errors in the matches or state the report format is not useful for their workflow.</div>
+                    </div>
+                </div>
+
+                <div class="border rounded-lg p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold">3</span>
+                        <h3 class="font-semibold text-slate-800">Workflow & Usability Prototype Test</h3>
+                    </div>
+                    <p class='text-sm text-slate-500 mb-2'>Validates: SV-2</p>
+                    <p class="text-slate-700 mb-3">Create a high-fidelity, clickable prototype (e.g., in Figma) that simulates the core user workflow. The prototype should show: a patient dashboard, a list of matched trials, confidence scores, and a drill-down view with matching/mismatching criteria highlighted. Conduct moderated usability tests where users are asked to complete specific tasks (e.g., 'For this patient, find the most suitable trial and review the eligibility criteria'). Record task completion rates and collect qualitative feedback.</p>
+                    <div class="grid md:grid-cols-2 gap-3">
+                        <div class='bg-green-50 p-3 rounded'><strong class='text-green-800'>Success:</strong> 90% of users can complete the core tasks without assistance. Users rate the 'clarity of matching explanation' as 4/5 or higher on average.</div>
+                        <div class='bg-red-50 p-3 rounded'><strong class='text-red-800'>Failure:</strong> More than 30% of users are unable to complete a key task, or users express significant confusion or distrust in the UI.</div>
+                    </div>
+                </div>
+
+                <div class="border rounded-lg p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold">4</span>
+                        <h3 class="font-semibold text-slate-800">Pricing & Purchase Intent Survey</h3>
+                    </div>
+                    <p class='text-sm text-slate-500 mb-2'>Validates: BC-2</p>
+                    <p class="text-slate-700 mb-3">Design a 10-minute online survey. First, present the value proposition validated in EXP-1 and EXP-2 (e.g., 'A tool that reduces screening time by X hours and increases enrollment by Y%'). Then, use the Van Westendorp Price Sensitivity Meter to ask four pricing questions ('too cheap', 'a bargain', 'getting expensive', 'too expensive'). Also include questions about their role in the purchasing process and typical budget cycles.</p>
+                    <div class="grid md:grid-cols-2 gap-3">
+                        <div class='bg-green-50 p-3 rounded'><strong class='text-green-800'>Success:</strong> The 'optimal price point' from the Van Westendorp analysis falls within 20% of the financial model's assumed price. At least 30% of respondents identify themselves as having budget influence.</div>
+                        <div class='bg-red-50 p-3 rounded'><strong class='text-red-800'>Failure:</strong> The acceptable price point is more than 50% below the price needed for the business model to be viable.</div>
+                    </div>
+                </div>
+
+                <div class="border rounded-lg p-4">
+                    <div class="flex items-center gap-3 mb-3">
+                        <span class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center text-purple-600 font-bold">5</span>
+                        <h3 class="font-semibold text-slate-800">Patient Demand Smoke Test</h3>
+                    </div>
+                    <p class='text-sm text-slate-500 mb-2'>Validates: P-3</p>
+                    <p class="text-slate-700 mb-3">Create a simple landing page with a clear value proposition for patients: 'Find clinical trials you may be eligible for. Get a personalized report to discuss with your doctor.' Include a single call-to-action: 'Join the Waitlist'. The page should be purely for measuring intent; no product exists behind it. Run the ad campaign for 2 weeks and measure conversion rates.</p>
+                    <div class="grid md:grid-cols-2 gap-3">
+                        <div class='bg-green-50 p-3 rounded'><strong class='text-green-800'>Success:</strong> Achieve a visitor-to-waitlist signup conversion rate of > 4%.</div>
+                        <div class='bg-red-50 p-3 rounded'><strong class='text-red-800'>Failure:</strong> Conversion rate is < 1%, indicating low patient-driven demand or ineffective messaging.</div>
+                    </div>
+                </div>
+</div></div>
+        <div class="section-card" id="claims">
+            <h2 class="text-2xl font-bold text-slate-800 mb-4">Cross-Reference Claims</h2>
+            <p class="text-slate-600 mb-4">All claims extracted with evidence grading.</p>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-3 py-2 text-left">ID</th>
+                            <th class="px-3 py-2 text-left">Claim</th>
+                            <th class="px-3 py-2 text-center">Tier</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200">
+<tr><td class="px-3 py-2 font-mono text-slate-500">MI-1</td><td class="px-3 py-2 text-slate-700">The global oncology clinical trials market was valued at $16.4 billion in 2023....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E3_INDUSTRY px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E3_INDUSTRY</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-2</td><td class="px-3 py-2 text-slate-700">The global oncology clinical trials market is projected to reach $26.7 billion by 2033....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E3_INDUSTRY px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E3_INDUSTRY</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-3</td><td class="px-3 py-2 text-slate-700">Assuming 10% of global market is addressable initially (Australia and US), the Serviceable Addressable Market (SAM) is $...</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E5_ASSUMPTION px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E5_ASSUMPTION</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-4</td><td class="px-3 py-2 text-slate-700">Assuming an initial target of 1% market share within SAM, the Serviceable Obtainable Market (SOM) is $16.4 million....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E5_ASSUMPTION px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E5_ASSUMPTION</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-5</td><td class="px-3 py-2 text-slate-700">Oncologists spend a significant amount of time manually searching for clinical trials for their patients....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E3_INDUSTRY px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E3_INDUSTRY</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-6</td><td class="px-3 py-2 text-slate-700">Clinical trial coordinators are overwhelmed with the administrative burden of screening patients for eligibility....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E3_INDUSTRY px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E3_INDUSTRY</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-7</td><td class="px-3 py-2 text-slate-700">Patients struggle to understand complex clinical trial protocols and eligibility criteria....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-8</td><td class="px-3 py-2 text-slate-700">Inaccurate or incomplete data in EHR systems can lead to missed opportunities for clinical trial enrollment....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E3_INDUSTRY px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E3_INDUSTRY</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-9</td><td class="px-3 py-2 text-slate-700">There is a lack of interoperability between different EHR systems and clinical trial databases....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E3_INDUSTRY px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E3_INDUSTRY</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-10</td><td class="px-3 py-2 text-slate-700">Oncologists may be hesitant to rely on AI-driven tools for clinical trial matching....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-11</td><td class="px-3 py-2 text-slate-700">The accuracy of NLP in extracting eligibility criteria from unstructured trial protocols may be lower than expected....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-12</td><td class="px-3 py-2 text-slate-700">The market is fragmented with a mix of specialized AI-powered solutions and broader oncology management platforms....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-13</td><td class="px-3 py-2 text-slate-700">Increasing use of AI and machine learning in healthcare is a market trend....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E3_INDUSTRY px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E3_INDUSTRY</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">MI-14</td><td class="px-3 py-2 text-slate-700">Growing demand for personalized cancer treatment is a market trend....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E3_INDUSTRY px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E3_INDUSTRY</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-1</td><td class="px-3 py-2 text-slate-700">Trialjectory is an AI-powered platform that empowers cancer patients to find and understand clinical trial options....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E2_VERIFIED px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E2_VERIFIED</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-2</td><td class="px-3 py-2 text-slate-700">Trialjectory was founded in 2018 and has received Series A funding of $20M....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E2_VERIFIED px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E2_VERIFIED</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-3</td><td class="px-3 py-2 text-slate-700">Antidote.me connects patients with clinical trials using a comprehensive matching engine....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E2_VERIFIED px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E2_VERIFIED</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-4</td><td class="px-3 py-2 text-slate-700">Antidote.me is free for patients, and subscription-based for pharma and research institutions....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E2_VERIFIED px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E2_VERIFIED</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-5</td><td class="px-3 py-2 text-slate-700">Deep Lens is an AI platform for faster, more accurate clinical trial screening and enrollment....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E2_VERIFIED px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E2_VERIFIED</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-6</td><td class="px-3 py-2 text-slate-700">Deep Lens has received $17.2M in funding....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E2_VERIFIED px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E2_VERIFIED</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-7</td><td class="px-3 py-2 text-slate-700">Massive Bio is an AI-enabled platform connecting cancer patients to clinical trials, focusing on precision oncology....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E2_VERIFIED px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E2_VERIFIED</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-8</td><td class="px-3 py-2 text-slate-700">Massive Bio has Series B funding of $24.1M....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E2_VERIFIED px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E2_VERIFIED</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-9</td><td class="px-3 py-2 text-slate-700">Clara Health was acquired by Luminate Health....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E2_VERIFIED px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E2_VERIFIED</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-10</td><td class="px-3 py-2 text-slate-700">Luminate Health's pricing is subscription-based for employers and health plans....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E2_VERIFIED px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E2_VERIFIED</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-11</td><td class="px-3 py-2 text-slate-700">Flatiron Health aggregates and analyzes real-world oncology data, which can be used to improve trial design and patient ...</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-12</td><td class="px-3 py-2 text-slate-700">Google Health has the technology, data, and resources to develop a clinical trial matching platform....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CL-13</td><td class="px-3 py-2 text-slate-700">Proprietary NLP algorithms for accurate eligibility criteria extraction are hard to replicate....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CP-1</td><td class="px-3 py-2 text-slate-700">Dr. Eleanor Ainsworth is a Principal Investigator and Medical Oncologist at a Large Academic Hospital....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CP-2</td><td class="px-3 py-2 text-slate-700">Dr. Ainsworth's team size is 5, consisting of research nurses and data managers....</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td class="px-3 py-2 font-mono text-slate-500">CP-3</td><td class="px-3 py-2 text-slate-700">Dr. Ainsworth's goals include increasing patient enrollment in clinical trials, publishing high-impact research findings...</td><td class="px-3 py-2 text-center"><span class="tier-EvidenceTier.E4_HYPOTHESIS px-2 py-0.5 rounded text-xs font-medium">EvidenceTier.E4_HYPOTHESIS</span></td></tr><tr><td colspan="3" class="px-3 py-2 text-center text-slate-500">... and 98 more claims</td></tr></tbody></table></div></div>
+    </main>
+
+    <footer class="bg-white border-t py-6">
+        <div class="max-w-6xl mx-auto px-6 text-center text-slate-500 text-sm">
+            Generated by Seedcraft v3.0 | 2026-02-08 12:16:28
+        </div>
+    </footer>
+
+    <script>hljs.highlightAll();</script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+[
+  {
+    "pack_id": "banking",
+    "pack_name": "AI Cash Flow Forecasting for SME Banking",
+    "session_id": "disc_20260207_88ee76c8",
+    "status": "completed",
+    "duration_seconds": 582.235995,
+    "iterations": 1,
+    "total_tokens": 573722,
+    "cross_reference": {
+      "valid": true,
+      "total_claims": 144,
+      "tier_distribution": {
+        "E5": 62,
+        "E3": 12,
+        "E4": 63,
+        "E2": 7
+      },
+      "evidence_score": 0.265625,
+      "prefixes_found": [
+        "BC",
+        "MI",
+        "CP",
+        "GM",
+        "ES",
+        "PR",
+        "TA",
+        "FM",
+        "RM",
+        "CL"
+      ],
+      "grounded_claims": 19,
+      "hypothesis_claims": 125,
+      "claims_with_sources": 18,
+      "claims_with_validation": 144,
+      "warning": "Low grounded claim percentage: 13.2% (expected 30%+)"
+    },
+    "sections": {
+      "sections": {
+        "customer_research": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "competitive_analysis": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "detailed_personas": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "business_case": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "gtm_plan": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "financial_model": {
+          "present": true,
+          "has_content": true,
+          "type": "dict",
+          "monthly_projections": 12
+        },
+        "product_requirements": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "technical_architecture": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "legal_regulatory_review": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "risk_assessment": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "wireframes": {
+          "present": true,
+          "has_content": true,
+          "type": "dict",
+          "screen_count": 7
+        },
+        "prototype": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        },
+        "stakeholder_views": {
+          "present": true,
+          "has_content": true,
+          "type": "dict",
+          "view_roles": [
+            "CFO",
+            "CISO",
+            "ARB",
+            "VP Product"
+          ]
+        },
+        "validation_playbook": {
+          "present": true,
+          "has_content": true,
+          "type": "dict",
+          "experiment_count": 5
+        },
+        "executive_summary": {
+          "present": true,
+          "has_content": true,
+          "type": "dict"
+        }
+      },
+      "missing": [],
+      "warnings": []
+    },
+    "quality": {
+      "valid": true,
+      "overall_score": 0.55,
+      "dimensions": {},
+      "sections_needing_revision": [],
+      "quality_passed": false
+    },
+    "errors": [
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Prototype Generator: LLM call failed: Failed to parse JSON after all repair attempts",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Prototype Generator: LLM call failed: Failed to parse JSON after all repair attempts",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Prototype Generator: LLM call failed: Failed to parse JSON after all repair attempts",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Legal & Regulatory Review: Validation failed: 1 validation error for LegalRegulatoryReview\noverall_risk_assessment.risk_level\n  Input should be 'high', 'medium' or 'low' [type=enum, input_value='medium-high', input_type=str]\n    For further information visit https://errors.pydantic.dev/2.12/v/enum",
+      "Prototype Generator: LLM call failed: Failed to parse JSON after all repair attempts"
+    ],
+    "state_file": "/Users/manuzafarabdulla/Fun Projects/Product LifeCycle/backend/test_outputs/20260207_144345/banking_state.json"
+  }
+]

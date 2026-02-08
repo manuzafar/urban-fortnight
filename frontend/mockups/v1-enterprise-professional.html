@@ -1,0 +1,1575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seedcraft - Design Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       DESIGN SYSTEM - Professional Enterprise Aesthetic
+       Inspired by: Stripe, Palantir, Superagent
+       ═══════════════════════════════════════════════════════════════ */
+
+    :root {
+      /* Background - Warm neutrals */
+      --bg-primary: #faf9f7;
+      --bg-secondary: #f5f3f0;
+      --bg-tertiary: #eceae6;
+      --bg-elevated: #ffffff;
+
+      /* Text hierarchy */
+      --text-primary: #1a1a1a;
+      --text-secondary: #525252;
+      --text-tertiary: #737373;
+      --text-placeholder: #a3a3a3;
+
+      /* Accent - Professional blue, used sparingly */
+      --accent-primary: #2563eb;
+      --accent-hover: #1d4ed8;
+      --accent-subtle: #eff6ff;
+
+      /* Status colors - Functional, not decorative */
+      --status-success: #16a34a;
+      --status-success-bg: #f0fdf4;
+      --status-warning: #ca8a04;
+      --status-warning-bg: #fefce8;
+      --status-error: #dc2626;
+      --status-error-bg: #fef2f2;
+      --status-info: #0891b2;
+      --status-info-bg: #ecfeff;
+
+      /* Evidence tiers - Your unique differentiator */
+      --evidence-e1: #16a34a;
+      --evidence-e1-bg: #dcfce7;
+      --evidence-e2: #2563eb;
+      --evidence-e2-bg: #dbeafe;
+      --evidence-e3: #ca8a04;
+      --evidence-e3-bg: #fef3c7;
+      --evidence-e4: #6b7280;
+      --evidence-e4-bg: #f3f4f6;
+
+      /* Borders */
+      --border-primary: #e5e5e5;
+      --border-secondary: #d4d4d4;
+
+      /* Typography */
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      /* Spacing */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-10: 40px;
+      --space-12: 48px;
+      --space-16: 64px;
+
+      /* Radius */
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+      --radius-xl: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--text-primary);
+      background: var(--bg-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       HEADER - Clean, minimal
+       ═══════════════════════════════════════════════════════════════ */
+
+    .header {
+      background: var(--bg-elevated);
+      border-bottom: 1px solid var(--border-primary);
+      padding: var(--space-4) var(--space-6);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      color: var(--accent-primary);
+    }
+
+    .brand-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+    }
+
+    .nav-item {
+      padding: var(--space-2) var(--space-3);
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      border-radius: var(--radius-md);
+      transition: all 0.15s ease;
+    }
+
+    .nav-item:hover {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active {
+      background: var(--accent-subtle);
+      color: var(--accent-primary);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      font-size: 14px;
+      font-weight: 500;
+      border-radius: var(--radius-md);
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary {
+      background: var(--accent-primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-secondary {
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-primary);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-secondary);
+      border-color: var(--border-secondary);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       PAGE NAVIGATION TABS
+       ═══════════════════════════════════════════════════════════════ */
+
+    .page-tabs {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-1);
+      padding: var(--space-4);
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-primary);
+    }
+
+    .page-tab {
+      padding: var(--space-3) var(--space-5);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      background: transparent;
+      border: none;
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .page-tab:hover {
+      color: var(--text-secondary);
+      background: var(--bg-tertiary);
+    }
+
+    .page-tab.active {
+      color: var(--text-primary);
+      background: var(--bg-elevated);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       PAGE SECTIONS
+       ═══════════════════════════════════════════════════════════════ */
+
+    .page-section {
+      display: none;
+      min-height: calc(100vh - 140px);
+    }
+
+    .page-section.active {
+      display: block;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       LANDING PAGE
+       ═══════════════════════════════════════════════════════════════ */
+
+    .landing {
+      padding: var(--space-16) var(--space-6);
+    }
+
+    .landing-hero {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .landing-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-2) var(--space-4);
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-primary);
+      border-radius: 100px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-6);
+    }
+
+    .landing-badge-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--status-success);
+      border-radius: 50%;
+    }
+
+    .landing-title {
+      font-size: 48px;
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+      margin-bottom: var(--space-6);
+    }
+
+    .landing-title-accent {
+      color: var(--accent-primary);
+    }
+
+    .landing-subtitle {
+      font-size: 18px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      margin-bottom: var(--space-8);
+    }
+
+    .landing-cta {
+      display: flex;
+      gap: var(--space-4);
+      justify-content: center;
+      margin-bottom: var(--space-12);
+    }
+
+    .landing-cta .btn {
+      padding: var(--space-3) var(--space-6);
+      font-size: 15px;
+    }
+
+    .trust-bar {
+      display: flex;
+      justify-content: center;
+      gap: var(--space-8);
+      padding-top: var(--space-8);
+      border-top: 1px solid var(--border-primary);
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      color: var(--text-tertiary);
+      font-size: 14px;
+    }
+
+    .trust-icon {
+      width: 18px;
+      height: 18px;
+      color: var(--accent-primary);
+    }
+
+    /* Deliverables Grid */
+    .deliverables-section {
+      max-width: 1200px;
+      margin: var(--space-16) auto 0;
+      padding: 0 var(--space-6);
+    }
+
+    .section-header {
+      text-align: center;
+      margin-bottom: var(--space-10);
+    }
+
+    .section-eyebrow {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent-primary);
+      margin-bottom: var(--space-3);
+    }
+
+    .section-title {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .deliverables-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-5);
+    }
+
+    .deliverable-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      transition: all 0.2s ease;
+    }
+
+    .deliverable-card:hover {
+      border-color: var(--accent-primary);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+    }
+
+    .deliverable-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: var(--space-4);
+    }
+
+    .deliverable-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent-primary);
+    }
+
+    .deliverable-number {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-placeholder);
+    }
+
+    .deliverable-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: var(--space-2);
+    }
+
+    .deliverable-description {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       EXECUTION VIEW - Superagent Inspired Three-Panel
+       ═══════════════════════════════════════════════════════════════ */
+
+    .execution {
+      display: grid;
+      grid-template-columns: 320px 1fr 400px;
+      height: calc(100vh - 140px);
+    }
+
+    /* Left Panel - Input Summary */
+    .execution-input {
+      background: var(--bg-elevated);
+      border-right: 1px solid var(--border-primary);
+      padding: var(--space-6);
+      overflow-y: auto;
+    }
+
+    .panel-title {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-tertiary);
+      margin-bottom: var(--space-4);
+    }
+
+    .input-card {
+      background: var(--bg-secondary);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+
+    .input-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-tertiary);
+      margin-bottom: var(--space-2);
+    }
+
+    .input-value {
+      font-size: 14px;
+      color: var(--text-primary);
+      line-height: 1.5;
+    }
+
+    /* Center Panel - Agents */
+    .execution-agents {
+      background: var(--bg-primary);
+      padding: var(--space-6);
+      overflow-y: auto;
+    }
+
+    .agents-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: var(--space-6);
+    }
+
+    .progress-bar-container {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+
+    .progress-bar {
+      width: 200px;
+      height: 6px;
+      background: var(--bg-tertiary);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent-primary);
+      border-radius: 100px;
+      transition: width 0.3s ease;
+    }
+
+    .progress-text {
+      font-size: 13px;
+      color: var(--text-tertiary);
+    }
+
+    .agents-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-4);
+    }
+
+    .agent-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-lg);
+      padding: var(--space-4);
+    }
+
+    .agent-card.active {
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 3px var(--accent-subtle);
+    }
+
+    .agent-card.completed {
+      border-color: var(--status-success);
+    }
+
+    .agent-header {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      margin-bottom: var(--space-3);
+    }
+
+    .agent-icon {
+      width: 36px;
+      height: 36px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-tertiary);
+    }
+
+    .agent-card.active .agent-icon {
+      background: var(--accent-subtle);
+      color: var(--accent-primary);
+    }
+
+    .agent-card.completed .agent-icon {
+      background: var(--status-success-bg);
+      color: var(--status-success);
+    }
+
+    .agent-info {
+      flex: 1;
+    }
+
+    .agent-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .agent-status {
+      font-size: 12px;
+      color: var(--text-tertiary);
+    }
+
+    .agent-card.active .agent-status {
+      color: var(--accent-primary);
+    }
+
+    .agent-card.completed .agent-status {
+      color: var(--status-success);
+    }
+
+    .agent-description {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* Right Panel - Activity Feed */
+    .execution-activity {
+      background: var(--bg-elevated);
+      border-left: 1px solid var(--border-primary);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .activity-header {
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--border-primary);
+    }
+
+    .activity-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: var(--space-4);
+    }
+
+    .activity-item {
+      display: flex;
+      gap: var(--space-3);
+      padding: var(--space-3);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-2);
+    }
+
+    .activity-item:hover {
+      background: var(--bg-secondary);
+    }
+
+    .activity-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--bg-secondary);
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .activity-icon.search {
+      background: var(--accent-subtle);
+      color: var(--accent-primary);
+    }
+
+    .activity-icon.thinking {
+      background: var(--status-warning-bg);
+      color: var(--status-warning);
+    }
+
+    .activity-icon.done {
+      background: var(--status-success-bg);
+      color: var(--status-success);
+    }
+
+    .activity-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .activity-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+
+    .activity-detail {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .activity-time {
+      font-size: 11px;
+      color: var(--text-placeholder);
+      flex-shrink: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       PACK VIEWER
+       ═══════════════════════════════════════════════════════════════ */
+
+    .pack-viewer {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      height: calc(100vh - 140px);
+    }
+
+    /* Pack Navigation */
+    .pack-nav {
+      background: var(--bg-elevated);
+      border-right: 1px solid var(--border-primary);
+      padding: var(--space-4);
+      overflow-y: auto;
+    }
+
+    .pack-nav-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin-bottom: var(--space-1);
+    }
+
+    .pack-nav-item:hover {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    .pack-nav-item.active {
+      background: var(--accent-subtle);
+      color: var(--accent-primary);
+    }
+
+    .pack-nav-icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    /* Pack Content */
+    .pack-content {
+      background: var(--bg-primary);
+      padding: var(--space-8);
+      overflow-y: auto;
+    }
+
+    .pack-section {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .pack-section-header {
+      margin-bottom: var(--space-6);
+    }
+
+    .pack-section-title {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: var(--space-2);
+    }
+
+    .pack-section-subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+    }
+
+    /* Executive Summary Styles */
+    .summary-hero {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-xl);
+      padding: var(--space-8);
+      margin-bottom: var(--space-6);
+    }
+
+    .summary-tagline {
+      font-size: 14px;
+      color: var(--text-tertiary);
+      margin-bottom: var(--space-3);
+    }
+
+    .summary-product-name {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: var(--space-4);
+    }
+
+    .summary-description {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4);
+      margin-bottom: var(--space-6);
+    }
+
+    .metric-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+    }
+
+    .metric-label {
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-tertiary);
+      margin-bottom: var(--space-2);
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .metric-note {
+      font-size: 12px;
+      color: var(--text-tertiary);
+      margin-top: var(--space-1);
+    }
+
+    /* Content Blocks */
+    .content-block {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-primary);
+      border-radius: var(--radius-xl);
+      margin-bottom: var(--space-5);
+      overflow: hidden;
+    }
+
+    .content-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-4) var(--space-5);
+      border-bottom: 1px solid var(--border-primary);
+      background: var(--bg-secondary);
+    }
+
+    .content-block-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .content-block-body {
+      padding: var(--space-5);
+    }
+
+    /* Evidence Badges */
+    .evidence-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: var(--radius-sm);
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .evidence-badge.e1 {
+      background: var(--evidence-e1-bg);
+      color: var(--evidence-e1);
+    }
+
+    .evidence-badge.e2 {
+      background: var(--evidence-e2-bg);
+      color: var(--evidence-e2);
+    }
+
+    .evidence-badge.e3 {
+      background: var(--evidence-e3-bg);
+      color: var(--evidence-e3);
+    }
+
+    .evidence-badge.e4 {
+      background: var(--evidence-e4-bg);
+      color: var(--evidence-e4);
+    }
+
+    /* Risk List */
+    .risk-list {
+      list-style: none;
+    }
+
+    .risk-item {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-3);
+      padding: var(--space-3) 0;
+      border-bottom: 1px solid var(--border-primary);
+    }
+
+    .risk-item:last-child {
+      border-bottom: none;
+    }
+
+    .risk-text {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* Data Tables */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: var(--space-3) var(--space-4);
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-tertiary);
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-primary);
+    }
+
+    .data-table td {
+      padding: var(--space-3) var(--space-4);
+      font-size: 14px;
+      color: var(--text-primary);
+      border-bottom: 1px solid var(--border-primary);
+    }
+
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════════════════════════════ */
+
+    @media (max-width: 1200px) {
+      .execution {
+        grid-template-columns: 280px 1fr 320px;
+      }
+
+      .deliverables-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 900px) {
+      .execution {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      .execution-input {
+        border-right: none;
+        border-bottom: 1px solid var(--border-primary);
+      }
+
+      .execution-activity {
+        border-left: none;
+        border-top: 1px solid var(--border-primary);
+      }
+
+      .pack-viewer {
+        grid-template-columns: 1fr;
+      }
+
+      .pack-nav {
+        border-right: none;
+        border-bottom: 1px solid var(--border-primary);
+        display: flex;
+        overflow-x: auto;
+        padding: var(--space-2);
+      }
+
+      .pack-nav-item {
+        white-space: nowrap;
+      }
+
+      .deliverables-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .landing-title {
+        font-size: 36px;
+      }
+
+      .metrics-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <!-- Seedcraft Icon -->
+        <svg class="brand-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 28C16 28 7 23 7 16C7 11 10 6 16 4C22 6 25 11 25 16C25 23 16 28 16 28Z" fill="currentColor" opacity="0.15"/>
+          <path d="M16 28C16 28 7 23 7 16C7 11 10 6 16 4C22 6 25 11 25 16C25 23 16 28 16 28Z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+          <path d="M16 24V12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M16 16C16 16 19 14 21 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M16 19C16 19 13 17 11 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          <circle cx="16" cy="10" r="2" fill="currentColor"/>
+        </svg>
+        <span class="brand-name">Seedcraft</span>
+      </div>
+      <nav class="nav">
+        <a href="#" class="nav-item">Docs</a>
+        <a href="#" class="nav-item">GitHub</a>
+        <button class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          New Discovery
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Page Tabs -->
+  <div class="page-tabs">
+    <button class="page-tab active" onclick="showPage('landing')">Landing</button>
+    <button class="page-tab" onclick="showPage('execution')">Execution View</button>
+    <button class="page-tab" onclick="showPage('pack')">Pack Viewer</button>
+  </div>
+
+  <!-- Landing Page -->
+  <section id="landing" class="page-section active">
+    <div class="landing">
+      <div class="landing-hero">
+        <div class="landing-badge">
+          <span class="landing-badge-dot"></span>
+          6 AI Agents • Live & Ready
+        </div>
+
+        <h1 class="landing-title">
+          Turn weeks of discovery<br>
+          into <span class="landing-title-accent">hours of clarity</span>
+        </h1>
+
+        <p class="landing-subtitle">
+          Get a decision-ready inception pack in under 12 minutes.
+          AI-generated hypotheses for research, business strategy, and architecture. Ready for customer validation.
+        </p>
+
+        <div class="landing-cta">
+          <button class="btn btn-primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+              <polyline points="2 17 12 22 22 17"/>
+              <polyline points="2 12 12 17 22 12"/>
+            </svg>
+            Start Discovery
+          </button>
+          <button class="btn btn-secondary">See what you get</button>
+        </div>
+
+        <div class="trust-bar">
+          <div class="trust-item">
+            <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 6v6l4 2"/>
+            </svg>
+            8-12 Minutes
+          </div>
+          <div class="trust-item">
+            <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+            Audit-Ready
+          </div>
+          <div class="trust-item">
+            <svg class="trust-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Hypothesis-First
+          </div>
+        </div>
+      </div>
+
+      <!-- Deliverables Section -->
+      <div class="deliverables-section">
+        <div class="section-header">
+          <div class="section-eyebrow">Complete Inception Pack</div>
+          <h2 class="section-title">Everything you need to decide and ship</h2>
+        </div>
+
+        <div class="deliverables-grid">
+          <div class="deliverable-card">
+            <div class="deliverable-header">
+              <div class="deliverable-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+                  <path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>
+                </svg>
+              </div>
+              <span class="deliverable-number">01</span>
+            </div>
+            <h3 class="deliverable-title">Executive Summary</h3>
+            <p class="deliverable-description">High-level overview of the entire inception pack. Problem, solution, key insights, and recommended next steps.</p>
+          </div>
+
+          <div class="deliverable-card">
+            <div class="deliverable-header">
+              <div class="deliverable-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"/>
+                  <path d="M21 21l-4.35-4.35"/>
+                </svg>
+              </div>
+              <span class="deliverable-number">02</span>
+            </div>
+            <h3 class="deliverable-title">Market Hypotheses</h3>
+            <p class="deliverable-description">AI-generated market hypotheses with uncomfortable questions. Tiered confidence system (E1-E4) indicates certainty level.</p>
+          </div>
+
+          <div class="deliverable-card">
+            <div class="deliverable-header">
+              <div class="deliverable-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                  <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
+                </svg>
+              </div>
+              <span class="deliverable-number">03</span>
+            </div>
+            <h3 class="deliverable-title">Business Strategy</h3>
+            <p class="deliverable-description">Complete business case with Lean Canvas, financial projections, revenue models, and go-to-market strategy.</p>
+          </div>
+
+          <div class="deliverable-card">
+            <div class="deliverable-header">
+              <div class="deliverable-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 11l3 3L22 4"/>
+                  <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                </svg>
+              </div>
+              <span class="deliverable-number">04</span>
+            </div>
+            <h3 class="deliverable-title">Product Requirements</h3>
+            <p class="deliverable-description">Comprehensive PRD with epics, user stories, acceptance criteria, and release planning.</p>
+          </div>
+
+          <div class="deliverable-card">
+            <div class="deliverable-header">
+              <div class="deliverable-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                  <polyline points="2 17 12 22 22 17"/>
+                  <polyline points="2 12 12 17 22 12"/>
+                </svg>
+              </div>
+              <span class="deliverable-number">05</span>
+            </div>
+            <h3 class="deliverable-title">Technical Architecture</h3>
+            <p class="deliverable-description">System design and tech stack recommendations. Component diagrams, scalability, security patterns.</p>
+          </div>
+
+          <div class="deliverable-card">
+            <div class="deliverable-header">
+              <div class="deliverable-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                  <path d="M9 12l2 2 4-4"/>
+                </svg>
+              </div>
+              <span class="deliverable-number">06</span>
+            </div>
+            <h3 class="deliverable-title">Quality Assessment</h3>
+            <p class="deliverable-description">Cross-validation and critique across all sections. Identifies gaps, inconsistencies, and risks.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Execution View -->
+  <section id="execution" class="page-section">
+    <div class="execution">
+      <!-- Left Panel - Input Summary -->
+      <div class="execution-input">
+        <div class="panel-title">Discovery Input</div>
+
+        <div class="input-card">
+          <div class="input-label">Product Name</div>
+          <div class="input-value">InventoryAI Pro</div>
+        </div>
+
+        <div class="input-card">
+          <div class="input-label">Problem Statement</div>
+          <div class="input-value">Small retailers lose $50,000 annually due to inventory mismanagement, stockouts, and overstocking.</div>
+        </div>
+
+        <div class="input-card">
+          <div class="input-label">Target Audience</div>
+          <div class="input-value">Small and medium-sized retail businesses with 1-50 locations</div>
+        </div>
+
+        <div class="input-card">
+          <div class="input-label">Industry</div>
+          <div class="input-value">Retail Technology / SaaS</div>
+        </div>
+      </div>
+
+      <!-- Center Panel - Agents -->
+      <div class="execution-agents">
+        <div class="agents-header">
+          <div class="panel-title">AI Agents</div>
+          <div class="progress-bar-container">
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: 65%;"></div>
+            </div>
+            <span class="progress-text">65% • ~4 min left</span>
+          </div>
+        </div>
+
+        <div class="agents-grid">
+          <div class="agent-card completed">
+            <div class="agent-header">
+              <div class="agent-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+              <div class="agent-info">
+                <div class="agent-name">Customer Research</div>
+                <div class="agent-status">Completed</div>
+              </div>
+            </div>
+            <p class="agent-description">Pain signals, JTBD, market context, competitive landscape</p>
+          </div>
+
+          <div class="agent-card completed">
+            <div class="agent-header">
+              <div class="agent-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+              </div>
+              <div class="agent-info">
+                <div class="agent-name">Business Strategy</div>
+                <div class="agent-status">Completed</div>
+              </div>
+            </div>
+            <p class="agent-description">Lean Canvas, financials, GTM strategy, revenue streams</p>
+          </div>
+
+          <div class="agent-card active">
+            <div class="agent-header">
+              <div class="agent-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M12 6v6l4 2"/>
+                </svg>
+              </div>
+              <div class="agent-info">
+                <div class="agent-name">Product Requirements</div>
+                <div class="agent-status">Working...</div>
+              </div>
+            </div>
+            <p class="agent-description">Epics, user stories, acceptance criteria, release plan</p>
+          </div>
+
+          <div class="agent-card">
+            <div class="agent-header">
+              <div class="agent-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="1"/>
+                </svg>
+              </div>
+              <div class="agent-info">
+                <div class="agent-name">Technical Architect</div>
+                <div class="agent-status">Pending</div>
+              </div>
+            </div>
+            <p class="agent-description">System design, tech stack, security, scalability</p>
+          </div>
+
+          <div class="agent-card">
+            <div class="agent-header">
+              <div class="agent-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="1"/>
+                </svg>
+              </div>
+              <div class="agent-info">
+                <div class="agent-name">Legal & Regulatory</div>
+                <div class="agent-status">Pending</div>
+              </div>
+            </div>
+            <p class="agent-description">Compliance, licensing, data protection, legal risks</p>
+          </div>
+
+          <div class="agent-card">
+            <div class="agent-header">
+              <div class="agent-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="1"/>
+                </svg>
+              </div>
+              <div class="agent-info">
+                <div class="agent-name">Quality Critic</div>
+                <div class="agent-status">Pending</div>
+              </div>
+            </div>
+            <p class="agent-description">Cross-validation, gap analysis, risk assessment</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Panel - Activity Feed -->
+      <div class="execution-activity">
+        <div class="activity-header">
+          <div class="panel-title">Activity</div>
+        </div>
+        <div class="activity-list">
+          <div class="activity-item">
+            <div class="activity-icon thinking">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 6v6l4 2"/>
+              </svg>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">Defining user stories</div>
+              <div class="activity-detail">Creating acceptance criteria for inventory sync...</div>
+            </div>
+            <div class="activity-time">now</div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-icon search">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="M21 21l-4.35-4.35"/>
+              </svg>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">Web search</div>
+              <div class="activity-detail">"retail inventory management best practices 2024"</div>
+            </div>
+            <div class="activity-time">12s</div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-icon done">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">Business Strategy complete</div>
+              <div class="activity-detail">Generated Lean Canvas, 3-year projections</div>
+            </div>
+            <div class="activity-time">1m</div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-icon search">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="M21 21l-4.35-4.35"/>
+              </svg>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">Web search</div>
+              <div class="activity-detail">"SMB retail SaaS pricing models"</div>
+            </div>
+            <div class="activity-time">2m</div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-icon done">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">Customer Research complete</div>
+              <div class="activity-detail">Identified 5 pain signals, 3 competitors</div>
+            </div>
+            <div class="activity-time">4m</div>
+          </div>
+
+          <div class="activity-item">
+            <div class="activity-icon search">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="M21 21l-4.35-4.35"/>
+              </svg>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">Web search</div>
+              <div class="activity-detail">"Square for Retail vs Lightspeed comparison"</div>
+            </div>
+            <div class="activity-time">5m</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pack Viewer -->
+  <section id="pack" class="page-section">
+    <div class="pack-viewer">
+      <!-- Pack Navigation -->
+      <nav class="pack-nav">
+        <div class="panel-title" style="padding: 0 16px 12px;">Sections</div>
+        <div class="pack-nav-item active">
+          <svg class="pack-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+            <path d="M14 2v6h6"/>
+          </svg>
+          Executive Summary
+        </div>
+        <div class="pack-nav-item">
+          <svg class="pack-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="M21 21l-4.35-4.35"/>
+          </svg>
+          Customer Research
+        </div>
+        <div class="pack-nav-item">
+          <svg class="pack-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2"/>
+            <path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
+          </svg>
+          Business Case
+        </div>
+        <div class="pack-nav-item">
+          <svg class="pack-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/>
+            <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+          </svg>
+          Requirements
+        </div>
+        <div class="pack-nav-item">
+          <svg class="pack-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+            <polyline points="2 17 12 22 22 17"/>
+          </svg>
+          Architecture
+        </div>
+        <div class="pack-nav-item">
+          <svg class="pack-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4M12 8h.01"/>
+          </svg>
+          Legal Review
+        </div>
+        <div class="pack-nav-item">
+          <svg class="pack-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+          Quality Assessment
+        </div>
+      </nav>
+
+      <!-- Pack Content -->
+      <div class="pack-content">
+        <div class="pack-section">
+          <div class="pack-section-header">
+            <h1 class="pack-section-title">Executive Summary</h1>
+            <p class="pack-section-subtitle">High-level overview and key recommendations</p>
+          </div>
+
+          <!-- Hero Card -->
+          <div class="summary-hero">
+            <div class="summary-tagline">Smart inventory for smart businesses</div>
+            <h2 class="summary-product-name">InventoryAI Pro</h2>
+            <p class="summary-description">
+              Small retailers lose $50,000 annually due to inventory mismanagement, stockouts, and overstocking. Manual tracking is error-prone and time-consuming. InventoryAI Pro uses machine learning to predict demand, automate reordering, and provide real-time inventory visibility across all sales channels.
+            </p>
+          </div>
+
+          <!-- Key Metrics -->
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-label">Target MAU</div>
+              <div class="metric-value">10,000</div>
+              <div class="metric-note">By end of Year 1</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Retention Target</div>
+              <div class="metric-value">95%</div>
+              <div class="metric-note">Product-market fit indicator</div>
+            </div>
+            <div class="metric-card">
+              <div class="metric-label">Year 1 ARR</div>
+              <div class="metric-value">$2M</div>
+              <div class="metric-note">Revenue target</div>
+            </div>
+          </div>
+
+          <!-- Key Risks -->
+          <div class="content-block">
+            <div class="content-block-header">
+              <span class="content-block-title">Key Risks Identified</span>
+            </div>
+            <div class="content-block-body">
+              <ul class="risk-list">
+                <li class="risk-item">
+                  <span class="evidence-badge e2">E2</span>
+                  <span class="risk-text">Market adoption slower than projected — requires validation interviews with target segment</span>
+                </li>
+                <li class="risk-item">
+                  <span class="evidence-badge e1">E1</span>
+                  <span class="risk-text">Competition from established POS vendors — confirmed threat based on market analysis</span>
+                </li>
+                <li class="risk-item">
+                  <span class="evidence-badge e3">E3</span>
+                  <span class="risk-text">Data quality issues in customer systems — assumption needing technical assessment</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Financial Summary -->
+          <div class="content-block">
+            <div class="content-block-header">
+              <span class="content-block-title">Financial Projections</span>
+            </div>
+            <div class="content-block-body">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Period</th>
+                    <th>Revenue</th>
+                    <th>Costs</th>
+                    <th>Profit</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Year 1</td>
+                    <td>$1.8M</td>
+                    <td>$2.5M</td>
+                    <td style="color: var(--status-error);">-$700K</td>
+                  </tr>
+                  <tr>
+                    <td>Year 2</td>
+                    <td>$5.5M</td>
+                    <td>$4.0M</td>
+                    <td style="color: var(--status-success);">$1.5M</td>
+                  </tr>
+                  <tr>
+                    <td>Year 3</td>
+                    <td>$12M</td>
+                    <td>$7M</td>
+                    <td style="color: var(--status-success);">$5M</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Recommendation -->
+          <div class="content-block">
+            <div class="content-block-header">
+              <span class="content-block-title">Recommendation</span>
+            </div>
+            <div class="content-block-body">
+              <p style="font-size: 15px; line-height: 1.7; color: var(--text-secondary);">
+                Proceed with MVP development targeting convenience stores as initial beachhead market. Focus on the core value proposition of reducing stockouts through predictive analytics. Validate the $200+/month price point with 10-15 customer interviews before committing to full build.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    function showPage(pageId) {
+      // Update tabs
+      document.querySelectorAll('.page-tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      event.target.classList.add('active');
+
+      // Update sections
+      document.querySelectorAll('.page-section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.getElementById(pageId).classList.add('active');
+    }
+  </script>
+
+</body>
+</html>

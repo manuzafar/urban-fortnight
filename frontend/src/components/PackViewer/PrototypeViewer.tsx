@@ -116,10 +116,12 @@ export function PrototypeViewer({ prototype, className = '' }: PrototypeViewerPr
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-lg">{prototype.prototype_name}</h3>
-          <p className="text-gray-600 text-sm">
-            For: {prototype.primary_persona}
-          </p>
+          <h3 className="font-semibold text-lg">{prototype.prototype_name || 'Interactive Prototype'}</h3>
+          {prototype.primary_persona && (
+            <p className="text-gray-600 text-sm">
+              For: {prototype.primary_persona}
+            </p>
+          )}
         </div>
         <button
           onClick={() => setIsFullscreen(!isFullscreen)}
@@ -130,12 +132,14 @@ export function PrototypeViewer({ prototype, className = '' }: PrototypeViewerPr
       </div>
 
       {/* Key user story */}
-      <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
-        <p className="text-sm text-blue-800">
-          <span className="font-medium">Demonstrates: </span>
-          {prototype.key_user_story}
-        </p>
-      </div>
+      {prototype.key_user_story && (
+        <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+          <p className="text-sm text-blue-800">
+            <span className="font-medium">Demonstrates: </span>
+            {prototype.key_user_story}
+          </p>
+        </div>
+      )}
 
       {/* Prototype iframe */}
       <div
@@ -152,7 +156,7 @@ export function PrototypeViewer({ prototype, className = '' }: PrototypeViewerPr
             <div className="w-3 h-3 rounded-full bg-green-400" />
           </div>
           <div className="flex-1 bg-white rounded px-3 py-1 text-xs text-gray-500 text-center">
-            {prototype.prototype_name.toLowerCase().replace(/\s+/g, '-')}.app
+            {(prototype.prototype_name || 'prototype').toLowerCase().replace(/\s+/g, '-')}.app
           </div>
         </div>
 

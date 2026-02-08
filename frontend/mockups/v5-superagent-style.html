@@ -1,0 +1,1310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seedcraft - Ship faster</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ═══════════════════════════════════════════════════════════════
+       SEEDCRAFT v5 - Superagent Style
+       Warm, minimal, output-focused
+       ═══════════════════════════════════════════════════════════════ */
+
+    :root {
+      --bg: #faf8f5;
+      --bg-card: #ffffff;
+      --bg-dark: #1a1a1a;
+
+      --text: #1a1a1a;
+      --text-secondary: #6b6b6b;
+      --text-muted: #9a9a9a;
+
+      --accent-gradient: linear-gradient(135deg, #f472b6 0%, #fb923c 100%);
+      --accent-pink: #f472b6;
+      --accent-orange: #fb923c;
+      --accent-teal: #14b8a6;
+      --accent-blue: #3b82f6;
+      --accent-purple: #8b5cf6;
+
+      --border: rgba(0,0,0,0.08);
+      --border-hover: rgba(0,0,0,0.15);
+
+      --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --container: 1280px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font);
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--text);
+      background: var(--bg);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .container {
+      max-width: var(--container);
+      margin: 0 auto;
+      padding: 0 40px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       NAVIGATION
+       ═══════════════════════════════════════════════════════════════ */
+
+    .nav {
+      padding: 24px 0;
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+    }
+
+    .logo-text {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .nav-link {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 15px;
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--text);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .btn-primary:hover {
+      background: #333;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--text);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       HERO
+       ═══════════════════════════════════════════════════════════════ */
+
+    .hero {
+      padding: 100px 0 120px;
+      text-align: center;
+    }
+
+    .hero-brand {
+      font-size: clamp(40px, 8vw, 72px);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 24px;
+      color: var(--text);
+    }
+
+    .hero-brand .gradient {
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: 20px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto 40px;
+      line-height: 1.6;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    .btn-large {
+      padding: 16px 32px;
+      font-size: 16px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       VALUE PROP
+       ═══════════════════════════════════════════════════════════════ */
+
+    .value-prop {
+      padding: 0 0 100px;
+    }
+
+    .value-prop-header {
+      max-width: 700px;
+      margin-bottom: 60px;
+    }
+
+    .value-prop-title {
+      font-size: clamp(36px, 5vw, 56px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 20px;
+    }
+
+    .value-prop-title .gradient {
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .value-prop-subtitle {
+      font-size: 18px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Feature Cards */
+    .feature-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      min-height: 400px;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--border-hover);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.06);
+    }
+
+    .feature-card-title {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .feature-card-desc {
+      font-size: 15px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    .feature-card-visual {
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      overflow: hidden;
+      border-radius: 12px;
+    }
+
+    /* Agent Pills */
+    .agent-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .agent-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: var(--bg);
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .agent-pill-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .agent-pill-dot.research { background: var(--accent-purple); }
+    .agent-pill-dot.business { background: var(--accent-pink); }
+    .agent-pill-dot.product { background: var(--accent-orange); }
+    .agent-pill-dot.tech { background: var(--accent-teal); }
+    .agent-pill-dot.legal { background: var(--accent-blue); }
+    .agent-pill-dot.quality { background: #6b7280; }
+
+    /* Output Preview in Card */
+    .output-preview-mini {
+      background: var(--bg);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .output-preview-mini img {
+      width: 100%;
+      display: block;
+    }
+
+    .output-preview-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .output-preview-tabs {
+      display: flex;
+      gap: 16px;
+    }
+
+    .output-preview-tab {
+      font-size: 12px;
+      color: var(--text-muted);
+      padding-bottom: 2px;
+    }
+
+    .output-preview-tab.active {
+      color: var(--text);
+      border-bottom: 2px solid var(--text);
+    }
+
+    .output-preview-content {
+      padding: 20px;
+    }
+
+    .output-preview-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .output-preview-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    /* Evidence Badges */
+    .evidence-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: auto;
+    }
+
+    .evidence-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--bg);
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .evidence-badge-icon {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .evidence-badge-icon.e1 { background: #22c55e; }
+    .evidence-badge-icon.e2 { background: #3b82f6; }
+    .evidence-badge-icon.e3 { background: #f59e0b; }
+    .evidence-badge-icon.e4 { background: #6b7280; }
+
+    /* ═══════════════════════════════════════════════════════════════
+       DISCOVER SECTION
+       ═══════════════════════════════════════════════════════════════ */
+
+    .discover {
+      padding: 100px 0;
+    }
+
+    .discover-header {
+      margin-bottom: 40px;
+    }
+
+    .discover-title {
+      font-size: 48px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+
+    .discover-subtitle {
+      font-size: 16px;
+      color: var(--text-secondary);
+    }
+
+    /* Filter Tabs */
+    .filter-tabs {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 40px;
+    }
+
+    .filter-tab {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .filter-tab:hover {
+      border-color: var(--border-hover);
+    }
+
+    .filter-tab.active {
+      border-color: var(--text);
+      background: var(--bg-card);
+    }
+
+    .filter-tab-icon {
+      width: 40px;
+      height: 40px;
+      background: var(--bg);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Pack Gallery */
+    .pack-gallery {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .pack-card {
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .pack-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+    }
+
+    .pack-card-inner {
+      padding: 28px;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Color Variants */
+    .pack-card.blue {
+      background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+      color: white;
+    }
+
+    .pack-card.teal {
+      background: linear-gradient(135deg, #134e4a 0%, #042f2e 100%);
+      color: white;
+    }
+
+    .pack-card.purple {
+      background: linear-gradient(135deg, #4c1d95 0%, #1e1b4b 100%);
+      color: white;
+    }
+
+    .pack-card.white {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    .pack-card.orange {
+      background: linear-gradient(135deg, #c2410c 0%, #7c2d12 100%);
+      color: white;
+    }
+
+    .pack-card.pink {
+      background: linear-gradient(135deg, #be185d 0%, #831843 100%);
+      color: white;
+    }
+
+    .pack-card-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      opacity: 0.7;
+      margin-bottom: 16px;
+    }
+
+    .pack-card-title {
+      font-size: 24px;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .pack-card-desc {
+      font-size: 14px;
+      opacity: 0.8;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .pack-card-metrics {
+      display: flex;
+      gap: 24px;
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .pack-card.white .pack-card-metrics {
+      border-top-color: var(--border);
+    }
+
+    .pack-card-metric {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .pack-card-metric-value {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .pack-card-metric-label {
+      font-size: 11px;
+      opacity: 0.6;
+      text-transform: uppercase;
+    }
+
+    .pack-card-prompt {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-top: 16px;
+      padding: 0 28px 20px;
+    }
+
+    /* Document Preview Styles */
+    .pack-card-document {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .doc-section {
+      padding: 12px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+    }
+
+    .pack-card.white .doc-section {
+      background: var(--bg);
+    }
+
+    .doc-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      opacity: 0.7;
+      margin-bottom: 6px;
+    }
+
+    .doc-text {
+      font-size: 13px;
+      line-height: 1.5;
+      opacity: 0.9;
+    }
+
+    .doc-evidence {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      opacity: 0.8;
+      margin-top: auto;
+      padding-top: 12px;
+    }
+
+    .evidence-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 18px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .evidence-tag.e1 { background: #22c55e; }
+    .evidence-tag.e2 { background: #3b82f6; }
+    .evidence-tag.e3 { background: #f59e0b; }
+    .evidence-tag.e4 { background: #6b7280; }
+
+    .pack-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 16px;
+      margin-top: auto;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      font-size: 12px;
+    }
+
+    .pack-card.white .pack-card-footer {
+      border-top-color: var(--border);
+    }
+
+    .pack-score {
+      font-weight: 700;
+    }
+
+    .pack-type {
+      opacity: 0.7;
+    }
+
+    /* Lean Canvas Grid */
+    .canvas-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .canvas-cell {
+      padding: 10px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 6px;
+    }
+
+    .canvas-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      opacity: 0.6;
+      margin-bottom: 4px;
+    }
+
+    .canvas-text {
+      font-size: 11px;
+      line-height: 1.4;
+      opacity: 0.9;
+    }
+
+    /* Research Findings */
+    .research-finding {
+      display: flex;
+      gap: 10px;
+      padding: 10px;
+      background: var(--bg);
+      border-radius: 8px;
+    }
+
+    .finding-icon {
+      flex-shrink: 0;
+      color: var(--accent-teal);
+    }
+
+    .finding-text {
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+    }
+
+    .finding-text strong {
+      color: var(--text);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    /* PRD Section */
+    .prd-section {
+      padding: 10px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+    }
+
+    .prd-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      opacity: 0.7;
+      margin-bottom: 8px;
+    }
+
+    .prd-list {
+      font-size: 11px;
+      line-height: 1.5;
+      padding-left: 16px;
+      margin: 0;
+      opacity: 0.9;
+    }
+
+    .prd-list li {
+      margin-bottom: 4px;
+    }
+
+    .prd-metrics {
+      display: flex;
+      gap: 16px;
+    }
+
+    .prd-metrics .metric {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 4px;
+    }
+
+    /* Architecture Diagram */
+    .arch-diagram {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 16px 8px;
+    }
+
+    .arch-layer {
+      display: flex;
+      gap: 8px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .arch-box {
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .arch-arrow {
+      font-size: 12px;
+      opacity: 0.5;
+    }
+
+    /* Business Case */
+    .biz-metrics {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+    }
+
+    .biz-metric {
+      text-align: center;
+    }
+
+    .biz-value {
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .biz-label {
+      font-size: 10px;
+      opacity: 0.7;
+      text-transform: uppercase;
+    }
+
+    .biz-projections {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 12px 0;
+    }
+
+    .projection-bar {
+      height: 8px;
+      background: linear-gradient(90deg, rgba(255,255,255,0.3), rgba(255,255,255,0.6));
+      border-radius: 4px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       FOOTER
+       ═══════════════════════════════════════════════════════════════ */
+
+    .footer {
+      padding: 120px 0 60px;
+      text-align: center;
+    }
+
+    .footer-brand {
+      font-size: clamp(60px, 12vw, 140px);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      color: var(--text);
+      margin-bottom: 80px;
+    }
+
+    .footer-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-top: 40px;
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: var(--text-secondary);
+      text-decoration: none;
+    }
+
+    .footer-logo-icon {
+      width: 28px;
+      height: 28px;
+    }
+
+    .footer-logo-text {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 32px;
+    }
+
+    .footer-link {
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-link:hover {
+      color: var(--text);
+    }
+
+    .footer-copy {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       RESPONSIVE
+       ═══════════════════════════════════════════════════════════════ */
+
+    @media (max-width: 1024px) {
+      .feature-cards { grid-template-columns: 1fr; }
+      .pack-gallery { grid-template-columns: repeat(2, 1fr); }
+      .filter-tabs { flex-wrap: wrap; }
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 0 24px; }
+      .hero { padding: 60px 0 80px; }
+      .hero-brand { font-size: 32px; margin-bottom: 16px; }
+      .hero-subtitle { font-size: 16px; margin-bottom: 32px; }
+      .hero-cta { flex-direction: column; gap: 12px; }
+      .btn-large { width: 100%; }
+      .value-prop-title { font-size: 28px; }
+      .pack-gallery { grid-template-columns: 1fr; }
+      .nav-right { gap: 16px; }
+      .nav-link { display: none; }
+      .footer-bottom { flex-direction: column; gap: 24px; }
+      .footer-links { flex-wrap: wrap; justify-content: center; }
+      .filter-tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      .discover-title { font-size: 36px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="container">
+      <div class="nav-inner">
+        <a href="#" class="logo">
+          <svg class="logo-icon" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="14" fill="#1a1a1a"/>
+            <path d="M16 8v16M16 8c0 0-4 4-4 8s4 8 4 8M16 8c0 0 4 4 4 8s-4 8-4 8" stroke="#faf8f5" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="16" cy="10" r="2" fill="#faf8f5"/>
+          </svg>
+          <span class="logo-text">Seedcraft</span>
+        </a>
+        <div class="nav-right">
+          <a href="#" class="nav-link">Log in</a>
+          <a href="#" class="btn btn-primary">Sign Up</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <h1 class="hero-brand">Turn weeks of discovery<br><span class="gradient">into hours of clarity.</span></h1>
+      <p class="hero-subtitle">
+        From product idea to decision-ready inception pack in minutes. Six AI agents research, strategize, and document — so you can validate faster.
+      </p>
+      <div class="hero-cta">
+        <a href="#" class="btn btn-primary btn-large">Start Building</a>
+        <a href="#discover" class="btn btn-outline">See Examples</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Value Proposition -->
+  <section class="value-prop">
+    <div class="container">
+      <div class="value-prop-header">
+        <h2 class="value-prop-title">
+          How it works
+        </h2>
+        <p class="value-prop-subtitle">
+          Six specialized AI agents work in parallel to build your complete inception pack — research, business case, product requirements, and more.
+        </p>
+      </div>
+
+      <div class="feature-cards">
+        <!-- Card 1: Agents -->
+        <div class="feature-card">
+          <h3 class="feature-card-title">A superteam of agents</h3>
+          <p class="feature-card-desc">
+            Six specialized AI agents work in parallel — research, business, product, architecture, legal, and quality — to build your complete inception pack.
+          </p>
+          <div class="feature-card-visual">
+            <div class="agent-pills">
+              <span class="agent-pill"><span class="agent-pill-dot research"></span>Research</span>
+              <span class="agent-pill"><span class="agent-pill-dot business"></span>Business</span>
+              <span class="agent-pill"><span class="agent-pill-dot product"></span>Product</span>
+              <span class="agent-pill"><span class="agent-pill-dot tech"></span>Tech</span>
+              <span class="agent-pill"><span class="agent-pill-dot legal"></span>Legal</span>
+              <span class="agent-pill"><span class="agent-pill-dot quality"></span>Quality</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2: Output -->
+        <div class="feature-card">
+          <h3 class="feature-card-title">Stakeholder-ready output</h3>
+          <p class="feature-card-desc">
+            Get structured deliverables — executive summary, PRD, lean canvas, architecture — formatted for the way your team actually works.
+          </p>
+          <div class="feature-card-visual">
+            <div class="output-preview-mini">
+              <div class="output-preview-header">
+                <div class="output-preview-tabs">
+                  <span class="output-preview-tab active">Summary</span>
+                  <span class="output-preview-tab">Research</span>
+                  <span class="output-preview-tab">Business</span>
+                  <span class="output-preview-tab">PRD</span>
+                </div>
+              </div>
+              <div class="output-preview-content">
+                <div class="output-preview-title">InventoryAI Pro</div>
+                <div class="output-preview-text">
+                  AI-powered inventory management for small retailers. Reduces stockouts by 90% and cuts inventory costs by 25% through predictive demand forecasting.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Evidence -->
+        <div class="feature-card">
+          <h3 class="feature-card-title">Evidence-tiered hypotheses</h3>
+          <p class="feature-card-desc">
+            Every insight labeled E1-E4. Know what's validated, what's a hypothesis, and what needs testing — so you prioritize the right experiments.
+          </p>
+          <div class="feature-card-visual" style="flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 12px;">
+            <div class="evidence-badges">
+              <span class="evidence-badge">
+                <span class="evidence-badge-icon e1">E1</span>
+                Validated
+              </span>
+              <span class="evidence-badge">
+                <span class="evidence-badge-icon e2">E2</span>
+                Strong hypothesis
+              </span>
+              <span class="evidence-badge">
+                <span class="evidence-badge-icon e3">E3</span>
+                Assumption
+              </span>
+              <span class="evidence-badge">
+                <span class="evidence-badge-icon e4">E4</span>
+                Speculation
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Discover Section -->
+  <section class="discover" id="discover">
+    <div class="container">
+      <div class="discover-header">
+        <h2 class="discover-title">See what Seedcraft creates</h2>
+        <p class="discover-subtitle">Real inception packs built in minutes — browse the output</p>
+      </div>
+
+      <div class="filter-tabs">
+        <div class="filter-tab active">
+          <div class="filter-tab-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/>
+              <path d="M14 2v6h6"/>
+            </svg>
+          </div>
+          Full Pack
+        </div>
+        <div class="filter-tab">
+          <div class="filter-tab-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+            </svg>
+          </div>
+          Research Only
+        </div>
+        <div class="filter-tab">
+          <div class="filter-tab-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/>
+            </svg>
+          </div>
+          Business Case
+        </div>
+        <div class="filter-tab">
+          <div class="filter-tab-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/>
+            </svg>
+          </div>
+          Architecture
+        </div>
+      </div>
+
+      <div class="pack-gallery">
+        <!-- Pack 1: Shows Executive Summary -->
+        <div class="pack-card blue">
+          <div class="pack-card-inner">
+            <div class="pack-card-label">Executive Summary</div>
+            <h3 class="pack-card-title">InventoryAI Pro</h3>
+            <div class="pack-card-document">
+              <div class="doc-section">
+                <div class="doc-label">Problem</div>
+                <div class="doc-text">Small retailers lose $112B annually to stockouts and overstock. Manual inventory tracking causes 23% revenue loss.</div>
+              </div>
+              <div class="doc-section">
+                <div class="doc-label">Solution</div>
+                <div class="doc-text">AI-powered demand forecasting reduces stockouts by 90% and cuts inventory costs by 25%.</div>
+              </div>
+              <div class="doc-evidence">
+                <span class="evidence-tag e2">E2</span>
+                Market size validated
+              </div>
+            </div>
+            <div class="pack-card-footer">
+              <span class="pack-score">Score: 82</span>
+              <span class="pack-type">Full Pack</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pack 2: Shows Lean Canvas -->
+        <div class="pack-card teal">
+          <div class="pack-card-inner">
+            <div class="pack-card-label">Lean Canvas</div>
+            <h3 class="pack-card-title">MedScribe AI</h3>
+            <div class="pack-card-document">
+              <div class="canvas-grid">
+                <div class="canvas-cell">
+                  <div class="canvas-label">Problem</div>
+                  <div class="canvas-text">Physicians spend 2hr/day on documentation</div>
+                </div>
+                <div class="canvas-cell">
+                  <div class="canvas-label">Solution</div>
+                  <div class="canvas-text">Voice-to-note AI transcription</div>
+                </div>
+                <div class="canvas-cell">
+                  <div class="canvas-label">Revenue</div>
+                  <div class="canvas-text">$199/seat/mo SaaS</div>
+                </div>
+                <div class="canvas-cell">
+                  <div class="canvas-label">Channels</div>
+                  <div class="canvas-text">EMR integrations, medical conferences</div>
+                </div>
+              </div>
+              <div class="doc-evidence">
+                <span class="evidence-tag e1">E1</span>
+                Validated with 12 physicians
+              </div>
+            </div>
+            <div class="pack-card-footer">
+              <span class="pack-score">Score: 91</span>
+              <span class="pack-type">Full Pack</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pack 3: Shows Customer Research -->
+        <div class="pack-card white">
+          <div class="pack-card-inner">
+            <div class="pack-card-label">Customer Research</div>
+            <h3 class="pack-card-title">CodeReview Bot</h3>
+            <div class="pack-card-document">
+              <div class="research-finding">
+                <div class="finding-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                </div>
+                <div class="finding-text">
+                  <strong>Pain Signal:</strong> Teams waste 8hr/week on code review bottlenecks
+                </div>
+              </div>
+              <div class="research-finding">
+                <div class="finding-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/>
+                  </svg>
+                </div>
+                <div class="finding-text">
+                  <strong>Job to be Done:</strong> "Ship code faster without sacrificing quality"
+                </div>
+              </div>
+              <div class="doc-evidence">
+                <span class="evidence-tag e3">E3</span>
+                Survey of 200 dev teams
+              </div>
+            </div>
+            <div class="pack-card-footer">
+              <span class="pack-score">Score: 76</span>
+              <span class="pack-type">Research Only</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pack 4: Shows PRD -->
+        <div class="pack-card purple">
+          <div class="pack-card-inner">
+            <div class="pack-card-label">Product Requirements</div>
+            <h3 class="pack-card-title">PersonalShop AI</h3>
+            <div class="pack-card-document">
+              <div class="prd-section">
+                <div class="prd-label">User Stories (P0)</div>
+                <ul class="prd-list">
+                  <li>As a shopper, I want personalized recommendations based on my style</li>
+                  <li>As a user, I want to swipe yes/no to train my preferences</li>
+                </ul>
+              </div>
+              <div class="prd-section">
+                <div class="prd-label">Success Metrics</div>
+                <div class="prd-metrics">
+                  <span class="metric">CTR: 8%</span>
+                  <span class="metric">Conv: 3.2%</span>
+                </div>
+              </div>
+              <div class="doc-evidence">
+                <span class="evidence-tag e2">E2</span>
+                Based on competitor analysis
+              </div>
+            </div>
+            <div class="pack-card-footer">
+              <span class="pack-score">Score: 88</span>
+              <span class="pack-type">Full Pack</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pack 5: Shows Architecture -->
+        <div class="pack-card orange">
+          <div class="pack-card-inner">
+            <div class="pack-card-label">Architecture</div>
+            <h3 class="pack-card-title">ContractScan</h3>
+            <div class="pack-card-document">
+              <div class="arch-diagram">
+                <div class="arch-layer">
+                  <span class="arch-box">React Frontend</span>
+                </div>
+                <div class="arch-arrow">↓</div>
+                <div class="arch-layer">
+                  <span class="arch-box">FastAPI</span>
+                  <span class="arch-box">GPT-4</span>
+                </div>
+                <div class="arch-arrow">↓</div>
+                <div class="arch-layer">
+                  <span class="arch-box">PostgreSQL</span>
+                  <span class="arch-box">S3</span>
+                </div>
+              </div>
+              <div class="doc-evidence">
+                <span class="evidence-tag e4">E4</span>
+                Recommended stack
+              </div>
+            </div>
+            <div class="pack-card-footer">
+              <span class="pack-score">Score: 85</span>
+              <span class="pack-type">Architecture</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pack 6: Shows Business Case -->
+        <div class="pack-card pink">
+          <div class="pack-card-inner">
+            <div class="pack-card-label">Business Case</div>
+            <h3 class="pack-card-title">TutorMind</h3>
+            <div class="pack-card-document">
+              <div class="biz-metrics">
+                <div class="biz-metric">
+                  <div class="biz-value">$8.4B</div>
+                  <div class="biz-label">TAM</div>
+                </div>
+                <div class="biz-metric">
+                  <div class="biz-value">$1.2B</div>
+                  <div class="biz-label">SAM</div>
+                </div>
+                <div class="biz-metric">
+                  <div class="biz-value">$4M</div>
+                  <div class="biz-label">Y1 ARR</div>
+                </div>
+              </div>
+              <div class="biz-projections">
+                <div class="projection-bar" style="width: 20%"></div>
+                <div class="projection-bar" style="width: 45%"></div>
+                <div class="projection-bar" style="width: 80%"></div>
+              </div>
+              <div class="doc-evidence">
+                <span class="evidence-tag e2">E2</span>
+                EdTech market analysis
+              </div>
+            </div>
+            <div class="pack-card-footer">
+              <span class="pack-score">Score: 79</span>
+              <span class="pack-type">Business Case</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-brand">Seedcraft</div>
+      <div class="footer-bottom">
+        <a href="#" class="footer-logo">
+          <svg class="footer-logo-icon" viewBox="0 0 32 32" fill="none">
+            <circle cx="16" cy="16" r="14" fill="#1a1a1a"/>
+            <path d="M16 8v16M16 8c0 0-4 4-4 8s4 8 4 8M16 8c0 0 4 4 4 8s-4 8-4 8" stroke="#faf8f5" stroke-width="1.5" stroke-linecap="round"/>
+            <circle cx="16" cy="10" r="2" fill="#faf8f5"/>
+          </svg>
+          <span class="footer-logo-text">Ship faster.</span>
+        </a>
+        <div class="footer-links">
+          <a href="#" class="footer-link">Terms</a>
+          <a href="#" class="footer-link">Privacy</a>
+          <a href="#" class="footer-link">LinkedIn</a>
+          <a href="#" class="footer-link">X</a>
+        </div>
+        <span class="footer-copy">© 2026 Seedcraft</span>
+      </div>
+    </div>
+  </footer>
+
+</body>
+</html>

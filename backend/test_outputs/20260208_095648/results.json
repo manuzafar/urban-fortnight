@@ -1,0 +1,10 @@
+[
+  {
+    "pack_id": "banking",
+    "pack_name": "AI Cash Flow Forecasting for SME Banking",
+    "session_id": "disc_20260207_eb46a6f8",
+    "status": "failed",
+    "duration_seconds": 626.318752,
+    "error": "'NoneType' object has no attribute 'get'"
+  }
+]

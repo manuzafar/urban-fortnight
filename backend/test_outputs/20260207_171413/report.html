@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seedcraft v3.0 E2E Test Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tier-E1 { background-color: #dcfce7; color: #166534; }
+        .tier-E2 { background-color: #dbeafe; color: #1e40af; }
+        .tier-E3 { background-color: #fef9c3; color: #854d0e; }
+        .tier-E4 { background-color: #fed7aa; color: #9a3412; }
+        .tier-E5 { background-color: #fecaca; color: #991b1b; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen">
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-slate-800">Seedcraft v3.0 E2E Test Report</h1>
+            <p class="text-slate-600 mt-2">Generated: 2026-02-07 17:45:29</p>
+        </header>
+
+        <!-- Overall Summary -->
+        <section class="bg-white rounded-xl shadow-sm p-6 mb-8">
+            <h2 class="text-xl font-semibold text-slate-800 mb-4">Overall Summary</h2>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div class="bg-slate-50 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-green-600">3/3</div>
+                    <div class="text-sm text-slate-600">Packs Completed</div>
+                </div>
+                <div class="bg-slate-50 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-slate-800">1876s</div>
+                    <div class="text-sm text-slate-600">Total Duration</div>
+                </div>
+                <div class="bg-slate-50 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-indigo-600">160</div>
+                    <div class="text-sm text-slate-600">Avg Claims</div>
+                </div>
+                <div class="bg-slate-50 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-teal-600">32.7%</div>
+                    <div class="text-sm text-slate-600">Avg Evidence Score</div>
+                </div>
+                <div class="bg-slate-50 rounded-lg p-4 text-center">
+                    <div class="text-3xl font-bold text-purple-600">14</div>
+                    <div class="text-sm text-slate-600">Sections</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pack: AI Cash Flow Forecasting for SME Banking -->
+        <section class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold text-slate-800">✅ AI Cash Flow Forecasting for SME Banking</h2>
+                <span class="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    COMPLETED
+                </span>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-slate-800">616s</div>
+                    <div class="text-xs text-slate-500">Duration</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-indigo-600">143</div>
+                    <div class="text-xs text-slate-500">Total Claims</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-teal-600">32.0%</div>
+                    <div class="text-xs text-slate-500">Evidence Score</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600">56.0%</div>
+                    <div class="text-xs text-slate-500">Quality Score</div>
+                </div>
+            </div>
+
+            <!-- Evidence Tier Distribution -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-slate-700 mb-2">Evidence Tier Distribution</h3>
+                <div class="flex gap-2 flex-wrap">
+                    <span class="tier-E1 px-3 py-1 rounded-full text-sm font-medium">E1: 3</span>
+                    <span class="tier-E2 px-3 py-1 rounded-full text-sm font-medium">E2: 5</span>
+                    <span class="tier-E3 px-3 py-1 rounded-full text-sm font-medium">E3: 18</span>
+                    <span class="tier-E4 px-3 py-1 rounded-full text-sm font-medium">E4: 80</span>
+                    <span class="tier-E5 px-3 py-1 rounded-full text-sm font-medium">E5: 37</span>
+                </div>
+                <div class="mt-2 text-xs text-slate-500">
+                    Section Prefixes: BC, CL, CP, ES, FM, GM, MI, PR, RC, RM
+                </div>
+            </div>
+
+            <!-- Sections Grid -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-slate-700 mb-2">Sections</h3>
+                <div class="grid grid-cols-3 md:grid-cols-5 gap-2">
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Market Intel</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Competitive</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Personas</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Business Case</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">GTM</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Financial (12mo)</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">PRD</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Tech Arch</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Legal</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Risk</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Wireframes (8)</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Prototype</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Stakeholders</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Validation (6)</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Exec Summary</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="text-xs text-slate-400">
+                Session ID: disc_20260207_5d4656a9
+            </div>
+        </section>
+
+        <!-- Pack: AI Clinical Trial Matching Platform -->
+        <section class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold text-slate-800">✅ AI Clinical Trial Matching Platform</h2>
+                <span class="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    COMPLETED
+                </span>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-slate-800">599s</div>
+                    <div class="text-xs text-slate-500">Duration</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-indigo-600">172</div>
+                    <div class="text-xs text-slate-500">Total Claims</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-teal-600">31.3%</div>
+                    <div class="text-xs text-slate-500">Evidence Score</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600">56.0%</div>
+                    <div class="text-xs text-slate-500">Quality Score</div>
+                </div>
+            </div>
+
+            <!-- Evidence Tier Distribution -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-slate-700 mb-2">Evidence Tier Distribution</h3>
+                <div class="flex gap-2 flex-wrap">
+                    <span class="tier-E1 px-3 py-1 rounded-full text-sm font-medium">E1: 8</span>
+                    <span class="tier-E2 px-3 py-1 rounded-full text-sm font-medium">E2: 9</span>
+                    <span class="tier-E3 px-3 py-1 rounded-full text-sm font-medium">E3: 13</span>
+                    <span class="tier-E4 px-3 py-1 rounded-full text-sm font-medium">E4: 81</span>
+                    <span class="tier-E5 px-3 py-1 rounded-full text-sm font-medium">E5: 61</span>
+                </div>
+                <div class="mt-2 text-xs text-slate-500">
+                    Section Prefixes: BC, CL, CP, ES, FM, GM, MI, PR, RC, RM, TA
+                </div>
+            </div>
+
+            <!-- Sections Grid -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-slate-700 mb-2">Sections</h3>
+                <div class="grid grid-cols-3 md:grid-cols-5 gap-2">
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Market Intel</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Competitive</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Personas</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Business Case</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">GTM</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Financial (12mo)</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">PRD</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Tech Arch</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Legal</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Risk</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Wireframes (7)</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Prototype</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Stakeholders</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Validation (5)</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Exec Summary</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="text-xs text-slate-400">
+                Session ID: disc_20260207_04b92875
+            </div>
+        </section>
+
+        <!-- Pack: Automated Insurance Claims with Fraud Detection -->
+        <section class="bg-white rounded-xl shadow-sm p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-xl font-semibold text-slate-800">✅ Automated Insurance Claims with Fraud Detection</h2>
+                <span class="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                    COMPLETED
+                </span>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-slate-800">660s</div>
+                    <div class="text-xs text-slate-500">Duration</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-indigo-600">165</div>
+                    <div class="text-xs text-slate-500">Total Claims</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-teal-600">34.8%</div>
+                    <div class="text-xs text-slate-500">Evidence Score</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-600">57.0%</div>
+                    <div class="text-xs text-slate-500">Quality Score</div>
+                </div>
+            </div>
+
+            <!-- Evidence Tier Distribution -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-slate-700 mb-2">Evidence Tier Distribution</h3>
+                <div class="flex gap-2 flex-wrap">
+                    <span class="tier-E1 px-3 py-1 rounded-full text-sm font-medium">E1: 10</span>
+                    <span class="tier-E2 px-3 py-1 rounded-full text-sm font-medium">E2: 8</span>
+                    <span class="tier-E3 px-3 py-1 rounded-full text-sm font-medium">E3: 18</span>
+                    <span class="tier-E4 px-3 py-1 rounded-full text-sm font-medium">E4: 85</span>
+                    <span class="tier-E5 px-3 py-1 rounded-full text-sm font-medium">E5: 44</span>
+                </div>
+                <div class="mt-2 text-xs text-slate-500">
+                    Section Prefixes: BC, CL, CP, ES, FM, GM, MI, PR, RC, RM, TA
+                </div>
+            </div>
+
+            <!-- Sections Grid -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-slate-700 mb-2">Sections</h3>
+                <div class="grid grid-cols-3 md:grid-cols-5 gap-2">
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Market Intel</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Competitive</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Personas</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Business Case</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">GTM</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Financial (12mo)</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">PRD</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Tech Arch</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Legal</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Risk</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Wireframes (7)</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Prototype</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Stakeholders</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Validation (5)</span>
+                    </div>
+
+                    <div class="flex items-center gap-1 px-2 py-1 bg-green-50 rounded text-xs">
+                        <span class="text-green-600">✓</span>
+                        <span class="text-slate-700">Exec Summary</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="text-xs text-slate-400">
+                Session ID: disc_20260207_96facc8f
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center text-slate-500 text-sm py-4">
+            <p>Seedcraft v3.0 — Cross-Reference Evidence Grading System</p>
+        </footer>
+    </div>
+</body>
+</html>
