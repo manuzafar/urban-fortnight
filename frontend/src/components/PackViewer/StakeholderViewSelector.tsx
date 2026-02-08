@@ -2,7 +2,7 @@
  * StakeholderViewSelector - displays tailored views for different stakeholders.
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ObjectionCard } from './ObjectionCard';
 
 interface Objection {

@@ -2,7 +2,7 @@
  * EvidenceDistributionChart - displays evidence tier distribution as a chart.
  */
 
-import React from 'react';
+// React is auto-imported by the JSX transform
 
 interface EvidenceDistributionChartProps {
   distribution: Record<string, number>;

@@ -2,7 +2,7 @@
  * ClaimCard - displays a single claim with evidence tier and links.
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { EvidenceBadge } from './EvidenceBadge';
 
 interface Claim {

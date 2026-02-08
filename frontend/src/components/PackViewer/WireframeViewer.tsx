@@ -2,7 +2,7 @@
  * WireframeViewer - renders wireframe screens in sandboxed iframes.
  */
 
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 
 interface WireframeScreen {
   screen_id: string;

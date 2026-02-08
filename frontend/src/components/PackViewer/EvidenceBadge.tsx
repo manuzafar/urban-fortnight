@@ -8,7 +8,7 @@
  * E5 (Assumption) - Red
  */
 
-import React from 'react';
+// React is auto-imported by the JSX transform
 
 interface EvidenceBadgeProps {
   tier: string;

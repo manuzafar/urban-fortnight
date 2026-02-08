@@ -2,7 +2,7 @@
  * PrototypeViewer - renders the interactive prototype in a polished iframe.
  */
 
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 
 interface PrototypeViewerProps {
   prototype: {
@@ -194,11 +194,11 @@ export function PrototypeViewer({ prototype, className = '' }: PrototypeViewerPr
       )}
 
       {/* Interactivity notes */}
-      {prototype.interactivity_notes?.length > 0 && (
+      {prototype.interactivity_notes && prototype.interactivity_notes.length > 0 && (
         <div className="border-t pt-4">
           <h4 className="font-medium mb-2">Interactive Elements</h4>
           <ul className="list-disc list-inside text-sm text-gray-600 space-y-1">
-            {prototype.interactivity_notes.map((note, i) => (
+            {prototype.interactivity_notes?.map((note, i) => (
               <li key={i}>{note}</li>
             ))}
           </ul>

@@ -2,7 +2,7 @@
  * ObjectionCard - displays an anticipated objection with response and claim links.
  */
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 
 interface Objection {
   objection: string;

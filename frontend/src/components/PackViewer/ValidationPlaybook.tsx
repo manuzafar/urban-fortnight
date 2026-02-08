@@ -2,8 +2,7 @@
  * ValidationPlaybook - displays validation experiments for E4/E5 claims.
  */
 
-import React, { useState } from 'react';
-import { EvidenceBadge } from './EvidenceBadge';
+import { useState } from 'react';
 
 interface Experiment {
   experiment_id: string;

@@ -2,7 +2,7 @@
  * EvidenceBar - displays evidence tier distribution as a stacked bar.
  */
 
-import React from 'react';
+// React is auto-imported by the JSX transform
 
 interface EvidenceBarProps {
   distribution: Record<string, number>;
