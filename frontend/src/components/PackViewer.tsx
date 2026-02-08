@@ -90,15 +90,18 @@ function checkSectionHasContent(pack: InceptionPack, sectionKey: SectionKey): bo
     case 'legal':
       return !!pack.legal_regulatory_review;
     case 'risks':
-      return !!pack.risk_assessment?.risks?.length;
+      // Backend uses risk_matrix, not risks
+      return !!(pack.risk_assessment?.risk_matrix?.length || pack.risk_assessment?.risks?.length);
     case 'wireframes':
       return !!pack.wireframes?.screens?.length;
     case 'prototype':
-      return !!pack.prototype?.react_component_code;
+      // Check for react_component_code or react_code
+      return !!(pack.prototype?.react_component_code || pack.prototype?.react_code);
     case 'stakeholders':
       return !!pack.stakeholder_views?.views?.length;
     case 'validation':
-      return !!pack.validation_playbook?.experiments?.length;
+      // Check for experiments or validation_experiments
+      return !!(pack.validation_playbook?.experiments?.length || pack.validation_playbook?.validation_experiments?.length);
     case 'quality':
       return !!pack.quality_assessment;
     default:
@@ -1333,40 +1336,54 @@ function FinancialSection({ financial }: { financial: InceptionPack['financial_m
 function RisksSection({ risks }: { risks: InceptionPack['risk_assessment'] }) {
   if (!risks) return <EmptySection message="No risk assessment available" />;
 
+  // Backend uses risk_matrix, support both for compatibility
+  const riskList = (risks as Record<string, unknown>).risk_matrix as Array<Record<string, unknown>> ||
+                   (risks as Record<string, unknown>).risks as Array<Record<string, unknown>> || [];
+  const riskSummary = (risks as Record<string, unknown>).risk_summary as Record<string, unknown> || {};
+  const topRisks = (risks as Record<string, unknown>).top_3_risks as Array<Record<string, unknown>> ||
+                   (risks as Record<string, unknown>).top_risks as string[] || [];
+
   return (
     <div className="section-grid">
       {/* Summary */}
-      {risks.summary && (
+      {(riskSummary.overall_risk_level || risks.summary) && (
         <div className="content-card full-width">
           <h3>Risk Overview</h3>
           <div className="risk-overview">
-            <p>{risks.summary}</p>
-            {risks.overall_risk_level && (
-              <span className={`overall-risk-badge ${risks.overall_risk_level}`}>
-                Overall: {risks.overall_risk_level?.toUpperCase()} RISK
+            {risks.summary && <p>{risks.summary}</p>}
+            {riskSummary.overall_risk_level && (
+              <span className={`overall-risk-badge ${riskSummary.overall_risk_level}`}>
+                Overall: {String(riskSummary.overall_risk_level).toUpperCase()} RISK
               </span>
+            )}
+            {riskSummary.total_risks && (
+              <p>Total risks identified: {String(riskSummary.total_risks)}
+                {riskSummary.critical_risks ? ` (${riskSummary.critical_risks} critical, ${riskSummary.high_risks} high)` : ''}
+              </p>
             )}
           </div>
         </div>
       )}
 
       {/* Top Risks */}
-      {risks.top_risks && risks.top_risks.length > 0 && (
+      {topRisks && topRisks.length > 0 && (
         <div className="content-card full-width highlight">
           <h3>
             <AlertTriangle size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
             Top Risks
           </h3>
           <ul className="bullet-list warning">
-            {risks.top_risks.map((risk, i) => (
-              <li key={i}>{risk}</li>
+            {topRisks.map((risk, i) => (
+              <li key={i}>
+                {typeof risk === 'string' ? risk : `${risk.name}: ${risk.why_critical || risk.immediate_action || ''}`}
+              </li>
             ))}
           </ul>
         </div>
       )}
 
       {/* Risk Table */}
-      {risks.risks && risks.risks.length > 0 && (
+      {riskList && riskList.length > 0 && (
         <div className="content-card full-width">
           <h3>Risk Register</h3>
           <div className="risk-table">
@@ -1381,21 +1398,21 @@ function RisksSection({ risks }: { risks: InceptionPack['risk_assessment'] }) {
                 </tr>
               </thead>
               <tbody>
-                {risks.risks.map((risk, i) => (
+                {riskList.map((risk, i) => (
                   <tr key={i}>
-                    <td className="category">{risk.category}</td>
-                    <td className="description">{risk.description}</td>
+                    <td className="category">{String(risk.category || '')}</td>
+                    <td className="description">{String(risk.name || risk.description || '')}</td>
                     <td>
-                      <span className={`risk-level-badge ${risk.likelihood}`}>
-                        {risk.likelihood}
+                      <span className={`risk-level-badge level-${risk.likelihood}`}>
+                        {String(risk.likelihood || '')}
                       </span>
                     </td>
                     <td>
-                      <span className={`risk-level-badge ${risk.impact}`}>
-                        {risk.impact}
+                      <span className={`risk-level-badge level-${risk.impact}`}>
+                        {String(risk.impact || '')}
                       </span>
                     </td>
-                    <td className="mitigation">{risk.mitigation_strategy}</td>
+                    <td className="mitigation">{String(risk.mitigation_strategy || '')}</td>
                   </tr>
                 ))}
               </tbody>

@@ -6,10 +6,11 @@ import { useMemo, useState } from 'react';
 
 interface PrototypeViewerProps {
   prototype: {
-    prototype_name: string;
-    primary_persona: string;
-    key_user_story: string;
-    react_component_code: string;
+    prototype_name?: string;
+    primary_persona?: string;
+    key_user_story?: string;
+    react_component_code?: string;
+    react_code?: string; // Backend may use this instead
     css_code?: string;
     color_palette?: {
       primary: string;
@@ -27,7 +28,10 @@ interface PrototypeViewerProps {
 export function PrototypeViewer({ prototype, className = '' }: PrototypeViewerProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  if (!prototype?.react_component_code) {
+  // Support both field names
+  const reactCode = prototype?.react_component_code || prototype?.react_code;
+
+  if (!reactCode) {
     return (
       <div className={`p-8 text-center text-gray-500 ${className}`}>
         No prototype available
@@ -37,7 +41,7 @@ export function PrototypeViewer({ prototype, className = '' }: PrototypeViewerPr
 
   const iframeSrc = useMemo(() => {
     // Preprocess the code for browser compatibility
-    let processedCode = prototype.react_component_code;
+    let processedCode = reactCode;
 
     // Remove import statements (React is loaded globally)
     processedCode = processedCode.replace(/import\s+React.*?from\s+['"]react['"];?\s*\n?/g, '');
@@ -105,7 +109,7 @@ export function PrototypeViewer({ prototype, className = '' }: PrototypeViewerPr
     `;
 
     return `data:text/html;charset=utf-8,${encodeURIComponent(html)}`;
-  }, [prototype.react_component_code, prototype.css_code]);
+  }, [reactCode, prototype.css_code]);
 
   return (
     <div className={`space-y-4 ${className}`}>

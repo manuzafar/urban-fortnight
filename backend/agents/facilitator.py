@@ -371,11 +371,12 @@ class FacilitatorAgent:
         await self._emit_agent_complete("legal_regulatory", "Legal review complete", insights_count=1)
         self.logger.info("emitted_legal_complete", session_id=state["session_id"])
 
-        # Safely extract risks (ensure each item is a dict before calling .get)
+        # Safely extract risks (backend uses risk_matrix, not risks)
         ra = state.get("risk_assessment") or {}
-        risks = ra.get("risks") or []
+        risks = ra.get("risk_matrix") or ra.get("risks") or []
         if risks:
-            high_risks = [r for r in risks if isinstance(r, dict) and r.get("severity") == "high"]
+            # Risk uses likelihood/impact scores, not severity
+            high_risks = [r for r in risks if isinstance(r, dict) and r.get("risk_score", 0) >= 12]
             await self._emit_insight("risk_assessment", "risks", f"Risks: {len(high_risks)} high, {len(risks)} total")
         await self._emit_agent_complete("risk_assessment", "Risk assessment complete", insights_count=1)
         self.logger.info("emitted_risk_complete", session_id=state["session_id"])
