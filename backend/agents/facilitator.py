@@ -75,7 +75,13 @@ class FacilitatorAgent:
         """Emit agent completion event."""
         emitter = get_current_emitter()
         if emitter:
-            await emitter.emit_agent_complete(agent, summary, insights_count=insights_count)
+            try:
+                await emitter.emit_agent_complete(agent, summary, insights_count=insights_count)
+                self.logger.debug("emit_agent_complete_success", agent=agent, summary=summary)
+            except Exception as e:
+                self.logger.error("emit_agent_complete_error", agent=agent, error=str(e))
+        else:
+            self.logger.warning("emit_agent_complete_no_emitter", agent=agent)
 
     async def _emit_progress(self, percentage: int, agent: str):
         """Emit progress update."""
@@ -105,7 +111,15 @@ class FacilitatorAgent:
         self.logger.info(
             "facilitator_start",
             session_id=state["session_id"],
-            version="3.0",
+            version="3.1",  # Updated version to verify deployment
+        )
+
+        # Verify emitter is available at start
+        emitter = get_current_emitter()
+        self.logger.info(
+            "facilitator_emitter_check",
+            session_id=state["session_id"],
+            has_emitter=emitter is not None,
         )
 
         try:
@@ -292,24 +306,38 @@ class FacilitatorAgent:
 
         state = await self.delivery_swarm.run(state)
 
+        self.logger.info(
+            "delivery_swarm_complete",
+            session_id=state["session_id"],
+            has_prd=state.get("product_requirements") is not None,
+            has_ta=state.get("technical_architecture") is not None,
+            has_legal=state.get("legal_regulatory_review") is not None,
+            has_risk=state.get("risk_assessment") is not None,
+        )
+
         # Emit insights from delivery (try to extract, but always complete)
+        self.logger.info("emitting_delivery_completes", session_id=state["session_id"])
+
         prd = state.get("product_requirements") or {}
         features = prd.get("functional_requirements", {}).get("core_features", [])
         if features:
             await self._emit_insight("product_requirements", "features", f"Core features: {len(features)}")
         await self._emit_agent_complete("product_requirements", "PRD complete", insights_count=1)
+        self.logger.info("emitted_prd_complete", session_id=state["session_id"])
 
         ta = state.get("technical_architecture") or {}
         stack = ta.get("recommended_stack", {})
         if stack.get("frontend"):
             await self._emit_insight("technical_architect", "stack", f"Stack: {stack.get('frontend', '')} + {stack.get('backend', '')}")
         await self._emit_agent_complete("technical_architect", "Architecture complete", insights_count=1)
+        self.logger.info("emitted_ta_complete", session_id=state["session_id"])
 
         lr = state.get("legal_regulatory_review") or {}
         regs = lr.get("applicable_regulations", [])
         if regs:
             await self._emit_insight("legal_regulatory", "regulations", f"Regulations: {len(regs)} applicable")
         await self._emit_agent_complete("legal_regulatory", "Legal review complete", insights_count=1)
+        self.logger.info("emitted_legal_complete", session_id=state["session_id"])
 
         ra = state.get("risk_assessment") or {}
         risks = ra.get("risks", [])
@@ -317,8 +345,10 @@ class FacilitatorAgent:
             high_risks = [r for r in risks if r.get("severity") == "high"]
             await self._emit_insight("risk_assessment", "risks", f"Risks: {len(high_risks)} high, {len(risks)} total")
         await self._emit_agent_complete("risk_assessment", "Risk assessment complete", insights_count=1)
+        self.logger.info("emitted_risk_complete", session_id=state["session_id"])
 
         await self._emit_progress(60, "delivery")
+        self.logger.info("delivery_phase_complete", session_id=state["session_id"])
 
         return state
 
