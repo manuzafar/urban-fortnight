@@ -224,26 +224,34 @@ export interface Prototype {
 // Competitive Analysis
 export interface CompetitorDetail {
   name: string;
-  description: string;
-  strengths: string[];
-  weaknesses: string[];
-  market_share: string;
-  pricing: string;
-  threat_level: 'high' | 'medium' | 'low';
-  differentiation_opportunity: string;
+  description?: string;
+  strengths?: string[];
+  weaknesses?: string[];
+  market_share?: string;
+  pricing?: string;
+  threat_level?: 'high' | 'medium' | 'low';
+  differentiation_opportunity?: string;
 }
 
 export interface CompetitiveAnalysis {
-  summary: string;
-  competitors: CompetitorDetail[];
-  positioning_map: {
+  summary?: string;
+  // Frontend format
+  competitors?: CompetitorDetail[];
+  // Backend format (V3.0)
+  direct_competitors?: CompetitorDetail[];
+  indirect_competitors?: CompetitorDetail[];
+  potential_future_competitors?: CompetitorDetail[];
+  positioning_map?: {
     x_axis: string;
     y_axis: string;
     our_position: { x: number; y: number };
     competitor_positions: Array<{ name: string; x: number; y: number }>;
   };
-  competitive_moat: string[];
-  market_gaps: string[];
+  competitive_moat?: string[];
+  competitive_moats?: string[];
+  market_gaps?: string[];
+  market_dynamics?: string;
+  strategic_recommendations?: string[];
 }
 
 // Detailed Personas

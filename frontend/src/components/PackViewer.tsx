@@ -73,7 +73,8 @@ function checkSectionHasContent(pack: InceptionPack, sectionKey: SectionKey): bo
     case 'research':
       return !!pack.customer_research;
     case 'competitive':
-      return !!pack.competitive_analysis?.competitors?.length;
+      // Backend may use direct_competitors or competitors
+      return !!(pack.competitive_analysis?.competitors?.length || pack.competitive_analysis?.direct_competitors?.length);
     case 'personas':
       return !!(pack.detailed_personas?.personas?.length || pack.customer_research?.user_personas?.length);
     case 'business':
@@ -915,6 +916,9 @@ function QualitySection({ quality }: { quality: InceptionPack['quality_assessmen
 function CompetitiveSection({ analysis }: { analysis: InceptionPack['competitive_analysis'] }) {
   if (!analysis) return <EmptySection message="No competitive analysis available" />;
 
+  // Handle both frontend format (competitors) and backend format (direct_competitors)
+  const competitors = analysis.competitors || analysis.direct_competitors || [];
+
   return (
     <div className="section-grid">
       {/* Summary */}
@@ -926,11 +930,11 @@ function CompetitiveSection({ analysis }: { analysis: InceptionPack['competitive
       )}
 
       {/* Competitors */}
-      {analysis.competitors && analysis.competitors.length > 0 && (
+      {competitors.length > 0 && (
         <div className="content-card full-width">
           <h3>Competitor Analysis</h3>
           <div className="competitor-grid">
-            {analysis.competitors.map((competitor, i) => (
+            {competitors.map((competitor, i) => (
               <div key={i} className="competitor-card">
                 <div className="competitor-header">
                   <h4>{competitor.name}</h4>
