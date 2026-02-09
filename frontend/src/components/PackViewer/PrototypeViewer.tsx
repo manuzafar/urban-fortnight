@@ -43,9 +43,9 @@ export function PrototypeViewer({ prototype, className = '' }: PrototypeViewerPr
     // Preprocess the code for browser compatibility
     let processedCode = reactCode;
 
-    // Remove import statements (React is loaded globally)
-    processedCode = processedCode.replace(/import\s+React.*?from\s+['"]react['"];?\s*\n?/g, '');
-    processedCode = processedCode.replace(/import\s+\{[^}]+\}\s+from\s+['"]react['"];?\s*\n?/g, '');
+    // Remove ALL import statements (react, lucide-react, etc.)
+    processedCode = processedCode.replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*\n?/g, '');
+    processedCode = processedCode.replace(/import\s+['"][^'"]+['"];?\s*\n?/g, '');
 
     // Remove export statements
     processedCode = processedCode.replace(/export\s+default\s+\w+;?\s*\n?/g, '');
@@ -84,12 +84,45 @@ export function PrototypeViewer({ prototype, className = '' }: PrototypeViewerPr
           <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
           <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
           <script src="https://cdn.tailwindcss.com"></script>
+          <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
           <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
           <style>
             body { margin: 0; background: white; min-height: 100vh; font-family: 'Inter', system-ui, sans-serif; }
             .error { color: #991b1b; background: #fee2e2; padding: 20px; border-radius: 8px; margin: 20px; }
             ${escapedCss}
           </style>
+          <script>
+            // Create React components for Lucide icons
+            window.createLucideIcon = function(iconName) {
+              return function LucideIcon(props) {
+                const ref = React.useRef(null);
+                React.useEffect(() => {
+                  if (ref.current && window.lucide && window.lucide.icons[iconName]) {
+                    const [, attrs, children] = window.lucide.icons[iconName];
+                    ref.current.innerHTML = '';
+                    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    Object.entries({...attrs, width: props.size || 24, height: props.size || 24, stroke: props.color || 'currentColor', ...props}).forEach(([k, v]) => {
+                      if (k !== 'size' && k !== 'children' && typeof v !== 'object') svg.setAttribute(k === 'strokeWidth' ? 'stroke-width' : k, v);
+                    });
+                    svg.innerHTML = children.map(([tag, attrs]) => {
+                      const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+                      Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+                      return el.outerHTML;
+                    }).join('');
+                    ref.current.appendChild(svg);
+                  }
+                }, []);
+                return React.createElement('span', { ref: ref, className: props.className, style: { display: 'inline-flex', verticalAlign: 'middle' } });
+              };
+            };
+            // Common Lucide icons used in prototypes
+            var iconNames = ['search','bell','settings','plus','filter','menu','x','check','chevron-right','chevron-left','chevron-down','chevron-up','arrow-right','arrow-left','arrow-up','arrow-down','home','user','users','mail','phone','calendar','clock','star','heart','trash','trash-2','edit','edit-2','edit-3','eye','eye-off','download','upload','share','share-2','copy','link','external-link','info','alert-triangle','alert-circle','check-circle','x-circle','plus-circle','minus-circle','help-circle','shopping-cart','shopping-bag','shopping-basket','credit-card','dollar-sign','percent','tag','box','package','truck','map-pin','navigation','navigation-2','globe','sun','moon','cloud','image','camera','file','file-text','folder','database','server','code','terminal','git-branch','layout-grid','layout-list','list','grid','bar-chart','bar-chart-2','pie-chart','trending-up','trending-down','activity','zap','shield','lock','unlock','key','log-in','log-out','refresh-cw','rotate-cw','save','send','message-circle','message-square','more-horizontal','more-vertical','sliders','toggle-left','toggle-right'];
+            iconNames.forEach(function(name) {
+              var camelName = name.split('-').map(function(s, i) { return i === 0 ? s : s.charAt(0).toUpperCase() + s.slice(1); }).join('');
+              var pascalName = camelName.charAt(0).toUpperCase() + camelName.slice(1);
+              window[pascalName] = window.createLucideIcon(name);
+            });
+          </script>
         </head>
         <body>
           <div id="root"></div>

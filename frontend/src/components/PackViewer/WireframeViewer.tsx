@@ -115,19 +115,27 @@ export function WireframeViewer({ wireframes, className = '' }: WireframeViewerP
 
 /**
  * Preprocesses React code for browser execution.
- * - Removes import/export statements
+ * - Removes ALL import/export statements
  * - Extracts component name
+ * - Replaces React hooks with React.* versions
  */
 function preprocessCode(code: string): { processedCode: string; componentName: string } {
   let processed = code;
 
-  // Remove import statements
-  processed = processed.replace(/import\s+React.*?from\s+['"]react['"];?\s*\n?/g, '');
-  processed = processed.replace(/import\s+\{[^}]+\}\s+from\s+['"]react['"];?\s*\n?/g, '');
+  // Remove ALL import statements (react, lucide-react, etc.)
+  processed = processed.replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*\n?/g, '');
+  processed = processed.replace(/import\s+['"][^'"]+['"];?\s*\n?/g, '');
 
   // Remove export statements
   processed = processed.replace(/export\s+default\s+\w+;?\s*\n?/g, '');
   processed = processed.replace(/export\s+\{[^}]+\};?\s*\n?/g, '');
+
+  // Replace destructured hooks with React.* versions
+  processed = processed.replace(/\buseState\b/g, 'React.useState');
+  processed = processed.replace(/\buseEffect\b/g, 'React.useEffect');
+  processed = processed.replace(/\buseRef\b/g, 'React.useRef');
+  processed = processed.replace(/\buseMemo\b/g, 'React.useMemo');
+  processed = processed.replace(/\buseCallback\b/g, 'React.useCallback');
 
   // Extract component name
   const funcMatch = processed.match(/function\s+([A-Z][a-zA-Z0-9]*)/);
@@ -166,10 +174,43 @@ function WireframePreview({ code }: { code: string }) {
           <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
           <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
           <script src="https://cdn.tailwindcss.com"></script>
+          <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
           <style>
             body { margin: 0; padding: 16px; background: #f9fafb; font-family: system-ui, sans-serif; }
             .error { color: #991b1b; background: #fee2e2; padding: 16px; border-radius: 8px; }
           </style>
+          <script>
+            // Create React components for Lucide icons
+            window.createLucideIcon = function(iconName) {
+              return function LucideIcon(props) {
+                const ref = React.useRef(null);
+                React.useEffect(() => {
+                  if (ref.current && window.lucide && window.lucide.icons[iconName]) {
+                    const [, attrs, children] = window.lucide.icons[iconName];
+                    ref.current.innerHTML = '';
+                    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                    Object.entries({...attrs, width: props.size || 24, height: props.size || 24, stroke: props.color || 'currentColor', ...props}).forEach(([k, v]) => {
+                      if (k !== 'size' && k !== 'children' && typeof v !== 'object') svg.setAttribute(k === 'strokeWidth' ? 'stroke-width' : k, v);
+                    });
+                    svg.innerHTML = children.map(([tag, attrs]) => {
+                      const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+                      Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+                      return el.outerHTML;
+                    }).join('');
+                    ref.current.appendChild(svg);
+                  }
+                }, []);
+                return React.createElement('span', { ref: ref, className: props.className, style: { display: 'inline-flex', verticalAlign: 'middle' } });
+              };
+            };
+            // Common Lucide icons used in wireframes
+            var iconNames = ['search','bell','settings','plus','filter','menu','x','check','chevron-right','chevron-left','chevron-down','chevron-up','arrow-right','arrow-left','home','user','users','mail','phone','calendar','clock','star','heart','trash','edit','eye','download','upload','share','copy','link','external-link','info','alert-triangle','alert-circle','check-circle','x-circle','plus-circle','minus-circle','help-circle','shopping-cart','shopping-bag','credit-card','dollar-sign','percent','tag','box','package','truck','map-pin','navigation','globe','sun','moon','cloud','image','camera','file','folder','database','server','code','terminal','git-branch','layout-grid','list','grid','bar-chart','pie-chart','trending-up','trending-down','activity','zap','shield','lock','unlock','key','log-in','log-out','refresh-cw','rotate-cw','save','send','message-circle','message-square'];
+            iconNames.forEach(function(name) {
+              var camelName = name.split('-').map(function(s, i) { return i === 0 ? s : s.charAt(0).toUpperCase() + s.slice(1); }).join('');
+              var pascalName = camelName.charAt(0).toUpperCase() + camelName.slice(1);
+              window[pascalName] = window.createLucideIcon(name);
+            });
+          </script>
         </head>
         <body>
           <div id="root"></div>
