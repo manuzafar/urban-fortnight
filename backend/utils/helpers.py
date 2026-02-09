@@ -182,6 +182,364 @@ def format_duration(seconds: float) -> str:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# SECTION TRANSFORMATIONS (Backend → Frontend)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+def _transform_gtm_plan(gtm_plan: dict[str, Any] | None) -> dict[str, Any] | None:
+    """
+    Transform backend GTM plan to frontend GTM strategy format.
+
+    Backend produces: market_entry_strategy, channel_strategy, launch_plan, growth_tactics
+    Frontend expects: positioning_statement, launch_phases, channel_strategy[], messaging_framework
+    """
+    if not gtm_plan:
+        return None
+
+    transformed = {}
+
+    # Map market_entry_strategy to positioning_statement
+    market_entry = gtm_plan.get("market_entry_strategy", {}) or {}
+    beachhead = market_entry.get("beachhead_market", "")
+    approach = market_entry.get("approach", "")
+    initial_segment = market_entry.get("initial_segment", "")
+    if beachhead or approach or initial_segment:
+        parts = []
+        if initial_segment:
+            parts.append(f"Targeting {initial_segment}")
+        if approach:
+            parts.append(f"through {approach} approach")
+        if beachhead:
+            parts.append(f"starting with {beachhead}")
+        transformed["positioning_statement"] = " ".join(parts) if parts else ""
+
+    # Map launch_plan.phases to launch_phases (rename fields)
+    launch_plan = gtm_plan.get("launch_plan", {}) or {}
+    phases = launch_plan.get("phases", []) or []
+    transformed["launch_phases"] = [
+        {
+            "phase_name": phase.get("phase", ""),
+            "duration": phase.get("duration", ""),
+            "objectives": phase.get("goals", []) or [],
+            "key_activities": phase.get("key_activities", []) or [],
+            "success_metrics": phase.get("success_metrics", []) or [],
+        }
+        for phase in phases
+    ]
+
+    # Map channel_strategy.primary_channels to channel_strategy array
+    channel_strategy = gtm_plan.get("channel_strategy", {}) or {}
+    primary_channels = channel_strategy.get("primary_channels", []) or []
+    transformed["channel_strategy"] = [
+        {
+            "channel": ch.get("channel", ""),
+            "purpose": ch.get("role", ""),
+            "tactics": [],
+            "budget_allocation": "",
+            "expected_roi": ch.get("expected_cac", ""),
+        }
+        for ch in primary_channels
+    ]
+
+    # Map target segments from expansion path or initial segment
+    expansion_path = market_entry.get("expansion_path", []) or []
+    transformed["target_segments"] = (
+        expansion_path if expansion_path else ([initial_segment] if initial_segment else [])
+    )
+
+    # Create messaging_framework placeholder
+    transformed["messaging_framework"] = {
+        "headline": "",
+        "subheadline": "",
+        "key_benefits": [],
+        "proof_points": [],
+    }
+
+    # Pass through growth_tactics and partnership_opportunities
+    if gtm_plan.get("growth_tactics"):
+        transformed["growth_tactics"] = gtm_plan["growth_tactics"]
+    if gtm_plan.get("partnership_opportunities"):
+        transformed["partnership_opportunities"] = gtm_plan["partnership_opportunities"]
+
+    return transformed
+
+
+def _transform_financial_model(
+    financial_model: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    """
+    Transform backend financial model to frontend format.
+
+    Backend produces complex nested objects, frontend expects simpler structures.
+    Key transformations:
+    - funding_requirements: object → string
+    - unit_economics: object → array of metrics
+    - sensitivity_analysis: nested objects → simple strings
+    - projections: monthly/quarterly → simplified array
+    """
+    if not financial_model:
+        return None
+
+    transformed = {}
+
+    # Pass through summary as-is (ensure it's always a string)
+    transformed["summary"] = financial_model.get("summary", "") or ""
+
+    # Transform unit_economics from object to array
+    unit_econ = financial_model.get("unit_economics", {}) or {}
+    if unit_econ:
+        transformed["unit_economics"] = [
+            {
+                "metric": "LTV",
+                "value": f"${unit_econ.get('ltv', 0):,}",
+                "benchmark": "Industry avg",
+                "assessment": unit_econ.get("assessment", ""),
+            },
+            {
+                "metric": "CAC",
+                "value": f"${unit_econ.get('cac', 0):,}",
+                "benchmark": "Industry avg",
+                "assessment": unit_econ.get("assessment", ""),
+            },
+            {
+                "metric": "LTV:CAC Ratio",
+                "value": f"{unit_econ.get('ltv_cac_ratio', 0):.1f}x",
+                "benchmark": ">3x healthy",
+                "assessment": unit_econ.get("assessment", ""),
+            },
+            {
+                "metric": "Gross Margin",
+                "value": f"{unit_econ.get('gross_margin_percent', 0)}%",
+                "benchmark": ">60% for SaaS",
+                "assessment": unit_econ.get("assessment", ""),
+            },
+            {
+                "metric": "Payback Period",
+                "value": f"{unit_econ.get('payback_period_months', 0)} months",
+                "benchmark": "<12 months ideal",
+                "assessment": unit_econ.get("assessment", ""),
+            },
+        ]
+
+    # Transform projections from monthly/quarterly to simplified array
+    monthly = financial_model.get("monthly_projections_year_1", []) or []
+    quarterly = financial_model.get("quarterly_projections_year_2_3", []) or []
+    projections = []
+
+    # Add key monthly milestones (months 1, 6, 12)
+    for month_data in monthly:
+        month = month_data.get("month", 0)
+        if month in [1, 6, 12]:
+            projections.append({
+                "period": f"Month {month}",
+                "revenue": month_data.get("revenue", 0),
+                "costs": month_data.get("costs", 0),
+                "profit": month_data.get("profit", 0),
+                "cumulative_profit": 0,  # Would need running calculation
+            })
+
+    # Add quarterly data
+    for q_data in quarterly:
+        projections.append({
+            "period": q_data.get("quarter", ""),
+            "revenue": q_data.get("revenue", 0),
+            "costs": q_data.get("costs", 0),
+            "profit": q_data.get("profit", 0),
+            "cumulative_profit": 0,
+        })
+
+    if projections:
+        transformed["projections"] = projections
+
+    # Transform assumptions - may be a list or part of scenarios
+    assumptions = financial_model.get("assumptions", [])
+    if not assumptions:
+        # Try to extract from scenario analysis
+        scenario = financial_model.get("scenario_analysis", {}) or {}
+        base_case = scenario.get("base_case", {}) or {}
+        assumptions = base_case.get("assumptions", [])
+    transformed["assumptions"] = assumptions if assumptions else []
+
+    # Transform sensitivity_analysis from nested objects to simple strings
+    scenario = financial_model.get("scenario_analysis", {}) or {}
+    sensitivity = financial_model.get("sensitivity_analysis", {}) or {}
+
+    optimistic = scenario.get("optimistic", {}) or {}
+    base_case = scenario.get("base_case", {}) or {}
+    pessimistic = scenario.get("pessimistic", {}) or {}
+
+    opt_desc = optimistic.get("description", "")
+    opt_rev = optimistic.get("year_3_revenue", 0)
+    base_desc = base_case.get("description", "")
+    base_rev = base_case.get("year_3_revenue", 0)
+    pess_desc = pessimistic.get("description", "")
+    pess_rev = pessimistic.get("year_3_revenue", 0)
+
+    transformed["sensitivity_analysis"] = {
+        "optimistic": f"{opt_desc} - Y3 Revenue: ${opt_rev:,}" if opt_desc else "",
+        "base_case": f"{base_desc} - Y3 Revenue: ${base_rev:,}" if base_desc else "",
+        "pessimistic": f"{pess_desc} - Y3 Revenue: ${pess_rev:,}" if pess_desc else "",
+    }
+
+    # Transform funding_requirements from object to string
+    funding = financial_model.get("funding_requirements", {}) or {}
+    if funding:
+        parts = []
+        pre_seed = funding.get("pre_seed", {}) or {}
+        seed = funding.get("seed", {}) or {}
+        series_a = funding.get("series_a", {}) or {}
+        total = funding.get("total_required", "")
+
+        if pre_seed.get("amount"):
+            parts.append(f"Pre-Seed: ${pre_seed['amount']:,}")
+        if seed.get("amount"):
+            parts.append(f"Seed: ${seed['amount']:,}")
+        if series_a.get("amount"):
+            parts.append(f"Series A: ${series_a['amount']:,}")
+        if total:
+            parts.append(f"Total: {total}")
+
+        transformed["funding_requirements"] = " | ".join(parts) if parts else ""
+    else:
+        transformed["funding_requirements"] = ""
+
+    # Transform break_even to string
+    sensitivity_raw = financial_model.get("sensitivity_analysis", {}) or {}
+    break_even_sensitivity = sensitivity_raw.get("break_even_sensitivity", "")
+    # Also check for direct break_even field
+    break_even = financial_model.get("break_even_analysis", "")
+    if not break_even and break_even_sensitivity:
+        break_even = break_even_sensitivity
+    transformed["break_even_analysis"] = break_even
+
+    return transformed
+
+
+def _transform_detailed_personas(
+    detailed_personas: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    """
+    Transform backend personas to frontend format with personas array.
+
+    Backend produces: primary_persona, secondary_personas[], anti_persona, persona_prioritisation
+    Frontend expects: personas[], key_insights[], prioritization
+    """
+    if not detailed_personas:
+        return None
+
+    personas_list = []
+
+    # Add primary persona to list
+    primary = detailed_personas.get("primary_persona", {}) or {}
+    if primary:
+        personas_list.append(
+            {
+                "persona_id": "P1",
+                "name": primary.get("name", ""),
+                "role": primary.get("role", ""),
+                "quote": primary.get("quote", ""),
+                "demographics": {
+                    "age_range": primary.get("tenure", ""),
+                    "location": "",
+                    "income_level": "",
+                    "education": "",
+                },
+                "jobs_to_be_done": [
+                    {"job": jtbd, "importance": "high", "current_solution": ""}
+                    for jtbd in (primary.get("jobs_to_be_done", []) or [])
+                ],
+                "pain_points": primary.get("frustrations", []) or [],
+                "goals": primary.get("goals", []) or [],
+                "behaviors": [],
+                "channels": primary.get("discovery_channels", []) or [],
+                "decision_factors": primary.get("evaluation_criteria", []) or [],
+                "day_in_life": "",
+            }
+        )
+
+    # Add secondary personas to list
+    secondary_personas = detailed_personas.get("secondary_personas", []) or []
+    for idx, secondary in enumerate(secondary_personas, start=2):
+        personas_list.append(
+            {
+                "persona_id": f"P{idx}",
+                "name": secondary.get("name", ""),
+                "role": secondary.get("role", ""),
+                "quote": "",
+                "demographics": {
+                    "age_range": "",
+                    "location": "",
+                    "income_level": "",
+                    "education": "",
+                },
+                "jobs_to_be_done": [
+                    {"job": jtbd, "importance": "medium", "current_solution": ""}
+                    for jtbd in (secondary.get("jobs_to_be_done", []) or [])
+                ],
+                "pain_points": [],
+                "goals": secondary.get("goals", []) or [],
+                "behaviors": [],
+                "channels": [],
+                "decision_factors": secondary.get("evaluation_criteria", []) or [],
+                "day_in_life": "",
+            }
+        )
+
+    # Build key insights from anti_persona
+    anti = detailed_personas.get("anti_persona", {}) or {}
+    key_insights = []
+    if anti:
+        desc = anti.get("description", "")
+        if desc:
+            key_insights.append(f"Not for: {desc}")
+        for reason in (anti.get("reasons", []) or [])[:2]:
+            key_insights.append(reason)
+
+    # Get prioritization
+    prio = detailed_personas.get("persona_prioritisation", {}) or {}
+    prioritization = prio.get("primary_buyer", "")
+
+    return {
+        "personas": personas_list,
+        "key_insights": key_insights,
+        "prioritization": prioritization,
+    }
+
+
+def _transform_wireframes(wireframes: dict[str, Any] | None) -> dict[str, Any] | None:
+    """
+    Transform backend wireframes to frontend format.
+
+    Key fix: user_flows use screens_referenced → screens
+    """
+    if not wireframes:
+        return None
+
+    transformed = {
+        "screens": wireframes.get("screens", []) or [],
+        "user_flow_description": wireframes.get("user_flow_description", ""),
+        "user_flow_mermaid": wireframes.get("user_flow_mermaid", ""),
+        "design_system_notes": wireframes.get("design_system_notes", []) or [],
+        "responsive_notes": wireframes.get("responsive_notes", ""),
+    }
+
+    # Transform user_flows - map screens_referenced to screens
+    user_flows = wireframes.get("user_flows", []) or []
+    transformed["user_flows"] = [
+        {
+            "flow_name": flow.get("flow_name", ""),
+            "description": flow.get("notes", flow.get("description", "")),
+            "screens": flow.get("screens", flow.get("screens_referenced", [])) or [],
+            "persona": flow.get("persona", ""),
+            "mermaid_code": flow.get("mermaid_code", ""),
+        }
+        for flow in user_flows
+    ]
+
+    return transformed
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # INCEPTION PACK BUILDER
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -192,6 +550,7 @@ def build_inception_pack(state: dict[str, Any]) -> dict[str, Any]:
 
     Assembles all agent outputs into the final deliverable format.
     Supports both V1.0 (7 sections) and V3.0 (16 sections) formats.
+    Transforms backend structures to frontend-expected format.
 
     Args:
         state: Completed workflow state.
@@ -199,6 +558,12 @@ def build_inception_pack(state: dict[str, Any]) -> dict[str, Any]:
     Returns:
         dict: Complete InceptionPack structure.
     """
+    # Transform sections that have structural mismatches between backend and frontend
+    gtm_strategy = _transform_gtm_plan(state.get("gtm_plan"))
+    detailed_personas = _transform_detailed_personas(state.get("detailed_personas"))
+    financial_model = _transform_financial_model(state.get("financial_model"))
+    wireframes = _transform_wireframes(state.get("wireframes"))
+
     pack = {
         # Core sections (V1.0)
         "executive_summary": state.get("executive_summary", {}),
@@ -210,14 +575,14 @@ def build_inception_pack(state: dict[str, Any]) -> dict[str, Any]:
         "quality_assessment": state.get("quality_assessment") or {},
         # V3.0 Discovery sections
         "competitive_analysis": state.get("competitive_analysis"),
-        "detailed_personas": state.get("detailed_personas"),
+        "detailed_personas": detailed_personas,  # TRANSFORMED
         # V3.0 Strategy sections
-        "gtm_strategy": state.get("gtm_plan"),  # Backend uses gtm_plan, frontend expects gtm_strategy
-        "financial_model": state.get("financial_model"),
+        "gtm_strategy": gtm_strategy,  # TRANSFORMED
+        "financial_model": financial_model,  # TRANSFORMED
         # V3.0 Delivery sections
         "risk_assessment": state.get("risk_assessment"),
         # V3.0 Design sections
-        "wireframes": state.get("wireframes"),
+        "wireframes": wireframes,  # TRANSFORMED
         "prototype": state.get("prototype"),
         # V3.0 Synthesis sections
         "stakeholder_views": state.get("stakeholder_views"),
