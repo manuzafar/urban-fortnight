@@ -690,74 +690,6 @@ class FacilitatorAgent:
 
         return state
 
-
-def _format_revision_context(
-    previous_output: dict,
-    feedback: list[str],
-    revision_history: list[dict],
-    section_name: str,
-) -> str:
-    """
-    Format revision context for agent prompt.
-
-    Provides agents with:
-    - Previous attempt history (to avoid repeating mistakes)
-    - Current feedback to address
-    - Score trajectory
-
-    Args:
-        previous_output: The previous output being revised
-        feedback: List of feedback items to address
-        revision_history: History of revision attempts
-        section_name: Name of the section being revised
-
-    Returns:
-        Formatted string for prompt injection
-    """
-    lines = [
-        "## REVISION CONTEXT",
-        "",
-        f"This is a revision of the {section_name.replace('_', ' ').title()} section.",
-        "Review the feedback carefully and address ALL issues.",
-        "",
-    ]
-
-    # Previous attempts for this section
-    section_history = [
-        h for h in revision_history
-        if h.get("agent") == section_name
-    ]
-
-    if section_history:
-        lines.append("### Previous Revision Attempts:")
-        for attempt in section_history[-3:]:  # Last 3 attempts
-            lines.append(f"- **Iteration {attempt.get('iteration', '?')}**")
-            lines.append(f"  Score: {attempt.get('score_before', 0):.2f}")
-            issues = attempt.get("issues_addressed", [])
-            if issues:
-                lines.append(f"  Issues addressed: {', '.join(issues[:3])}")
-        lines.append("")
-        lines.append("**DO NOT repeat mistakes from previous attempts.**")
-        lines.append("")
-
-    # Current feedback to address
-    if feedback:
-        lines.append("### Issues to Address NOW:")
-        for i, fb in enumerate(feedback[:10], 1):  # Top 10 issues
-            lines.append(f"{i}. {fb}")
-        lines.append("")
-
-    # Summary of previous output (for context)
-    if previous_output:
-        # Include a brief summary of what was in the previous output
-        output_keys = list(previous_output.keys())[:10]
-        lines.append(f"### Previous Output Sections: {', '.join(output_keys)}")
-        lines.append("")
-
-    lines.append("**Address ALL issues listed above. Be specific and data-driven.**")
-
-    return "\n".join(lines)
-
     def detect_contradictions(
         self, state: DiscoveryState, phase: str = "all"
     ) -> list[dict[str, Any]]:
@@ -969,6 +901,74 @@ def _format_revision_context(
                     if match:
                         return float(match.group(1))
         return None
+
+
+def _format_revision_context(
+    previous_output: dict,
+    feedback: list[str],
+    revision_history: list[dict],
+    section_name: str,
+) -> str:
+    """
+    Format revision context for agent prompt.
+
+    Provides agents with:
+    - Previous attempt history (to avoid repeating mistakes)
+    - Current feedback to address
+    - Score trajectory
+
+    Args:
+        previous_output: The previous output being revised
+        feedback: List of feedback items to address
+        revision_history: History of revision attempts
+        section_name: Name of the section being revised
+
+    Returns:
+        Formatted string for prompt injection
+    """
+    lines = [
+        "## REVISION CONTEXT",
+        "",
+        f"This is a revision of the {section_name.replace('_', ' ').title()} section.",
+        "Review the feedback carefully and address ALL issues.",
+        "",
+    ]
+
+    # Previous attempts for this section
+    section_history = [
+        h for h in revision_history
+        if h.get("agent") == section_name
+    ]
+
+    if section_history:
+        lines.append("### Previous Revision Attempts:")
+        for attempt in section_history[-3:]:  # Last 3 attempts
+            lines.append(f"- **Iteration {attempt.get('iteration', '?')}**")
+            lines.append(f"  Score: {attempt.get('score_before', 0):.2f}")
+            issues = attempt.get("issues_addressed", [])
+            if issues:
+                lines.append(f"  Issues addressed: {', '.join(issues[:3])}")
+        lines.append("")
+        lines.append("**DO NOT repeat mistakes from previous attempts.**")
+        lines.append("")
+
+    # Current feedback to address
+    if feedback:
+        lines.append("### Issues to Address NOW:")
+        for i, fb in enumerate(feedback[:10], 1):  # Top 10 issues
+            lines.append(f"{i}. {fb}")
+        lines.append("")
+
+    # Summary of previous output (for context)
+    if previous_output:
+        # Include a brief summary of what was in the previous output
+        output_keys = list(previous_output.keys())[:10]
+        lines.append(f"### Previous Output Sections: {', '.join(output_keys)}")
+        lines.append("")
+
+    lines.append("**Address ALL issues listed above. Be specific and data-driven.**")
+
+    return "\n".join(lines)
 
 
 async def run_facilitator(state: DiscoveryState) -> DiscoveryState:
