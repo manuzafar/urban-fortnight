@@ -394,8 +394,8 @@ AGENT_MODEL_CONFIG: dict[str, str] = {
     # Go-to-Market
     "Go-to-Market": "gemini-2.5-pro",
 
-    # Financial Model
-    "Financial Model": "gemini-2.5-pro",
+    # Financial Model (using Flash to avoid Railway timeout)
+    "Financial Model": "gemini-2.0-flash",
 
     # Product Requirements
     "Product Requirements": "gemini-2.0-flash",
