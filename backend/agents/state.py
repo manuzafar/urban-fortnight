@@ -271,6 +271,17 @@ class DiscoveryState(TypedDict, total=False):
     contradiction_context: Annotated[Optional[dict[str, Any]], keep_first_non_none]
 
     # ═══════════════════════════════════════════════════════════════════════════
+    # QUALITY IMPROVEMENT SYSTEM FIELDS
+    # ═══════════════════════════════════════════════════════════════════════════
+
+    # Active constraints for the current phase (from constraint_broadcaster)
+    active_constraints: Annotated[Optional[list[dict[str, Any]]], keep_last]
+    # Formatted constraints prompt for injection into agent prompts
+    constraints_prompt: Annotated[Optional[str], keep_last]
+    # Revision history for tracking what was tried before
+    revision_history: Annotated[list[dict[str, Any]], add]  # Append reducer
+
+    # ═══════════════════════════════════════════════════════════════════════════
     # V3.0 CROSS-REFERENCE AND SYNTHESIS OUTPUTS
     # ═══════════════════════════════════════════════════════════════════════════
 
@@ -376,6 +387,10 @@ def create_initial_state(
         prototype=None,
         stakeholder_views=None,
         validation_playbook=None,
+        # Quality improvement system fields
+        active_constraints=None,
+        constraints_prompt=None,
+        revision_history=[],
         # PRD sub-workflow fields
         prd_iteration=0,
         prd_draft=None,

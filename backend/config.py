@@ -146,6 +146,37 @@ class Settings(BaseSettings):
     )
 
     # ═══════════════════════════════════════════════════════════════════════
+    # QUALITY IMPROVEMENT SYSTEM
+    # ═══════════════════════════════════════════════════════════════════════
+
+    enable_memory_augmentation: bool = Field(
+        default=True,
+        description="Enable memory-augmented prompts for applicable agents. "
+                    "When enabled, agents receive context from similar successful "
+                    "past runs to improve output quality.",
+    )
+
+    enable_two_stage_reasoning: bool = Field(
+        default=True,
+        description="Enable two-stage grounded reasoning (research then structure). "
+                    "Improves JSON parsing reliability for grounded agents.",
+    )
+
+    enable_self_reflection: bool = Field(
+        default=False,
+        description="Enable self-reflection pattern for agents. "
+                    "Adds a reflection/revision loop to improve output quality. "
+                    "Disabled by default as it increases token usage.",
+    )
+
+    max_reflection_rounds: int = Field(
+        default=1,
+        ge=0,
+        le=3,
+        description="Maximum self-reflection rounds when enabled (0 = disabled)",
+    )
+
+    # ═══════════════════════════════════════════════════════════════════════
     # AGENT ORCHESTRATION
     # ═══════════════════════════════════════════════════════════════════════
     max_revision_iterations: int = Field(

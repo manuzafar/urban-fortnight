@@ -695,6 +695,247 @@ async def call_llm_with_memory(
         return result
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# SELF-REFLECTION PATTERN (Quality Improvement System)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+REFLECTION_PROMPT = """
+Review this output critically and identify issues:
+
+{output}
+
+Check for:
+1. **Logical errors or contradictions** - Are there any internal inconsistencies?
+2. **Missing important information** - Are there gaps in the analysis?
+3. **Unsupported claims** - Are there assertions without evidence?
+4. **Vague or generic statements** - Are there statements that lack specificity?
+5. **Alignment with constraints** - Does this align with any provided constraints?
+
+Output your review as JSON:
+{{
+  "issues": [
+    {{
+      "type": "logical_error|missing_info|unsupported_claim|vague_statement|constraint_violation",
+      "location": "specific field or section",
+      "problem": "description of the issue",
+      "fix": "suggested fix"
+    }}
+  ],
+  "quality": "good|needs_improvement|poor",
+  "should_revise": true|false,
+  "confidence_score": 0.0-1.0
+}}
+
+Be critical but fair. Only flag genuine issues.
+"""
+
+
+async def call_llm_with_reflection(
+    prompt: str,
+    agent_name: str,
+    max_reflection_rounds: int = 1,
+    model_override: str | None = None,
+) -> dict[str, Any]:
+    """
+    Call LLM with self-reflection loop.
+
+    This function generates an initial output, then has the model self-critique
+    and optionally revise the output. This improves output quality by catching
+    and fixing issues before submission.
+
+    Process:
+    1. Generate initial output
+    2. Self-reflect on the output (identify issues)
+    3. If should_revise=True, generate a revised output
+    4. Return the final (potentially revised) output
+
+    Args:
+        prompt: The initial prompt to generate output
+        agent_name: Name of the calling agent
+        max_reflection_rounds: Maximum number of reflection/revision cycles
+        model_override: Optional model override
+
+    Returns:
+        dict containing:
+            - success: bool indicating if generation succeeded
+            - data: final (potentially revised) output data
+            - raw_response: raw response text
+            - error: error message (if failed)
+            - tokens_used: total tokens including reflection
+            - duration_seconds: total time including reflection
+            - reflection_rounds: number of reflection rounds performed
+            - issues_found: list of issues found during reflection
+            - was_revised: whether the output was revised
+    """
+    logger.info(
+        "reflection_start",
+        agent=agent_name,
+        max_rounds=max_reflection_rounds,
+    )
+
+    total_tokens = 0
+    total_duration = 0.0
+    all_issues: list[dict] = []
+
+    # Generate initial output
+    result = await call_llm(prompt, agent_name, model_override=model_override)
+
+    total_tokens += result.get("tokens_used", 0)
+    total_duration += result.get("duration_seconds", 0.0)
+
+    if not result.get("success"):
+        return {
+            "success": False,
+            "data": None,
+            "raw_response": result.get("raw_response", ""),
+            "error": result.get("error"),
+            "tokens_used": total_tokens,
+            "duration_seconds": total_duration,
+            "reflection_rounds": 0,
+            "issues_found": [],
+            "was_revised": False,
+        }
+
+    draft = result["data"]
+    raw_response = result.get("raw_response", "")
+    rounds_completed = 0
+    was_revised = False
+
+    for round_num in range(max_reflection_rounds):
+        # Self-reflect on the draft
+        reflection_prompt = REFLECTION_PROMPT.format(
+            output=json.dumps(draft, indent=2, default=str)[:8000]  # Truncate if very long
+        )
+
+        try:
+            reflection = await call_llm(
+                reflection_prompt,
+                f"{agent_name}_reflection_{round_num}",
+                model_override=model_override,
+            )
+
+            total_tokens += reflection.get("tokens_used", 0)
+            total_duration += reflection.get("duration_seconds", 0.0)
+
+            if not reflection.get("success"):
+                logger.warning(
+                    "reflection_call_failed",
+                    agent=agent_name,
+                    round=round_num,
+                    error=reflection.get("error"),
+                )
+                break
+
+            ref_data = reflection.get("data", {})
+
+            # Collect issues found
+            issues = ref_data.get("issues", [])
+            all_issues.extend(issues)
+
+            # Check if revision is needed
+            should_revise = ref_data.get("should_revise", False)
+            quality = ref_data.get("quality", "good")
+
+            logger.info(
+                "reflection_complete",
+                agent=agent_name,
+                round=round_num,
+                quality=quality,
+                issues_count=len(issues),
+                should_revise=should_revise,
+            )
+
+            if not should_revise or quality == "good":
+                rounds_completed = round_num + 1
+                break
+
+            # Revise based on reflection
+            issues_str = "\n".join(
+                f"- [{i.get('type', 'unknown')}] {i.get('location', 'unknown')}: "
+                f"{i.get('problem', 'no description')} -> Fix: {i.get('fix', 'no fix suggested')}"
+                for i in issues
+            )
+
+            revision_prompt = f"""
+Revise the following output to fix the identified issues.
+
+## ORIGINAL OUTPUT:
+{json.dumps(draft, indent=2, default=str)[:6000]}
+
+## ISSUES TO FIX:
+{issues_str}
+
+## INSTRUCTIONS:
+- Address ALL issues listed above
+- Maintain the same JSON structure
+- Do NOT introduce new issues
+- Be specific and precise in your revisions
+
+Output the complete revised JSON:
+"""
+
+            revision = await call_llm(
+                revision_prompt,
+                f"{agent_name}_revision_{round_num}",
+                model_override=model_override,
+            )
+
+            total_tokens += revision.get("tokens_used", 0)
+            total_duration += revision.get("duration_seconds", 0.0)
+
+            if revision.get("success"):
+                draft = revision["data"]
+                raw_response = revision.get("raw_response", "")
+                was_revised = True
+                logger.info(
+                    "revision_applied",
+                    agent=agent_name,
+                    round=round_num,
+                )
+            else:
+                logger.warning(
+                    "revision_call_failed",
+                    agent=agent_name,
+                    round=round_num,
+                    error=revision.get("error"),
+                )
+                break
+
+            rounds_completed = round_num + 1
+
+        except Exception as e:
+            logger.error(
+                "reflection_exception",
+                agent=agent_name,
+                round=round_num,
+                error=str(e),
+                exc_info=True,
+            )
+            break
+
+    logger.info(
+        "reflection_complete_final",
+        agent=agent_name,
+        rounds_completed=rounds_completed,
+        total_issues=len(all_issues),
+        was_revised=was_revised,
+        total_tokens=total_tokens,
+    )
+
+    return {
+        "success": True,
+        "data": draft,
+        "raw_response": raw_response,
+        "error": None,
+        "tokens_used": total_tokens,
+        "duration_seconds": total_duration,
+        "reflection_rounds": rounds_completed,
+        "issues_found": all_issues,
+        "was_revised": was_revised,
+        "model_used": result.get("model_used"),
+    }
+
+
 def extract_feedback_for_agent(
     critique_feedback: dict[str, Any] | None,
     agent_key: str,

@@ -27,6 +27,10 @@ from agents.planner import run_planner_agent
 from agents.critique import run_critique_agent
 from agents.state import DiscoveryState
 from agents.swarms import DiscoverySwarm, StrategySwarm, DeliverySwarm
+from agents.constraint_broadcaster import (
+    generate_phase_constraints,
+    format_constraints_for_prompt,
+)
 from models.schemas import SessionStatus
 
 if TYPE_CHECKING:
@@ -299,6 +303,17 @@ class FacilitatorAgent:
         """Run the strategy swarm."""
         self.logger.info("phase_start", phase="strategy", session_id=state["session_id"])
 
+        # Generate and inject constraints from Discovery phase
+        constraints = await generate_phase_constraints(state, "strategy")
+        state["active_constraints"] = [c.to_dict() for c in constraints]
+        state["constraints_prompt"] = format_constraints_for_prompt(constraints)
+
+        self.logger.info(
+            "strategy_constraints_generated",
+            session_id=state["session_id"],
+            constraint_count=len(constraints),
+        )
+
         await self._emit_agent_start("business_strategy", "Developing business case...")
         await self._emit_agent_start("gtm_strategy", "Creating go-to-market strategy...")
 
@@ -327,6 +342,17 @@ class FacilitatorAgent:
     async def _run_delivery_phase(self, state: DiscoveryState) -> DiscoveryState:
         """Run the delivery swarm."""
         self.logger.info("phase_start", phase="delivery", session_id=state["session_id"])
+
+        # Generate and inject constraints from Discovery + Strategy phases
+        constraints = await generate_phase_constraints(state, "delivery")
+        state["active_constraints"] = [c.to_dict() for c in constraints]
+        state["constraints_prompt"] = format_constraints_for_prompt(constraints)
+
+        self.logger.info(
+            "delivery_constraints_generated",
+            session_id=state["session_id"],
+            constraint_count=len(constraints),
+        )
 
         await self._emit_agent_start("product_requirements", "Writing requirements...")
         await self._emit_agent_start("technical_architect", "Designing architecture...")
@@ -444,6 +470,17 @@ class FacilitatorAgent:
 
         self.logger.info("phase_start", phase="design", session_id=state["session_id"])
 
+        # Generate and inject constraints from Delivery phase
+        constraints = await generate_phase_constraints(state, "design")
+        state["active_constraints"] = [c.to_dict() for c in constraints]
+        state["constraints_prompt"] = format_constraints_for_prompt(constraints)
+
+        self.logger.info(
+            "design_constraints_generated",
+            session_id=state["session_id"],
+            constraint_count=len(constraints),
+        )
+
         # First: Wireframes
         await self._emit_agent_start("wireframe_agent", "Designing wireframes...")
         state = await run_wireframe_agent(state)
@@ -479,6 +516,17 @@ class FacilitatorAgent:
         from agents.orchestrator import finalize_node
 
         self.logger.info("phase_start", phase="synthesis", session_id=state["session_id"])
+
+        # Generate and inject constraints from all prior phases
+        constraints = await generate_phase_constraints(state, "synthesis")
+        state["active_constraints"] = [c.to_dict() for c in constraints]
+        state["constraints_prompt"] = format_constraints_for_prompt(constraints)
+
+        self.logger.info(
+            "synthesis_constraints_generated",
+            session_id=state["session_id"],
+            constraint_count=len(constraints),
+        )
 
         # Parallel: Stakeholder Views + Validation Playbook
         await self._emit_agent_start("stakeholder_agent", "Creating stakeholder views...")
@@ -547,9 +595,16 @@ class FacilitatorAgent:
         """
         Re-run sections that were flagged as weak by the critique.
 
+        Enhanced with revision history tracking (Quality Improvement System):
+        - Tracks what was tried before
+        - Provides context to agents about previous attempts
+        - Records score changes for analysis
+
         Uses the revision_priority from quality_assessment to determine
         which agents to re-run.
         """
+        from datetime import datetime
+
         quality = state.get("quality_assessment", {})
         revision_priority = quality.get("revision_priority", [])
 
@@ -560,6 +615,7 @@ class FacilitatorAgent:
             "rerunning_weak_sections",
             session_id=state["session_id"],
             sections=[r.get("section") for r in revision_priority[:3]],
+            iteration=state.get("iteration", 1),
         )
 
         # Map section names to agent runners
@@ -578,7 +634,31 @@ class FacilitatorAgent:
         # Re-run specific agents based on priority
         for item in revision_priority[:2]:  # Limit to top 2
             section = item.get("section", "").lower().replace(" ", "_")
+            score_before = item.get("score", 0)
+            feedback = item.get("feedback", [])
             agent_phase = section_to_agent.get(section)
+
+            if not agent_phase:
+                continue
+
+            # Build revision context for the agent
+            revision_context = _format_revision_context(
+                previous_output=state.get(section, {}),
+                feedback=feedback,
+                revision_history=state.get("revision_history", []),
+                section_name=section,
+            )
+
+            # Inject revision context into state for agents to use
+            state["_revision_context"] = revision_context
+
+            self.logger.info(
+                "rerunning_section",
+                session_id=state["session_id"],
+                section=section,
+                score_before=score_before,
+                feedback_count=len(feedback),
+            )
 
             if agent_phase == "discovery":
                 state = await self.discovery_swarm.run(state)
@@ -589,7 +669,94 @@ class FacilitatorAgent:
             elif agent_phase == "financial":
                 state = await self._run_financial_model(state)
 
+            # Record revision attempt in history
+            revision_attempt = {
+                "iteration": state.get("iteration", 1),
+                "agent": section,
+                "issues_addressed": feedback[:5],  # Top 5 issues
+                "score_before": score_before,
+                "score_after": 0,  # Will be updated after next critique
+                "timestamp": datetime.utcnow().isoformat(),
+            }
+
+            # Ensure revision_history exists as a list
+            if "revision_history" not in state or state["revision_history"] is None:
+                state["revision_history"] = []
+            state["revision_history"].append(revision_attempt)
+
+        # Clear revision context after use
+        if "_revision_context" in state:
+            del state["_revision_context"]
+
         return state
+
+
+def _format_revision_context(
+    previous_output: dict,
+    feedback: list[str],
+    revision_history: list[dict],
+    section_name: str,
+) -> str:
+    """
+    Format revision context for agent prompt.
+
+    Provides agents with:
+    - Previous attempt history (to avoid repeating mistakes)
+    - Current feedback to address
+    - Score trajectory
+
+    Args:
+        previous_output: The previous output being revised
+        feedback: List of feedback items to address
+        revision_history: History of revision attempts
+        section_name: Name of the section being revised
+
+    Returns:
+        Formatted string for prompt injection
+    """
+    lines = [
+        "## REVISION CONTEXT",
+        "",
+        f"This is a revision of the {section_name.replace('_', ' ').title()} section.",
+        "Review the feedback carefully and address ALL issues.",
+        "",
+    ]
+
+    # Previous attempts for this section
+    section_history = [
+        h for h in revision_history
+        if h.get("agent") == section_name
+    ]
+
+    if section_history:
+        lines.append("### Previous Revision Attempts:")
+        for attempt in section_history[-3:]:  # Last 3 attempts
+            lines.append(f"- **Iteration {attempt.get('iteration', '?')}**")
+            lines.append(f"  Score: {attempt.get('score_before', 0):.2f}")
+            issues = attempt.get("issues_addressed", [])
+            if issues:
+                lines.append(f"  Issues addressed: {', '.join(issues[:3])}")
+        lines.append("")
+        lines.append("**DO NOT repeat mistakes from previous attempts.**")
+        lines.append("")
+
+    # Current feedback to address
+    if feedback:
+        lines.append("### Issues to Address NOW:")
+        for i, fb in enumerate(feedback[:10], 1):  # Top 10 issues
+            lines.append(f"{i}. {fb}")
+        lines.append("")
+
+    # Summary of previous output (for context)
+    if previous_output:
+        # Include a brief summary of what was in the previous output
+        output_keys = list(previous_output.keys())[:10]
+        lines.append(f"### Previous Output Sections: {', '.join(output_keys)}")
+        lines.append("")
+
+    lines.append("**Address ALL issues listed above. Be specific and data-driven.**")
+
+    return "\n".join(lines)
 
     def detect_contradictions(
         self, state: DiscoveryState, phase: str = "all"

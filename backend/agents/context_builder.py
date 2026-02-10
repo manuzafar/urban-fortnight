@@ -4,6 +4,9 @@ Context Builder — creates concise summaries for prompt injection.
 This utility extracts key fields from agent outputs and formats them
 as readable summaries for use by downstream agents. Handles truncation
 to stay within token limits.
+
+Enhanced with evidence-aware summaries that preserve evidence tier markers (E1-E5)
+for downstream agents to treat claims appropriately based on their evidence quality.
 """
 
 import json
@@ -12,6 +15,254 @@ from typing import Any, Optional
 import structlog
 
 logger = structlog.get_logger(__name__)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EVIDENCE-AWARE CONTEXT BUILDING (Quality Improvement System)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+# Map state field names to section prefixes for claim lookup
+FIELD_TO_SECTION_PREFIX: dict[str, str] = {
+    "customer_research": "MI",
+    "competitive_analysis": "CL",
+    "detailed_personas": "CP",
+    "business_case": "BC",
+    "gtm_plan": "GM",
+    "financial_model": "FM",
+    "product_requirements": "PR",
+    "technical_architecture": "TA",
+    "legal_regulatory_review": "RC",
+    "risk_assessment": "RM",
+    "executive_summary": "ES",
+    "stakeholder_views": "SV",
+    "validation_playbook": "VP",
+}
+
+
+def build_evidence_aware_summary(
+    state: dict[str, Any],
+    source_sections: list[str],
+    max_chars: int = 6000,
+) -> str:
+    """
+    Build summary that preserves evidence tier markers.
+
+    This function extracts claims from the cross_reference_index and formats them
+    into categorized sections based on evidence quality. This ensures downstream
+    agents treat claims appropriately - verified facts should be used as constraints,
+    while hypotheses should be flagged for validation.
+
+    Output format:
+    ## VERIFIED FACTS (E1-E2)
+    - [E2] Market size is $3.2B (MI-3) [source: usda.gov]
+    - [E1] 67% of vendors want mobile payments (MI-7) [primary research]
+
+    ## INDUSTRY DATA (E3)
+    - [E3] Industry growing 5% annually (MI-12)
+
+    ## HYPOTHESES (E4-E5)
+    - [E4] Price sensitivity is high (MI-15) - NEEDS VALIDATION
+
+    Args:
+        state: Current workflow state containing cross_reference_index
+        source_sections: List of state field names to include (e.g., ["customer_research", "business_case"])
+        max_chars: Maximum characters for the summary
+
+    Returns:
+        Formatted summary string with evidence tiers preserved
+    """
+    cross_ref = state.get("cross_reference_index", {})
+    claims = cross_ref.get("claims", [])
+
+    if not claims:
+        return "No claims available yet in cross-reference index."
+
+    # Convert source_sections (field names) to prefixes for matching
+    source_prefixes = set()
+    for section in source_sections:
+        if section in FIELD_TO_SECTION_PREFIX:
+            source_prefixes.add(FIELD_TO_SECTION_PREFIX[section])
+        else:
+            # Try to match by section name directly (for flexibility)
+            source_prefixes.add(section.upper()[:2])
+
+    verified: list[str] = []
+    industry: list[str] = []
+    hypotheses: list[str] = []
+
+    for claim in claims:
+        claim_id = claim.get("claim_id", "")
+        # Extract prefix from claim_id (e.g., "MI-3" -> "MI")
+        prefix = claim_id.split("-")[0] if "-" in claim_id else ""
+
+        # Filter to only include claims from requested sections
+        if source_prefixes and prefix not in source_prefixes:
+            continue
+
+        tier = claim.get("evidence_tier", "E5")
+        statement = claim.get("statement", "")
+        source = claim.get("source")
+        confidence = claim.get("confidence", 0.5)
+
+        # Format the claim with evidence tier marker
+        formatted = f"[{tier}] {statement} ({claim_id})"
+        if source:
+            # Truncate long sources
+            source_display = source[:50] + "..." if len(source) > 50 else source
+            formatted += f" [source: {source_display}]"
+
+        # Add confidence indicator for lower confidence claims
+        if confidence < 0.5:
+            formatted += f" (confidence: {confidence:.0%})"
+
+        # Categorize by evidence tier
+        if tier in ["E1", "E2"]:
+            verified.append(formatted)
+        elif tier == "E3":
+            industry.append(formatted)
+        else:  # E4, E5
+            hypotheses.append(formatted + " - NEEDS VALIDATION")
+
+    # Build output sections
+    sections = []
+
+    if verified:
+        verified_section = "## VERIFIED FACTS (E1-E2)\n"
+        verified_section += "These are established facts that should be treated as constraints:\n"
+        verified_section += "\n".join(f"- {v}" for v in verified[:15])
+        sections.append(verified_section)
+
+    if industry:
+        industry_section = "## INDUSTRY DATA (E3)\n"
+        industry_section += "Industry-level data from published sources:\n"
+        industry_section += "\n".join(f"- {i}" for i in industry[:10])
+        sections.append(industry_section)
+
+    if hypotheses:
+        hypotheses_section = "## HYPOTHESES (E4-E5)\n"
+        hypotheses_section += "These are reasoned conclusions or assumptions that need validation:\n"
+        hypotheses_section += "\n".join(f"- {h}" for h in hypotheses[:10])
+        sections.append(hypotheses_section)
+
+    if not sections:
+        return f"No claims found for sections: {', '.join(source_sections)}"
+
+    result = "\n\n".join(sections)
+    return result[:max_chars]
+
+
+def build_evidence_context_for_phase(
+    state: dict[str, Any],
+    target_phase: str,
+    max_chars: int = 6000,
+) -> str:
+    """
+    Build evidence-aware context for a specific phase.
+
+    This automatically determines which upstream sections to include based on
+    the target phase, ensuring agents receive properly categorized evidence.
+
+    Args:
+        state: Current workflow state
+        target_phase: One of "strategy", "delivery", "design", "synthesis"
+        max_chars: Maximum characters for the summary
+
+    Returns:
+        Formatted evidence-aware summary for the phase
+    """
+    # Define which upstream sections each phase needs
+    phase_dependencies: dict[str, list[str]] = {
+        "strategy": [
+            "customer_research",
+            "competitive_analysis",
+            "detailed_personas",
+        ],
+        "delivery": [
+            "customer_research",
+            "competitive_analysis",
+            "detailed_personas",
+            "business_case",
+            "gtm_plan",
+            "financial_model",
+        ],
+        "design": [
+            "product_requirements",
+            "business_case",
+            "detailed_personas",
+        ],
+        "synthesis": [
+            "customer_research",
+            "competitive_analysis",
+            "detailed_personas",
+            "business_case",
+            "gtm_plan",
+            "financial_model",
+            "product_requirements",
+            "technical_architecture",
+            "legal_regulatory_review",
+            "risk_assessment",
+        ],
+    }
+
+    source_sections = phase_dependencies.get(target_phase, [])
+    if not source_sections:
+        logger.warning("unknown_phase_for_evidence_context", phase=target_phase)
+        return ""
+
+    return build_evidence_aware_summary(state, source_sections, max_chars)
+
+
+def get_high_priority_claims_for_validation(
+    state: dict[str, Any],
+    limit: int = 5,
+) -> list[dict[str, Any]]:
+    """
+    Get the highest priority claims that need validation.
+
+    Prioritizes claims that:
+    1. Are E4/E5 (hypotheses/assumptions)
+    2. Have many dependent claims
+    3. Have low confidence
+
+    Args:
+        state: Current workflow state
+        limit: Maximum number of claims to return
+
+    Returns:
+        List of claim dictionaries sorted by validation priority
+    """
+    cross_ref = state.get("cross_reference_index", {})
+    claims = cross_ref.get("claims", [])
+
+    # Filter to E4/E5 claims
+    e4_e5_claims = [
+        c for c in claims
+        if c.get("evidence_tier") in ("E4", "E5")
+    ]
+
+    if not e4_e5_claims:
+        return []
+
+    # Count how many claims depend on each claim
+    def count_dependents(claim: dict) -> int:
+        claim_id = claim.get("claim_id")
+        return sum(
+            1 for c in claims
+            if claim_id in c.get("depends_on", [])
+        )
+
+    # Sort by: number of dependents (desc), confidence (asc), validation effort (asc)
+    effort_order = {"quick": 1, "moderate": 2, "significant": 3}
+
+    def sort_key(c: dict) -> tuple:
+        dependents = count_dependents(c)
+        confidence = c.get("confidence", 1.0)
+        effort = effort_order.get(c.get("validation_effort", "moderate"), 2)
+        return (-dependents, confidence, effort)
+
+    sorted_claims = sorted(e4_e5_claims, key=sort_key)
+
+    return sorted_claims[:limit]
 
 
 # Field mappings for each section - which keys to extract

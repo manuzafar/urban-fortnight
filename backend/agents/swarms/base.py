@@ -26,6 +26,10 @@ class BaseSwarm(ABC):
 
     A swarm is a group of agents that can run in parallel because
     they don't have sequential dependencies on each other.
+
+    Enhanced with constraint injection (Quality Improvement System):
+    - Constraints are injected into each agent's state copy via _injected_constraints
+    - Agents can read state["_injected_constraints"] to get the formatted constraints prompt
     """
 
     # Subclasses define their agent list
@@ -36,6 +40,33 @@ class BaseSwarm(ABC):
 
     def __init__(self):
         self.logger = structlog.get_logger(f"swarm.{self.swarm_name}")
+
+    def _prepare_agent_state(self, state: dict, agent_name: str) -> dict:
+        """
+        Prepare state copy for an agent, including constraints.
+
+        This method injects the constraints_prompt into the agent's state
+        so that agents can include it in their prompts for consistency.
+
+        Args:
+            state: Base state dictionary
+            agent_name: Name of the agent (for logging)
+
+        Returns:
+            dict: State copy with constraints injected
+        """
+        agent_state = dict(state)
+
+        # Inject constraints prompt if available
+        if state.get("constraints_prompt"):
+            agent_state["_injected_constraints"] = state["constraints_prompt"]
+            self.logger.debug(
+                "constraints_injected",
+                agent=agent_name,
+                has_constraints=True,
+            )
+
+        return agent_state
 
     @abstractmethod
     def get_agent_tasks(
@@ -56,6 +87,9 @@ class BaseSwarm(ABC):
         """
         Execute all agents in the swarm in parallel.
 
+        Enhanced with constraint injection: each agent receives constraints
+        from upstream phases to ensure consistency.
+
         Args:
             state: Current discovery state.
 
@@ -69,10 +103,14 @@ class BaseSwarm(ABC):
             swarm=self.swarm_name,
             session_id=state["session_id"],
             agent_count=len(self.agent_names),
+            has_constraints=bool(state.get("constraints_prompt")),
         )
 
-        # Get agent tasks
-        agent_tasks = self.get_agent_tasks(state)
+        # Prepare state with constraints for each agent
+        prepared_state = self._prepare_agent_state(state, self.swarm_name)
+
+        # Get agent tasks using the prepared state
+        agent_tasks = self.get_agent_tasks(prepared_state)
 
         if not agent_tasks:
             self.logger.warning(

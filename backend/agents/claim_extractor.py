@@ -3,6 +3,11 @@ Claim Extractor — extracts structured claims from agent output.
 
 This utility runs after every agent to identify claims, assign evidence tiers,
 and track dependencies. It uses a fast (Flash) model for efficiency.
+
+Enhanced with mandatory minimum enforcement (Quality Improvement System):
+- Each section has a minimum required claim count
+- If extraction falls short, re-extraction is attempted with emphasis
+- Ensures adequate evidence tracking across all sections
 """
 
 import json
@@ -19,6 +24,27 @@ from models.cross_references import (
 )
 
 logger = structlog.get_logger(__name__)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# MINIMUM CLAIMS PER SECTION (Quality Improvement System)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+MIN_CLAIMS_PER_SECTION: dict[str, int] = {
+    "Market Intelligence": 5,
+    "Competitive Landscape": 4,
+    "Customer Personas": 3,
+    "Business Case": 5,
+    "Go-to-Market": 4,
+    "Financial Model": 4,
+    "Product Requirements": 5,
+    "Technical Architecture": 4,
+    "Regulatory & Compliance": 3,
+    "Risk Assessment": 3,
+    "Executive Summary": 2,
+    "Stakeholder Views": 3,
+    "Validation Playbook": 3,
+}
 
 
 # Claim extraction prompt
@@ -184,9 +210,15 @@ async def extract_and_store_claims(
     section_name: str,
     section_prefix: str,
     content: dict | str,
+    enforce_minimum: bool = True,
 ) -> dict[str, Any]:
     """
     Extract claims from content and merge into state's cross_reference_index.
+
+    Enhanced with minimum claim enforcement (Quality Improvement System):
+    - Checks if extracted claims meet minimum threshold
+    - Re-extracts with emphasis if below threshold
+    - Logs warning if still insufficient
 
     This is the main function to call after each agent stores its output.
 
@@ -195,6 +227,7 @@ async def extract_and_store_claims(
         section_name: Full section name
         section_prefix: Two-letter prefix
         content: Agent output to extract claims from
+        enforce_minimum: Whether to enforce minimum claim count
 
     Returns:
         Updated state with claims merged into cross_reference_index
@@ -219,6 +252,45 @@ async def extract_and_store_claims(
         existing_claim_count=existing_section_claims,
     )
 
+    # Check minimum enforcement
+    if enforce_minimum:
+        min_required = MIN_CLAIMS_PER_SECTION.get(section_name, 3)
+        if len(new_claims) < min_required:
+            logger.warning(
+                "insufficient_claims_initial",
+                section=section_name,
+                extracted=len(new_claims),
+                required=min_required,
+            )
+
+            # Re-extract with emphasis
+            additional_claims = await _extract_with_emphasis(
+                content=content,
+                section_name=section_name,
+                section_prefix=section_prefix,
+                min_required=min_required,
+                already_extracted=len(new_claims),
+                existing_claim_count=existing_section_claims + len(new_claims),
+            )
+
+            if additional_claims:
+                new_claims.extend(additional_claims)
+                logger.info(
+                    "additional_claims_extracted",
+                    section=section_name,
+                    additional=len(additional_claims),
+                    total=len(new_claims),
+                )
+
+            # Log final count if still insufficient
+            if len(new_claims) < min_required:
+                logger.warning(
+                    "insufficient_claims_final",
+                    section=section_name,
+                    extracted=len(new_claims),
+                    required=min_required,
+                )
+
     if new_claims:
         index.add_claims(new_claims)
 
@@ -226,6 +298,155 @@ async def extract_and_store_claims(
     state["cross_reference_index"] = index.model_dump()
 
     return state
+
+
+# Re-extraction prompt for when initial extraction falls short
+EMPHASIS_EXTRACTION_PROMPT = """You are a claim extraction specialist. The initial extraction found only {already_extracted} claims, but we need at least {min_required}.
+
+## SECTION: {section_name}
+## PREFIX: {section_prefix}
+
+## CONTENT TO ANALYZE:
+{content}
+
+## EXTRACTION REQUIREMENTS:
+You MUST extract at least {remaining_needed} MORE claims. Look harder for:
+- Numerical data (market sizes, percentages, growth rates)
+- Competitor information
+- User behavior assumptions
+- Technical requirements
+- Financial projections
+- Regulatory considerations
+- Risk factors
+
+Even if a claim seems minor, include it if it's a factual assertion.
+
+## OUTPUT FORMAT (JSON):
+{{
+  "claims": [
+    {{
+      "claim_id": "{section_prefix}-N",
+      "statement": "The specific claim",
+      "evidence_tier": "E2|E3|E4|E5",
+      "confidence": 0.0-1.0,
+      "source": "URL or null",
+      "depends_on": [],
+      "validation_method": "How to validate",
+      "validation_effort": "quick|moderate|significant"
+    }}
+  ]
+}}
+
+Extract additional claims now:"""
+
+
+async def _extract_with_emphasis(
+    content: dict | str,
+    section_name: str,
+    section_prefix: str,
+    min_required: int,
+    already_extracted: int,
+    existing_claim_count: int,
+) -> list[Claim]:
+    """
+    Re-extract claims with emphasis on finding more.
+
+    Called when initial extraction falls short of minimum.
+
+    Args:
+        content: Agent output to analyze
+        section_name: Full section name
+        section_prefix: Two-letter prefix
+        min_required: Minimum claims needed
+        already_extracted: Number already extracted
+        existing_claim_count: Total existing claims (for ID numbering)
+
+    Returns:
+        List of additional Claim objects
+    """
+    # Convert content to string if needed
+    if isinstance(content, dict):
+        content_str = json.dumps(content, indent=2, default=str)
+    else:
+        content_str = str(content)
+
+    # Truncate if too long
+    if len(content_str) > 15000:
+        content_str = content_str[:15000] + "\n... [truncated]"
+
+    remaining_needed = min_required - already_extracted
+
+    prompt = EMPHASIS_EXTRACTION_PROMPT.format(
+        section_name=section_name,
+        section_prefix=section_prefix,
+        content=content_str,
+        min_required=min_required,
+        already_extracted=already_extracted,
+        remaining_needed=remaining_needed,
+    )
+
+    try:
+        result = await call_llm(prompt, "claim_extractor_emphasis")
+
+        if not result.get("success"):
+            logger.warning(
+                "emphasis_extraction_failed",
+                section=section_name,
+                error=result.get("error"),
+            )
+            return []
+
+        data = result.get("data", {})
+        raw_claims = data.get("claims", [])
+
+        # Parse claims
+        claims: list[Claim] = []
+        for i, raw in enumerate(raw_claims):
+            try:
+                # Adjust claim ID for continuity
+                new_num = existing_claim_count + i + 1
+                raw["claim_id"] = f"{section_prefix}-{new_num}"
+
+                # Parse evidence tier
+                tier_str = raw.get("evidence_tier", "E4")
+                try:
+                    tier = EvidenceTier(tier_str)
+                except ValueError:
+                    tier = EvidenceTier.E4
+
+                claim = Claim(
+                    claim_id=raw.get("claim_id", f"{section_prefix}-{new_num}"),
+                    section=section_name,
+                    statement=raw.get("statement", ""),
+                    evidence_tier=tier,
+                    confidence=float(raw.get("confidence", 0.5)),
+                    source=raw.get("source"),
+                    depends_on=raw.get("depends_on", []),
+                    supports=raw.get("supports", []),
+                    validation_method=raw.get("validation_method"),
+                    validation_effort=raw.get("validation_effort"),
+                )
+                claims.append(claim)
+
+            except Exception as e:
+                logger.warning(
+                    "emphasis_claim_parse_error",
+                    section=section_name,
+                    claim_index=i,
+                    error=str(e),
+                )
+                continue
+
+        return claims
+
+    except Exception as e:
+        logger.error(
+            "emphasis_extraction_error",
+            section=section_name,
+            error=str(e),
+            exc_info=True,
+        )
+        return []
 
 
 def get_section_prefix(section_name: str) -> str:
