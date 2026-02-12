@@ -72,6 +72,9 @@ async def run_technical_architect_agent(state: DiscoveryState) -> DiscoveryState
     elif injected_context and revision_feedback:
         revision_feedback = f"{revision_feedback}\n\n{injected_context}"
 
+    # Get upstream constraints from constraint broadcaster
+    upstream_constraints = state.get("constraints_prompt") or state.get("_injected_constraints")
+
     # Format the prompt with all context
     prompt = format_prompt(
         template=TECHNICAL_ARCHITECT_PROMPT,
@@ -84,6 +87,7 @@ async def run_technical_architect_agent(state: DiscoveryState) -> DiscoveryState
         product_requirements=product_requirements_json,
         revision_context=revision_feedback,
         iteration=state.get("iteration", 1),
+        upstream_constraints=upstream_constraints,
     )
 
     # Call the LLM

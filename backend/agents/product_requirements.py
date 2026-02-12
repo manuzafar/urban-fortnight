@@ -77,6 +77,9 @@ async def run_product_requirements_agent(state: DiscoveryState) -> DiscoveryStat
     elif injected_context and revision_feedback:
         revision_feedback = f"{revision_feedback}\n\n{injected_context}"
 
+    # Get upstream constraints from constraint broadcaster
+    upstream_constraints = state.get("constraints_prompt") or state.get("_injected_constraints")
+
     # Format the prompt with all context
     prompt = format_prompt(
         template=PRODUCT_REQUIREMENTS_PROMPT,
@@ -89,6 +92,7 @@ async def run_product_requirements_agent(state: DiscoveryState) -> DiscoveryStat
         business_case=business_case_json,
         revision_context=revision_feedback,
         iteration=state.get("iteration", 1),
+        upstream_constraints=upstream_constraints,
     )
 
     # Call the LLM

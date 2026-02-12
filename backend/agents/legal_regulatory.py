@@ -154,6 +154,9 @@ async def run_legal_regulatory_agent(state: DiscoveryState) -> DiscoveryState:
     elif injected_context and revision_feedback:
         revision_feedback = f"{revision_feedback}\n\n{injected_context}"
 
+    # Get upstream constraints from constraint broadcaster
+    upstream_constraints = state.get("constraints_prompt") or state.get("_injected_constraints")
+
     # Format prompt with context
     prompt = format_prompt(
         template=LEGAL_REGULATORY_PROMPT,
@@ -168,6 +171,7 @@ async def run_legal_regulatory_agent(state: DiscoveryState) -> DiscoveryState:
         technical_architecture=tech_arch_json,
         revision_context=revision_feedback,
         iteration=state.get("iteration", 1),
+        upstream_constraints=upstream_constraints,
     )
 
     # Call LLM with Google Search grounding for current regulations and compliance requirements

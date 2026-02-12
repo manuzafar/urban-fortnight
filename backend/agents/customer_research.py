@@ -71,6 +71,9 @@ async def run_customer_research_agent(state: DiscoveryState) -> DiscoveryState:
         # Combine both contexts
         revision_feedback = f"{revision_feedback}\n\n{injected_context}"
 
+    # Get upstream constraints from constraint broadcaster
+    upstream_constraints = state.get("constraints_prompt") or state.get("_injected_constraints")
+
     # Format the prompt with all context
     prompt = format_prompt(
         template=CUSTOMER_RESEARCH_PROMPT,
@@ -81,6 +84,7 @@ async def run_customer_research_agent(state: DiscoveryState) -> DiscoveryState:
         additional_context=state.get("additional_context"),
         revision_context=revision_feedback,
         iteration=state.get("iteration", 1),
+        upstream_constraints=upstream_constraints,
     )
 
     # Call the LLM with Google Search grounding for real-world market data

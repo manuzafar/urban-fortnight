@@ -287,6 +287,7 @@ This research must stand on its own, even if no product is built.
 **Additional Context:** {additional_context}
 
 {revision_context}
+{upstream_constraints}
 
 ## HARD RULES (Non-Negotiable)
 
@@ -559,6 +560,7 @@ Using the customer research provided, develop a comprehensive business case that
 {customer_research}
 
 {revision_context}
+{upstream_constraints}
 
 ## ANALYSIS FRAMEWORK
 
@@ -775,6 +777,7 @@ Create a complete, delivery-ready PRD based on the customer research and busines
 {business_case}
 
 {revision_context}
+{upstream_constraints}
 
 ## PRD REQUIREMENTS
 
@@ -1500,6 +1503,7 @@ Design a comprehensive technical architecture for the product based on the PRD a
 {business_case}
 
 {revision_context}
+{upstream_constraints}
 
 ## ARCHITECTURE REQUIREMENTS
 
@@ -1814,6 +1818,7 @@ Conduct a comprehensive legal and regulatory review of the product idea. Your an
 {technical_architecture}
 
 {revision_context}
+{upstream_constraints}
 
 ## ANALYSIS FRAMEWORK
 
@@ -2395,6 +2400,7 @@ def format_prompt(
     previous_assessment: str | None = None,
     regulatory_hints: str | None = None,
     preliminary_legal_scan: str | None = None,
+    upstream_constraints: str | None = None,
 ) -> str:
     """
     Format a prompt template with the provided context.
@@ -2441,6 +2447,7 @@ def format_prompt(
         previous_assessment=_format_previous_assessment(previous_assessment),
         regulatory_hints=regulatory_hints or "None identified yet",
         preliminary_legal_scan=preliminary_legal_scan or "Not yet available",
+        upstream_constraints=_format_upstream_constraints(upstream_constraints),
     )
 
 
@@ -2457,6 +2464,28 @@ This is a revision based on quality feedback. Please address the following impro
 {feedback}
 
 Focus on addressing the specific feedback while maintaining the quality of areas that were already strong.
+"""
+
+
+def _format_upstream_constraints(constraints: str | None) -> str:
+    """
+    Format upstream constraints for inclusion in prompts.
+
+    These constraints come from the constraint_broadcaster and represent
+    established facts from upstream phases that this agent must align with.
+    """
+    if not constraints:
+        return ""
+
+    return f"""
+## UPSTREAM CONSTRAINTS (MANDATORY)
+
+The following constraints have been established by upstream agents and MUST be respected in your output.
+Do NOT contradict these values. If you believe a constraint is incorrect, note it explicitly but still align your output.
+
+{constraints}
+
+Failure to align with these constraints will result in consistency errors and required revisions.
 """
 
 
