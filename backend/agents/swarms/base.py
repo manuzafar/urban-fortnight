@@ -43,17 +43,18 @@ class BaseSwarm(ABC):
 
     def _prepare_agent_state(self, state: dict, agent_name: str) -> dict:
         """
-        Prepare state copy for an agent, including constraints.
+        Prepare state copy for an agent, including constraints and revision context.
 
-        This method injects the constraints_prompt into the agent's state
-        so that agents can include it in their prompts for consistency.
+        This method injects:
+        - constraints_prompt: Constraints from upstream phases for consistency
+        - _revision_context: Revision feedback when re-running weak sections
 
         Args:
             state: Base state dictionary
             agent_name: Name of the agent (for logging)
 
         Returns:
-            dict: State copy with constraints injected
+            dict: State copy with constraints and revision context injected
         """
         agent_state = dict(state)
 
@@ -64,6 +65,15 @@ class BaseSwarm(ABC):
                 "constraints_injected",
                 agent=agent_name,
                 has_constraints=True,
+            )
+
+        # Inject revision context if available (for re-runs of weak sections)
+        if state.get("_revision_context"):
+            agent_state["_injected_revision_context"] = state["_revision_context"]
+            self.logger.debug(
+                "revision_context_injected",
+                agent=agent_name,
+                has_revision_context=True,
             )
 
         return agent_state

@@ -141,10 +141,18 @@ async def run_legal_regulatory_agent(state: DiscoveryState) -> DiscoveryState:
     tech_arch_json = get_tech_arch_summary(state)
 
     # Extract revision feedback if iterating
+    # Check both critique_feedback (standard path) and _injected_revision_context (enhanced path)
     revision_feedback = extract_feedback_for_agent(
         state.get("critique_feedback"),
         "legal_regulatory_feedback",
     )
+
+    # Also check for injected revision context from facilitator's _rerun_weak_sections
+    injected_context = state.get("_injected_revision_context")
+    if injected_context and not revision_feedback:
+        revision_feedback = injected_context
+    elif injected_context and revision_feedback:
+        revision_feedback = f"{revision_feedback}\n\n{injected_context}"
 
     # Format prompt with context
     prompt = format_prompt(

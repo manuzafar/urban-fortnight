@@ -599,6 +599,7 @@ class FacilitatorAgent:
         - Tracks what was tried before
         - Provides context to agents about previous attempts
         - Records score changes for analysis
+        - INJECTS FEEDBACK INTO critique_feedback so agents can read it
 
         Uses the revision_priority from quality_assessment to determine
         which agents to re-run.
@@ -631,6 +632,19 @@ class FacilitatorAgent:
             "legal_regulatory_review": "delivery",
         }
 
+        # Map section names to critique_feedback keys (what agents look for)
+        section_to_feedback_key = {
+            "customer_research": "customer_research_feedback",
+            "market_intelligence": "customer_research_feedback",
+            "competitive_analysis": "competitive_analysis_feedback",
+            "business_case": "business_case_feedback",
+            "gtm_plan": "gtm_plan_feedback",
+            "financial_model": "financial_model_feedback",
+            "product_requirements": "product_requirements_feedback",
+            "technical_architecture": "technical_architecture_feedback",
+            "legal_regulatory_review": "legal_regulatory_feedback",
+        }
+
         # Re-run specific agents based on priority
         for item in revision_priority[:2]:  # Limit to top 2
             section = item.get("section", "").lower().replace(" ", "_")
@@ -649,7 +663,32 @@ class FacilitatorAgent:
                 section_name=section,
             )
 
-            # Inject revision context into state for agents to use
+            # CRITICAL: Inject feedback into critique_feedback so agents can read it
+            # Agents use extract_feedback_for_agent() which reads from state["critique_feedback"]
+            feedback_key = section_to_feedback_key.get(section)
+            if feedback_key:
+                if "critique_feedback" not in state or state["critique_feedback"] is None:
+                    state["critique_feedback"] = {}
+                # Convert to dict if it's a CritiqueFeedback TypedDict
+                if hasattr(state["critique_feedback"], "__dict__"):
+                    state["critique_feedback"] = dict(state["critique_feedback"])
+                elif not isinstance(state["critique_feedback"], dict):
+                    state["critique_feedback"] = {}
+
+                # Set the feedback with revision context prepended
+                state["critique_feedback"][feedback_key] = [
+                    f"[REVISION {state.get('iteration', 1)}] {fb}" for fb in feedback
+                ]
+
+                self.logger.info(
+                    "feedback_injected_for_revision",
+                    session_id=state["session_id"],
+                    section=section,
+                    feedback_key=feedback_key,
+                    feedback_count=len(feedback),
+                )
+
+            # Also store the formatted revision context
             state["_revision_context"] = revision_context
 
             self.logger.info(

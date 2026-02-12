@@ -64,10 +64,18 @@ async def run_product_requirements_agent(state: DiscoveryState) -> DiscoveryStat
     business_case_json = get_business_case_summary(state)
 
     # Extract revision feedback if this is a revision iteration
+    # Check both critique_feedback (standard path) and _injected_revision_context (enhanced path)
     revision_feedback = extract_feedback_for_agent(
         state.get("critique_feedback"),
         "product_requirements_feedback",
     )
+
+    # Also check for injected revision context from facilitator's _rerun_weak_sections
+    injected_context = state.get("_injected_revision_context")
+    if injected_context and not revision_feedback:
+        revision_feedback = injected_context
+    elif injected_context and revision_feedback:
+        revision_feedback = f"{revision_feedback}\n\n{injected_context}"
 
     # Format the prompt with all context
     prompt = format_prompt(

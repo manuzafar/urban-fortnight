@@ -56,10 +56,20 @@ async def run_customer_research_agent(state: DiscoveryState) -> DiscoveryState:
     state["updated_at"] = datetime.utcnow().isoformat()
 
     # Extract revision feedback if this is a revision iteration
+    # Check both critique_feedback (standard path) and _injected_revision_context (enhanced path)
     revision_feedback = extract_feedback_for_agent(
         state.get("critique_feedback"),
         "customer_research_feedback",
     )
+
+    # Also check for injected revision context from facilitator's _rerun_weak_sections
+    injected_context = state.get("_injected_revision_context")
+    if injected_context and not revision_feedback:
+        # Use the injected context if no standard feedback
+        revision_feedback = injected_context
+    elif injected_context and revision_feedback:
+        # Combine both contexts
+        revision_feedback = f"{revision_feedback}\n\n{injected_context}"
 
     # Format the prompt with all context
     prompt = format_prompt(
