@@ -121,7 +121,7 @@ Enhanced SSE events for granular progress tracking:
 - **Backend**: Python 3.11+ / FastAPI / LangGraph / Google Gemini API (Flash + Pro)
 - **Frontend**: React 18 / TypeScript / Vite
 - **Validation**: Pydantic v2 with 60+ strict schemas
-- **Testing**: pytest with 176+ tests (including 73 quality module tests)
+- **Testing**: pytest with 180+ tests (including 73 quality module tests)
 - **Deployment**: Docker / Railway
 
 ---
@@ -538,10 +538,11 @@ seedcraft/
 |       |   |-- test_planner.py               # Planning agent tests
 |       |   |-- test_visual_schemas.py        # Visual schema validation
 |       |   |-- test_export_formatting.py     # Export formatting tests
-|       |   |-- test_confidence_calibrator.py # Confidence calibration tests (NEW)
-|       |   |-- test_versioning.py            # Output versioning tests (NEW)
-|       |   |-- test_two_stage_reasoning.py   # Two-stage reasoning tests (NEW)
-|       |   +-- test_constraint_broadcaster.py # Constraint generation tests (NEW)
+|       |   |-- test_confidence_calibrator.py # Confidence calibration tests
+|       |   |-- test_versioning.py            # Output versioning tests
+|       |   |-- test_two_stage_reasoning.py   # Two-stage reasoning tests
+|       |   |-- test_constraint_broadcaster.py # Constraint generation tests
+|       |   +-- test_critique_retry.py        # Critique retry logic tests (NEW)
 |       +-- integration/
 |           +-- test_export_pipeline.py       # End-to-end export tests
 |
@@ -611,6 +612,7 @@ seedcraft/
 | `PRD_MAX_ITERATIONS` | Max PRD revision iterations | `3` | No |
 | `SESSION_EXPIRY_SECONDS` | Session TTL in seconds | `3600` | No |
 | `MAX_CONCURRENT_SESSIONS` | Max parallel sessions (0=unlimited) | `100` | No |
+| `MAX_CRITIQUE_RETRIES` | Max critique retry attempts before accepting | `2` | No |
 | `VITE_API_URL` | Backend URL for frontend (set in frontend env) | `http://localhost:8000` | No |
 | `ENABLE_MEMORY_AUGMENTATION` | Enable memory-augmented prompts | `true` | No |
 | `ENABLE_TWO_STAGE_REASONING` | Enable two-stage grounded reasoning | `true` | No |
@@ -700,7 +702,20 @@ All outputs include a `validation_reminder` field reinforcing that findings are 
 
 ## Critique Calibration
 
-The Critique Agent uses calibrated scoring with mandatory deductions to prevent score inflation:
+The Critique Agent uses calibrated scoring with mandatory deductions to prevent score inflation.
+
+### Retry Mechanism
+
+When critique validation fails (due to LLM errors or malformed responses), the system retries before accepting:
+
+| Behavior | Description |
+|----------|-------------|
+| **Retry on Failure** | Validation errors or LLM failures trigger automatic retry |
+| **Max Retries** | Configurable via `MAX_CRITIQUE_RETRIES` (default: 2) |
+| **Graceful Degradation** | After max retries, accepts with `QUALITY GATE BYPASSED` warning |
+| **Clear Logging** | All retries and bypasses are logged for operator visibility |
+
+This prevents silent quality gate bypass while avoiding infinite loops.
 
 ### Score Calibration
 
@@ -786,7 +801,7 @@ See [docs/seedcraft-evolution-roadmap.md](docs/seedcraft-evolution-roadmap.md) f
 - [x] **Phase 3**: Visual data schemas and interactive charts (recharts)
 - [x] **Phase 4**: Cross-run learning with embeddings (pgvector + Gemini embeddings)
 - [x] **Phase 5**: Swarm architecture with Facilitator agent and contradiction detection
-- [x] **Phase 6**: Agent Quality Improvement System (NEW)
+- [x] **Phase 6**: Agent Quality Improvement System
   - Evidence-aware context preservation (E1-E5 markers in summaries)
   - Pre-execution constraint broadcasting between phases
   - Two-stage grounded reasoning (research then structure)
@@ -795,6 +810,12 @@ See [docs/seedcraft-evolution-roadmap.md](docs/seedcraft-evolution-roadmap.md) f
   - Structured revision framework with history tracking
   - Mandatory claim extraction with minimum thresholds
   - 73 new unit tests for quality modules
+- [x] **Phase 7**: Critique Resilience & Quality Display (NEW)
+  - Critique retry mechanism prevents silent quality gate bypass
+  - Configurable `MAX_CRITIQUE_RETRIES` setting (default: 2)
+  - Clear `QUALITY GATE BYPASSED` warnings when retries exhausted
+  - Fixed quality score display to show consistent percentages
+  - 7 new unit tests for critique retry logic
 
 ---
 
