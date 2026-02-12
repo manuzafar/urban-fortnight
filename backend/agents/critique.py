@@ -197,39 +197,79 @@ If a section shows "PRESENT", it contains actual content that must be evaluated.
             )
 
         except ValidationError as e:
-            error_msg = f"Validation failed: {str(e)}"
-            logger.error(
-                "agent_validation_error",
-                agent=AGENT_NAME,
+            # Retry-aware validation error handling
+            attempt = state.get("critique_attempt", 1)
+            max_retries = settings.max_critique_retries
+            error_msg = str(e)
+
+            logger.warning(
+                "critique_validation_retry",
                 session_id=state["session_id"],
+                attempt=attempt,
+                max_retries=max_retries,
                 error=error_msg,
             )
 
-            # Store raw data and mark as passed to avoid infinite loops
-            state["quality_assessment"] = result["data"]
-            state["quality_passed"] = True
-            state["requires_revision"] = False
-
-            if "errors" not in state:
-                state["errors"] = []
-            state["errors"].append(f"{AGENT_NAME}: {error_msg}")
+            if attempt < max_retries:
+                # Return state for retry - don't mark as passed
+                state["critique_attempt"] = attempt + 1
+                state["quality_passed"] = False
+                state["requires_revision"] = False  # Don't revise, retry critique
+                state["_retry_critique"] = True  # Signal to facilitator
+                if "errors" not in state:
+                    state["errors"] = []
+                state["errors"].append(f"Critique validation failed (attempt {attempt}): {error_msg}")
+            else:
+                # Max retries exceeded - accept with warning
+                logger.error(
+                    "critique_max_retries_exceeded",
+                    session_id=state["session_id"],
+                    error=error_msg,
+                )
+                state["quality_assessment"] = result.get("data", {})
+                state["quality_passed"] = True
+                state["quality_passed_reason"] = "max_critique_retries_exceeded"
+                state["requires_revision"] = False
+                if "errors" not in state:
+                    state["errors"] = []
+                state["errors"].append(f"QUALITY GATE BYPASSED: Critique failed after {max_retries} attempts")
 
     else:
+        # Retry-aware LLM failure handling
+        attempt = state.get("critique_attempt", 1)
+        max_retries = settings.max_critique_retries
         error_msg = result.get("error", "Unknown error")
-        logger.error(
-            "agent_failed",
-            agent=AGENT_NAME,
+
+        logger.warning(
+            "critique_llm_retry",
             session_id=state["session_id"],
+            attempt=attempt,
+            max_retries=max_retries,
             error=error_msg,
         )
 
-        # On failure, mark as passed to avoid infinite loops
-        state["quality_passed"] = True
-        state["requires_revision"] = False
-
-        if "errors" not in state:
-            state["errors"] = []
-        state["errors"].append(f"{AGENT_NAME}: {error_msg}")
+        if attempt < max_retries:
+            # Return state for retry
+            state["critique_attempt"] = attempt + 1
+            state["quality_passed"] = False
+            state["requires_revision"] = False
+            state["_retry_critique"] = True
+            if "errors" not in state:
+                state["errors"] = []
+            state["errors"].append(f"Critique LLM call failed (attempt {attempt}): {error_msg}")
+        else:
+            # Max retries exceeded
+            logger.error(
+                "critique_max_retries_exceeded",
+                session_id=state["session_id"],
+                error=error_msg,
+            )
+            state["quality_passed"] = True
+            state["quality_passed_reason"] = "max_critique_retries_exceeded"
+            state["requires_revision"] = False
+            if "errors" not in state:
+                state["errors"] = []
+            state["errors"].append(f"QUALITY GATE BYPASSED: Critique LLM failed after {max_retries} attempts")
 
     state["updated_at"] = datetime.utcnow().isoformat()
     return state

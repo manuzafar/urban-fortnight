@@ -413,22 +413,50 @@ class FacilitatorAgent:
         return state
 
     async def _run_quality_check(self, state: DiscoveryState) -> DiscoveryState:
-        """Run the critique agent for quality assessment."""
+        """Run the critique agent with retry support for quality assessment."""
+        from config import settings
+
         self.logger.info("phase_start", phase="quality_check", session_id=state["session_id"])
 
         await self._emit_agent_start("critique", "Checking quality...")
 
-        state = await run_critique_agent(state)
+        max_retries = settings.max_critique_retries
+
+        for attempt in range(1, max_retries + 1):
+            state["critique_attempt"] = attempt
+            state = await run_critique_agent(state)
+
+            # Check if retry is needed
+            if not state.get("_retry_critique"):
+                break
+
+            # Clear retry flag
+            state["_retry_critique"] = False
+
+            self.logger.info(
+                "critique_retry",
+                session_id=state["session_id"],
+                attempt=attempt,
+                max_retries=max_retries,
+            )
 
         # Emit quality insights
         qa = state.get("quality_assessment", {})
         if qa.get("overall_score"):
-            await self._emit_insight("critique", "score", f"Quality score: {qa['overall_score']:.1f}/10")
+            await self._emit_insight("critique", "score", f"Quality score: {int(qa['overall_score'] * 100)}%")
         if qa.get("quality_passed") is not None:
             status = "PASSED" if qa["quality_passed"] else "NEEDS REVISION"
             await self._emit_insight("critique", "status", f"Status: {status}")
 
-        await self._emit_agent_complete("critique", f"Quality: {qa.get('overall_score', 0):.1f}/10", insights_count=2)
+        # Log if quality gate was bypassed
+        if state.get("quality_passed_reason") == "max_critique_retries_exceeded":
+            self.logger.warning(
+                "quality_gate_bypassed",
+                session_id=state["session_id"],
+                reason="max_critique_retries_exceeded",
+            )
+
+        await self._emit_agent_complete("critique", f"Quality: {int(qa.get('overall_score', 0) * 100)}%", insights_count=2)
         await self._emit_progress(80, "critique")
 
         return state

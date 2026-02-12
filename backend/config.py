@@ -193,6 +193,13 @@ class Settings(BaseSettings):
         description="Minimum quality score to pass",
     )
 
+    max_critique_retries: int = Field(
+        default=2,
+        ge=1,
+        le=5,
+        description="Maximum critique retry attempts before accepting with warning",
+    )
+
     # ═══════════════════════════════════════════════════════════════════════
     # PRD SUB-WORKFLOW CONFIGURATION
     # ═══════════════════════════════════════════════════════════════════════

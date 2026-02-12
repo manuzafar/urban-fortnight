@@ -323,6 +323,9 @@ class DiscoveryState(TypedDict, total=False):
     total_tokens_used: Annotated[int, keep_last]
     total_duration_seconds: Annotated[float, keep_last]
 
+    # Critique retry tracking
+    critique_attempt: Annotated[int, keep_last]
+
 
 def create_initial_state(
     session_id: str,
@@ -406,6 +409,8 @@ def create_initial_state(
         errors=[],
         total_tokens_used=0,
         total_duration_seconds=0.0,
+        # Critique retry tracking
+        critique_attempt=1,
     )
 
 
