@@ -116,6 +116,7 @@ export function WireframeViewer({ wireframes, className = '' }: WireframeViewerP
 /**
  * Preprocesses React code for browser execution.
  * - Removes ALL import/export statements
+ * - Fixes broken function declarations (e.g., "ComponentName() {" -> "function ComponentName() {")
  * - Extracts component name
  * - Replaces React hooks with React.* versions
  */
@@ -126,9 +127,26 @@ function preprocessCode(code: string): { processedCode: string; componentName: s
   processed = processed.replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*\n?/g, '');
   processed = processed.replace(/import\s+['"][^'"]+['"];?\s*\n?/g, '');
 
-  // Remove export statements
+  // Remove export statements but keep the function definition
+  // e.g., "export default function Foo" -> "function Foo"
+  processed = processed.replace(/export\s+default\s+function/g, 'function');
   processed = processed.replace(/export\s+default\s+\w+;?\s*\n?/g, '');
   processed = processed.replace(/export\s+\{[^}]+\};?\s*\n?/g, '');
+
+  // FIX: LLM sometimes generates broken syntax like "ComponentName() {" without "function"
+  // This regex finds patterns like "ComponentName() {" at the start of a line (or after whitespace)
+  // and adds "function " before it. Only matches PascalCase names (components).
+  processed = processed.replace(
+    /^(\s*)([A-Z][a-zA-Z0-9]*)\s*\(\s*\)\s*\{/gm,
+    '$1function $2() {'
+  );
+
+  // Also handle "const ComponentName = () => {" that might be malformed
+  // e.g., "ComponentName = () => {" without "const"
+  processed = processed.replace(
+    /^(\s*)([A-Z][a-zA-Z0-9]*)\s*=\s*\(\s*\)\s*=>\s*\{/gm,
+    '$1const $2 = () => {'
+  );
 
   // Replace destructured hooks with React.* versions
   processed = processed.replace(/\buseState\b/g, 'React.useState');

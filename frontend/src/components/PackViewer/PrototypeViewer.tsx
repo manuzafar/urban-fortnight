@@ -47,9 +47,26 @@ export function PrototypeViewer({ prototype, className = '' }: PrototypeViewerPr
     processedCode = processedCode.replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*\n?/g, '');
     processedCode = processedCode.replace(/import\s+['"][^'"]+['"];?\s*\n?/g, '');
 
-    // Remove export statements
+    // Remove export statements but keep the function definition
+    // e.g., "export default function Foo" -> "function Foo"
+    processedCode = processedCode.replace(/export\s+default\s+function/g, 'function');
     processedCode = processedCode.replace(/export\s+default\s+\w+;?\s*\n?/g, '');
     processedCode = processedCode.replace(/export\s+\{[^}]+\};?\s*\n?/g, '');
+
+    // FIX: LLM sometimes generates broken syntax like "ComponentName() {" without "function"
+    // This regex finds patterns like "ComponentName() {" at the start of a line (or after whitespace)
+    // and adds "function " before it. Only matches PascalCase names (components).
+    processedCode = processedCode.replace(
+      /^(\s*)([A-Z][a-zA-Z0-9]*)\s*\(\s*\)\s*\{/gm,
+      '$1function $2() {'
+    );
+
+    // Also handle "const ComponentName = () => {" that might be malformed
+    // e.g., "ComponentName = () => {" without "const"
+    processedCode = processedCode.replace(
+      /^(\s*)([A-Z][a-zA-Z0-9]*)\s*=\s*\(\s*\)\s*=>\s*\{/gm,
+      '$1const $2 = () => {'
+    );
 
     // Replace destructured hooks with React.* versions
     processedCode = processedCode.replace(/\buseState\b/g, 'React.useState');
