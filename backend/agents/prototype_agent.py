@@ -125,6 +125,24 @@ Return valid JSON:
   "design_notes": "string - key design decisions and why"
 }}
 
+## OUTPUT CHECKLIST (MANDATORY)
+
+Before finalizing your response, verify ALL of the following:
+
+[ ] PROTOTYPE NAME: Named prototype (not placeholder)
+[ ] REACT CODE: react_component_code with 100+ chars of valid React
+[ ] VALID REACT STRUCTURE:
+    - function/const component definition with default export
+    - JSX return statement
+    - useState for state management (navigation between screens)
+[ ] INTERACTIVE ELEMENTS: onClick, onSubmit, buttons, or forms present
+[ ] NO PLACEHOLDERS: No "Lorem ipsum", "TODO", "TBD", "placeholder", "Item 1"
+[ ] PRIMARY PERSONA: Target persona specified (actual name from research)
+[ ] KEY USER STORY: 20+ char user story description
+[ ] DEMO SCENARIO: 30+ char walkthrough script
+[ ] COLOR PALETTE: Defined with primary, secondary, background colors
+[ ] SCREENS INCLUDED: 3+ screens in screens_included array
+
 ## CRITICAL REMINDERS
 - This must look like a REAL PRODUCT. If it looks like gray boxes with placeholder text, it fails.
 - The story matters. The prototype walks a persona through a journey that ends with an "aha" moment.

@@ -43,8 +43,8 @@ class ExecutionConstraint:
     source_section: str
     source_claim_id: str
     constraint_type: str
-    evidence_tier: str = "E4"
-    confidence: float = 0.5
+    evidence_tier: str = "E2"  # Upgraded from E4 for stronger constraint enforcement
+    confidence: float = 0.7  # Upgraded from 0.5 for stronger constraint enforcement
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -168,8 +168,8 @@ def _generate_strategy_constraints(state: dict[str, Any]) -> list[ExecutionConst
             source_section="customer_research",
             source_claim_id=_find_claim_id(state, "market", "MI"),
             constraint_type="must_use",
-            evidence_tier="E3",
-            confidence=0.7,
+            evidence_tier="E2",  # Upgraded from E3 for stronger enforcement
+            confidence=0.8,
         ))
 
     # Constraint from detailed_personas: Primary customer
@@ -226,8 +226,8 @@ def _generate_delivery_constraints(state: dict[str, Any]) -> list[ExecutionConst
                     source_section="business_case",
                     source_claim_id=_find_claim_id(state, "pricing", "BC"),
                     constraint_type="must_use",
-                    evidence_tier="E4",
-                    confidence=0.6,
+                    evidence_tier="E3",  # Upgraded from E4 for stronger enforcement
+                    confidence=0.7,
                 ))
 
     # Constraint from business_case: Value proposition
@@ -347,8 +347,8 @@ def _generate_synthesis_constraints(state: dict[str, Any]) -> list[ExecutionCons
             source_section="customer_research",
             source_claim_id=_find_claim_id(state, "market", "MI"),
             constraint_type="must_use",
-            evidence_tier="E3",
-            confidence=0.7,
+            evidence_tier="E2",  # Upgraded from E3 for stronger enforcement
+            confidence=0.8,
         ))
 
     # Financial projections that must be consistent
@@ -402,10 +402,13 @@ def format_constraints_for_prompt(constraints: list[ExecutionConstraint]) -> str
         return ""
 
     lines = [
-        "## EXECUTION CONSTRAINTS (MANDATORY)",
+        "## EXECUTION CONSTRAINTS (CRITICAL - DO NOT OVERRIDE)",
+        "",
+        "**WARNING: These constraints are LOCKED from upstream agents.**",
         "",
         "You MUST align your output with these established constraints from upstream agents.",
         "These ensure consistency across the discovery pack. DO NOT contradict these values.",
+        "**Violating these constraints will cause cross-section inconsistencies.**",
         "",
     ]
 
@@ -443,8 +446,13 @@ def format_constraints_for_prompt(constraints: list[ExecutionConstraint]) -> str
             lines.append(f"  Source: {c.source_section} ({c.source_claim_id}) [{c.evidence_tier}]")
         lines.append("")
 
-    lines.append("If you believe a constraint should be revised based on new information,")
-    lines.append("explicitly note this in your output with justification.")
+    lines.append("**IMPORTANT:** If you believe a constraint should be revised based on new information,")
+    lines.append("you must:")
+    lines.append("1. Explicitly note this in your output with detailed justification")
+    lines.append("2. Provide E1-E2 evidence (direct research, citations, or data) to override")
+    lines.append("3. Explain why the original constraint was incorrect")
+    lines.append("")
+    lines.append("**Failing to follow constraints without proper justification will cause eval failures.**")
 
     return "\n".join(lines)
 

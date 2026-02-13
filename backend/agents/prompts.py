@@ -131,6 +131,18 @@ Respond with ONLY valid JSON:
   ]
 }}
 
+## OUTPUT CHECKLIST (MANDATORY)
+
+Before finalizing your response, verify ALL of the following:
+
+[ ] RESEARCH QUESTIONS: 3+ critical questions to answer (specific to this product)
+[ ] COMPETITOR TARGETS: 2+ specific competitors to analyze (name real companies)
+[ ] DOMAIN CLASSIFICATION: Domain type specified (B2B_SaaS, Consumer, Fintech, Healthcare, etc.)
+[ ] SEARCH STRATEGY: 3+ key search terms/queries in financial_benchmarks or research focus
+[ ] REGULATORY DOMAINS: 1+ regulation identified (GDPR, HIPAA, PCI-DSS, etc.)
+[ ] TARGET MARKET: Clear market focus in domain_rationale
+[ ] RISK FLAGS: 1+ early risk indicator identified
+
 CRITICAL: Respond with ONLY the JSON object. Be specific - name actual companies, actual regulations, actual metrics.
 '''
 
@@ -493,6 +505,37 @@ You MUST respond with ONLY a valid JSON object. No markdown, no explanations, no
 
 Write as someone whose reputation depends on being honest.
 
+## OUTPUT CHECKLIST (MANDATORY)
+
+Before finalizing your response, verify ALL of the following:
+
+### CUSTOMER RESEARCH CHECKLIST
+[ ] PAIN SIGNALS: 3+ specific pain points with evidence_tier
+[ ] CUSTOMER SEGMENTS: 2+ segments in research_scope.segments_examined
+[ ] JTBD FRAMEWORK: All three fields populated:
+    - trigger_situation: When does the need arise?
+    - underlying_goal: What outcome do they want?
+    - success_definition: How do they measure success?
+[ ] UNCOMFORTABLE INSIGHTS: 1+ insights that challenge the product idea
+[ ] CURRENT BEHAVIOUR: existing_solutions AND friction_points populated
+[ ] OPEN QUESTIONS: 1+ question with validation_needed: true
+
+### COMPETITIVE LANDSCAPE CHECKLIST
+[ ] DIRECT COMPETITORS: 2+ competitors with name, strengths, weaknesses
+[ ] PRICING DATA: 2+ competitors with pricing or pricing_model
+[ ] DIFFERENTIATION THESIS: 20+ char differentiation strategy
+[ ] COMPETITIVE GAPS: 1+ market gap to exploit
+[ ] POSITIONING MAP: competitive_positioning array with competitor positions
+[ ] DETAILED PROFILES: 2+ competitors with both strengths AND weaknesses
+
+### PERSONA CHECKLIST (for detailed_personas section)
+[ ] PERSONA COUNT: 2+ distinct personas in customer segments
+[ ] EACH SEGMENT MUST HAVE:
+    - Clear name/label
+    - Defined characteristics
+    - Specific pain points
+[ ] VALIDATION REMINDER: Include note about hypothesis nature
+
 CRITICAL REQUIREMENTS:
 - Respond with ONLY the JSON object
 - Every pain signal must have an evidence tier
@@ -741,6 +784,25 @@ You MUST respond with ONLY a valid JSON object. No markdown, no explanations, no
     "sensitivity_notes": "string - notes on what would change projections (e.g., 'If CAC increases 50%, break-even extends to month 9')"
   }}
 }}
+
+## OUTPUT CHECKLIST (MANDATORY)
+
+Before finalizing your response, verify ALL of the following:
+
+[ ] LEAN CANVAS: All core fields populated:
+    - problem, solution, unique_value_proposition
+    - customer_segments, revenue_streams
+[ ] REVENUE STREAMS: 1+ stream with pricing_model
+[ ] FINANCIAL PROJECTIONS:
+    - year_1_projection: Present with $ amounts
+    - year_3_projection: Present with $ amounts
+    - break_even_analysis: Calculated with timeline
+[ ] FUNDING REQUIREMENT: Specific amount (not vague, include $ figure)
+[ ] ROI ANALYSIS: Present with calculations
+[ ] RISKS AND MITIGATIONS: 3+ risks, each with mitigation strategy
+[ ] GTM STRATEGY: 20+ char go-to-market overview
+[ ] UNIT ECONOMICS: CAC and LTV defined with derivations
+[ ] SENSITIVITY ANALYSIS: base_case, optimistic_case, pessimistic_case
 
 IMPORTANT:
 - Respond with ONLY the JSON object
@@ -1008,6 +1070,24 @@ You MUST respond with ONLY a valid JSON object. No markdown, no explanations, no
     "term2": "definition2"
   }}
 }}
+
+## OUTPUT CHECKLIST (MANDATORY)
+
+Before finalizing your response, verify ALL of the following:
+
+[ ] EPIC COUNT: 3-5 epics minimum
+[ ] USER STORY COUNT: 5+ total stories across all epics
+[ ] USER STORY FORMAT: EVERY story has:
+    - as_a: "a [specific user role]" OR title: Descriptive title
+    - i_want: "to [specific action]" OR description: 10+ char description
+    - so_that: "I can [business benefit]"
+[ ] ACCEPTANCE CRITERIA: 80%+ stories have criteria (Given/When/Then preferred)
+[ ] PRIORITY DISTRIBUTION: 80%+ stories have priority field (critical/high/medium/low)
+[ ] FUNCTIONAL REQUIREMENTS: 5+ requirements with IDs (FR-001, FR-002, etc.)
+[ ] NON-FUNCTIONAL REQUIREMENTS: 3+ requirements (NFR-001, NFR-002, etc.)
+[ ] RELEASE PLAN: 2+ phases, one named "MVP" or "Phase 1"
+[ ] DATA MODEL: 2+ entities defined with attributes
+[ ] RISKS: 3+ product risks identified with mitigation strategies
 
 CRITICAL REQUIREMENTS:
 - Respond with ONLY the JSON object
@@ -1737,6 +1817,24 @@ You MUST respond with ONLY a valid JSON object. No markdown, no explanations, no
   ]
 }}
 
+## OUTPUT CHECKLIST (MANDATORY)
+
+Before finalizing your response, verify ALL of the following:
+
+[ ] ARCHITECTURE STYLE: Pattern defined (e.g., "microservices", "monolith", "serverless")
+[ ] TECHNOLOGY STACK: 3+ technologies, each with:
+    - technology: Name (must be real, recognizable)
+    - purpose/rationale: Why chosen
+[ ] REAL TECHNOLOGIES: 70%+ must be recognizable (React, PostgreSQL, AWS, Redis, etc.)
+    - Do NOT use placeholder names like "TechX", "Framework1"
+[ ] SYSTEM COMPONENTS: 2+ components with responsibilities defined
+[ ] SECURITY ARCHITECTURE: Mentions authentication, authorization, encryption, or compliance
+[ ] SCALABILITY APPROACH: 20+ char scalability strategy
+[ ] DEPLOYMENT STRATEGY: 20+ char deployment approach
+[ ] INFRASTRUCTURE REQUIREMENTS: 1+ infrastructure item specified
+[ ] ARCHITECTURE DIAGRAM: architecture_diagram_mermaid with valid Mermaid code
+[ ] TECHNICAL RISKS: 2+ risks identified with mitigation strategies
+
 IMPORTANT:
 - Respond with ONLY the JSON object
 - Technology choices should be modern but proven
@@ -2013,6 +2111,20 @@ The JSON structure must be:
 - High-risk jurisdictions
 - Patent-heavy competitive landscapes
 - Professional licensing requirements
+
+## OUTPUT CHECKLIST (MANDATORY)
+
+Before finalizing your response, verify ALL of the following:
+
+[ ] EXECUTIVE SUMMARY: 50+ char legal overview
+[ ] APPLICABLE REGULATIONS: 1+ regulations with:
+    - name: Real regulation (GDPR, HIPAA, SOC 2, PCI-DSS, CCPA, etc.)
+    - compliance_requirements: 2+ specific requirements per regulation
+[ ] REAL REGULATIONS: 50%+ must be recognizable standards (not made-up names)
+[ ] DATA PROTECTION REQUIREMENTS: 1+ data protection item with user rights
+[ ] LEGAL RISKS: 2+ risks, 70%+ with mitigation_strategies
+[ ] OVERALL RISK ASSESSMENT: risk_level field populated (high/medium/low)
+[ ] NEXT STEPS: 2+ actionable next steps with specifics
 
 IMPORTANT:
 - Respond with ONLY the JSON object

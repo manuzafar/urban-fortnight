@@ -31,6 +31,11 @@ from agents.constraint_broadcaster import (
     generate_phase_constraints,
     format_constraints_for_prompt,
 )
+from agents.output_validator import validate_agent_output, ValidationResult
+from agents.eval_feedback_bridge import (
+    process_eval_output_to_feedback,
+    get_agents_needing_revision,
+)
 from models.schemas import SessionStatus
 
 if TYPE_CHECKING:
@@ -92,6 +97,45 @@ class FacilitatorAgent:
         emitter = get_current_emitter()
         if emitter:
             await emitter.emit_progress(percentage, agent)
+
+    def _validate_agent_output(
+        self, agent_name: str, output: dict, state: DiscoveryState
+    ) -> ValidationResult:
+        """
+        Validate agent output and log results.
+
+        Args:
+            agent_name: Name of the agent
+            output: The agent's output dictionary
+            state: Current discovery state
+
+        Returns:
+            ValidationResult with validation status
+        """
+        result = validate_agent_output(agent_name, output)
+
+        if not result.valid:
+            self.logger.warning(
+                "agent_output_validation_failed",
+                agent=agent_name,
+                session_id=state.get("session_id"),
+                error_count=len(result.errors),
+                errors=result.errors[:5],  # Log first 5 errors
+            )
+
+            # Store validation failures for potential retry
+            if "validation_failures" not in state:
+                state["validation_failures"] = {}
+            state["validation_failures"][agent_name] = result.errors
+        else:
+            self.logger.info(
+                "agent_output_validated",
+                agent=agent_name,
+                session_id=state.get("session_id"),
+                warning_count=len(result.warnings),
+            )
+
+        return result
 
     async def run(self, state: DiscoveryState) -> DiscoveryState:
         """
@@ -297,6 +341,20 @@ class FacilitatorAgent:
 
         await self._emit_progress(25, "discovery")
 
+        # Validate discovery outputs
+        if state.get("customer_research"):
+            self._validate_agent_output(
+                "Customer Research Agent",
+                state["customer_research"],
+                state
+            )
+        if state.get("competitive_analysis"):
+            self._validate_agent_output(
+                "competitive_analysis",
+                state["competitive_analysis"],
+                state
+            )
+
         return state
 
     async def _run_strategy_phase(self, state: DiscoveryState) -> DiscoveryState:
@@ -336,6 +394,20 @@ class FacilitatorAgent:
         await self._emit_agent_complete("gtm_strategy", "GTM strategy complete", insights_count=1)
 
         await self._emit_progress(40, "strategy")
+
+        # Validate strategy outputs
+        if state.get("business_case"):
+            self._validate_agent_output(
+                "Business Strategy Agent",
+                state["business_case"],
+                state
+            )
+        if state.get("gtm_plan"):
+            self._validate_agent_output(
+                "Go-to-Market",
+                state["gtm_plan"],
+                state
+            )
 
         return state
 
@@ -410,6 +482,26 @@ class FacilitatorAgent:
         await self._emit_progress(60, "delivery")
         self.logger.info("delivery_phase_complete", session_id=state["session_id"])
 
+        # Validate delivery outputs
+        if state.get("product_requirements"):
+            self._validate_agent_output(
+                "Product Requirements Agent",
+                state["product_requirements"],
+                state
+            )
+        if state.get("technical_architecture"):
+            self._validate_agent_output(
+                "Technical Architect Agent",
+                state["technical_architecture"],
+                state
+            )
+        if state.get("legal_regulatory_review"):
+            self._validate_agent_output(
+                "Legal & Regulatory Review",
+                state["legal_regulatory_review"],
+                state
+            )
+
         return state
 
     async def _run_quality_check(self, state: DiscoveryState) -> DiscoveryState:
@@ -417,6 +509,9 @@ class FacilitatorAgent:
         from config import settings
 
         self.logger.info("phase_start", phase="quality_check", session_id=state["session_id"])
+
+        # Integrate any validation failures into revision priority
+        state = _integrate_validation_failures_into_revision(state)
 
         await self._emit_agent_start("critique", "Checking quality...")
 
@@ -484,6 +579,14 @@ class FacilitatorAgent:
 
         await self._emit_agent_complete("financial_modeling", "Financial model complete", insights_count=2)
         await self._emit_progress(50, "financial_modeling")
+
+        # Validate financial model output
+        if state.get("financial_model"):
+            self._validate_agent_output(
+                "Financial Model",
+                state["financial_model"],
+                state
+            )
 
         return state
 
@@ -968,6 +1071,76 @@ class FacilitatorAgent:
                     if match:
                         return float(match.group(1))
         return None
+
+
+def _integrate_validation_failures_into_revision(
+    state: DiscoveryState,
+) -> DiscoveryState:
+    """
+    Integrate validation failures into the revision priority list.
+
+    This ensures that agents with validation failures are prioritized
+    for revision alongside critique feedback.
+
+    Args:
+        state: Current workflow state
+
+    Returns:
+        Updated state with validation failures integrated
+    """
+    try:
+        validation_failures = state.get("validation_failures") or {}
+        if not validation_failures:
+            return state
+
+        # Get existing revision priority (handle None values)
+        quality = state.get("quality_assessment")
+        if quality is None:
+            quality = {}
+            state["quality_assessment"] = quality
+
+        revision_priority = quality.get("revision_priority") or []
+
+        # Map validation failures to revision priority format
+        for agent_name, errors in validation_failures.items():
+            if not errors:
+                continue
+            # Check if agent already in revision priority
+            existing = next(
+                (r for r in revision_priority if r.get("section", "").lower() == agent_name.lower()),
+                None
+            )
+
+            if existing:
+                # Add validation errors to existing feedback
+                existing_feedback = existing.get("feedback") or []
+                existing["feedback"] = existing_feedback + [f"[VALIDATION] {e}" for e in errors[:5]]
+            else:
+                # Add new revision priority entry
+                revision_priority.append({
+                    "section": agent_name,
+                    "score": 0.4,  # Low score = needs revision
+                    "feedback": [f"[VALIDATION] {e}" for e in errors[:5]],
+                })
+
+        # Sort by score (lowest first = most urgent)
+        revision_priority.sort(key=lambda x: x.get("score", 1.0))
+
+        # Update state safely
+        if isinstance(state.get("quality_assessment"), dict):
+            state["quality_assessment"]["revision_priority"] = revision_priority
+
+    except Exception as e:
+        # Log but don't fail the workflow for validation integration errors
+        import structlog
+        logger = structlog.get_logger(__name__)
+        logger.warning(
+            "validation_integration_error",
+            error=str(e),
+            session_id=state.get("session_id"),
+        )
+
+    return state
 
 
 def _format_revision_context(

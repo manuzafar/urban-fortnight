@@ -131,6 +131,22 @@ Respond with ONLY valid JSON:
   ]
 }}
 
+## OUTPUT CHECKLIST (MANDATORY)
+
+Before finalizing your response, verify ALL of the following:
+
+[ ] STAKEHOLDER COUNT: 3+ distinct views (CFO, CISO, ARB, VP Product, etc.)
+[ ] ROLE DIVERSITY: Different roles represented (not all technical or all business)
+[ ] EACH VIEW MUST HAVE:
+    - stakeholder_role: Specific role name
+    - tailored_summary: 50+ char role-specific summary
+    - anticipated_objections: 1+ objection with response
+    - decision_recommendation: 20+ char recommendation
+    - key_questions_answered: 2+ questions
+[ ] COMMON CONCERNS: 1+ concern shared across stakeholders
+[ ] ALIGNMENT OPPORTUNITIES: 1+ opportunity for cross-stakeholder alignment
+[ ] DECISION BLOCKERS: Issues that could block approval identified
+
 CRITICAL:
 - Write FROM each stakeholder's perspective
 - Use their domain language

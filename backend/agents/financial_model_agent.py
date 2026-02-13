@@ -240,11 +240,34 @@ Respond with ONLY valid JSON:
   }}
 }}
 
+## OUTPUT CHECKLIST (MANDATORY)
+
+Before finalizing your response, verify ALL of the following:
+
+[ ] INPUT ASSUMPTIONS: 5+ assumptions documented with evidence tiers
+[ ] MONTHLY PROJECTIONS: Exactly 12 months in monthly_projections_year_1
+    - Each month: revenue, costs, customers, profit
+[ ] PROFIT CALCULATION: profit = revenue - costs (exactly, no rounding errors)
+    - CRITICAL: For each month, verify: profit == revenue - costs
+[ ] REVENUE MODEL: Present with pricing tiers and year totals
+[ ] UNIT ECONOMICS:
+    - CAC: Numeric value (not placeholder, not "TBD")
+    - LTV: Numeric value (not placeholder, not "TBD")
+    - LTV:CAC ratio calculated and included
+    - Payback period in months
+[ ] SCENARIO ANALYSIS: All three required:
+    - base_case: Year 1/3 revenue and profit
+    - optimistic: Year 1/3 revenue and profit
+    - pessimistic: Year 1/3 revenue and profit
+[ ] FUNDING REQUIREMENTS: Amount by stage (total_required or seed)
+[ ] KEY FINANCIAL RISKS: 2+ risks identified with mitigation
+
 CRITICAL:
 - All 12 months of Year 1 must be included
 - All 8 quarters of Years 2-3 must be included
-- Numbers must be internally consistent
+- Numbers must be internally consistent: profit = revenue - costs (EXACTLY)
 - Use realistic industry benchmarks
+- Do NOT use placeholder text like "TBD", "$X", or "XX"
 """
 
 

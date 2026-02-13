@@ -168,6 +168,29 @@ Respond with ONLY valid JSON:
   ]
 }}
 
+## OUTPUT CHECKLIST (MANDATORY)
+
+Before finalizing your response, verify ALL of the following:
+
+[ ] PRODUCT NAME: Named product (not placeholder)
+[ ] TAGLINE: Clear value proposition tagline (max 150 chars)
+[ ] PROBLEM: Problem statement with specifics
+[ ] SOLUTION: Solution description
+[ ] TARGET MARKET: Defined market segments
+[ ] DIFFERENTIATORS: 3+ items, each 20+ char, mentioning competitors
+[ ] MARKET SIZE: TAM/SAM/SOM figures (not just "large market")
+[ ] BUSINESS MODEL: Revenue/pricing approach defined
+[ ] FUNDING: funding_required with specific $ amount
+[ ] FINANCIAL PROJECTIONS: Year 1 and Year 3 with $ amounts
+[ ] KEY DECISIONS: 3-5 decisions with:
+    - id, title, context
+    - options (2+ per decision)
+    - recommendation
+[ ] REGULATORY SUMMARY: 2+ regulations mentioned, timeline, cost estimate
+[ ] RISKS: 3+ key risks with mitigation
+[ ] RECOMMENDATION: Clear BUILD/INVESTIGATE/PIVOT/KILL with rationale
+[ ] MILESTONES: Key milestones listed with timeline
+
 CRITICAL:
 - Be honest about evidence gaps
 - Recommendation MUST match evidence score guidelines

@@ -136,6 +136,24 @@ Respond with ONLY valid JSON:
   }}
 }}
 
+## OUTPUT CHECKLIST (MANDATORY)
+
+Before finalizing your response, verify ALL of the following:
+
+[ ] EXPERIMENT COUNT: 3+ experiments designed
+[ ] VALID TYPES: 80%+ use recognized types:
+    (interview, survey, landing_page, prototype, concierge, smoke_test, a/b_test, usability, mvp)
+[ ] EACH EXPERIMENT MUST HAVE:
+    - experiment_type: Recognized type from list above
+    - success_criteria: 10+ char measurable criteria (not vague)
+    - failure_criteria: 10+ char fail conditions (70%+ of experiments)
+    - specific_instructions: 30+ char how-to (70%+ of experiments)
+    - target_profile: Who to test with (80%+ of experiments)
+[ ] PRIORITY: 70%+ experiments have priority ranking
+[ ] CRITICAL PATH: 1+ critical experiment identified
+[ ] TOTAL VALIDATION TIMELINE: Overall timeline present
+[ ] VALIDATION DASHBOARD: total_experiments and participant estimates
+
 CRITICAL:
 - Design experiments that are ACTIONABLE (a team could run them next week)
 - Include SPECIFIC success/failure criteria (not vague)

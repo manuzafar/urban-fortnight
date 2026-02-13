@@ -193,6 +193,23 @@ Respond with ONLY valid JSON:
   "total_gtm_budget_estimate": "string - rough budget range for first 12 months"
 }}
 
+## OUTPUT CHECKLIST (MANDATORY)
+
+Before finalizing your response, verify ALL of the following:
+
+[ ] POSITIONING STATEMENT: 20+ char clear positioning statement
+[ ] CHANNEL STRATEGY: 2+ acquisition channels with:
+    - channel name
+    - expected_cac or cost
+    - specific_tactics
+[ ] LAUNCH PHASES: 2+ phases, each with objective/goals
+[ ] MESSAGING BY PERSONA: 1+ persona-specific messaging with headline and value_proposition
+[ ] METRICS DASHBOARD: 3+ metrics to track with targets
+[ ] PARTNERSHIP OPPORTUNITIES: 1+ potential partner with value_exchange
+[ ] TOTAL GTM BUDGET: Specific budget estimate (not "TBD" or placeholder)
+[ ] GTM RISKS: 2+ go-to-market risks with mitigation strategies
+[ ] MARKET ENTRY STRATEGY: beachhead_market and expansion_path defined
+
 CRITICAL: Be specific with company names, dollar amounts, and timelines. No generic advice.
 """
 

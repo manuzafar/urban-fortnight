@@ -119,6 +119,20 @@ Return valid JSON:
   "responsive_notes": "string - how screens should adapt to mobile"
 }}
 
+## OUTPUT CHECKLIST (MANDATORY)
+
+Before finalizing your response, verify ALL of the following:
+
+[ ] SCREEN COUNT: 3+ screens minimum
+[ ] REACT CODE: 70%+ screens have react_code with valid JSX (80+ lines each)
+[ ] NAVIGATION: Each screen has navigation_to array with target screen IDs
+[ ] KEY COMPONENTS: Each screen lists 3-5 key_components
+[ ] USER FLOWS: 2-3 Mermaid flowchart user_flows with screens_referenced
+[ ] CORE SCREENS: MUST include Dashboard or Landing screen
+[ ] DESIGN SYSTEM: design_system_notes with typography and spacing
+[ ] NO PLACEHOLDERS: No "Lorem ipsum", "Item 1", "TODO" in react_code
+[ ] VALID REACT: Each react_code is a complete, renderable component
+
 ## CRITICAL REMINDERS
 - Generate one wireframe per screen in the screen_map. Don't skip screens.
 - Wireframes must be STRUCTURALLY complete — header, nav, content area, proper spacing.
