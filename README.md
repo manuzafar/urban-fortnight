@@ -738,6 +738,87 @@ This prevents silent quality gate bypass while avoiding infinite loops.
 
 ---
 
+## Evaluation System
+
+A comprehensive eval framework validates agent outputs across 5 categories with 22 total evaluations.
+
+### Quick Start
+
+```bash
+cd backend
+
+# Run agent-specific evals
+python -m evals.cli run test_outputs/state.json -t agent_specific
+
+# Run consistency checks (cross-section)
+python -m evals.cli run test_outputs/state.json -t consistency
+
+# Run all evals with verbose output
+python -m evals.cli run test_outputs/state.json --verbose
+```
+
+### Eval Categories
+
+| Category | Evals | Purpose |
+|----------|-------|---------|
+| **Unit** | `schema_compliance`, `evidence_tier` | Fast, deterministic validation |
+| **LLM Judge** | `multi_dimension_quality` | 6-dimension quality assessment |
+| **Golden Set** | `golden_set_similarity` | Regression detection vs baselines |
+| **Consistency** | `contradiction_detector`, `numerical_consistency` | Cross-section alignment |
+| **Agent-Specific** | 16 evals (one per agent) | Tailored quality checks |
+
+### Agent-Specific Requirements
+
+| Agent | Key Checks |
+|-------|------------|
+| Customer Research | 3+ pain points, JTBD framework, uncomfortable insights |
+| Competitive Analysis | Direct competitors, pricing data, market gaps |
+| Business Strategy | Lean Canvas complete, 3+ risks with mitigation |
+| Financial Model | 12 monthly projections, profit math validation |
+| PRD | 3+ epics, 5+ stories, acceptance criteria |
+| Technical Architecture | 3+ tech stack, real technologies, security |
+| Legal/Regulatory | Real regulations (GDPR, HIPAA, etc.), risks |
+| Wireframes | 3+ screens, React code, navigation |
+| Prototype | useState, interactive elements, no placeholders |
+
+### Scoring & Thresholds
+
+| Severity | Meaning |
+|----------|---------|
+| **CRITICAL** | Blocks PR (schema violations, contradictions) |
+| **WARNING** | Should review (low quality scores) |
+| **INFO** | Informational |
+
+**Pass Thresholds:**
+- Schema Compliance: 100%
+- Multi-Dimension Quality: >= 70%
+- Consistency: >= 70% + no critical contradictions
+- Agent-Specific: All checks must pass
+
+### CLI Reference
+
+```bash
+python -m evals.cli run STATE_PATH [OPTIONS]
+
+Options:
+  -t, --type TYPE          # Filter: unit, llm_judge, golden, consistency, agent_specific
+  -a, --agent AGENT        # Filter by agent (repeatable)
+  -g, --golden-set ID      # Compare against golden set
+  -o, --output FILE        # Save results
+  -f, --format FORMAT      # Output: console, json, markdown
+  -v, --verbose            # Detailed output
+  --sequential             # Run sequentially (default: parallel)
+
+# Golden set management
+python -m evals.cli create-golden STATE_PATH ID --name "Name"
+python -m evals.cli list-golden
+python -m evals.cli compare STATE_PATH GOLDEN_ID
+```
+
+See [backend/README.md](backend/README.md) for complete eval documentation.
+
+---
+
 ## Deploy to Railway
 
 Deploy the full stack to [Railway](https://railway.app) with two services:
@@ -810,12 +891,20 @@ See [docs/seedcraft-evolution-roadmap.md](docs/seedcraft-evolution-roadmap.md) f
   - Structured revision framework with history tracking
   - Mandatory claim extraction with minimum thresholds
   - 73 new unit tests for quality modules
-- [x] **Phase 7**: Critique Resilience & Quality Display (NEW)
+- [x] **Phase 7**: Critique Resilience & Quality Display
   - Critique retry mechanism prevents silent quality gate bypass
   - Configurable `MAX_CRITIQUE_RETRIES` setting (default: 2)
   - Clear `QUALITY GATE BYPASSED` warnings when retries exhausted
   - Fixed quality score display to show consistent percentages
   - 7 new unit tests for critique retry logic
+- [x] **Phase 8**: Comprehensive Eval System (NEW)
+  - 22 evaluations across 5 categories (unit, llm_judge, golden, consistency, agent_specific)
+  - OUTPUT CHECKLIST added to all 16 agent prompts
+  - Pre-output validation with `output_validator.py` (700+ validation rules)
+  - Eval feedback bridge for revision loop integration
+  - Strengthened constraint broadcasting (E4 → E2 evidence tier)
+  - CLI interface: `python -m evals.cli run STATE_PATH`
+  - Agent-specific eval score: 59.3% → 82.2%
 
 ---
 
