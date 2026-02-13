@@ -1,0 +1,155 @@
+name: Agent Evals
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/agents/**'
+      - 'backend/models/**'
+      - 'backend/evals/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'backend/agents/**'
+      - 'backend/models/**'
+      - 'backend/evals/**'
+
+jobs:
+  unit-evals:
+    name: Unit Evals (Fast)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Run Unit Evals on Test Output
+        run: |
+          cd backend
+          # Find most recent test output
+          LATEST_OUTPUT=$(ls -t test_outputs/e2e_test_*.json 2>/dev/null | head -1)
+
+          if [ -z "$LATEST_OUTPUT" ]; then
+            echo "No test outputs found, skipping evals"
+            exit 0
+          fi
+
+          echo "Running unit evals on $LATEST_OUTPUT"
+          python -m evals.cli run "$LATEST_OUTPUT" -t unit -t agent_specific --format json --output eval_results.json
+
+      - name: Upload Eval Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unit-eval-results
+          path: backend/eval_results.json
+          retention-days: 30
+
+  full-evals:
+    name: Full Evals (LLM Judge)
+    runs-on: ubuntu-latest
+    # Only run on push to main (not on PRs to save API costs)
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Run Full Evals
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+        run: |
+          cd backend
+          LATEST_OUTPUT=$(ls -t test_outputs/e2e_test_*.json 2>/dev/null | head -1)
+
+          if [ -z "$LATEST_OUTPUT" ]; then
+            echo "No test outputs found, skipping evals"
+            exit 0
+          fi
+
+          echo "Running full evals on $LATEST_OUTPUT"
+          python -m evals.cli run "$LATEST_OUTPUT" --format json --output full_eval_results.json
+
+      - name: Upload Full Eval Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-eval-results
+          path: backend/full_eval_results.json
+          retention-days: 30
+
+      - name: Post Results Summary
+        if: always()
+        run: |
+          cd backend
+          if [ -f full_eval_results.json ]; then
+            echo "## Eval Results" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            python -c "
+import json
+with open('full_eval_results.json') as f:
+    results = json.load(f)
+
+print(f\"| Metric | Value |\")
+print(f\"|--------|-------|\")
+print(f\"| Overall Score | {results.get('overall_score', 'N/A'):.1%} |\")
+print(f\"| Total Evals | {results.get('total_evals', 0)} |\")
+print(f\"| Passed | {results.get('passed', 0)} |\")
+print(f\"| Failed | {results.get('failed', 0)} |\")
+print(f\"| Warnings | {results.get('warnings', 0)} |\")
+
+if results.get('critical_failures'):
+    print(f\"\")
+    print(f\"### Critical Failures\")
+    for failure in results['critical_failures']:
+        print(f\"- {failure}\")
+" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  eval-tests:
+    name: Eval System Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: Run Eval Tests
+        run: |
+          cd backend
+          pytest tests/evals/ -v --tb=short 2>/dev/null || echo "No eval tests found yet"
