@@ -45,6 +45,14 @@ class StreamEventType(str, Enum):
     STAKEHOLDER_VIEW = "stakeholder_view"  # Stakeholder view generated
     VALIDATION_EXPERIMENT = "validation_experiment"  # Experiment defined
 
+    # V4.0 transparency events
+    PHASE_START = "phase_start"  # Phase execution started
+    PHASE_COMPLETE = "phase_complete"  # Phase execution completed
+    CONSTRAINT_INJECTED = "constraint_injected"  # Constraint passed between phases
+    REVISION_STARTED = "revision_started"  # Quality revision loop started
+    REVISION_COMPLETE = "revision_complete"  # Quality revision loop completed
+    PARALLEL_START = "parallel_start"  # Parallel agent group started
+
 
 class StreamEvent(BaseModel):
     """A single SSE event to be streamed to the client."""
@@ -436,6 +444,117 @@ class SessionEventEmitter:
                     "title": title,
                     "options": options,
                     "recommendation": recommendation,
+                },
+            )
+        )
+
+    # V4.0 Transparency events
+    async def emit_phase_start(
+        self,
+        phase: str,
+        agents: list[str],
+    ) -> None:
+        """Emit event when a phase starts execution."""
+        await self.emit(
+            StreamEvent(
+                type=StreamEventType.PHASE_START,
+                data={
+                    "phase": phase,
+                    "agents": agents,
+                },
+            )
+        )
+
+    async def emit_phase_complete(
+        self,
+        phase: str,
+    ) -> None:
+        """Emit event when a phase completes."""
+        await self.emit(
+            StreamEvent(
+                type=StreamEventType.PHASE_COMPLETE,
+                data={
+                    "phase": phase,
+                },
+            )
+        )
+
+    async def emit_constraint_injected(
+        self,
+        from_agent: str,
+        from_phase: str,
+        to_agents: list[str],
+        to_phase: str,
+        constraint_type: str,
+        summary: str,
+    ) -> None:
+        """Emit event when constraints are passed between phases."""
+        await self.emit(
+            StreamEvent(
+                type=StreamEventType.CONSTRAINT_INJECTED,
+                data={
+                    "from_agent": from_agent,
+                    "from_phase": from_phase,
+                    "to_agents": to_agents,
+                    "to_phase": to_phase,
+                    "constraint_type": constraint_type,
+                    "summary": summary,
+                },
+            )
+        )
+
+    async def emit_revision_started(
+        self,
+        agent: str,
+        iteration: int,
+        max_iterations: int,
+        failed_criteria: list[str],
+    ) -> None:
+        """Emit event when a quality revision loop starts."""
+        await self.emit(
+            StreamEvent(
+                type=StreamEventType.REVISION_STARTED,
+                agent=agent,
+                data={
+                    "agent": agent,
+                    "iteration": iteration,
+                    "max_iterations": max_iterations,
+                    "failed_criteria": failed_criteria,
+                },
+            )
+        )
+
+    async def emit_revision_complete(
+        self,
+        agent: str,
+        iteration: int,
+        improvements: Optional[list[str]] = None,
+    ) -> None:
+        """Emit event when a quality revision loop completes."""
+        await self.emit(
+            StreamEvent(
+                type=StreamEventType.REVISION_COMPLETE,
+                agent=agent,
+                data={
+                    "agent": agent,
+                    "iteration": iteration,
+                    "improvements": improvements or [],
+                },
+            )
+        )
+
+    async def emit_parallel_start(
+        self,
+        agents: list[str],
+        phase: str,
+    ) -> None:
+        """Emit event when parallel agents start execution."""
+        await self.emit(
+            StreamEvent(
+                type=StreamEventType.PARALLEL_START,
+                data={
+                    "agents": agents,
+                    "phase": phase,
                 },
             )
         )

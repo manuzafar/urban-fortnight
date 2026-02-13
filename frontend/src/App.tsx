@@ -9,6 +9,8 @@ import { SessionHistory } from './components/SessionHistory';
 import { Dashboard } from './components/Dashboard';
 import { ExecutionView } from './components/ExecutionView';
 import { PackViewer } from './components/PackViewer';
+// V4 Components
+import { LandingPageV4, InputFormV4, ExecutionViewV4, PackViewerV4 } from './components/v4';
 import {
   startDiscovery,
   getSessionStatus,
@@ -19,9 +21,13 @@ import {
 } from './api/client';
 import type { DiscoveryRequest, SessionStatusResponse, InceptionPack } from './types/api';
 import './App.css';
+import './styles/theme-v4.css';
+
+// Feature flag for V4 UI - set to true to use new design
+const USE_V4_UI = true;
 
 // Extended app state with new views
-type AppState = 'landing' | 'form' | 'progress' | 'result' | 'sessions' | 'dashboard' | 'execution' | 'pack';
+type AppState = 'landing' | 'form' | 'progress' | 'result' | 'sessions' | 'dashboard' | 'execution' | 'pack' | 'input';
 
 function App() {
   const { user, session, isLoading: authLoading, signInWithGoogle, signOut } = useAuth();
@@ -46,10 +52,13 @@ function App() {
     const pending = sessionStorage.getItem('seedcraft_pending_action');
     if (pending === 'form') {
       sessionStorage.removeItem('seedcraft_pending_action');
-      setAppState('form');
+      setAppState(USE_V4_UI ? 'input' : 'form');
     } else if (pending === 'dashboard') {
       sessionStorage.removeItem('seedcraft_pending_action');
-      setAppState('dashboard');
+      setAppState(USE_V4_UI ? 'input' : 'dashboard');
+    } else if (pending === 'input') {
+      sessionStorage.removeItem('seedcraft_pending_action');
+      setAppState('input');
     }
   }, [user, authLoading]);
 
@@ -80,7 +89,7 @@ function App() {
       if (err instanceof ApiError) {
         if (err.status === 401) {
           // Token expired or invalid — re-trigger login
-          sessionStorage.setItem('seedcraft_pending_action', 'dashboard');
+          sessionStorage.setItem('seedcraft_pending_action', USE_V4_UI ? 'input' : 'dashboard');
           await signInWithGoogle();
           return;
         }
@@ -149,11 +158,22 @@ function App() {
   const handleGoToDashboard = useCallback(() => {
     if (!user) {
       // Not logged in — store intent and trigger Google SSO
-      sessionStorage.setItem('seedcraft_pending_action', 'dashboard');
+      sessionStorage.setItem('seedcraft_pending_action', USE_V4_UI ? 'input' : 'dashboard');
       signInWithGoogle();
       return;
     }
-    setAppState('dashboard');
+    setAppState(USE_V4_UI ? 'input' : 'dashboard');
+  }, [user, signInWithGoogle]);
+
+  // V4: Go to input form
+  const handleGoToInput = useCallback(() => {
+    if (!user) {
+      // Not logged in — store intent and trigger Google SSO
+      sessionStorage.setItem('seedcraft_pending_action', 'input');
+      signInWithGoogle();
+      return;
+    }
+    setAppState('input');
   }, [user, signInWithGoogle]);
 
   const handleViewSessionPack = useCallback((pack: InceptionPack, sessionId?: string) => {
@@ -175,13 +195,73 @@ function App() {
   }, []);
 
   const handleBackToDashboard = useCallback(() => {
-    setAppState('dashboard');
+    setAppState(USE_V4_UI ? 'input' : 'dashboard');
+  }, []);
+
+  const handleBackToLanding = useCallback(() => {
+    setAppState('landing');
   }, []);
 
   const handleSignOut = useCallback(async () => {
     await signOut();
     handleNewDiscovery();
   }, [signOut, handleNewDiscovery]);
+
+  // Navigate to sessions page
+  const handleGoToSessions = useCallback(() => {
+    setAppState('sessions');
+  }, []);
+
+  // V4 UI Flow
+  if (USE_V4_UI) {
+    // V4 Landing Page
+    if (appState === 'landing') {
+      return (
+        <LandingPageV4
+          onStart={handleGoToInput}
+          user={user}
+          onSessionsClick={handleGoToSessions}
+          onSignOut={handleSignOut}
+        />
+      );
+    }
+
+    // V4 Input Form
+    if (appState === 'input') {
+      return (
+        <InputFormV4
+          onSubmit={handleStartDiscovery}
+          onBack={handleBackToLanding}
+          isLoading={isLoading}
+        />
+      );
+    }
+
+    // V4 Execution View
+    if (appState === 'execution' && currentSessionId && session?.access_token) {
+      return (
+        <ExecutionViewV4
+          sessionId={currentSessionId}
+          authToken={session.access_token}
+          onComplete={handleExecutionComplete}
+          onBack={handleBackToDashboard}
+        />
+      );
+    }
+
+    // V4 Pack Viewer
+    if (appState === 'pack' && inceptionPack && currentSessionId) {
+      return (
+        <PackViewerV4
+          pack={inceptionPack}
+          sessionId={currentSessionId}
+          onBack={handleBackToDashboard}
+        />
+      );
+    }
+
+    // Fallback to legacy for other states (dashboard, sessions, etc.)
+  }
 
   // Determine if we should show header
   const showHeader = ['landing', 'form', 'sessions', 'dashboard'].includes(appState);
@@ -214,9 +294,9 @@ function App() {
               </a>
               {user ? (
                 <>
-                  <button className="nav-pill" onClick={handleGoToDashboard}>
+                  <button className="nav-pill" onClick={handleGoToSessions}>
                     <History size={14} />
-                    <span>Dashboard</span>
+                    <span>My Sessions</span>
                   </button>
                   <div className="user-menu">
                     {user.user_metadata?.avatar_url && (
@@ -311,7 +391,7 @@ function App() {
             <a href="https://github.com/manuzafar/urban-fortnight" target="_blank" rel="noopener noreferrer" className="footer-link">GitHub</a>
             <a href="https://github.com/manuzafar/urban-fortnight/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer" className="footer-link">Contributing</a>
           </div>
-          <p className="footer-text">Made with ❤️ using Multi-Agent AI</p>
+          <p className="footer-text">Made with Multi-Agent AI</p>
         </footer>
       )}
     </div>
