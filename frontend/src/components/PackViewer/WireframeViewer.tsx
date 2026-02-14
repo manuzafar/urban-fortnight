@@ -78,8 +78,8 @@ export function WireframeViewer({ wireframes, className = '' }: WireframeViewerP
         )}
       </div>
 
-      {/* Wireframe preview */}
-      <WireframePreview code={currentScreen.react_code} />
+      {/* Wireframe preview - key ensures React creates new iframe when switching screens */}
+      <WireframePreview key={currentScreen.screen_id} code={currentScreen.react_code} />
 
       {/* Navigation links */}
       {currentScreen.navigation_to?.length > 0 && (
