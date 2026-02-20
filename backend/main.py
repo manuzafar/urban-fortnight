@@ -50,6 +50,7 @@ from utils.sse import (
     stream_session_events,
     StreamEventType,
 )
+from api.discovery_v4_routes import router as discovery_v4_router
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # INITIALIZATION
@@ -106,6 +107,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include Discovery V4 routes
+app.include_router(discovery_v4_router)
 
 
 # ═══════════════════════════════════════════════════════════════════════════════

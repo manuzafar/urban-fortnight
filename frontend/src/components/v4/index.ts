@@ -17,3 +17,12 @@ export { LandingPageV4 } from './LandingPage';
 export { InputFormV4 } from './InputForm';
 export { ExecutionViewV4 } from './ExecutionView';
 export { PackViewerV4 } from './PackViewer';
+
+// Discovery V4 components
+export {
+  ModeSelector,
+  StageProgress,
+  InterviewForm,
+  CoachingPanel,
+  DiscoveryViewV4,
+} from './discovery';

@@ -1072,6 +1072,205 @@ class FacilitatorAgent:
                         return float(match.group(1))
         return None
 
+    # ═══════════════════════════════════════════════════════════════════════════════
+    # DISCOVERY V4 INTEGRATION
+    # ═══════════════════════════════════════════════════════════════════════════════
+
+    async def run_with_v4_discovery(
+        self,
+        v4_session: Any,  # DiscoverySessionV4 from models.discovery_v4_schemas
+    ) -> DiscoveryState:
+        """
+        Run full lifecycle using V4 discovery outputs as foundation.
+
+        Injects discovery findings as high-confidence constraints so downstream
+        agents (Strategy, Delivery, Design) build on validated research.
+
+        Args:
+            v4_session: The V4 discovery session with completed stages.
+
+        Returns:
+            DiscoveryState: Final state after running Strategy, Delivery, and Design phases.
+        """
+        from models.discovery_v4_schemas import EvidenceQuality
+
+        self.logger.info(
+            "v4_integration_start",
+            session_id=v4_session.session_id,
+            mode=v4_session.mode,
+            evidence_quality=v4_session.overall_evidence_quality,
+        )
+
+        # Initialize state from V4 session
+        state: DiscoveryState = {
+            "session_id": v4_session.session_id,
+            "product_idea": v4_session.product_idea,
+            "industry": v4_session.industry,
+            "target_market": v4_session.target_market,
+            "status": SessionStatus.IN_PROGRESS,
+            "iteration": 1,
+            "errors": [],
+        }
+
+        # Convert V4 discovery outputs to V3 state fields
+        state = self._convert_v4_to_v3_state(state, v4_session)
+
+        # Mark evidence tier for downstream agents
+        if v4_session.overall_evidence_quality in (EvidenceQuality.E1, EvidenceQuality.E2):
+            state["_discovery_evidence_tier"] = v4_session.overall_evidence_quality
+            state["_high_confidence_discovery"] = True
+            self.logger.info(
+                "v4_high_confidence_discovery",
+                session_id=v4_session.session_id,
+                evidence_tier=v4_session.overall_evidence_quality,
+            )
+
+        # Skip discovery phase since V4 already completed it
+        # Go straight to strategy
+        await self._emit_phase_start("strategy")
+        state = await self._run_strategy_phase(state)
+
+        # Run delivery phase
+        await self._emit_phase_start("delivery")
+        state = await self._run_delivery_phase(state)
+
+        # Run design phase
+        await self._emit_phase_start("design")
+        state = await self._run_design_phase(state)
+
+        # Run quality check
+        await self._emit_phase_start("quality")
+        state = await self._run_quality_check(state)
+
+        # Run synthesis phase
+        await self._emit_phase_start("synthesis")
+        state = await self._run_synthesis_phase(state)
+
+        state["status"] = SessionStatus.COMPLETED
+
+        self.logger.info(
+            "v4_integration_complete",
+            session_id=v4_session.session_id,
+            quality_score=(state.get("quality_assessment") or {}).get("overall_score"),
+        )
+
+        return state
+
+    def _convert_v4_to_v3_state(
+        self,
+        state: DiscoveryState,
+        v4_session: Any,
+    ) -> DiscoveryState:
+        """
+        Convert V4 discovery outputs to V3 state format.
+
+        This allows downstream agents to use V4 insights as constraints.
+        """
+        # Problem Love -> Problem statement and validation
+        if v4_session.stages.get("problem_love", {}).get("output"):
+            problem_love = v4_session.stages["problem_love"]["output"]
+            state["_v4_problem_statement"] = (
+                problem_love.get("problem_statement_refined")
+                or problem_love.get("problem_statement")
+            )
+            state["_v4_problem_score"] = problem_love.get("overall_score")
+
+        # Customer Truth -> Customer research and personas
+        if v4_session.stages.get("customer_truth", {}).get("output"):
+            customer_truth = v4_session.stages["customer_truth"]["output"]
+
+            # Convert patterns to persona format
+            patterns = customer_truth.get("patterns") or {}
+            if patterns:
+                state["_v4_pain_patterns"] = patterns.get("pain_patterns", [])
+                state["_v4_trigger_patterns"] = patterns.get("trigger_patterns", [])
+                state["_v4_outcome_patterns"] = patterns.get("outcome_patterns", [])
+
+            # Convert interviews to customer research format
+            if v4_session.interviews:
+                state["_v4_interview_count"] = len(v4_session.interviews)
+                state["_v4_key_quotes"] = [
+                    i.key_quote for i in v4_session.interviews if i.key_quote
+                ][:5]
+
+        # Opportunity Mapping -> Competitive analysis and strategy
+        if v4_session.stages.get("opportunity_mapping", {}).get("output"):
+            opp_mapping = v4_session.stages["opportunity_mapping"]["output"]
+
+            if opp_mapping.get("four_forces"):
+                state["_v4_four_forces"] = opp_mapping["four_forces"]
+
+            if opp_mapping.get("opportunity_tree"):
+                state["_v4_opportunity_tree"] = opp_mapping["opportunity_tree"]
+
+            state["_v4_primary_opportunity"] = opp_mapping.get("primary_opportunity")
+
+        # Solution Design -> Solution constraints
+        if v4_session.stages.get("solution_design", {}).get("output"):
+            solution = v4_session.stages["solution_design"]["output"]
+
+            state["_v4_solution_concept"] = solution.get("solution_concept")
+            state["_v4_dhm_score"] = solution.get("dhm_score")
+            state["_v4_pre_mortem"] = solution.get("pre_mortem")
+
+        # Validation Plan -> Validation experiments
+        if v4_session.stages.get("validation_plan", {}).get("output"):
+            validation = v4_session.stages["validation_plan"]["output"]
+            state["_v4_validation_experiments"] = validation.get("experiments", [])
+
+        # Build constraints prompt from V4 data
+        state["_injected_constraints"] = self._build_v4_constraints_prompt(state)
+
+        return state
+
+    def _build_v4_constraints_prompt(self, state: DiscoveryState) -> str:
+        """Build a constraints prompt from V4 discovery data."""
+        constraints = []
+
+        if state.get("_v4_problem_statement"):
+            constraints.append(f"VALIDATED PROBLEM: {state['_v4_problem_statement']}")
+
+        if state.get("_v4_pain_patterns"):
+            pains = [p.get("description", str(p)) for p in state["_v4_pain_patterns"][:3]]
+            constraints.append(f"KEY PAIN POINTS: {'; '.join(pains)}")
+
+        if state.get("_v4_key_quotes"):
+            constraints.append(f"CUSTOMER EVIDENCE ({state.get('_v4_interview_count', 0)} interviews): "
+                             f"{' | '.join(state['_v4_key_quotes'][:3])}")
+
+        if state.get("_v4_primary_opportunity"):
+            constraints.append(f"PRIMARY OPPORTUNITY: {state['_v4_primary_opportunity']}")
+
+        if state.get("_v4_solution_concept"):
+            constraints.append(f"SOLUTION DIRECTION: {state['_v4_solution_concept']}")
+
+        if state.get("_v4_dhm_score"):
+            dhm = state["_v4_dhm_score"]
+            constraints.append(
+                f"DHM SCORE: Delight={dhm.get('delight', 'N/A')}, "
+                f"Hard-to-copy={dhm.get('hard_to_copy', 'N/A')}, "
+                f"Margin={dhm.get('margin', 'N/A')}"
+            )
+
+        if not constraints:
+            return ""
+
+        return (
+            "## V4 DISCOVERY CONSTRAINTS (HIGH CONFIDENCE)\n"
+            "The following insights come from validated discovery research. "
+            "Build on these constraints rather than generating conflicting data.\n\n"
+            + "\n".join(f"- {c}" for c in constraints)
+        )
+
+    async def _emit_phase_start(self, phase: str) -> None:
+        """Emit a phase start event."""
+        emitter = get_current_emitter()
+        if emitter:
+            try:
+                await emitter.emit_phase_start(phase)
+            except Exception as e:
+                self.logger.warning("emit_phase_start_error", phase=phase, error=str(e))
+
 
 def _integrate_validation_failures_into_revision(
     state: DiscoveryState,

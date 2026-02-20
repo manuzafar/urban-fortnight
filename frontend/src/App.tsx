@@ -10,7 +10,7 @@ import { Dashboard } from './components/Dashboard';
 import { ExecutionView } from './components/ExecutionView';
 import { PackViewer } from './components/PackViewer';
 // V4 Components
-import { LandingPageV4, InputFormV4, ExecutionViewV4, PackViewerV4 } from './components/v4';
+import { LandingPageV4, InputFormV4, ExecutionViewV4, PackViewerV4, DiscoveryViewV4 } from './components/v4';
 import {
   startDiscovery,
   getSessionStatus,
@@ -27,7 +27,7 @@ import './styles/theme-v4.css';
 const USE_V4_UI = true;
 
 // Extended app state with new views
-type AppState = 'landing' | 'form' | 'progress' | 'result' | 'sessions' | 'dashboard' | 'execution' | 'pack' | 'input';
+type AppState = 'landing' | 'form' | 'progress' | 'result' | 'sessions' | 'dashboard' | 'execution' | 'pack' | 'input' | 'discovery-v4';
 
 function App() {
   const { user, session, isLoading: authLoading, signInWithGoogle, signOut } = useAuth();
@@ -256,6 +256,20 @@ function App() {
           pack={inceptionPack}
           sessionId={currentSessionId}
           onBack={handleBackToDashboard}
+        />
+      );
+    }
+
+    // V4 Discovery View (Hybrid Discovery)
+    if (appState === 'discovery-v4' && currentSessionId) {
+      return (
+        <DiscoveryViewV4
+          sessionId={currentSessionId}
+          onBack={handleBackToDashboard}
+          onComplete={(pack) => {
+            setInceptionPack(pack as unknown as InceptionPack);
+            setAppState('pack');
+          }}
         />
       );
     }
