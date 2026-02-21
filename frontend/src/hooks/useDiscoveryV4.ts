@@ -11,6 +11,8 @@ interface StageState {
   started_at?: string;
   completed_at?: string;
   approved_at?: string;
+  error_message?: string;
+  last_error_at?: string;
 }
 
 export interface Interview {

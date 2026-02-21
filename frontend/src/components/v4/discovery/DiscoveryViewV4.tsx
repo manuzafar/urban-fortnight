@@ -82,11 +82,17 @@ function StageContent({
     coaching_messages?: string[];
     error_message?: string;
     last_error_at?: string;
+    started_at?: string;
   };
   onRunStage: () => void;
   isLoading: boolean;
 }) {
   const hasOutput = stageState.output && Object.keys(stageState.output).length > 0;
+
+  // Check for timeout (2 minutes = 120 seconds)
+  const TIMEOUT_MS = 120000;
+  const isTimedOut = stageState.status === 'in_progress' && stageState.started_at &&
+    (Date.now() - new Date(stageState.started_at).getTime() > TIMEOUT_MS);
 
   // Show error state if stage failed
   if (stageState.error_message) {
@@ -134,6 +140,28 @@ function StageContent({
   }
 
   if (stageState.status === 'in_progress') {
+    // Show timeout error if stage has been running too long
+    if (isTimedOut) {
+      return (
+        <div className="stage-error">
+          <AlertCircle size={32} />
+          <h3>Stage Timed Out</h3>
+          <p className="error-message">The AI analysis took too long. This may be due to high server load.</p>
+          <button className="retry-btn" onClick={onRunStage} disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 size={18} className="spin" /> Retrying...
+              </>
+            ) : (
+              <>
+                <RefreshCw size={18} /> Retry Stage
+              </>
+            )}
+          </button>
+        </div>
+      );
+    }
+
     return (
       <div className="stage-loading">
         <Loader2 size={32} className="spin" />
