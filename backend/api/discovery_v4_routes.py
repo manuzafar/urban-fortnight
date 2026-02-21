@@ -684,6 +684,94 @@ async def check_lifecycle_status(session_id: str) -> dict[str, Any]:
     return result
 
 
+@router.post("/test/sessions/{session_id}/run-lifecycle-sync")
+async def run_lifecycle_sync(session_id: str) -> dict[str, Any]:
+    """
+    [DEVELOPMENT ONLY] Run lifecycle synchronously (not in background).
+    This is for debugging - it will block until complete or error.
+    """
+    from agents.facilitator import FacilitatorAgent
+    from agents import orchestrator
+    from utils.sse import get_or_create_emitter, remove_emitter
+
+    result: dict[str, Any] = {"session_id": session_id, "steps": []}
+
+    # Step 1: Get session
+    if session_id in _active_sessions:
+        session = _active_sessions[session_id]
+        result["steps"].append({"step": "get_session", "status": "from_cache"})
+    else:
+        session = _load_session_from_db(session_id)
+        if session:
+            _active_sessions[session_id] = session
+            result["steps"].append({"step": "get_session", "status": "from_db"})
+        else:
+            result["status"] = "error"
+            result["error"] = "Session not found"
+            return result
+
+    # Step 2: Create emitter
+    try:
+        emitter = get_or_create_emitter(session_id)
+        orchestrator._current_emitter = emitter
+        result["steps"].append({"step": "create_emitter", "status": "ok"})
+    except Exception as e:
+        result["steps"].append({"step": "create_emitter", "status": "error", "error": str(e)})
+        result["status"] = "error"
+        return result
+
+    # Step 3: Run facilitator
+    try:
+        result["steps"].append({"step": "facilitator_start", "status": "starting"})
+        await emitter.emit_progress(20, "Starting facilitator...")
+
+        facilitator = FacilitatorAgent()
+        final_state = await facilitator.run_with_v4_discovery(session)
+
+        result["steps"].append({"step": "facilitator_run", "status": "complete"})
+
+        # Step 4: Build pack
+        if final_state:
+            from utils.helpers import build_inception_pack
+            inception_pack = build_inception_pack(final_state)
+            result["steps"].append({
+                "step": "build_pack",
+                "status": "ok",
+                "pack_sections": list(inception_pack.keys()),
+            })
+
+            await emitter.emit_done(inception_pack)
+            result["status"] = "success"
+            result["pack_preview"] = {
+                "has_product_brief": "product_brief" in inception_pack,
+                "has_prd": "prd" in inception_pack,
+                "has_wireframes": "wireframes" in inception_pack,
+            }
+        else:
+            result["status"] = "error"
+            result["error"] = "Facilitator returned no state"
+
+    except Exception as e:
+        import traceback
+        result["steps"].append({
+            "step": "facilitator_run",
+            "status": "error",
+            "error": str(e),
+            "traceback": traceback.format_exc()[-500:],  # Last 500 chars of traceback
+        })
+        result["status"] = "error"
+        await emitter.emit_error(str(e))
+
+    # Cleanup
+    try:
+        remove_emitter(session_id)
+        orchestrator._current_emitter = None
+    except Exception:
+        pass
+
+    return result
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # SESSION MANAGEMENT
 # ═══════════════════════════════════════════════════════════════════════════════
