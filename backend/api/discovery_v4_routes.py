@@ -620,6 +620,67 @@ async def continue_test_session_to_strategy(
     }
 
 
+@router.get("/test/sessions/{session_id}/lifecycle-check")
+async def check_lifecycle_status(session_id: str) -> dict[str, Any]:
+    """
+    [DEVELOPMENT ONLY] Check if lifecycle can run for this session.
+    Returns diagnostic info about the session and facilitator readiness.
+    """
+    result: dict[str, Any] = {"session_id": session_id, "checks": {}}
+
+    # Check 1: Session exists
+    if session_id in _active_sessions:
+        result["checks"]["session_in_cache"] = True
+        session = _active_sessions[session_id]
+    else:
+        session = _load_session_from_db(session_id)
+        result["checks"]["session_in_cache"] = False
+        result["checks"]["session_in_db"] = session is not None
+
+    if not session:
+        result["status"] = "session_not_found"
+        return result
+
+    result["checks"]["session_mode"] = session.mode.value if hasattr(session.mode, 'value') else str(session.mode)
+    result["checks"]["stages_completed"] = sum(
+        1 for s in session.stages.values()
+        if s.status in (StageStatus.COMPLETED, StageStatus.APPROVED)
+    )
+
+    # Check 2: Facilitator import
+    try:
+        from agents.facilitator import Facilitator
+        result["checks"]["facilitator_import"] = True
+
+        # Check 3: _convert_v4_to_v3_state method exists
+        facilitator = Facilitator()
+        result["checks"]["facilitator_init"] = True
+        result["checks"]["has_run_with_v4"] = hasattr(facilitator, 'run_with_v4_discovery')
+        result["checks"]["has_convert_v4"] = hasattr(facilitator, '_convert_v4_to_v3_state')
+    except Exception as e:
+        result["checks"]["facilitator_import"] = False
+        result["checks"]["facilitator_error"] = str(e)
+
+    # Check 4: SSE emitter
+    try:
+        from utils.sse import get_or_create_emitter
+        emitter = get_or_create_emitter(session_id + "_test")
+        result["checks"]["sse_emitter"] = True
+        from utils.sse import remove_emitter
+        remove_emitter(session_id + "_test")
+    except Exception as e:
+        result["checks"]["sse_emitter"] = False
+        result["checks"]["sse_error"] = str(e)
+
+    result["status"] = "ready" if all(
+        v for k, v in result["checks"].items()
+        if k in ["session_in_cache", "session_in_db", "facilitator_import", "facilitator_init"]
+        and isinstance(v, bool)
+    ) else "not_ready"
+
+    return result
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # SESSION MANAGEMENT
 # ═══════════════════════════════════════════════════════════════════════════════
