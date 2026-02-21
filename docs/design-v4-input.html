@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seedcraft — Define Initiative</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #FAFAF9;
+            --bg-alt: #F5F5F4;
+            --surface: #FFFFFF;
+            --text: #171717;
+            --text-secondary: #525252;
+            --text-muted: #a3a3a3;
+            --border: rgba(0,0,0,0.08);
+            --accent: #c2410c;
+            --accent-hover: #9a3412;
+            --radius: 6px;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            min-height: 100vh;
+        }
+
+        /* Nav */
+        .nav {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--surface);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            text-decoration: none;
+        }
+
+        .progress {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .progress-step.active {
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .progress-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--text-muted);
+        }
+
+        .progress-step.active .progress-dot {
+            background: var(--accent);
+        }
+
+        .progress-step.done .progress-dot {
+            background: #16a34a;
+        }
+
+        .progress-line {
+            width: 24px;
+            height: 1px;
+            background: var(--border);
+        }
+
+        /* Layout */
+        .layout {
+            display: grid;
+            grid-template-columns: 260px 1fr;
+            min-height: calc(100vh - 57px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            padding: 32px 24px;
+            border-right: 1px solid var(--border);
+            background: var(--surface);
+        }
+
+        .sidebar-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+        }
+
+        .output-list {
+            list-style: none;
+        }
+
+        .output-list li {
+            font-size: 13px;
+            color: var(--text-secondary);
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .output-list li:last-child {
+            border-bottom: none;
+        }
+
+        .output-category {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 2px;
+        }
+
+        /* Main */
+        .main {
+            padding: 48px 64px 140px;
+            max-width: 680px;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 8px;
+        }
+
+        .page-desc {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 48px;
+        }
+
+        /* Form Section */
+        .form-section {
+            margin-bottom: 40px;
+        }
+
+        .section-header {
+            margin-bottom: 24px;
+        }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .section-title {
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        /* Form Fields */
+        .field {
+            margin-bottom: 20px;
+        }
+
+        .field:last-child {
+            margin-bottom: 0;
+        }
+
+        .field-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+        }
+
+        .field-label .optional {
+            font-weight: 400;
+            color: var(--text-muted);
+        }
+
+        .field-input,
+        .field-textarea,
+        .field-select {
+            width: 100%;
+            padding: 12px 14px;
+            font-family: inherit;
+            font-size: 14px;
+            color: var(--text);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: border-color 0.15s ease;
+        }
+
+        .field-input:focus,
+        .field-textarea:focus,
+        .field-select:focus {
+            outline: none;
+            border-color: var(--text);
+        }
+
+        .field-input::placeholder,
+        .field-textarea::placeholder {
+            color: var(--text-muted);
+        }
+
+        .field-textarea {
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .field-textarea.large {
+            min-height: 160px;
+        }
+
+        .field-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .field-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        /* Chips */
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .chip {
+            padding: 8px 14px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .chip:hover {
+            border-color: var(--text);
+            color: var(--text);
+        }
+
+        .chip.selected {
+            background: var(--text);
+            border-color: var(--text);
+            color: white;
+        }
+
+        /* Tags Input */
+        .tags-input {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 10px 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            min-height: 46px;
+        }
+
+        .tags-input:focus-within {
+            border-color: var(--text);
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            font-size: 13px;
+            background: var(--bg);
+            border-radius: 4px;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            opacity: 0.5;
+        }
+
+        .tag-remove:hover {
+            opacity: 1;
+        }
+
+        .tag-field {
+            flex: 1;
+            min-width: 100px;
+            border: none;
+            outline: none;
+            font-family: inherit;
+            font-size: 14px;
+            background: transparent;
+        }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 40px 0;
+        }
+
+        /* Footer */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 260px;
+            right: 0;
+            padding: 16px 64px;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-info {
+            display: flex;
+            gap: 24px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .footer-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--text);
+            color: var(--text);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border: none;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+            .sidebar {
+                display: none;
+            }
+            .main {
+                padding: 32px 24px 140px;
+            }
+            .footer {
+                left: 0;
+                padding: 16px 24px;
+            }
+            .field-grid,
+            .field-grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <a href="#" class="logo">Seedcraft</a>
+        <div class="progress">
+            <div class="progress-step done">
+                <span class="progress-dot"></span>
+                Start
+            </div>
+            <div class="progress-line"></div>
+            <div class="progress-step active">
+                <span class="progress-dot"></span>
+                Define
+            </div>
+            <div class="progress-line"></div>
+            <div class="progress-step">
+                <span class="progress-dot"></span>
+                Generate
+            </div>
+            <div class="progress-line"></div>
+            <div class="progress-step">
+                <span class="progress-dot"></span>
+                Review
+            </div>
+        </div>
+    </nav>
+
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="sidebar-title">Output Sections</div>
+            <ul class="output-list">
+                <li><span class="output-category">Overview</span>Executive Summary</li>
+                <li><span class="output-category">Discovery</span>Customer Research</li>
+                <li><span class="output-category">Discovery</span>Competitive Analysis</li>
+                <li><span class="output-category">Discovery</span>Personas</li>
+                <li><span class="output-category">Strategy</span>Business Case</li>
+                <li><span class="output-category">Strategy</span>Go-to-Market</li>
+                <li><span class="output-category">Strategy</span>Financial Model</li>
+                <li><span class="output-category">Delivery</span>Product Requirements</li>
+                <li><span class="output-category">Delivery</span>Technical Architecture</li>
+                <li><span class="output-category">Delivery</span>Legal & Regulatory</li>
+                <li><span class="output-category">Delivery</span>Risk Assessment</li>
+                <li><span class="output-category">Design</span>Wireframes</li>
+                <li><span class="output-category">Design</span>Prototype</li>
+                <li><span class="output-category">Synthesis</span>Stakeholder Views</li>
+                <li><span class="output-category">Synthesis</span>Validation Playbook</li>
+                <li><span class="output-category">Quality</span>Quality Assessment</li>
+            </ul>
+        </aside>
+
+        <main class="main">
+            <h1 class="page-title">Define your initiative</h1>
+            <p class="page-desc">The more context you provide, the more grounded your inception pack will be.</p>
+
+            <!-- Section 1 -->
+            <section class="form-section">
+                <div class="section-header">
+                    <div class="section-label">Required</div>
+                    <h2 class="section-title">Product Idea</h2>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Initiative name</label>
+                    <input type="text" class="field-input" placeholder="e.g., Enterprise Customer Portal 2.0">
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Description</label>
+                    <textarea class="field-textarea large" placeholder="What problem does it solve? Who is the target customer? What makes this approach unique?"></textarea>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- Section 2 -->
+            <section class="form-section">
+                <div class="section-header">
+                    <div class="section-label">Discovery</div>
+                    <h2 class="section-title">Target Market</h2>
+                </div>
+
+                <div class="field-grid">
+                    <div class="field">
+                        <label class="field-label">Market type</label>
+                        <select class="field-select">
+                            <option value="">Select</option>
+                            <option>B2B Enterprise</option>
+                            <option>B2B Mid-Market</option>
+                            <option>B2B SMB</option>
+                            <option>B2C Consumer</option>
+                            <option>Marketplace</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Geography</label>
+                        <select class="field-select">
+                            <option value="">Select</option>
+                            <option>North America</option>
+                            <option>Europe</option>
+                            <option>Asia-Pacific</option>
+                            <option>Global</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Target customer <span class="optional">— optional</span></label>
+                    <textarea class="field-textarea" placeholder="Role, industry, company size, pain points..."></textarea>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Known competitors <span class="optional">— optional</span></label>
+                    <div class="tags-input">
+                        <input type="text" class="tag-field" placeholder="Add competitors...">
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- Section 3 -->
+            <section class="form-section">
+                <div class="section-header">
+                    <div class="section-label">Strategy</div>
+                    <h2 class="section-title">Enterprise Context</h2>
+                </div>
+
+                <div class="field-grid">
+                    <div class="field">
+                        <label class="field-label">Your industry</label>
+                        <select class="field-select">
+                            <option value="">Select</option>
+                            <option>Financial Services</option>
+                            <option>Healthcare</option>
+                            <option>Technology</option>
+                            <option>Manufacturing</option>
+                            <option>Retail</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Company size</label>
+                        <select class="field-select">
+                            <option value="">Select</option>
+                            <option>1-50</option>
+                            <option>51-200</option>
+                            <option>201-1000</option>
+                            <option>1001-5000</option>
+                            <option>5000+</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Regulatory requirements</label>
+                    <div class="tags-input">
+                        <span class="tag">GDPR <span class="tag-remove">×</span></span>
+                        <input type="text" class="tag-field" placeholder="Add...">
+                    </div>
+                    <div class="chips">
+                        <span class="chip">HIPAA</span>
+                        <span class="chip">SOC 2</span>
+                        <span class="chip">PCI-DSS</span>
+                        <span class="chip">ISO 27001</span>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- Section 4 -->
+            <section class="form-section">
+                <div class="section-header">
+                    <div class="section-label">Delivery</div>
+                    <h2 class="section-title">Technical Context</h2>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Current tech stack <span class="optional">— optional</span></label>
+                    <div class="tags-input">
+                        <input type="text" class="tag-field" placeholder="Add technologies...">
+                    </div>
+                    <div class="chips">
+                        <span class="chip">AWS</span>
+                        <span class="chip">Azure</span>
+                        <span class="chip">GCP</span>
+                        <span class="chip">Kubernetes</span>
+                        <span class="chip">React</span>
+                        <span class="chip">Python</span>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Technical constraints <span class="optional">— optional</span></label>
+                    <textarea class="field-textarea" placeholder="Integration requirements, security needs, performance expectations..."></textarea>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- Section 5 -->
+            <section class="form-section">
+                <div class="section-header">
+                    <div class="section-label">Strategy</div>
+                    <h2 class="section-title">Business Constraints</h2>
+                </div>
+
+                <div class="field-grid-3">
+                    <div class="field">
+                        <label class="field-label">Budget range</label>
+                        <select class="field-select">
+                            <option value="">Select</option>
+                            <option>&lt; $100K</option>
+                            <option>$100K - $500K</option>
+                            <option>$500K - $1M</option>
+                            <option>$1M - $5M</option>
+                            <option>&gt; $5M</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Timeline</label>
+                        <select class="field-select">
+                            <option value="">Select</option>
+                            <option>&lt; 3 months</option>
+                            <option>3-6 months</option>
+                            <option>6-12 months</option>
+                            <option>&gt; 12 months</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label class="field-label">Funding stage</label>
+                        <select class="field-select">
+                            <option value="">Select</option>
+                            <option>Bootstrapped</option>
+                            <option>Pre-seed</option>
+                            <option>Seed</option>
+                            <option>Series A+</option>
+                            <option>Corporate</option>
+                        </select>
+                    </div>
+                </div>
+            </section>
+
+            <div class="divider"></div>
+
+            <!-- Section 6 -->
+            <section class="form-section">
+                <div class="section-header">
+                    <div class="section-label">Synthesis</div>
+                    <h2 class="section-title">Stakeholders</h2>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Who needs to approve?</label>
+                    <div class="chips" style="margin-top: 0;">
+                        <span class="chip selected">CEO</span>
+                        <span class="chip selected">CFO</span>
+                        <span class="chip">CTO</span>
+                        <span class="chip">CISO</span>
+                        <span class="chip">VP Product</span>
+                        <span class="chip">Legal</span>
+                        <span class="chip">Board</span>
+                    </div>
+                </div>
+
+                <div class="field">
+                    <label class="field-label">Known concerns <span class="optional">— optional</span></label>
+                    <textarea class="field-textarea" placeholder="Budget concerns, technical feasibility doubts, competitive threats..."></textarea>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <footer class="footer">
+        <div class="footer-info">
+            <span>16 sections</span>
+            <span>12+ agents</span>
+            <span>~12-15 min</span>
+        </div>
+        <div class="footer-actions">
+            <button class="btn btn-secondary">Save Draft</button>
+            <button class="btn btn-primary">Generate Inception Pack</button>
+        </div>
+    </footer>
+
+    <script>
+        document.querySelectorAll('.chip').forEach(chip => {
+            chip.addEventListener('click', () => chip.classList.toggle('selected'));
+        });
+    </script>
+</body>
+</html>

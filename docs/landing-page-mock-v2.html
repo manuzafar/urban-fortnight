@@ -1,0 +1,1151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seedcraft - Enterprise Product Discovery Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      /* Enterprise Color Palette - Deep, Trustworthy */
+      --color-bg: #FAFBFC;
+      --color-bg-dark: #0F172A;
+      --color-surface: #FFFFFF;
+      --color-surface-elevated: #F8FAFC;
+
+      /* Primary - Deep Navy/Indigo */
+      --color-primary: #1E3A5F;
+      --color-primary-dark: #0F2744;
+      --color-primary-light: #2D4A6F;
+
+      /* Accent - Confident Blue */
+      --color-accent: #3B82F6;
+      --color-accent-dark: #2563EB;
+      --color-accent-light: #DBEAFE;
+
+      /* Secondary - Warm Gold for CTAs */
+      --color-cta: #F59E0B;
+      --color-cta-dark: #D97706;
+      --color-cta-light: #FEF3C7;
+
+      /* Text */
+      --color-text: #0F172A;
+      --color-text-secondary: #475569;
+      --color-text-muted: #64748B;
+      --color-text-light: #94A3B8;
+      --color-text-inverse: #F8FAFC;
+
+      /* Borders */
+      --color-border: #E2E8F0;
+      --color-border-dark: #CBD5E1;
+
+      /* Status */
+      --color-success: #059669;
+      --color-success-light: #D1FAE5;
+
+      /* Typography */
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+
+      /* Shadows - Subtle, Professional */
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+      --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.06), 0 2px 4px -1px rgba(15, 23, 42, 0.04);
+      --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04);
+      --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 10px 10px -5px rgba(15, 23, 42, 0.04);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--color-text);
+      background: var(--color-bg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Navbar */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--color-border);
+      padding: 16px 64px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 20px;
+      color: var(--color-primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-light) 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 4px rgba(30, 58, 95, 0.2);
+    }
+
+    .logo-icon svg {
+      width: 20px;
+      height: 20px;
+      color: white;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    .nav-link {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-link:hover {
+      color: var(--color-primary);
+    }
+
+    .nav-cta {
+      background: var(--color-primary);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+      text-decoration: none;
+      transition: all 0.2s;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .nav-cta:hover {
+      background: var(--color-primary-dark);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(180deg, #FFFFFF 0%, var(--color-bg) 100%);
+      padding: 160px 64px 100px;
+      text-align: center;
+    }
+
+    .hero-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--color-primary);
+      color: var(--color-text-inverse);
+      border-radius: 100px;
+      padding: 8px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      margin-bottom: 40px;
+      animation: fadeInUp 0.6s ease-out forwards;
+    }
+
+    .hero-badge span {
+      opacity: 0.7;
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero-title {
+      font-size: 56px;
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--color-text);
+      margin-bottom: 24px;
+      letter-spacing: -0.03em;
+      animation: fadeInUp 0.6s ease-out 0.1s forwards;
+      opacity: 0;
+    }
+
+    .hero-title .highlight {
+      background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-subtitle {
+      font-size: 19px;
+      line-height: 1.7;
+      color: var(--color-text-secondary);
+      max-width: 680px;
+      margin: 0 auto 20px;
+      animation: fadeInUp 0.6s ease-out 0.2s forwards;
+      opacity: 0;
+    }
+
+    .hero-subtitle-emphasis {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--color-primary);
+      margin-bottom: 40px;
+      animation: fadeInUp 0.6s ease-out 0.25s forwards;
+      opacity: 0;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 72px;
+      animation: fadeInUp 0.6s ease-out 0.3s forwards;
+      opacity: 0;
+    }
+
+    .btn-primary {
+      background: var(--color-cta);
+      color: var(--color-text);
+      padding: 16px 32px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+      box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary:hover {
+      background: var(--color-cta-dark);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--color-text-secondary);
+      padding: 16px 32px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 16px;
+      text-decoration: none;
+      border: 1px solid var(--color-border-dark);
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+      background: rgba(30, 58, 95, 0.04);
+    }
+
+    /* Metrics */
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--color-border);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      overflow: hidden;
+      max-width: 900px;
+      margin: 0 auto;
+      animation: fadeInUp 0.6s ease-out 0.4s forwards;
+      opacity: 0;
+    }
+
+    .metric {
+      background: var(--color-surface);
+      padding: 28px 24px;
+      text-align: center;
+    }
+
+    .metric-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .metric-label {
+      font-size: 13px;
+      color: var(--color-text-muted);
+      line-height: 1.5;
+    }
+
+    /* Problem Section */
+    .problem {
+      background: var(--color-bg-dark);
+      padding: 100px 64px;
+      color: var(--color-text-inverse);
+    }
+
+    .problem-inner {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+
+    .problem .eyebrow {
+      color: var(--color-cta);
+    }
+
+    .problem-title {
+      font-size: 40px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 32px;
+      letter-spacing: -0.02em;
+    }
+
+    .problem-body {
+      font-size: 18px;
+      line-height: 1.8;
+      color: var(--color-text-light);
+      text-align: left;
+    }
+
+    .problem-body p {
+      margin-bottom: 24px;
+    }
+
+    .problem-body strong {
+      color: var(--color-text-inverse);
+      font-weight: 600;
+    }
+
+    .problem-body .stat {
+      color: var(--color-cta);
+      font-weight: 600;
+    }
+
+    .problem-cta {
+      margin-top: 40px;
+    }
+
+    .problem-cta a {
+      color: var(--color-cta);
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: gap 0.2s;
+    }
+
+    .problem-cta a:hover {
+      gap: 12px;
+    }
+
+    /* Section Styles */
+    .section {
+      padding: 100px 64px;
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto 64px;
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--color-accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 36px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--color-text);
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-subtitle {
+      font-size: 18px;
+      color: var(--color-text-secondary);
+      line-height: 1.7;
+    }
+
+    /* Differentiation Section */
+    .differentiation {
+      background: var(--color-surface);
+    }
+
+    .diff-table {
+      max-width: 900px;
+      margin: 0 auto;
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .diff-table-header {
+      display: grid;
+      grid-template-columns: 200px 1fr 1fr;
+      background: var(--color-surface-elevated);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .diff-table-header-cell {
+      padding: 16px 24px;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--color-text);
+    }
+
+    .diff-table-header-cell:not(:first-child) {
+      border-left: 1px solid var(--color-border);
+    }
+
+    .diff-table-header-cell.highlight {
+      background: var(--color-primary);
+      color: var(--color-text-inverse);
+    }
+
+    .diff-table-row {
+      display: grid;
+      grid-template-columns: 200px 1fr 1fr;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .diff-table-row:last-child {
+      border-bottom: none;
+    }
+
+    .diff-table-cell {
+      padding: 20px 24px;
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+    }
+
+    .diff-table-cell:not(:first-child) {
+      border-left: 1px solid var(--color-border);
+    }
+
+    .diff-table-cell:first-child {
+      font-weight: 600;
+      color: var(--color-text);
+      background: var(--color-surface-elevated);
+    }
+
+    .diff-table-cell.highlight {
+      background: rgba(59, 130, 246, 0.04);
+      color: var(--color-text);
+    }
+
+    .diff-table-cell .check {
+      color: var(--color-success);
+      margin-right: 8px;
+    }
+
+    .diff-table-cell .cross {
+      color: var(--color-text-light);
+      margin-right: 8px;
+    }
+
+    /* How It Works */
+    .how-it-works {
+      background: var(--color-bg);
+    }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .step {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 32px;
+      position: relative;
+    }
+
+    .step-number {
+      position: absolute;
+      top: -16px;
+      left: 32px;
+      width: 32px;
+      height: 32px;
+      background: var(--color-primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .step-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: 12px;
+      margin-top: 8px;
+    }
+
+    .step-description {
+      font-size: 15px;
+      color: var(--color-text-secondary);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .step-list {
+      list-style: none;
+    }
+
+    .step-list li {
+      font-size: 14px;
+      color: var(--color-text-muted);
+      padding: 6px 0;
+      padding-left: 20px;
+      position: relative;
+    }
+
+    .step-list li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 12px;
+      width: 6px;
+      height: 6px;
+      background: var(--color-accent);
+      border-radius: 50%;
+    }
+
+    /* Outcomes Section */
+    .outcomes {
+      background: var(--color-surface);
+    }
+
+    .outcomes-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    .outcome-card {
+      background: var(--color-bg);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 28px;
+    }
+
+    .outcome-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+    }
+
+    .outcome-before {
+      font-size: 14px;
+      color: var(--color-text-light);
+      margin-bottom: 8px;
+      text-decoration: line-through;
+    }
+
+    .outcome-after {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--color-primary);
+    }
+
+    /* Trust Section */
+    .trust {
+      background: var(--color-bg);
+    }
+
+    .trust-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .trust-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 12px;
+      padding: 28px;
+    }
+
+    .trust-card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .trust-card-title svg {
+      color: var(--color-success);
+    }
+
+    .trust-card-description {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+    }
+
+    /* Final CTA */
+    .final-cta {
+      background: var(--color-bg-dark);
+      padding: 100px 64px;
+    }
+
+    .cta-card {
+      background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 72px;
+      text-align: center;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .cta-title {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--color-text-inverse);
+      margin-bottom: 16px;
+      letter-spacing: -0.02em;
+    }
+
+    .cta-subtitle {
+      font-size: 18px;
+      color: var(--color-text-light);
+      margin-bottom: 40px;
+      line-height: 1.7;
+      max-width: 560px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .cta-button {
+      background: var(--color-cta);
+      color: var(--color-text);
+      padding: 18px 40px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 17px;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.4);
+    }
+
+    .cta-button:hover {
+      background: var(--color-cta-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
+    }
+
+    .trust-line {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      margin-top: 32px;
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--color-text-light);
+    }
+
+    .trust-item svg {
+      color: var(--color-success);
+    }
+
+    /* Footer */
+    .footer {
+      background: var(--color-bg-dark);
+      padding: 32px 64px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-left {
+      font-size: 14px;
+      color: var(--color-text-light);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 32px;
+    }
+
+    .footer-links a {
+      font-size: 14px;
+      color: var(--color-text-light);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--color-text-inverse);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .steps {
+        grid-template-columns: 1fr;
+        max-width: 500px;
+      }
+      .outcomes-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .diff-table {
+        overflow-x: auto;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        padding: 16px 24px;
+      }
+      .nav-links {
+        display: none;
+      }
+      .hero {
+        padding: 120px 24px 64px;
+      }
+      .hero-title {
+        font-size: 36px;
+      }
+      .hero-subtitle {
+        font-size: 17px;
+      }
+      .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+      .metrics {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .section {
+        padding: 64px 24px;
+      }
+      .section-title {
+        font-size: 28px;
+      }
+      .problem {
+        padding: 64px 24px;
+      }
+      .problem-title {
+        font-size: 28px;
+      }
+      .outcomes-grid {
+        grid-template-columns: 1fr;
+      }
+      .trust-grid {
+        grid-template-columns: 1fr;
+      }
+      .cta-card {
+        padding: 48px 24px;
+      }
+      .cta-title {
+        font-size: 28px;
+      }
+      .trust-line {
+        flex-direction: column;
+        gap: 12px;
+      }
+      .footer {
+        flex-direction: column;
+        gap: 24px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+      </div>
+      Seedcraft
+    </div>
+    <div class="nav-links">
+      <a href="#how-it-works" class="nav-link">How It Works</a>
+      <a href="#outcomes" class="nav-link">Outcomes</a>
+      <a href="#" class="nav-link">Documentation</a>
+      <a href="#" class="nav-cta">Get Started</a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-badge">
+        Enterprise AI <span>•</span> Outcome-Driven <span>•</span> Context-Aware
+      </div>
+
+      <h1 class="hero-title">
+        Accelerate your enterprise<br>
+        <span class="highlight">from idea to outcome.</span>
+      </h1>
+
+      <p class="hero-subtitle">
+        Seedcraft ingests your enterprise context — industry, constraints,
+        regulatory landscape, technical requirements — and deploys AI agent
+        swarms to compress the entire discovery-to-delivery lifecycle.
+      </p>
+
+      <p class="hero-subtitle-emphasis">
+        Not generic outputs. Decisions grounded in YOUR reality.
+      </p>
+
+      <div class="hero-buttons">
+        <button class="btn-primary">Accelerate Your Next Initiative</button>
+        <a href="#how-it-works" class="btn-secondary">See How It Works</a>
+      </div>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="metric-value">Context-Aware</div>
+          <div class="metric-label">Agents work with YOUR industry, constraints & requirements</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">3 Swarms</div>
+          <div class="metric-label">Discovery, Strategy & Delivery working in parallel</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">Full Lifecycle</div>
+          <div class="metric-label">From market hypothesis to engineering-ready specs</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">Critique-Validated</div>
+          <div class="metric-label">Every output cross-validated before you see it</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem Section -->
+  <section class="problem">
+    <div class="problem-inner">
+      <div class="eyebrow">The Enterprise Reality</div>
+      <h2 class="problem-title">Your ideas aren't slow.<br>Your process is.</h2>
+      <div class="problem-body">
+        <p>
+          Enterprise product teams don't lack ideas. They lack velocity.
+        </p>
+        <p>
+          Discovery takes months. Stakeholder alignment takes longer.
+          By the time you've got a business case, three competitors have shipped.
+          And <span class="stat">80% of what finally launches?</span> Never used.
+        </p>
+        <p>
+          It's not a creativity problem. <strong>It's a system problem.</strong>
+        </p>
+        <p>
+          You need a platform that understands your enterprise context, connects
+          discovery to delivery in one workflow, and validates outputs before
+          stakeholders ever see them.
+        </p>
+      </div>
+      <div class="problem-cta">
+        <a href="#how-it-works">
+          See how Seedcraft works
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Differentiation Section -->
+  <section class="section differentiation">
+    <div class="section-header">
+      <div class="eyebrow">What Makes Seedcraft Different</div>
+      <h2 class="section-title">Built for enterprise reality.<br>Not startup fantasy.</h2>
+    </div>
+
+    <div class="diff-table">
+      <div class="diff-table-header">
+        <div class="diff-table-header-cell">Capability</div>
+        <div class="diff-table-header-cell">Generic AI Tools</div>
+        <div class="diff-table-header-cell highlight">Seedcraft</div>
+      </div>
+      <div class="diff-table-row">
+        <div class="diff-table-cell">Input</div>
+        <div class="diff-table-cell"><span class="cross">✗</span> Generic prompts</div>
+        <div class="diff-table-cell highlight"><span class="check">✓</span> Your enterprise context: industry, constraints, regulations</div>
+      </div>
+      <div class="diff-table-row">
+        <div class="diff-table-cell">Process</div>
+        <div class="diff-table-cell"><span class="cross">✗</span> Single model, single output</div>
+        <div class="diff-table-cell highlight"><span class="check">✓</span> 12+ specialized agents in 3 coordinated swarms</div>
+      </div>
+      <div class="diff-table-row">
+        <div class="diff-table-cell">Validation</div>
+        <div class="diff-table-cell"><span class="cross">✗</span> None — you QA everything</div>
+        <div class="diff-table-cell highlight"><span class="check">✓</span> AI critique cross-validates before you see it</div>
+      </div>
+      <div class="diff-table-row">
+        <div class="diff-table-cell">Scope</div>
+        <div class="diff-table-cell"><span class="cross">✗</span> Isolated documents</div>
+        <div class="diff-table-cell highlight"><span class="check">✓</span> Full lifecycle: discovery → strategy → delivery</div>
+      </div>
+      <div class="diff-table-row">
+        <div class="diff-table-cell">Outcome</div>
+        <div class="diff-table-cell"><span class="cross">✗</span> More docs to review</div>
+        <div class="diff-table-cell highlight"><span class="check">✓</span> Accelerated decisions & aligned stakeholders</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="section how-it-works" id="how-it-works">
+    <div class="section-header">
+      <div class="eyebrow">The Seedcraft Engine</div>
+      <h2 class="section-title">Your context in. Outcomes out.</h2>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <h3 class="step-title">Contextualize</h3>
+        <p class="step-description">Input your enterprise context. The more you share, the more grounded the outputs.</p>
+        <ul class="step-list">
+          <li>Product idea or initiative</li>
+          <li>Industry and regulatory domain</li>
+          <li>Target market segments</li>
+          <li>Technical constraints</li>
+          <li>Budget and timeline</li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <h3 class="step-title">Orchestrate</h3>
+        <p class="step-description">AI agent swarms execute in parallel, each specialized for their domain.</p>
+        <ul class="step-list">
+          <li>Discovery Swarm: Market, competitive, personas</li>
+          <li>Strategy Swarm: Business, GTM, financial</li>
+          <li>Delivery Swarm: PRD, architecture, legal, risk</li>
+          <li>Critique Agent: Cross-validates everything</li>
+        </ul>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <h3 class="step-title">Decide</h3>
+        <p class="step-description">Receive a decision-ready inception pack aligned to your enterprise reality.</p>
+        <ul class="step-list">
+          <li>Executive summary for leadership</li>
+          <li>Market hypotheses with confidence tiers</li>
+          <li>PRD with engineering-ready specs</li>
+          <li>Quality score with identified gaps</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Outcomes Section -->
+  <section class="section outcomes" id="outcomes">
+    <div class="section-header">
+      <div class="eyebrow">Outcomes, Not Just Outputs</div>
+      <h2 class="section-title">What actually changes.</h2>
+    </div>
+
+    <div class="outcomes-grid">
+      <div class="outcome-card">
+        <div class="outcome-label">Discovery Cycle</div>
+        <div class="outcome-before">6-12 weeks</div>
+        <div class="outcome-after">Under 15 minutes</div>
+      </div>
+      <div class="outcome-card">
+        <div class="outcome-label">Stakeholder Alignment</div>
+        <div class="outcome-before">Multiple workshops</div>
+        <div class="outcome-after">One decision-ready pack</div>
+      </div>
+      <div class="outcome-card">
+        <div class="outcome-label">Ideas Evaluated</div>
+        <div class="outcome-before">2-3 per quarter</div>
+        <div class="outcome-after">10x with same resources</div>
+      </div>
+      <div class="outcome-card">
+        <div class="outcome-label">Quality Issues</div>
+        <div class="outcome-before">Caught in review</div>
+        <div class="outcome-after">Caught before you see it</div>
+      </div>
+      <div class="outcome-card">
+        <div class="outcome-label">Engineering Handoff</div>
+        <div class="outcome-before">"Need more clarity"</div>
+        <div class="outcome-after">Spec-ready on day one</div>
+      </div>
+      <div class="outcome-card">
+        <div class="outcome-label">Go/No-Go Decisions</div>
+        <div class="outcome-before">Delayed by discovery</div>
+        <div class="outcome-after">Made in same session</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trust Section -->
+  <section class="section trust">
+    <div class="section-header">
+      <div class="eyebrow">Enterprise-Grade</div>
+      <h2 class="section-title">Built for scrutiny. Not just speed.</h2>
+    </div>
+
+    <div class="trust-grid">
+      <div class="trust-card">
+        <div class="trust-card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Context-Grounded
+        </div>
+        <div class="trust-card-description">
+          Every agent works with YOUR constraints. No generic assumptions. Market research uses YOUR industry. Financial models use YOUR parameters.
+        </div>
+      </div>
+      <div class="trust-card">
+        <div class="trust-card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Evidence-Tiered
+        </div>
+        <div class="trust-card-description">
+          Every claim tagged E1-E5. You know what's validated vs. what needs customer validation. Audit-ready documentation.
+        </div>
+      </div>
+      <div class="trust-card">
+        <div class="trust-card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Contradiction Detection
+        </div>
+        <div class="trust-card-description">
+          Facilitator agent automatically finds inconsistencies between sections before you do. No conflicting claims.
+        </div>
+      </div>
+      <div class="trust-card">
+        <div class="trust-card-title">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Calibrated Scoring
+        </div>
+        <div class="trust-card-description">
+          Quality scores use mandatory deductions. No inflated grades. If it says 85%, it earned 85%.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="final-cta">
+    <div class="cta-card">
+      <h2 class="cta-title">Stop waiting for discovery.<br>Start delivering outcomes.</h2>
+      <p class="cta-subtitle">
+        Your next initiative doesn't need another brainstorm.
+        It needs a decision-ready inception pack grounded in your enterprise reality.
+      </p>
+      <button class="cta-button">Accelerate Your Next Initiative</button>
+      <div class="trust-line">
+        <div class="trust-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Context-aware
+        </div>
+        <div class="trust-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Critique-validated
+        </div>
+        <div class="trust-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Enterprise-ready
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-left">
+      &copy; 2026 Seedcraft. Enterprise AI for Product Discovery.
+    </div>
+    <div class="footer-links">
+      <a href="#">Documentation</a>
+      <a href="#">GitHub</a>
+      <a href="#">Contact</a>
+    </div>
+  </footer>
+
+</body>
+</html>

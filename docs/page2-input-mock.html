@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seedcraft - Define Your Initiative</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #F8FAFC;
+            --color-surface: #FFFFFF;
+            --color-primary: #1E3A5F;
+            --color-primary-light: #2D4A6F;
+            --color-accent: #3B82F6;
+            --color-accent-light: #DBEAFE;
+            --color-cta: #F59E0B;
+            --color-cta-hover: #D97706;
+            --color-text: #0F172A;
+            --color-text-secondary: #475569;
+            --color-text-muted: #94A3B8;
+            --color-border: #E2E8F0;
+            --color-border-focus: #3B82F6;
+            --color-success: #10B981;
+            --color-success-bg: #D1FAE5;
+            --font-display: 'Space Grotesk', system-ui, sans-serif;
+            --font-body: 'Inter', system-ui, sans-serif;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+            --shadow-xl: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--color-bg);
+            color: var(--color-text);
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--color-primary);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-icon svg {
+            width: 18px;
+            height: 18px;
+            color: white;
+        }
+
+        .nav-progress {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--color-text-muted);
+        }
+
+        .progress-step.active {
+            color: var(--color-primary);
+            font-weight: 500;
+        }
+
+        .progress-step.completed {
+            color: var(--color-success);
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            background: var(--color-border);
+            color: var(--color-text-muted);
+        }
+
+        .progress-step.active .step-number {
+            background: var(--color-primary);
+            color: white;
+        }
+
+        .progress-step.completed .step-number {
+            background: var(--color-success);
+            color: white;
+        }
+
+        .progress-line {
+            width: 40px;
+            height: 2px;
+            background: var(--color-border);
+        }
+
+        .progress-step.completed + .progress-line {
+            background: var(--color-success);
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 48px 24px 80px;
+        }
+
+        /* Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .page-header h1 {
+            font-family: var(--font-display);
+            font-size: 32px;
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 12px;
+        }
+
+        .page-header p {
+            font-size: 16px;
+            color: var(--color-text-secondary);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        /* Form Sections */
+        .form-section {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-sm);
+            transition: box-shadow 0.2s ease;
+        }
+
+        .form-section:hover {
+            box-shadow: var(--shadow-md);
+        }
+
+        .form-section:focus-within {
+            border-color: var(--color-border-focus);
+            box-shadow: 0 0 0 3px var(--color-accent-light);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .section-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--color-accent-light);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .section-icon svg {
+            width: 24px;
+            height: 24px;
+            color: var(--color-accent);
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 4px;
+        }
+
+        .section-subtitle {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--color-text);
+            margin-bottom: 8px;
+        }
+
+        .form-label .optional {
+            font-weight: 400;
+            color: var(--color-text-muted);
+            margin-left: 4px;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 14px 16px;
+            font-family: var(--font-body);
+            font-size: 15px;
+            color: var(--color-text);
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .form-input:hover,
+        .form-textarea:hover,
+        .form-select:hover {
+            border-color: var(--color-border-focus);
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px var(--color-accent-light);
+        }
+
+        .form-input::placeholder,
+        .form-textarea::placeholder {
+            color: var(--color-text-muted);
+        }
+
+        .form-textarea {
+            min-height: 140px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .form-textarea.large {
+            min-height: 200px;
+        }
+
+        /* Character Count */
+        .char-count {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 6px;
+            font-size: 12px;
+            color: var(--color-text-muted);
+        }
+
+        /* Grid Layout */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 600px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Tags Input */
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            min-height: 52px;
+            cursor: text;
+            transition: all 0.2s ease;
+        }
+
+        .tags-container:hover {
+            border-color: var(--color-border-focus);
+        }
+
+        .tags-container:focus-within {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px var(--color-accent-light);
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: var(--color-accent-light);
+            color: var(--color-accent);
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .tag-remove {
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .tag-remove:hover {
+            opacity: 1;
+        }
+
+        .tag-input {
+            flex: 1;
+            min-width: 120px;
+            border: none;
+            outline: none;
+            font-family: var(--font-body);
+            font-size: 14px;
+            background: transparent;
+        }
+
+        /* Quick Select Chips */
+        .quick-select {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .quick-chip {
+            padding: 8px 14px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: 100px;
+            font-size: 13px;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .quick-chip:hover {
+            border-color: var(--color-accent);
+            color: var(--color-accent);
+            background: var(--color-accent-light);
+        }
+
+        .quick-chip.selected {
+            background: var(--color-primary);
+            border-color: var(--color-primary);
+            color: white;
+        }
+
+        /* Slider */
+        .slider-container {
+            padding: 8px 0;
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: var(--color-text-muted);
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--color-border);
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--color-accent);
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(59, 130, 246, 0.4);
+        }
+
+        .slider-value {
+            text-align: center;
+            margin-top: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--color-text);
+        }
+
+        /* Help Text */
+        .help-text {
+            margin-top: 8px;
+            font-size: 13px;
+            color: var(--color-text-muted);
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+        }
+
+        .help-text svg {
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        /* Expandable Section */
+        .expandable-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            padding: 8px 0;
+        }
+
+        .expandable-header:hover .expand-text {
+            color: var(--color-accent);
+        }
+
+        .expand-text {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s;
+        }
+
+        .expandable-content {
+            display: none;
+            padding-top: 20px;
+            border-top: 1px solid var(--color-border);
+            margin-top: 16px;
+        }
+
+        .expandable-content.show {
+            display: block;
+        }
+
+        /* Action Bar */
+        .action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--color-surface);
+            border-top: 1px solid var(--color-border);
+            padding: 16px 24px;
+            z-index: 100;
+        }
+
+        .action-bar-inner {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .action-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .time-estimate {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            background: var(--color-success-bg);
+            border-radius: 8px;
+            font-size: 14px;
+            color: var(--color-success);
+        }
+
+        .time-estimate svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 28px;
+            font-family: var(--font-display);
+            font-size: 15px;
+            font-weight: 500;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--color-border);
+            color: var(--color-text-secondary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+        }
+
+        .btn-primary {
+            background: var(--color-cta);
+            color: white;
+            box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--color-cta-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
+        }
+
+        .btn-primary svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Tip Box */
+        .tip-box {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-top: 32px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .tip-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(245, 158, 11, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .tip-icon svg {
+            width: 20px;
+            height: 20px;
+            color: var(--color-cta-hover);
+        }
+
+        .tip-content h4 {
+            font-family: var(--font-display);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 4px;
+        }
+
+        .tip-content p {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-progress {
+                display: none;
+            }
+
+            .main-container {
+                padding: 32px 16px 100px;
+            }
+
+            .form-section {
+                padding: 24px;
+            }
+
+            .action-bar-inner {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .action-info {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .action-buttons {
+                width: 100%;
+            }
+
+            .action-buttons .btn {
+                flex: 1;
+            }
+        }
+
+        /* Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-section {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        .form-section:nth-child(1) { animation-delay: 0ms; }
+        .form-section:nth-child(2) { animation-delay: 100ms; }
+        .form-section:nth-child(3) { animation-delay: 200ms; }
+        .form-section:nth-child(4) { animation-delay: 300ms; }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="#" class="logo">
+                <div class="logo-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                Seedcraft
+            </a>
+
+            <div class="nav-progress">
+                <div class="progress-step completed">
+                    <div class="step-number">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
+                        </svg>
+                    </div>
+                    <span>Start</span>
+                </div>
+                <div class="progress-line" style="background: var(--color-success);"></div>
+                <div class="progress-step active">
+                    <div class="step-number">2</div>
+                    <span>Define</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step">
+                    <div class="step-number">3</div>
+                    <span>Generate</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step">
+                    <div class="step-number">4</div>
+                    <span>Review</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        <!-- Header -->
+        <header class="page-header">
+            <h1>Define Your Initiative</h1>
+            <p>The more context you provide, the more grounded and actionable your inception pack will be.</p>
+        </header>
+
+        <!-- Section 1: Core Idea -->
+        <section class="form-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="section-title">Your Product Idea</h2>
+                    <p class="section-subtitle">What are you building and why does it matter?</p>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Initiative Name</label>
+                <input type="text" class="form-input" placeholder="e.g., Enterprise Customer Portal 2.0">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Describe your product idea</label>
+                <textarea class="form-textarea large" placeholder="Describe the product, service, or initiative you want to explore. Include:
+
+• What problem does it solve?
+• Who is the target customer?
+• What makes this approach unique?
+• Why is now the right time?"></textarea>
+                <div class="char-count">0 / 2000</div>
+            </div>
+        </section>
+
+        <!-- Section 2: Enterprise Context -->
+        <section class="form-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="section-title">Enterprise Context</h2>
+                    <p class="section-subtitle">Help us understand your organization and operating environment</p>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Industry</label>
+                    <select class="form-select">
+                        <option value="">Select your industry</option>
+                        <option>Financial Services</option>
+                        <option>Healthcare & Life Sciences</option>
+                        <option>Technology</option>
+                        <option>Manufacturing</option>
+                        <option>Retail & E-commerce</option>
+                        <option>Energy & Utilities</option>
+                        <option>Telecommunications</option>
+                        <option>Government & Public Sector</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Company Size</label>
+                    <select class="form-select">
+                        <option value="">Select company size</option>
+                        <option>1-50 employees</option>
+                        <option>51-200 employees</option>
+                        <option>201-1000 employees</option>
+                        <option>1001-5000 employees</option>
+                        <option>5000+ employees</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Target Market & Geography</label>
+                <input type="text" class="form-input" placeholder="e.g., Enterprise B2B, North America & Europe">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Regulatory Requirements <span class="optional">(if applicable)</span></label>
+                <div class="tags-container">
+                    <span class="tag">GDPR <span class="tag-remove">&times;</span></span>
+                    <span class="tag">SOC 2 <span class="tag-remove">&times;</span></span>
+                    <input type="text" class="tag-input" placeholder="Add regulation...">
+                </div>
+                <div class="quick-select">
+                    <span class="quick-chip">HIPAA</span>
+                    <span class="quick-chip">PCI-DSS</span>
+                    <span class="quick-chip">ISO 27001</span>
+                    <span class="quick-chip">FedRAMP</span>
+                    <span class="quick-chip">CCPA</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 3: Technical Context -->
+        <section class="form-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="section-title">Technical Context</h2>
+                    <p class="section-subtitle">Your existing tech stack and infrastructure constraints</p>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Current Tech Stack <span class="optional">(optional)</span></label>
+                <div class="tags-container">
+                    <input type="text" class="tag-input" placeholder="Add technologies (e.g., AWS, React, PostgreSQL)...">
+                </div>
+                <div class="quick-select">
+                    <span class="quick-chip">AWS</span>
+                    <span class="quick-chip">Azure</span>
+                    <span class="quick-chip">GCP</span>
+                    <span class="quick-chip">Kubernetes</span>
+                    <span class="quick-chip">React</span>
+                    <span class="quick-chip">Node.js</span>
+                    <span class="quick-chip">Python</span>
+                    <span class="quick-chip">Java</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Technical Constraints <span class="optional">(optional)</span></label>
+                <textarea class="form-textarea" placeholder="Describe any technical constraints, integration requirements, or architectural considerations..."></textarea>
+            </div>
+
+            <div class="expandable-header" onclick="toggleExpand(this)">
+                <span class="expand-text">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    Add more technical details
+                </span>
+            </div>
+            <div class="expandable-content">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Expected Scale</label>
+                        <select class="form-select">
+                            <option value="">Select expected scale</option>
+                            <option>< 1,000 users</option>
+                            <option>1,000 - 10,000 users</option>
+                            <option>10,000 - 100,000 users</option>
+                            <option>100,000+ users</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Performance Requirements</label>
+                        <select class="form-select">
+                            <option value="">Select requirements</option>
+                            <option>Standard (< 2s response)</option>
+                            <option>High Performance (< 500ms)</option>
+                            <option>Real-time (< 100ms)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section 4: Business Constraints -->
+        <section class="form-section">
+            <div class="section-header">
+                <div class="section-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h2 class="section-title">Business Constraints</h2>
+                    <p class="section-subtitle">Budget, timeline, and organizational priorities</p>
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label">Budget Range <span class="optional">(optional)</span></label>
+                    <select class="form-select">
+                        <option value="">Select budget range</option>
+                        <option>< $100K</option>
+                        <option>$100K - $500K</option>
+                        <option>$500K - $1M</option>
+                        <option>$1M - $5M</option>
+                        <option>> $5M</option>
+                        <option>Not yet determined</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Timeline Expectation</label>
+                    <select class="form-select">
+                        <option value="">Select timeline</option>
+                        <option>< 3 months (MVP)</option>
+                        <option>3-6 months</option>
+                        <option>6-12 months</option>
+                        <option>> 12 months</option>
+                        <option>Ongoing initiative</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Strategic Priority Level</label>
+                <div class="slider-container">
+                    <div class="slider-labels">
+                        <span>Exploratory</span>
+                        <span>Strategic Initiative</span>
+                        <span>Critical Priority</span>
+                    </div>
+                    <input type="range" class="slider" min="1" max="5" value="3">
+                    <div class="slider-value">Strategic Initiative</div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Additional Context <span class="optional">(optional)</span></label>
+                <textarea class="form-textarea" placeholder="Any other context that would help us understand your constraints, goals, or success criteria..."></textarea>
+            </div>
+        </section>
+
+        <!-- Tip Box -->
+        <div class="tip-box">
+            <div class="tip-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div class="tip-content">
+                <h4>Pro tip: More context = better outcomes</h4>
+                <p>Enterprise constraints like regulatory requirements, tech stack, and budget parameters help our agents generate outputs grounded in your reality — not generic assumptions.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <div class="action-bar-inner">
+            <div class="action-info">
+                <div class="time-estimate">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Estimated generation time: ~12 minutes
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-secondary">Save Draft</button>
+                <button class="btn btn-primary">
+                    Generate Inception Pack
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleExpand(header) {
+            const content = header.nextElementSibling;
+            content.classList.toggle('show');
+            const icon = header.querySelector('svg');
+            if (content.classList.contains('show')) {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"/>';
+            } else {
+                icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>';
+            }
+        }
+
+        // Quick chip selection
+        document.querySelectorAll('.quick-chip').forEach(chip => {
+            chip.addEventListener('click', function() {
+                this.classList.toggle('selected');
+            });
+        });
+
+        // Slider value display
+        const slider = document.querySelector('.slider');
+        const sliderValue = document.querySelector('.slider-value');
+        const priorities = ['Exploratory', 'Low Priority', 'Strategic Initiative', 'High Priority', 'Critical Priority'];
+
+        slider.addEventListener('input', function() {
+            sliderValue.textContent = priorities[this.value - 1];
+        });
+
+        // Character count
+        const textarea = document.querySelector('.form-textarea.large');
+        const charCount = document.querySelector('.char-count');
+
+        textarea.addEventListener('input', function() {
+            charCount.textContent = `${this.value.length} / 2000`;
+        });
+    </script>
+</body>
+</html>

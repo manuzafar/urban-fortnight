@@ -1,0 +1,1596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seedcraft - Define Your Initiative</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Warm neutral base inspired by Claude */
+            --color-bg: #FAF9F7;
+            --color-bg-warm: #F5F3EF;
+            --color-bg-mesh: linear-gradient(135deg, #FAF9F7 0%, #F0EDE8 50%, #FAF9F7 100%);
+
+            /* Surface colors with glass effect */
+            --color-surface: rgba(255, 255, 255, 0.8);
+            --color-surface-elevated: rgba(255, 255, 255, 0.95);
+            --color-glass: rgba(255, 255, 255, 0.6);
+            --color-glass-border: rgba(255, 255, 255, 0.8);
+
+            /* Primary - warm coral inspired by Claude */
+            --color-primary: #E07A5F;
+            --color-primary-light: #F4A393;
+            --color-primary-dark: #C96A52;
+            --color-primary-glow: rgba(224, 122, 95, 0.3);
+
+            /* Accent - electric blue inspired by Superagent */
+            --color-accent: #6366F1;
+            --color-accent-light: #A5B4FC;
+            --color-accent-glow: rgba(99, 102, 241, 0.2);
+
+            /* Secondary accent - teal */
+            --color-teal: #14B8A6;
+            --color-teal-light: #99F6E4;
+            --color-teal-glow: rgba(20, 184, 166, 0.2);
+
+            /* Text */
+            --color-text: #1F1F1F;
+            --color-text-secondary: #6B6B6B;
+            --color-text-muted: #9CA3AF;
+
+            /* Borders */
+            --color-border: rgba(0, 0, 0, 0.06);
+            --color-border-strong: rgba(0, 0, 0, 0.1);
+
+            /* Success/Warning */
+            --color-success: #10B981;
+            --color-success-bg: rgba(16, 185, 129, 0.1);
+            --color-warning: #F59E0B;
+            --color-warning-bg: rgba(245, 158, 11, 0.1);
+
+            /* Typography */
+            --font-display: 'Space Grotesk', system-ui, sans-serif;
+            --font-body: 'Inter', system-ui, sans-serif;
+
+            /* Shadows - layered for depth */
+            --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.03);
+            --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+            --shadow-glow: 0 0 40px var(--color-primary-glow);
+
+            /* Radius */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-xl: 24px;
+
+            /* Transitions */
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+            --transition-fast: 150ms var(--ease-out);
+            --transition-normal: 250ms var(--ease-out);
+            --transition-slow: 400ms var(--ease-out);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--color-bg-mesh);
+            color: var(--color-text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Subtle mesh gradient overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(224, 122, 95, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(99, 102, 241, 0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(20, 184, 166, 0.03) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: var(--color-surface-elevated);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--color-border);
+            padding: 14px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--color-text);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px var(--color-primary-glow);
+        }
+
+        .logo-icon svg {
+            width: 20px;
+            height: 20px;
+            color: white;
+        }
+
+        /* Progress Steps */
+        .nav-progress {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--color-bg-warm);
+            padding: 8px 16px;
+            border-radius: 100px;
+        }
+
+        .progress-step {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--color-text-muted);
+            transition: color var(--transition-fast);
+        }
+
+        .progress-step.active {
+            color: var(--color-text);
+        }
+
+        .progress-step.completed {
+            color: var(--color-success);
+        }
+
+        .step-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--color-text-muted);
+            transition: all var(--transition-fast);
+        }
+
+        .progress-step.active .step-dot {
+            background: var(--color-primary);
+            box-shadow: 0 0 0 4px var(--color-primary-glow);
+        }
+
+        .progress-step.completed .step-dot {
+            background: var(--color-success);
+        }
+
+        .progress-line {
+            width: 24px;
+            height: 2px;
+            background: var(--color-border-strong);
+            border-radius: 1px;
+        }
+
+        .progress-step.completed + .progress-line {
+            background: var(--color-success);
+        }
+
+        /* Layout */
+        .page-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            max-width: 1400px;
+            margin: 0 auto;
+            min-height: calc(100vh - 65px);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Left Panel */
+        .left-panel {
+            background: var(--color-surface);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--color-border);
+            padding: 32px 24px;
+            position: sticky;
+            top: 65px;
+            height: calc(100vh - 65px);
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+
+        .panel-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--color-accent) 0%, #818CF8 100%);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .panel-icon svg {
+            width: 16px;
+            height: 16px;
+            color: white;
+        }
+
+        .panel-title {
+            font-family: var(--font-display);
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--color-text);
+        }
+
+        /* Output Categories */
+        .output-category {
+            margin-bottom: 20px;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .category-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--color-text-muted);
+        }
+
+        .category-count {
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            background: var(--color-bg-warm);
+            border-radius: 100px;
+            color: var(--color-text-secondary);
+        }
+
+        .output-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+            transition: all var(--transition-fast);
+            cursor: default;
+        }
+
+        .output-item:hover {
+            background: var(--color-bg-warm);
+            color: var(--color-text);
+        }
+
+        .output-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .output-icon svg {
+            width: 12px;
+            height: 12px;
+        }
+
+        .output-icon.discovery { background: rgba(99, 102, 241, 0.1); color: var(--color-accent); }
+        .output-icon.strategy { background: rgba(20, 184, 166, 0.1); color: var(--color-teal); }
+        .output-icon.delivery { background: rgba(224, 122, 95, 0.1); color: var(--color-primary); }
+        .output-icon.design { background: rgba(168, 85, 247, 0.1); color: #A855F7; }
+        .output-icon.synthesis { background: rgba(14, 165, 233, 0.1); color: #0EA5E9; }
+
+        /* Swarm Card */
+        .swarm-card {
+            margin-top: 24px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--color-text) 0%, #374151 100%);
+            border-radius: var(--radius-lg);
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .swarm-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .swarm-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-family: var(--font-display);
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .swarm-header svg {
+            width: 18px;
+            height: 18px;
+            color: var(--color-primary-light);
+        }
+
+        .swarm-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .swarm-tag {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 100px;
+            font-size: 12px;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+        }
+
+        .swarm-tag.active {
+            background: var(--color-primary);
+            box-shadow: 0 4px 12px var(--color-primary-glow);
+        }
+
+        /* Main Form */
+        .main-form {
+            padding: 40px 56px 140px;
+            max-width: 800px;
+        }
+
+        .page-header {
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            font-family: var(--font-display);
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--color-text);
+            margin-bottom: 12px;
+            letter-spacing: -0.02em;
+        }
+
+        .page-header p {
+            font-size: 16px;
+            color: var(--color-text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Form Section */
+        .form-section {
+            background: var(--color-surface);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-xl);
+            padding: 28px;
+            margin-bottom: 20px;
+            transition: all var(--transition-normal);
+            position: relative;
+        }
+
+        .form-section::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: var(--radius-xl);
+            padding: 1px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.5), rgba(255,255,255,0));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .form-section:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .form-section:focus-within {
+            border-color: var(--color-primary);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .section-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .section-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .section-icon.primary {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 12px var(--color-primary-glow);
+        }
+
+        .section-icon.discovery {
+            background: linear-gradient(135deg, var(--color-accent) 0%, #818CF8 100%);
+            color: white;
+            box-shadow: 0 4px 12px var(--color-accent-glow);
+        }
+
+        .section-icon.strategy {
+            background: linear-gradient(135deg, var(--color-teal) 0%, #2DD4BF 100%);
+            color: white;
+            box-shadow: 0 4px 12px var(--color-teal-glow);
+        }
+
+        .section-icon.delivery {
+            background: linear-gradient(135deg, #F472B6 0%, #EC4899 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(244, 114, 182, 0.3);
+        }
+
+        .section-icon.synthesis {
+            background: linear-gradient(135deg, #0EA5E9 0%, #38BDF8 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+        }
+
+        .section-info {
+            flex: 1;
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 4px;
+        }
+
+        .section-subtitle {
+            font-size: 14px;
+            color: var(--color-text-secondary);
+        }
+
+        .section-badge {
+            padding: 6px 12px;
+            background: var(--color-bg-warm);
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--color-text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-text);
+            margin-bottom: 8px;
+        }
+
+        .form-label .optional {
+            font-weight: 400;
+            color: var(--color-text-muted);
+        }
+
+        .form-label .feeds {
+            font-weight: 500;
+            font-size: 11px;
+            padding: 3px 8px;
+            background: var(--color-accent-glow);
+            color: var(--color-accent);
+            border-radius: 100px;
+        }
+
+        .form-input,
+        .form-textarea,
+        .form-select {
+            width: 100%;
+            padding: 14px 16px;
+            font-family: var(--font-body);
+            font-size: 15px;
+            color: var(--color-text);
+            background: var(--color-bg-warm);
+            border: 1.5px solid transparent;
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+        }
+
+        .form-input:hover,
+        .form-textarea:hover,
+        .form-select:hover {
+            background: var(--color-bg);
+            border-color: var(--color-border-strong);
+        }
+
+        .form-input:focus,
+        .form-textarea:focus,
+        .form-select:focus {
+            outline: none;
+            background: white;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 4px var(--color-primary-glow);
+        }
+
+        .form-input::placeholder,
+        .form-textarea::placeholder {
+            color: var(--color-text-muted);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        .form-textarea.large {
+            min-height: 160px;
+        }
+
+        .char-count {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 8px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--color-text-muted);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .form-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        /* Tags Input */
+        .tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            padding: 12px 14px;
+            background: var(--color-bg-warm);
+            border: 1.5px solid transparent;
+            border-radius: var(--radius-md);
+            min-height: 52px;
+            cursor: text;
+            transition: all var(--transition-fast);
+        }
+
+        .tags-container:hover {
+            background: var(--color-bg);
+            border-color: var(--color-border-strong);
+        }
+
+        .tags-container:focus-within {
+            background: white;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 4px var(--color-primary-glow);
+        }
+
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            background: white;
+            border: 1px solid var(--color-border-strong);
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--color-text);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tag-remove {
+            width: 14px;
+            height: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0.5;
+            transition: opacity var(--transition-fast);
+        }
+
+        .tag-remove:hover {
+            opacity: 1;
+        }
+
+        .tag-input {
+            flex: 1;
+            min-width: 120px;
+            border: none;
+            outline: none;
+            font-family: var(--font-body);
+            font-size: 14px;
+            background: transparent;
+            color: var(--color-text);
+        }
+
+        /* Quick Chips */
+        .quick-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .chip {
+            padding: 8px 14px;
+            background: white;
+            border: 1.5px solid var(--color-border);
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .chip:hover {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+            background: rgba(224, 122, 95, 0.05);
+        }
+
+        .chip.selected {
+            background: var(--color-text);
+            border-color: var(--color-text);
+            color: white;
+        }
+
+        .chip.ai {
+            background: linear-gradient(135deg, var(--color-accent) 0%, #818CF8 100%);
+            border-color: transparent;
+            color: white;
+        }
+
+        /* Slider */
+        .slider-group {
+            padding: 8px 0;
+        }
+
+        .slider-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--color-text-muted);
+        }
+
+        .slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--color-bg-warm);
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            cursor: pointer;
+            box-shadow: 0 2px 8px var(--color-primary-glow);
+            transition: transform var(--transition-fast);
+        }
+
+        .slider::-webkit-slider-thumb:hover {
+            transform: scale(1.1);
+        }
+
+        .slider-value {
+            text-align: center;
+            margin-top: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        /* Collapsible */
+        .collapsible-trigger {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 14px 0;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--color-text-secondary);
+            border-top: 1px solid var(--color-border);
+            margin-top: 20px;
+            transition: color var(--transition-fast);
+        }
+
+        .collapsible-trigger:hover {
+            color: var(--color-primary);
+        }
+
+        .collapsible-trigger svg {
+            width: 16px;
+            height: 16px;
+            transition: transform var(--transition-fast);
+        }
+
+        .collapsible-trigger.open svg {
+            transform: rotate(90deg);
+        }
+
+        .collapsible-content {
+            display: none;
+            padding-top: 16px;
+        }
+
+        .collapsible-content.show {
+            display: block;
+            animation: slideDown var(--transition-normal) forwards;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Action Bar */
+        .action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 300px;
+            right: 0;
+            background: var(--color-surface-elevated);
+            backdrop-filter: blur(20px);
+            border-top: 1px solid var(--color-border);
+            padding: 16px 56px;
+            z-index: 100;
+        }
+
+        .action-bar-inner {
+            max-width: 800px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .gen-info {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--color-text-secondary);
+        }
+
+        .info-item svg {
+            width: 18px;
+            height: 18px;
+            color: var(--color-text-muted);
+        }
+
+        .info-item strong {
+            color: var(--color-text);
+            font-weight: 600;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 24px;
+            font-family: var(--font-display);
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            border: none;
+        }
+
+        .btn-secondary {
+            background: white;
+            border: 1.5px solid var(--color-border);
+            color: var(--color-text-secondary);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--color-text);
+            color: var(--color-text);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+            color: white;
+            box-shadow: 0 4px 16px var(--color-primary-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px var(--color-primary-glow);
+        }
+
+        .btn-primary svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1100px) {
+            .page-layout {
+                grid-template-columns: 1fr;
+            }
+            .left-panel {
+                display: none;
+            }
+            .action-bar {
+                left: 0;
+            }
+            .main-form {
+                padding: 32px 24px 140px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .form-grid,
+            .form-grid-3 {
+                grid-template-columns: 1fr;
+            }
+            .action-bar-inner {
+                flex-direction: column;
+                gap: 16px;
+            }
+            .gen-info {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            .action-buttons {
+                width: 100%;
+            }
+            .action-buttons .btn {
+                flex: 1;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-section {
+            animation: fadeInUp 0.5s var(--ease-out) forwards;
+            opacity: 0;
+        }
+
+        .form-section:nth-child(1) { animation-delay: 0ms; }
+        .form-section:nth-child(2) { animation-delay: 60ms; }
+        .form-section:nth-child(3) { animation-delay: 120ms; }
+        .form-section:nth-child(4) { animation-delay: 180ms; }
+        .form-section:nth-child(5) { animation-delay: 240ms; }
+        .form-section:nth-child(6) { animation-delay: 300ms; }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="#" class="logo">
+                <div class="logo-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                </div>
+                Seedcraft
+            </a>
+
+            <div class="nav-progress">
+                <div class="progress-step completed">
+                    <span class="step-dot"></span>
+                    <span>Start</span>
+                </div>
+                <div class="progress-line" style="background: var(--color-success);"></div>
+                <div class="progress-step active">
+                    <span class="step-dot"></span>
+                    <span>Define</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step">
+                    <span class="step-dot"></span>
+                    <span>Generate</span>
+                </div>
+                <div class="progress-line"></div>
+                <div class="progress-step">
+                    <span class="step-dot"></span>
+                    <span>Review</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page-layout">
+        <!-- Left Panel -->
+        <aside class="left-panel">
+            <div class="panel-header">
+                <div class="panel-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <span class="panel-title">What You'll Get</span>
+            </div>
+
+            <div class="output-category">
+                <div class="category-header">
+                    <span class="category-label">Overview</span>
+                </div>
+                <div class="output-item">
+                    <div class="output-icon primary">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                    </div>
+                    Executive Summary
+                </div>
+            </div>
+
+            <div class="output-category">
+                <div class="category-header">
+                    <span class="category-label">Discovery</span>
+                    <span class="category-count">3</span>
+                </div>
+                <div class="output-item">
+                    <div class="output-icon discovery">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    Customer Research
+                </div>
+                <div class="output-item">
+                    <div class="output-icon discovery">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    Competitive Analysis
+                </div>
+                <div class="output-item">
+                    <div class="output-icon discovery">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                        </svg>
+                    </div>
+                    Personas
+                </div>
+            </div>
+
+            <div class="output-category">
+                <div class="category-header">
+                    <span class="category-label">Strategy</span>
+                    <span class="category-count">3</span>
+                </div>
+                <div class="output-item">
+                    <div class="output-icon strategy">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </div>
+                    Business Case
+                </div>
+                <div class="output-item">
+                    <div class="output-icon strategy">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/>
+                        </svg>
+                    </div>
+                    Go-to-Market
+                </div>
+                <div class="output-item">
+                    <div class="output-icon strategy">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    Financial Model
+                </div>
+            </div>
+
+            <div class="output-category">
+                <div class="category-header">
+                    <span class="category-label">Delivery</span>
+                    <span class="category-count">4</span>
+                </div>
+                <div class="output-item">
+                    <div class="output-icon delivery">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                    </div>
+                    PRD
+                </div>
+                <div class="output-item">
+                    <div class="output-icon delivery">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                        </svg>
+                    </div>
+                    Tech Architecture
+                </div>
+                <div class="output-item">
+                    <div class="output-icon delivery">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
+                        </svg>
+                    </div>
+                    Legal & Regulatory
+                </div>
+                <div class="output-item">
+                    <div class="output-icon delivery">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                    </div>
+                    Risk Assessment
+                </div>
+            </div>
+
+            <div class="output-category">
+                <div class="category-header">
+                    <span class="category-label">Design</span>
+                    <span class="category-count">2</span>
+                </div>
+                <div class="output-item">
+                    <div class="output-icon design">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/>
+                        </svg>
+                    </div>
+                    Wireframes
+                </div>
+                <div class="output-item">
+                    <div class="output-icon design">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    Prototype
+                </div>
+            </div>
+
+            <div class="output-category">
+                <div class="category-header">
+                    <span class="category-label">Synthesis</span>
+                    <span class="category-count">3</span>
+                </div>
+                <div class="output-item">
+                    <div class="output-icon synthesis">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    Stakeholder Views
+                </div>
+                <div class="output-item">
+                    <div class="output-icon synthesis">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    Validation Playbook
+                </div>
+                <div class="output-item">
+                    <div class="output-icon synthesis">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                        </svg>
+                    </div>
+                    Quality Assessment
+                </div>
+            </div>
+
+            <!-- Swarm Card -->
+            <div class="swarm-card">
+                <div class="swarm-header">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    3 Agent Swarms
+                </div>
+                <div class="swarm-tags">
+                    <span class="swarm-tag">Discovery</span>
+                    <span class="swarm-tag active">Strategy</span>
+                    <span class="swarm-tag">Delivery</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Form -->
+        <main class="main-form">
+            <header class="page-header">
+                <h1>Define Your Initiative</h1>
+                <p>The more context you share, the more grounded your 16-section inception pack will be.</p>
+            </header>
+
+            <!-- Section 1 -->
+            <section class="form-section">
+                <div class="section-header">
+                    <div class="section-icon primary">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                        </svg>
+                    </div>
+                    <div class="section-info">
+                        <h2 class="section-title">Your Product Idea</h2>
+                        <p class="section-subtitle">What are you building and why does it matter?</p>
+                    </div>
+                    <span class="section-badge">Required</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Initiative Name</label>
+                    <input type="text" class="form-input" placeholder="e.g., Enterprise Customer Portal 2.0">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        Describe your product idea
+                        <span class="feeds">Feeds all 16 sections</span>
+                    </label>
+                    <textarea class="form-textarea large" placeholder="Describe the product, service, or initiative you want to explore:
+
+• What problem does it solve?
+• Who is the target customer?
+• What makes this approach unique?
+• Why is now the right time?"></textarea>
+                    <div class="char-count">0 / 3000</div>
+                </div>
+            </section>
+
+            <!-- Section 2 -->
+            <section class="form-section">
+                <div class="section-header">
+                    <div class="section-icon discovery">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    <div class="section-info">
+                        <h2 class="section-title">Target Market & Customers</h2>
+                        <p class="section-subtitle">Who are you building for?</p>
+                    </div>
+                    <span class="section-badge">Discovery</span>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Primary Market</label>
+                        <select class="form-select">
+                            <option value="">Select market type</option>
+                            <option>B2B Enterprise (1000+ employees)</option>
+                            <option>B2B Mid-Market (100-1000)</option>
+                            <option>B2B SMB (&lt; 100)</option>
+                            <option>B2C Consumer</option>
+                            <option>B2B2C / Platform</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Geography Focus</label>
+                        <select class="form-select">
+                            <option value="">Select region</option>
+                            <option>North America</option>
+                            <option>Europe</option>
+                            <option>Asia-Pacific</option>
+                            <option>Global</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Target Customer Description</label>
+                    <textarea class="form-textarea" placeholder="Describe your ideal customer: role, industry, company size, pain points..."></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Known Competitors <span class="optional">(optional)</span></label>
+                    <div class="tags-container">
+                        <input type="text" class="tag-input" placeholder="Add competitor names...">
+                    </div>
+                    <div class="quick-chips">
+                        <span class="chip ai">Let AI discover</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 3 -->
+            <section class="form-section">
+                <div class="section-header">
+                    <div class="section-icon strategy">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                    </div>
+                    <div class="section-info">
+                        <h2 class="section-title">Enterprise Context</h2>
+                        <p class="section-subtitle">Your organization's environment and constraints</p>
+                    </div>
+                    <span class="section-badge">Strategy</span>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Your Industry</label>
+                        <select class="form-select">
+                            <option value="">Select industry</option>
+                            <option>Financial Services</option>
+                            <option>Healthcare & Life Sciences</option>
+                            <option>Technology & Software</option>
+                            <option>Manufacturing</option>
+                            <option>Retail & E-commerce</option>
+                            <option>Energy & Utilities</option>
+                            <option>Government</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Company Size</label>
+                        <select class="form-select">
+                            <option value="">Select size</option>
+                            <option>Startup (1-50)</option>
+                            <option>Small (51-200)</option>
+                            <option>Medium (201-1000)</option>
+                            <option>Large (1001-5000)</option>
+                            <option>Enterprise (5000+)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Regulatory Requirements</label>
+                    <div class="tags-container">
+                        <span class="tag">GDPR <span class="tag-remove">×</span></span>
+                        <input type="text" class="tag-input" placeholder="Add regulations...">
+                    </div>
+                    <div class="quick-chips">
+                        <span class="chip">HIPAA</span>
+                        <span class="chip">SOC 2</span>
+                        <span class="chip">PCI-DSS</span>
+                        <span class="chip">ISO 27001</span>
+                        <span class="chip">FedRAMP</span>
+                        <span class="chip">SOX</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4 -->
+            <section class="form-section">
+                <div class="section-header">
+                    <div class="section-icon delivery">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                        </svg>
+                    </div>
+                    <div class="section-info">
+                        <h2 class="section-title">Technical Context</h2>
+                        <p class="section-subtitle">Your tech stack and infrastructure constraints</p>
+                    </div>
+                    <span class="section-badge">Delivery</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Current Tech Stack</label>
+                    <div class="tags-container">
+                        <input type="text" class="tag-input" placeholder="Add technologies...">
+                    </div>
+                    <div class="quick-chips">
+                        <span class="chip">AWS</span>
+                        <span class="chip">Azure</span>
+                        <span class="chip">GCP</span>
+                        <span class="chip">Kubernetes</span>
+                        <span class="chip">React</span>
+                        <span class="chip">Node.js</span>
+                        <span class="chip">Python</span>
+                        <span class="chip">PostgreSQL</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Technical Constraints <span class="optional">(optional)</span></label>
+                    <textarea class="form-textarea" placeholder="Integration requirements, security needs, performance expectations..."></textarea>
+                </div>
+
+                <div class="collapsible-trigger" onclick="toggleCollapse(this)">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                    Advanced technical options
+                </div>
+                <div class="collapsible-content">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Expected Scale</label>
+                            <select class="form-select">
+                                <option value="">Select scale</option>
+                                <option>&lt; 1,000 users</option>
+                                <option>1,000 - 10,000 users</option>
+                                <option>10,000 - 100,000 users</option>
+                                <option>100,000+ users</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Architecture Preference</label>
+                            <select class="form-select">
+                                <option value="">Let AI recommend</option>
+                                <option>Microservices</option>
+                                <option>Monolith</option>
+                                <option>Serverless</option>
+                                <option>Event-driven</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 5 -->
+            <section class="form-section">
+                <div class="section-header">
+                    <div class="section-icon strategy">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="section-info">
+                        <h2 class="section-title">Business Constraints</h2>
+                        <p class="section-subtitle">Budget, timeline, and strategic priorities</p>
+                    </div>
+                    <span class="section-badge">Strategy</span>
+                </div>
+
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Budget Range</label>
+                        <select class="form-select">
+                            <option value="">Select range</option>
+                            <option>&lt; $100K</option>
+                            <option>$100K - $500K</option>
+                            <option>$500K - $1M</option>
+                            <option>$1M - $5M</option>
+                            <option>&gt; $5M</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Timeline</label>
+                        <select class="form-select">
+                            <option value="">Select timeline</option>
+                            <option>&lt; 3 months (MVP)</option>
+                            <option>3-6 months</option>
+                            <option>6-12 months</option>
+                            <option>&gt; 12 months</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Funding Stage</label>
+                        <select class="form-select">
+                            <option value="">Select stage</option>
+                            <option>Bootstrapped</option>
+                            <option>Pre-seed</option>
+                            <option>Seed</option>
+                            <option>Series A+</option>
+                            <option>Corporate</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Strategic Priority</label>
+                    <div class="slider-group">
+                        <div class="slider-labels">
+                            <span>Exploratory</span>
+                            <span>Strategic</span>
+                            <span>Critical</span>
+                        </div>
+                        <input type="range" class="slider" min="1" max="5" value="3">
+                        <div class="slider-value">Strategic Initiative</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 6 -->
+            <section class="form-section">
+                <div class="section-header">
+                    <div class="section-icon synthesis">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    <div class="section-info">
+                        <h2 class="section-title">Key Stakeholders</h2>
+                        <p class="section-subtitle">Who needs to approve or be convinced?</p>
+                    </div>
+                    <span class="section-badge">Synthesis</span>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Stakeholders to address</label>
+                    <div class="quick-chips" style="margin-top: 0;">
+                        <span class="chip selected">CEO / Founder</span>
+                        <span class="chip selected">CFO</span>
+                        <span class="chip">CTO</span>
+                        <span class="chip">CISO</span>
+                        <span class="chip">VP Product</span>
+                        <span class="chip">Legal</span>
+                        <span class="chip">ARB</span>
+                        <span class="chip">Board</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Known objections or concerns <span class="optional">(optional)</span></label>
+                    <textarea class="form-textarea" placeholder="Any concerns from stakeholders we should address..."></textarea>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <div class="action-bar-inner">
+            <div class="gen-info">
+                <div class="info-item">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <strong>16</strong> sections
+                </div>
+                <div class="info-item">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <strong>12+</strong> agents
+                </div>
+                <div class="info-item">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    ~<strong>12-15</strong> min
+                </div>
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-secondary">Save Draft</button>
+                <button class="btn btn-primary">
+                    Generate Inception Pack
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleCollapse(el) {
+            el.classList.toggle('open');
+            el.nextElementSibling.classList.toggle('show');
+        }
+
+        document.querySelectorAll('.chip:not(.ai)').forEach(chip => {
+            chip.addEventListener('click', function() {
+                this.classList.toggle('selected');
+            });
+        });
+
+        const slider = document.querySelector('.slider');
+        const sliderValue = document.querySelector('.slider-value');
+        const priorities = ['Exploratory', 'Low Priority', 'Strategic Initiative', 'High Priority', 'Critical'];
+        slider.addEventListener('input', function() {
+            sliderValue.textContent = priorities[this.value - 1];
+        });
+
+        const textarea = document.querySelector('.form-textarea.large');
+        const charCount = document.querySelector('.char-count');
+        textarea.addEventListener('input', function() {
+            charCount.textContent = `${this.value.length} / 3000`;
+        });
+    </script>
+</body>
+</html>

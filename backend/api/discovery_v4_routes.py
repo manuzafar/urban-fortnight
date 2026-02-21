@@ -1642,11 +1642,28 @@ async def _run_full_lifecycle_with_v4(session_id: str, user_id: str) -> None:
         emitter = get_or_create_emitter(session_id)
         orchestrator._current_emitter = emitter
 
-        # Update session store status
-        session_store.update_status(
-            session_id,
-            {"status": "in_progress", "progress_percentage": 20},
-        )
+        # CRITICAL: Register V4 session in main session store if not exists
+        # This is needed because V4 sessions are stored separately from V3 sessions
+        existing = session_store.get(session_id)
+        if not existing:
+            session_store.create(
+                session_id=session_id,
+                user_id=user_id,
+                data={
+                    "product_idea": session.product_idea,
+                    "industry": session.industry,
+                    "target_market": session.target_market,
+                    "status": "in_progress",
+                    "progress_percentage": 20,
+                },
+            )
+            logger.info("v4_session_registered_in_store", session_id=session_id)
+        else:
+            # Update existing session status
+            session_store.update_status(
+                session_id,
+                {"status": "in_progress", "progress_percentage": 20},
+            )
 
         # Emit start event
         await emitter.emit_progress(20, "Starting Strategy & Delivery phases...")
@@ -1668,8 +1685,8 @@ async def _run_full_lifecycle_with_v4(session_id: str, user_id: str) -> None:
 
             inception_pack = build_inception_pack(final_state)
 
-            # Save to database
-            session_store.save_inception_pack(session_id, inception_pack)
+            # Save to database (requires session_id, user_id, pack)
+            session_store.save_inception_pack(session_id, user_id, inception_pack)
             session_store.update_status(
                 session_id,
                 {

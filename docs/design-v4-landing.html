@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seedcraft</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #FAFAF9;
+            --bg-alt: #F5F5F4;
+            --text: #171717;
+            --text-secondary: #525252;
+            --text-muted: #a3a3a3;
+            --border: rgba(0,0,0,0.06);
+            --accent: #c2410c;
+            --accent-hover: #9a3412;
+            --radius: 6px;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        /* Nav */
+        nav {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-cta {
+            font-size: 14px;
+            font-weight: 500;
+            color: white;
+            background: var(--text);
+            padding: 10px 20px;
+            border-radius: var(--radius);
+            text-decoration: none;
+            transition: background 0.15s ease;
+        }
+
+        .nav-cta:hover {
+            background: #404040;
+        }
+
+        /* Hero */
+        .hero {
+            padding: 120px 0 100px;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 56px;
+            font-weight: 600;
+            letter-spacing: -0.035em;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            max-width: 720px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: var(--text-secondary);
+            max-width: 560px;
+            margin: 0 auto 40px;
+            line-height: 1.7;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            color: white;
+            background: var(--accent);
+            padding: 14px 28px;
+            border-radius: var(--radius);
+            text-decoration: none;
+            transition: background 0.15s ease;
+        }
+
+        .hero-cta:hover {
+            background: var(--accent-hover);
+        }
+
+        .hero-cta svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .hero-meta {
+            margin-top: 48px;
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .hero-meta span {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Problem */
+        .problem {
+            padding: 100px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .problem-header {
+            max-width: 640px;
+            margin-bottom: 64px;
+        }
+
+        .eyebrow {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .problem h2 {
+            font-size: 36px;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+
+        .problem-header p {
+            font-size: 17px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .problem-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .problem-item {
+            background: var(--bg);
+            padding: 32px;
+        }
+
+        .problem-item h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .problem-item p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* How it works */
+        .how {
+            padding: 100px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .how h2 {
+            font-size: 36px;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+            margin-bottom: 64px;
+        }
+
+        .how-steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 48px;
+        }
+
+        .how-step {
+            position: relative;
+        }
+
+        .step-num {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .how-step h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            letter-spacing: -0.01em;
+        }
+
+        .how-step p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.65;
+        }
+
+        /* Sections */
+        .sections {
+            padding: 100px 0;
+            border-top: 1px solid var(--border);
+            background: var(--bg-alt);
+        }
+
+        .sections-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 48px;
+        }
+
+        .sections h2 {
+            font-size: 36px;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+
+        .sections-header p {
+            font-size: 15px;
+            color: var(--text-secondary);
+        }
+
+        .sections-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1px;
+            background: var(--border);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .section-item {
+            background: var(--bg);
+            padding: 24px;
+        }
+
+        .section-item span {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .section-item h4 {
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 8px;
+        }
+
+        /* Trust */
+        .trust {
+            padding: 100px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        .trust h2 {
+            font-size: 36px;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+            margin-bottom: 48px;
+        }
+
+        .trust-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 32px;
+        }
+
+        .trust-item h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .trust-item p {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* CTA */
+        .cta {
+            padding: 100px 0;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .cta h2 {
+            font-size: 40px;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+            margin-bottom: 16px;
+        }
+
+        .cta p {
+            font-size: 17px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .cta-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            color: white;
+            background: var(--accent);
+            padding: 16px 32px;
+            border-radius: var(--radius);
+            text-decoration: none;
+            transition: background 0.15s ease;
+        }
+
+        .cta-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Footer */
+        footer {
+            padding: 32px 0;
+            border-top: 1px solid var(--border);
+        }
+
+        footer .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        footer p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        footer a {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            color: var(--text);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .hero h1 { font-size: 40px; }
+            .problem-grid,
+            .how-steps,
+            .sections-grid,
+            .trust-grid {
+                grid-template-columns: 1fr;
+            }
+            .sections-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="#" class="logo">Seedcraft</a>
+            <a href="#" class="nav-cta">Get Started</a>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="container">
+            <h1>Accelerate your enterprise from idea to outcome.</h1>
+            <p>Seedcraft compresses the entire discovery-to-delivery lifecycle. Decision-ready inception packs in minutes, not months.</p>
+            <a href="#" class="hero-cta">
+                Accelerate Your Next Initiative
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </a>
+            <div class="hero-meta">
+                <span>16 sections</span>
+                <span>12+ AI agents</span>
+                <span>~12 minutes</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="problem">
+        <div class="container">
+            <div class="problem-header">
+                <p class="eyebrow">The Problem</p>
+                <h2>Your ideas aren't slow. Your process is.</h2>
+                <p>Discovery takes months. Alignment takes longer. By the time you have a business case, competitors have shipped.</p>
+            </div>
+            <div class="problem-grid">
+                <div class="problem-item">
+                    <h3>Months of discovery</h3>
+                    <p>Stakeholder interviews, market research, endless alignment meetings that still end in misalignment.</p>
+                </div>
+                <div class="problem-item">
+                    <h3>Siloed artifacts</h3>
+                    <p>PRDs that don't match financial models. Architecture that ignores legal constraints. No single source of truth.</p>
+                </div>
+                <div class="problem-item">
+                    <h3>80% never used</h3>
+                    <p>Most features ship to indifference. Not because ideas were bad—because discovery couldn't validate fast enough.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="how">
+        <div class="container">
+            <h2>How it works</h2>
+            <div class="how-steps">
+                <div class="how-step">
+                    <div class="step-num">01</div>
+                    <h3>Input your context</h3>
+                    <p>Describe your initiative. Add your enterprise constraints—industry, regulations, tech stack, budget, stakeholders.</p>
+                </div>
+                <div class="how-step">
+                    <div class="step-num">02</div>
+                    <h3>Agents execute</h3>
+                    <p>Three coordinated swarms—Discovery, Strategy, Delivery—research, model, and validate in parallel.</p>
+                </div>
+                <div class="how-step">
+                    <div class="step-num">03</div>
+                    <h3>Review and decide</h3>
+                    <p>Get a 16-section inception pack. Cross-validated, evidence-tiered, ready for stakeholder review.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="sections">
+        <div class="container">
+            <div class="sections-header">
+                <h2>What you get</h2>
+                <p>16 sections, validated and cross-referenced</p>
+            </div>
+            <div class="sections-grid">
+                <div class="section-item">
+                    <span>Overview</span>
+                    <h4>Executive Summary</h4>
+                </div>
+                <div class="section-item">
+                    <span>Discovery</span>
+                    <h4>Customer Research</h4>
+                </div>
+                <div class="section-item">
+                    <span>Discovery</span>
+                    <h4>Competitive Analysis</h4>
+                </div>
+                <div class="section-item">
+                    <span>Discovery</span>
+                    <h4>Personas</h4>
+                </div>
+                <div class="section-item">
+                    <span>Strategy</span>
+                    <h4>Business Case</h4>
+                </div>
+                <div class="section-item">
+                    <span>Strategy</span>
+                    <h4>Go-to-Market</h4>
+                </div>
+                <div class="section-item">
+                    <span>Strategy</span>
+                    <h4>Financial Model</h4>
+                </div>
+                <div class="section-item">
+                    <span>Delivery</span>
+                    <h4>Product Requirements</h4>
+                </div>
+                <div class="section-item">
+                    <span>Delivery</span>
+                    <h4>Technical Architecture</h4>
+                </div>
+                <div class="section-item">
+                    <span>Delivery</span>
+                    <h4>Legal & Regulatory</h4>
+                </div>
+                <div class="section-item">
+                    <span>Delivery</span>
+                    <h4>Risk Assessment</h4>
+                </div>
+                <div class="section-item">
+                    <span>Design</span>
+                    <h4>Wireframes</h4>
+                </div>
+                <div class="section-item">
+                    <span>Design</span>
+                    <h4>Prototype</h4>
+                </div>
+                <div class="section-item">
+                    <span>Synthesis</span>
+                    <h4>Stakeholder Views</h4>
+                </div>
+                <div class="section-item">
+                    <span>Synthesis</span>
+                    <h4>Validation Playbook</h4>
+                </div>
+                <div class="section-item">
+                    <span>Quality</span>
+                    <h4>Quality Assessment</h4>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="trust">
+        <div class="container">
+            <h2>Built for scrutiny</h2>
+            <div class="trust-grid">
+                <div class="trust-item">
+                    <h3>Evidence-tiered claims</h3>
+                    <p>Every claim tagged E1–E4. You know exactly what's validated versus what needs customer interviews.</p>
+                </div>
+                <div class="trust-item">
+                    <h3>Critique-validated</h3>
+                    <p>AI agents cross-check each other. Contradictions are flagged before you see the output.</p>
+                </div>
+                <div class="trust-item">
+                    <h3>Stakeholder-ready</h3>
+                    <p>Tailored views for CFO, CTO, Legal. Each stakeholder gets relevant sections surfaced.</p>
+                </div>
+                <div class="trust-item">
+                    <h3>Context-aware</h3>
+                    <p>Works with your constraints. Your industry, your regulations, your tech stack—not generic assumptions.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta">
+        <div class="container">
+            <h2>Stop waiting for discovery.</h2>
+            <p>Generate a decision-ready inception pack for your next initiative.</p>
+            <a href="#" class="cta-btn">
+                Get Started
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+            </a>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Seedcraft</p>
+            <a href="#">GitHub</a>
+        </div>
+    </footer>
+</body>
+</html>

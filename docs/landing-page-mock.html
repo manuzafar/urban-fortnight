@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Seedcraft - Landing Page Mock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-bg: #FFFFFF;
+      --color-bg-alt: #F8FAFC;
+      --color-surface: #FFFFFF;
+      --color-primary: #0D9488;
+      --color-primary-dark: #0F766E;
+      --color-primary-light: #CCFBF1;
+      --color-accent: #D97706;
+      --color-text: #0F172A;
+      --color-text-secondary: #475569;
+      --color-text-muted: #94A3B8;
+      --color-border: #E2E8F0;
+      --color-border-dark: #CBD5E1;
+      --color-success: #10B981;
+
+      --font-display: 'Space Grotesk', system-ui, sans-serif;
+      --font-body: 'Inter', system-ui, sans-serif;
+
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: var(--font-body);
+      color: var(--color-text);
+      background: var(--color-bg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Navbar */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--color-border);
+      padding: 16px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-family: var(--font-display);
+      font-weight: 600;
+      font-size: 20px;
+      color: var(--color-text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--color-primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .logo-icon svg {
+      width: 20px;
+      height: 20px;
+      color: white;
+    }
+
+    .nav-cta {
+      background: var(--color-primary);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 14px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .nav-cta:hover {
+      background: var(--color-primary-dark);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(13, 148, 136, 0.25);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 160px 48px 96px;
+      text-align: center;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--color-bg-alt);
+      border: 1px solid var(--color-border);
+      border-radius: 100px;
+      padding: 8px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      margin-bottom: 32px;
+      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--color-success);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.4); opacity: 0.6; }
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: 56px;
+      font-weight: 600;
+      line-height: 1.1;
+      color: var(--color-text);
+      margin-bottom: 24px;
+      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+      opacity: 0;
+    }
+
+    .hero-title span {
+      color: var(--color-primary);
+    }
+
+    .hero-subtitle {
+      font-size: 20px;
+      line-height: 1.7;
+      color: var(--color-text-secondary);
+      max-width: 640px;
+      margin: 0 auto 40px;
+      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s forwards;
+      opacity: 0;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 64px;
+      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+      opacity: 0;
+    }
+
+    .btn-primary {
+      background: var(--color-primary);
+      color: white;
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 16px;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border: none;
+      cursor: pointer;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-primary:hover {
+      background: var(--color-primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(13, 148, 136, 0.3);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--color-text-secondary);
+      padding: 16px 32px;
+      border-radius: 12px;
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 16px;
+      text-decoration: none;
+      border: 1px solid var(--color-border);
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+      max-width: 720px;
+      margin: 0 auto;
+      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s forwards;
+      opacity: 0;
+    }
+
+    .metric {
+      text-align: center;
+    }
+
+    .metric-value {
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 4px;
+    }
+
+    .metric-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
+
+    .metric-sublabel {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+    }
+
+    /* Deliverables Section */
+    .deliverables {
+      background: var(--color-bg-alt);
+      padding: 96px 48px;
+    }
+
+    .section-header {
+      text-align: center;
+      max-width: 640px;
+      margin: 0 auto 64px;
+    }
+
+    .eyebrow {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-primary);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: 40px;
+      font-weight: 600;
+      line-height: 1.2;
+      color: var(--color-text);
+      margin-bottom: 16px;
+    }
+
+    .section-subtitle {
+      font-size: 18px;
+      color: var(--color-text-secondary);
+      line-height: 1.7;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .cards-grid-bottom {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      max-width: 1200px;
+      margin: 24px auto 0;
+    }
+
+    .card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 16px;
+      padding: 28px;
+      transition: all 0.2s ease;
+      cursor: default;
+    }
+
+    .card:hover {
+      border-color: var(--color-primary);
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 20px;
+    }
+
+    .card-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--color-primary-light);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-primary);
+    }
+
+    .card-number {
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-text-muted);
+    }
+
+    .card-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--color-text);
+      margin-bottom: 12px;
+    }
+
+    .card-description {
+      font-size: 15px;
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+    }
+
+    /* How It Works */
+    .how-it-works {
+      padding: 96px 48px;
+      background: var(--color-bg);
+    }
+
+    .steps {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 24px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .step {
+      flex: 1;
+      text-align: center;
+      max-width: 240px;
+    }
+
+    .step-number {
+      width: 64px;
+      height: 64px;
+      background: var(--color-primary-light);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--color-primary);
+      margin: 0 auto 20px;
+    }
+
+    .step-title {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--color-text);
+      margin-bottom: 8px;
+    }
+
+    .step-description {
+      font-size: 15px;
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+    }
+
+    .step-arrow {
+      display: flex;
+      align-items: center;
+      padding-top: 24px;
+      color: var(--color-border-dark);
+    }
+
+    /* Final CTA */
+    .final-cta {
+      background: var(--color-bg-alt);
+      padding: 96px 48px;
+    }
+
+    .cta-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: 24px;
+      padding: 64px;
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto;
+      box-shadow: var(--shadow-md);
+    }
+
+    .cta-title {
+      font-family: var(--font-display);
+      font-size: 36px;
+      font-weight: 600;
+      color: var(--color-text);
+      margin-bottom: 16px;
+    }
+
+    .cta-subtitle {
+      font-size: 18px;
+      color: var(--color-text-secondary);
+      margin-bottom: 32px;
+      line-height: 1.7;
+    }
+
+    .cta-button {
+      background: var(--color-primary);
+      color: white;
+      padding: 18px 40px;
+      border-radius: 12px;
+      font-family: var(--font-display);
+      font-weight: 500;
+      font-size: 18px;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.2s ease;
+      border: none;
+      cursor: pointer;
+      margin-bottom: 24px;
+    }
+
+    .cta-button:hover {
+      background: var(--color-primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(13, 148, 136, 0.3);
+    }
+
+    .trust-line {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      font-size: 14px;
+      color: var(--color-text-muted);
+    }
+
+    .trust-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .trust-item svg {
+      color: var(--color-success);
+    }
+
+    /* Footer */
+    .footer {
+      padding: 32px 48px;
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-left {
+      font-size: 14px;
+      color: var(--color-text-muted);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+
+    .footer-links a {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--color-primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .cards-grid-bottom {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .hero {
+        padding: 120px 24px 64px;
+      }
+      .hero-title {
+        font-size: 36px;
+      }
+      .hero-subtitle {
+        font-size: 17px;
+      }
+      .hero-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+      .metrics {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+      }
+      .cards-grid,
+      .cards-grid-bottom {
+        grid-template-columns: 1fr;
+      }
+      .steps {
+        flex-direction: column;
+        align-items: center;
+      }
+      .step-arrow {
+        transform: rotate(90deg);
+        padding: 16px 0;
+      }
+      .navbar {
+        padding: 16px 24px;
+      }
+      .deliverables,
+      .how-it-works,
+      .final-cta {
+        padding: 64px 24px;
+      }
+      .section-title {
+        font-size: 28px;
+      }
+      .cta-card {
+        padding: 40px 24px;
+      }
+      .cta-title {
+        font-size: 28px;
+      }
+      .trust-line {
+        flex-direction: column;
+        gap: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+      </div>
+      Seedcraft
+    </div>
+    <a href="#" class="nav-cta">Generate Pack</a>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge">
+      <span class="pulse-dot"></span>
+      3 Agent Swarms &bull; 12+ Specialists &bull; Working Now
+    </div>
+
+    <h1 class="hero-title">
+      The inception layer<br>
+      <span>for modern product teams</span>
+    </h1>
+
+    <p class="hero-subtitle">
+      Swarms of AI agents research, strategize, and document in parallel —
+      then critique each other's work before you see it.
+      From idea to decision-ready pack in minutes.
+    </p>
+
+    <div class="hero-buttons">
+      <button class="btn-primary">Generate Inception Pack</button>
+      <a href="#deliverables" class="btn-secondary">See sample output</a>
+    </div>
+
+    <div class="metrics">
+      <div class="metric">
+        <div class="metric-value">12+</div>
+        <div class="metric-label">Agents</div>
+        <div class="metric-sublabel">Discovery, Strategy & Delivery</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value">3</div>
+        <div class="metric-label">Swarms</div>
+        <div class="metric-sublabel">Working in parallel</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value">7</div>
+        <div class="metric-label">Deliverables</div>
+        <div class="metric-sublabel">Complete pack</div>
+      </div>
+      <div class="metric">
+        <div class="metric-value">AI</div>
+        <div class="metric-label">Critique</div>
+        <div class="metric-sublabel">Cross-validated</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Deliverables -->
+  <section class="deliverables" id="deliverables">
+    <div class="section-header">
+      <div class="eyebrow">What You Get</div>
+      <h2 class="section-title">A complete inception pack, ready for stakeholder review</h2>
+      <p class="section-subtitle">
+        Three agent swarms — Discovery, Strategy, and Delivery — work in parallel.
+        A critique agent cross-validates everything before it reaches you.
+      </p>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="20" x2="12" y2="10"></line>
+              <line x1="18" y1="20" x2="18" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+          </div>
+          <div class="card-number">01</div>
+        </div>
+        <h3 class="card-title">Executive Summary</h3>
+        <p class="card-description">
+          The TL;DR for leadership. Problem statement, solution overview, key risks,
+          and recommended next steps — everything needed to greenlight or pivot.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+          <div class="card-number">02</div>
+        </div>
+        <h3 class="card-title">Market Hypotheses</h3>
+        <p class="card-description">
+          AI-generated hypotheses about your market, customers, and competitors.
+          Tiered by confidence (E1-E5) so you know what to validate first.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+            </svg>
+          </div>
+          <div class="card-number">03</div>
+        </div>
+        <h3 class="card-title">Business Strategy</h3>
+        <p class="card-description">
+          Lean Canvas, revenue model, go-to-market approach, and financial projections.
+          Built on market research, not guesswork.
+        </p>
+      </div>
+    </div>
+
+    <div class="cards-grid-bottom">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+          </div>
+          <div class="card-number">04</div>
+        </div>
+        <h3 class="card-title">Product Requirements</h3>
+        <p class="card-description">
+          Epics, user stories, and acceptance criteria structured for engineering handoff.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+              <rect x="9" y="9" width="6" height="6"></rect>
+              <line x1="9" y1="1" x2="9" y2="4"></line>
+              <line x1="15" y1="1" x2="15" y2="4"></line>
+              <line x1="9" y1="20" x2="9" y2="23"></line>
+              <line x1="15" y1="20" x2="15" y2="23"></line>
+              <line x1="20" y1="9" x2="23" y2="9"></line>
+              <line x1="20" y1="14" x2="23" y2="14"></line>
+              <line x1="1" y1="9" x2="4" y2="9"></line>
+              <line x1="1" y1="14" x2="4" y2="14"></line>
+            </svg>
+          </div>
+          <div class="card-number">05</div>
+        </div>
+        <h3 class="card-title">Technical Architecture</h3>
+        <p class="card-description">
+          System design, tech stack, and infrastructure with architecture diagrams.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+            </svg>
+          </div>
+          <div class="card-number">06</div>
+        </div>
+        <h3 class="card-title">Legal & Compliance</h3>
+        <p class="card-description">
+          Regulatory requirements and data protection obligations for your industry.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+          </div>
+          <div class="card-number">07</div>
+        </div>
+        <h3 class="card-title">Quality Assessment</h3>
+        <p class="card-description">
+          Gaps, contradictions, and risks surfaced before you review — not after.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="how-it-works">
+    <div class="section-header">
+      <div class="eyebrow">How It Works</div>
+      <h2 class="section-title">Three steps to clarity</h2>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-number">1</div>
+        <h3 class="step-title">Describe</h3>
+        <p class="step-description">Enter your product idea and any context — industry, constraints, target market.</p>
+      </div>
+
+      <div class="step-arrow">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </div>
+
+      <div class="step">
+        <div class="step-number">2</div>
+        <h3 class="step-title">Swarm</h3>
+        <p class="step-description">3 agent swarms research, strategize, and document in parallel.</p>
+      </div>
+
+      <div class="step-arrow">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+          <polyline points="12 5 19 12 12 19"></polyline>
+        </svg>
+      </div>
+
+      <div class="step">
+        <div class="step-number">3</div>
+        <h3 class="step-title">Review</h3>
+        <p class="step-description">Get a scored, critiqued inception pack ready for decisions.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="final-cta">
+    <div class="cta-card">
+      <h2 class="cta-title">Stop researching. Start validating.</h2>
+      <p class="cta-subtitle">
+        Get your inception pack in minutes, then spend your time
+        where it matters — talking to real customers.
+      </p>
+      <button class="cta-button">Generate Your Pack — Free</button>
+      <div class="trust-line">
+        <div class="trust-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          No signup required
+        </div>
+        <div class="trust-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          No credit card
+        </div>
+        <div class="trust-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          Results in under 12 minutes
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-left">
+      &copy; 2026 Seedcraft
+    </div>
+    <div class="footer-links">
+      <a href="#">GitHub</a>
+      <a href="#">Twitter</a>
+      <a href="#">Documentation</a>
+    </div>
+  </footer>
+
+</body>
+</html>
