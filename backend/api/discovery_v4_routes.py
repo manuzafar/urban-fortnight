@@ -652,11 +652,11 @@ async def check_lifecycle_status(session_id: str) -> dict[str, Any]:
 
     # Check 2: Facilitator import
     try:
-        from agents.facilitator import Facilitator
+        from agents.facilitator import FacilitatorAgent
         result["checks"]["facilitator_import"] = True
 
         # Check 3: _convert_v4_to_v3_state method exists
-        facilitator = Facilitator()
+        facilitator = FacilitatorAgent()
         result["checks"]["facilitator_init"] = True
         result["checks"]["has_run_with_v4"] = hasattr(facilitator, 'run_with_v4_discovery')
         result["checks"]["has_convert_v4"] = hasattr(facilitator, '_convert_v4_to_v3_state')
@@ -1687,7 +1687,7 @@ async def _run_stage_task(
 async def _run_full_lifecycle_with_v4(session_id: str, user_id: str) -> None:
     """Run full lifecycle using V4 discovery outputs with SSE streaming."""
     try:
-        from agents.facilitator import Facilitator
+        from agents.facilitator import FacilitatorAgent
         from agents import orchestrator
         from utils.sse import get_or_create_emitter, remove_emitter
         from models.schemas import SessionStatus
@@ -1752,7 +1752,7 @@ async def _run_full_lifecycle_with_v4(session_id: str, user_id: str) -> None:
         )
 
         # Run the full lifecycle through facilitator
-        facilitator = Facilitator()
+        facilitator = FacilitatorAgent()
         final_state = await facilitator.run_with_v4_discovery(session)
 
         # Store the final inception pack
