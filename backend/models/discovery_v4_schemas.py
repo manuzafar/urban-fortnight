@@ -522,6 +522,13 @@ class StageState(BaseModel):
     approved_at: Optional[str] = Field(
         default=None, description="When the stage was approved"
     )
+    # Error tracking for stuck stage detection
+    error_message: Optional[str] = Field(
+        default=None, description="Error message if stage failed"
+    )
+    last_error_at: Optional[str] = Field(
+        default=None, description="When the last error occurred"
+    )
 
 
 class DiscoverySessionV4(BaseModel):

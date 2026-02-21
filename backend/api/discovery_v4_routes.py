@@ -251,6 +251,8 @@ async def run_test_stage(
                 error=str(e),
             )
             session.stages[stage].status = StageStatus.NOT_STARTED
+            session.stages[stage].error_message = str(e)
+            session.stages[stage].last_error_at = datetime.utcnow().isoformat()
 
     background_tasks.add_task(_run_stage)
 
@@ -417,6 +419,46 @@ async def synthesize_test_interviews(
     background_tasks.add_task(_synthesize)
 
     return {"status": "synthesizing", "interview_count": len(session.interviews)}
+
+
+@router.post("/test/sessions/{session_id}/continue-to-strategy")
+async def continue_test_session_to_strategy(session_id: str) -> dict[str, Any]:
+    """
+    [DEVELOPMENT ONLY] Continue to strategy for a test session.
+    Returns immediately with a simple success response (no full lifecycle).
+    """
+    from config import settings
+    if settings.app_env == "production":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Test endpoint not available in production",
+        )
+
+    if session_id not in _active_sessions:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Test session {session_id} not found",
+        )
+
+    session = _active_sessions[session_id]
+
+    # Validate that at least some discovery is complete
+    stages_complete = sum(
+        1 for s in session.stages.values()
+        if s.status in (StageStatus.COMPLETED, StageStatus.APPROVED)
+    )
+
+    if stages_complete == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Complete at least one discovery stage before continuing",
+        )
+
+    return {
+        "status": "completed",
+        "message": "Test session ready for strategy (no full lifecycle in test mode)",
+        "session_id": session_id,
+    }
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1393,10 +1435,12 @@ async def _run_stage_task(
             error=str(e),
             exc_info=True,
         )
-        # Mark stage as failed
+        # Mark stage as failed and expose error to frontend
         session = _active_sessions.get(session_id)
         if session:
             session.stages[stage].status = StageStatus.NOT_STARTED
+            session.stages[stage].error_message = str(e)
+            session.stages[stage].last_error_at = datetime.utcnow().isoformat()
             session.stages[stage].coaching_messages.append(f"Error: {str(e)}")
 
 

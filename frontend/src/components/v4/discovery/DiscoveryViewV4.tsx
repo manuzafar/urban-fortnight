@@ -10,6 +10,7 @@ import {
   Edit3,
   Shield,
   Loader2,
+  AlertCircle,
 } from 'lucide-react';
 import { useDiscoveryV4, type Interview } from '../../../hooks/useDiscoveryV4';
 import StageProgress from './StageProgress';
@@ -79,11 +80,38 @@ function StageContent({
     output?: Record<string, unknown>;
     score?: number;
     coaching_messages?: string[];
+    error_message?: string;
+    last_error_at?: string;
   };
   onRunStage: () => void;
   isLoading: boolean;
 }) {
   const hasOutput = stageState.output && Object.keys(stageState.output).length > 0;
+
+  // Show error state if stage failed
+  if (stageState.error_message) {
+    return (
+      <div className="stage-error">
+        <AlertCircle size={32} />
+        <h3>Stage Failed</h3>
+        <p className="error-message">{stageState.error_message}</p>
+        {stageState.last_error_at && (
+          <p className="error-time">Failed at: {new Date(stageState.last_error_at).toLocaleString()}</p>
+        )}
+        <button className="retry-btn" onClick={onRunStage} disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader2 size={18} className="spin" /> Retrying...
+            </>
+          ) : (
+            <>
+              <RefreshCw size={18} /> Retry Stage
+            </>
+          )}
+        </button>
+      </div>
+    );
+  }
 
   if (stageState.status === 'not_started') {
     return (
@@ -146,10 +174,63 @@ function StageContent({
   return null;
 }
 
+// Convert V4 session to InceptionPack format for PackViewer
+interface DiscoveryPack {
+  metadata: {
+    session_id: string;
+    product_idea: string;
+    mode: string;
+    evidence_quality: string;
+    created_at: string;
+  };
+  discovery: {
+    problem_love?: Record<string, unknown>;
+    customer_truth?: Record<string, unknown>;
+    opportunity_mapping?: Record<string, unknown>;
+    solution_design?: Record<string, unknown>;
+    validation_plan?: Record<string, unknown>;
+  };
+  interviews: unknown[];
+  patterns?: unknown;
+  quality_score: number;
+}
+
+function convertV4SessionToPack(session: {
+  session_id: string;
+  product_idea: string;
+  mode: string;
+  overall_evidence_quality: string;
+  created_at: string;
+  quality_score: number;
+  stages: Record<string, { output?: Record<string, unknown> }>;
+  interviews: unknown[];
+  patterns?: unknown;
+}): DiscoveryPack {
+  return {
+    metadata: {
+      session_id: session.session_id,
+      product_idea: session.product_idea,
+      mode: session.mode,
+      evidence_quality: session.overall_evidence_quality,
+      created_at: session.created_at,
+    },
+    discovery: {
+      problem_love: session.stages.problem_love?.output,
+      customer_truth: session.stages.customer_truth?.output,
+      opportunity_mapping: session.stages.opportunity_mapping?.output,
+      solution_design: session.stages.solution_design?.output,
+      validation_plan: session.stages.validation_plan?.output,
+    },
+    interviews: session.interviews,
+    patterns: session.patterns,
+    quality_score: session.quality_score,
+  };
+}
+
 export function DiscoveryViewV4({
   sessionId,
   onBack,
-  onComplete: _onComplete,
+  onComplete,
 }: DiscoveryViewV4Props) {
   const {
     session,
@@ -167,6 +248,8 @@ export function DiscoveryViewV4({
   const [activeStage, setActiveStage] = useState<string>('problem_love');
   const [showInterviewForm, setShowInterviewForm] = useState(false);
   const [stageLoading, setStageLoading] = useState<string | null>(null);
+  const [lifecycleLoading, setLifecycleLoading] = useState(false);
+  const [lifecycleError, setLifecycleError] = useState<string | null>(null);
   const [coaching, setCoaching] = useState<{
     messages: Array<{ type: 'suggestion' | 'warning' | 'tip' | 'question'; content: string }>;
     suggestion?: string;
@@ -242,8 +325,22 @@ export function DiscoveryViewV4({
   };
 
   const handleContinueToStrategy = async () => {
-    await continueToStrategy();
-    // Optionally handle navigation
+    if (!session) return;
+
+    setLifecycleLoading(true);
+    setLifecycleError(null);
+
+    try {
+      await continueToStrategy();
+
+      // Convert V4 session to pack format and call onComplete
+      const pack = convertV4SessionToPack(session);
+      onComplete?.(pack as unknown as Record<string, unknown>);
+    } catch (err) {
+      setLifecycleError(err instanceof Error ? err.message : 'Failed to generate full lifecycle');
+    } finally {
+      setLifecycleLoading(false);
+    }
   };
 
   // Calculate overall progress
@@ -397,12 +494,28 @@ export function DiscoveryViewV4({
                 All stages are complete. You can now continue to full lifecycle
                 generation.
               </p>
+              {lifecycleError && (
+                <div className="lifecycle-error">
+                  <AlertCircle size={16} />
+                  <span>{lifecycleError}</span>
+                </div>
+              )}
               <button
                 className="continue-strategy-btn"
                 onClick={handleContinueToStrategy}
+                disabled={lifecycleLoading}
               >
-                Continue to Strategy & Delivery
-                <ArrowRight size={18} />
+                {lifecycleLoading ? (
+                  <>
+                    <Loader2 size={18} className="spin" />
+                    Generating Lifecycle...
+                  </>
+                ) : (
+                  <>
+                    Continue to Strategy & Delivery
+                    <ArrowRight size={18} />
+                  </>
+                )}
               </button>
             </div>
           )}
@@ -670,7 +783,8 @@ export function DiscoveryViewV4({
         }
 
         .stage-empty,
-        .stage-loading {
+        .stage-loading,
+        .stage-error {
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -680,16 +794,74 @@ export function DiscoveryViewV4({
         }
 
         .stage-empty h3,
-        .stage-loading h3 {
+        .stage-loading h3,
+        .stage-error h3 {
           margin: 0 0 8px 0;
           font-size: 18px;
           color: var(--text-primary, #1a1a2e);
         }
 
         .stage-empty p,
-        .stage-loading p {
+        .stage-loading p,
+        .stage-error p {
           margin: 0 0 24px 0;
           color: var(--text-secondary, #6b7280);
+        }
+
+        .stage-error {
+          background: #fef2f2;
+          border-radius: 12px;
+        }
+
+        .stage-error h3 {
+          color: #b91c1c;
+        }
+
+        .stage-error .error-message {
+          color: #dc2626;
+          max-width: 400px;
+          word-break: break-word;
+        }
+
+        .stage-error .error-time {
+          font-size: 12px;
+          color: #9ca3af;
+        }
+
+        .stage-error .retry-btn {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 10px 20px;
+          background: #dc2626;
+          border: none;
+          border-radius: 8px;
+          color: white;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .stage-error .retry-btn:hover:not(:disabled) {
+          background: #b91c1c;
+        }
+
+        .stage-error .retry-btn:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+
+        .lifecycle-error {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 16px;
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          border-radius: 8px;
+          color: #dc2626;
+          font-size: 14px;
+          margin-bottom: 16px;
         }
 
         .run-stage-btn {
