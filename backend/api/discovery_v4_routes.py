@@ -255,7 +255,10 @@ async def create_test_session(
     Now persists to database to survive deployments.
     """
     session_id = generate_session_id()
-    test_user_id = "test-user-dev"
+    # Use a fixed valid UUID for test users (bypasses foreign key constraint)
+    # This UUID is reserved for testing and doesn't need to exist in users table
+    # since Supabase RLS is bypassed with service role key
+    test_user_id = "00000000-0000-0000-0000-000000000001"
 
     now = datetime.utcnow().isoformat()
     session = DiscoverySessionV4(
@@ -610,7 +613,7 @@ async def continue_test_session_to_strategy(
     background_tasks.add_task(
         _run_full_lifecycle_with_v4,
         session_id,
-        "test-user-dev",  # Test user ID
+        "00000000-0000-0000-0000-000000000001",  # Fixed test user UUID
     )
 
     return {
@@ -1709,7 +1712,7 @@ async def _run_full_lifecycle_with_v4(session_id: str, user_id: str) -> None:
         if not existing:
             try:
                 # Use the user_id from the session if available (properly validated)
-                # For test sessions, user_id might be "test-user-dev" which is invalid UUID
+                # Use session's user_id or the provided user_id
                 effective_user_id = session.user_id if hasattr(session, 'user_id') else user_id
 
                 session_store.create(
