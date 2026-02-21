@@ -28,6 +28,7 @@ const USE_V4_UI = true;
 
 // Extended app state with new views
 type AppState = 'landing' | 'form' | 'progress' | 'result' | 'sessions' | 'dashboard' | 'execution' | 'pack' | 'input' | 'discovery-v4';
+type DiscoveryMode = 'quick' | 'guided' | 'deep';
 
 function App() {
   const { user, session, isLoading: authLoading, signInWithGoogle, signOut } = useAuth();
@@ -38,6 +39,7 @@ function App() {
   const [inceptionPack, setInceptionPack] = useState<InceptionPack | null>(null);
   const [isHealthy, setIsHealthy] = useState<boolean | null>(null);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
+  const [_discoveryMode, setDiscoveryMode] = useState<DiscoveryMode>('quick');
 
   // Sync auth token to API client whenever session changes
   useEffect(() => {
@@ -70,11 +72,37 @@ function App() {
   }, []);
 
   // Handle starting discovery (used by both DiscoveryForm and Dashboard)
-  const handleStartDiscovery = useCallback(async (request: DiscoveryRequest) => {
+  const handleStartDiscovery = useCallback(async (request: DiscoveryRequest, mode: DiscoveryMode = 'quick') => {
     setIsLoading(true);
     setError(null);
+    setDiscoveryMode(mode);
 
     try {
+      // For guided/deep modes, create a V4 session and go to staged discovery
+      if (mode === 'guided' || mode === 'deep') {
+        // Create V4 session via the test endpoint (or authenticated endpoint)
+        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/discovery/v4/test/sessions`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            product_idea: request.product_idea,
+            mode: mode,
+            industry: request.industry,
+            target_market: request.target_market,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to create V4 session');
+        }
+
+        const data = await response.json();
+        setCurrentSessionId(data.session_id);
+        setAppState('discovery-v4');
+        return;
+      }
+
+      // Quick mode: use the existing full pipeline
       const response = await startDiscovery(request);
       setCurrentSessionId(response.session_id);
 

@@ -4,12 +4,15 @@
  */
 
 import { useState, type FormEvent, type ChangeEvent } from 'react';
+import { Zap, Compass, Microscope, Clock, Shield } from 'lucide-react';
 import { ChipInput, ChipSelect } from './ChipInput';
 import '../../styles/theme-v4.css';
 import type { DiscoveryRequest } from '../../types/api';
 
+type DiscoveryMode = 'quick' | 'guided' | 'deep';
+
 interface InputFormV4Props {
-  onSubmit: (request: DiscoveryRequest) => void;
+  onSubmit: (request: DiscoveryRequest, mode: DiscoveryMode) => void;
   onBack: () => void;
   isLoading?: boolean;
 }
@@ -45,7 +48,48 @@ const REGULATIONS = ['GDPR', 'HIPAA', 'SOC 2', 'PCI-DSS', 'ISO 27001'];
 const TECH_STACK = ['AWS', 'Azure', 'GCP', 'Kubernetes', 'React', 'Python'];
 const STAKEHOLDERS = ['CEO', 'CFO', 'CTO', 'CISO', 'VP Product', 'Legal', 'Board'];
 
+const MODE_OPTIONS: Array<{
+  id: DiscoveryMode;
+  icon: typeof Zap;
+  title: string;
+  subtitle: string;
+  duration: string;
+  evidence: string;
+  description: string;
+  recommended?: boolean;
+}> = [
+  {
+    id: 'quick',
+    icon: Zap,
+    title: 'Quick',
+    subtitle: 'AI generates everything',
+    duration: '3-5 min',
+    evidence: 'E3-E4',
+    description: 'Best for early exploration and rapid validation',
+  },
+  {
+    id: 'guided',
+    icon: Compass,
+    title: 'Guided',
+    subtitle: 'AI + your review',
+    duration: '5-8 min',
+    evidence: 'E2-E4',
+    description: 'Review and edit AI outputs at each stage',
+    recommended: true,
+  },
+  {
+    id: 'deep',
+    icon: Microscope,
+    title: 'Deep',
+    subtitle: 'Real interviews',
+    duration: 'Days-weeks',
+    evidence: 'E1-E2',
+    description: 'Add real customer interviews for highest quality',
+  },
+];
+
 export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4Props) {
+  const [selectedMode, setSelectedMode] = useState<DiscoveryMode>('quick');
   const [formData, setFormData] = useState({
     productName: '',
     productDescription: '',
@@ -99,7 +143,7 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
       additional_context: additionalContext || undefined,
     };
 
-    onSubmit(request);
+    onSubmit(request, selectedMode);
   };
 
   return (
@@ -210,6 +254,68 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
           </p>
 
           <form onSubmit={handleSubmit}>
+            {/* Discovery Mode Selection */}
+            <FormSection label="Mode" title="Discovery Mode">
+              <p style={{ fontSize: '14px', color: 'var(--v4-text-secondary)', marginBottom: '16px' }}>
+                Choose how you want to run discovery. You can always switch later.
+              </p>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                {MODE_OPTIONS.map((mode) => {
+                  const Icon = mode.icon;
+                  const isSelected = selectedMode === mode.id;
+                  return (
+                    <button
+                      key={mode.id}
+                      type="button"
+                      onClick={() => setSelectedMode(mode.id)}
+                      style={{
+                        padding: '16px',
+                        border: isSelected ? '2px solid var(--v4-accent)' : '1px solid var(--v4-border)',
+                        borderRadius: '12px',
+                        background: isSelected ? 'rgba(99, 102, 241, 0.05)' : 'var(--v4-surface)',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        position: 'relative',
+                      }}
+                    >
+                      {mode.recommended && (
+                        <span style={{
+                          position: 'absolute',
+                          top: '-8px',
+                          right: '8px',
+                          background: 'var(--v4-accent)',
+                          color: 'white',
+                          fontSize: '10px',
+                          fontWeight: 600,
+                          padding: '2px 8px',
+                          borderRadius: '10px',
+                        }}>
+                          Recommended
+                        </span>
+                      )}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                        <Icon size={18} style={{ color: isSelected ? 'var(--v4-accent)' : 'var(--v4-text-muted)' }} />
+                        <span style={{ fontWeight: 600, color: 'var(--v4-text)' }}>{mode.title}</span>
+                      </div>
+                      <p style={{ fontSize: '12px', color: 'var(--v4-text-secondary)', margin: '0 0 8px 0' }}>
+                        {mode.subtitle}
+                      </p>
+                      <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: 'var(--v4-text-muted)' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Clock size={12} /> {mode.duration}
+                        </span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <Shield size={12} /> {mode.evidence}
+                        </span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </FormSection>
+
+            <div className="v4-divider" />
+
             {/* Section 1: Product Idea */}
             <FormSection label="Required" title="Product Idea">
               <Field label="Initiative name">
