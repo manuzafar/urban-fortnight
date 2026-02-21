@@ -44,19 +44,135 @@ session_store = SupabaseSessionStore()
 _active_sessions: dict[str, DiscoverySessionV4] = {}
 
 
+def _persist_session_to_db(session: DiscoverySessionV4) -> bool:
+    """Persist session state to database."""
+    try:
+        # Convert session to dict for storage
+        stages_dict = {}
+        for stage_name, stage_state in session.stages.items():
+            stages_dict[stage_name] = {
+                "status": stage_state.status.value if hasattr(stage_state.status, 'value') else str(stage_state.status),
+                "output": stage_state.output,
+                "output_source": stage_state.output_source,
+                "user_notes": stage_state.user_notes,
+                "coaching_messages": stage_state.coaching_messages,
+                "score": stage_state.score,
+                "started_at": stage_state.started_at,
+                "completed_at": stage_state.completed_at,
+                "approved_at": stage_state.approved_at,
+                "error_message": stage_state.error_message,
+                "last_error_at": stage_state.last_error_at,
+            }
+
+        session_state = {
+            "mode": session.mode.value if hasattr(session.mode, 'value') else str(session.mode),
+            "stages": stages_dict,
+            "patterns": session.patterns.model_dump() if session.patterns else None,
+            "four_forces": session.four_forces.model_dump() if session.four_forces else None,
+            "opportunity_tree": session.opportunity_tree.model_dump() if session.opportunity_tree else None,
+            "overall_evidence_quality": session.overall_evidence_quality.value if hasattr(session.overall_evidence_quality, 'value') else str(session.overall_evidence_quality),
+            "quality_score": session.quality_score,
+        }
+
+        return session_store.save_v4_session_state(session.session_id, session_state)
+    except Exception as e:
+        logger.warning(
+            "session_persist_failed",
+            session_id=session.session_id,
+            error=str(e),
+        )
+        return False
+
+
+def _load_session_from_db(session_id: str) -> DiscoverySessionV4 | None:
+    """Load session from database and reconstruct the model."""
+    try:
+        db_state = session_store.load_v4_session_state(session_id)
+        if not db_state:
+            return None
+
+        # Reconstruct stages
+        stages = {
+            "problem_love": StageState(),
+            "customer_truth": StageState(),
+            "opportunity_mapping": StageState(),
+            "solution_design": StageState(),
+            "validation_plan": StageState(),
+        }
+
+        db_stages = db_state.get("stages", {})
+        for stage_name, stage_data in db_stages.items():
+            if stage_name in stages and isinstance(stage_data, dict):
+                stages[stage_name] = StageState(
+                    status=StageStatus(stage_data.get("status", "not_started")),
+                    output=stage_data.get("output"),
+                    output_source=stage_data.get("output_source", "ai_generated"),
+                    user_notes=stage_data.get("user_notes"),
+                    coaching_messages=stage_data.get("coaching_messages", []),
+                    score=stage_data.get("score"),
+                    started_at=stage_data.get("started_at"),
+                    completed_at=stage_data.get("completed_at"),
+                    approved_at=stage_data.get("approved_at"),
+                    error_message=stage_data.get("error_message"),
+                    last_error_at=stage_data.get("last_error_at"),
+                )
+
+        # Reconstruct interviews
+        interviews = []
+        for i in db_state.get("interviews", []):
+            try:
+                interviews.append(
+                    Interview(
+                        id=i.get("id"),
+                        interviewee_name=i.get("interviewee_name", ""),
+                        interviewee_role=i.get("interviewee_role", ""),
+                        company_type=i.get("company_type", ""),
+                        company_size=i.get("company_size", ""),
+                        interview_date=i.get("interview_date", datetime.now().date()),
+                        story_raw=i.get("story_raw", ""),
+                        key_quote=i.get("key_quote", ""),
+                        struggling_moment=i.get("struggling_moment", ""),
+                        emotions=i.get("emotions", []),
+                        current_workaround=i.get("current_workaround", ""),
+                        desired_outcome=i.get("desired_outcome", ""),
+                    )
+                )
+            except Exception:
+                pass
+
+        return DiscoverySessionV4(
+            session_id=session_id,
+            user_id=db_state.get("user_id", ""),
+            mode=DiscoveryMode(db_state.get("mode", "guided")),
+            product_idea=db_state.get("product_idea", ""),
+            industry=db_state.get("industry"),
+            target_market=db_state.get("target_market"),
+            stages=stages,
+            interviews=interviews,
+            patterns=PatternSynthesis(**db_state["patterns"]) if db_state.get("patterns") else None,
+            overall_evidence_quality=EvidenceQuality(db_state.get("overall_evidence_quality", "E4")),
+            quality_score=db_state.get("quality_score", 0),
+            created_at=db_state.get("created_at", datetime.utcnow().isoformat()),
+            updated_at=db_state.get("updated_at", datetime.utcnow().isoformat()),
+        )
+    except Exception as e:
+        logger.warning(
+            "session_load_failed",
+            session_id=session_id,
+            error=str(e),
+        )
+        return None
+
+
 def get_session_from_cache_or_db(session_id: str) -> DiscoverySessionV4 | None:
     """Get session from cache or database."""
     if session_id in _active_sessions:
         return _active_sessions[session_id]
 
-    # Load from database
-    db_session = session_store.get_v4_session(session_id)
-    if not db_session:
-        return None
-
-    # Convert to V4 session model
-    session = _db_to_session_model(db_session)
-    _active_sessions[session_id] = session
+    # Load from database using the new method
+    session = _load_session_from_db(session_id)
+    if session:
+        _active_sessions[session_id] = session
     return session
 
 
@@ -135,19 +251,11 @@ async def create_test_session(
     """
     [DEVELOPMENT ONLY] Create a test session without authentication.
     This endpoint is for testing purposes only.
-    Uses in-memory storage only (no database).
+    Now persists to database to survive deployments.
     """
-    from config import settings
-    if settings.app_env == "production":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Test endpoint not available in production",
-        )
-
     session_id = generate_session_id()
     test_user_id = "test-user-dev"
 
-    # Create in-memory session only (skip database for testing)
     now = datetime.utcnow().isoformat()
     session = DiscoverySessionV4(
         session_id=session_id,
@@ -161,6 +269,27 @@ async def create_test_session(
     )
     _active_sessions[session_id] = session
 
+    # Persist to database
+    try:
+        session_store.create_v4_session(
+            session_id=session_id,
+            user_id=test_user_id,
+            data={
+                "product_idea": request.product_idea,
+                "mode": request.mode.value,
+                "industry": request.industry,
+                "target_market": request.target_market,
+            },
+        )
+        # Save full session state
+        _persist_session_to_db(session)
+    except Exception as e:
+        logger.warning(
+            "v4_test_session_db_persist_failed",
+            session_id=session_id,
+            error=str(e),
+        )
+
     logger.info(
         "v4_test_session_created",
         session_id=session_id,
@@ -171,7 +300,7 @@ async def create_test_session(
         session_id=session_id,
         mode=request.mode,
         status="created",
-        message=f"Test session created in {request.mode.value} mode (in-memory only)",
+        message=f"Test session created in {request.mode.value} mode",
     )
 
 
@@ -179,21 +308,26 @@ async def create_test_session(
 async def get_test_session(session_id: str) -> DiscoverySessionV4:
     """
     [DEVELOPMENT ONLY] Get a test session without authentication.
+    Loads from database if not in memory cache.
     """
-    from config import settings
-    if settings.app_env == "production":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Test endpoint not available in production",
-        )
+    # Check in-memory cache first
+    if session_id in _active_sessions:
+        return _active_sessions[session_id]
 
-    if session_id not in _active_sessions:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Test session {session_id} not found",
+    # Try to load from database
+    session = _load_session_from_db(session_id)
+    if session:
+        _active_sessions[session_id] = session
+        logger.info(
+            "v4_test_session_loaded_from_db",
+            session_id=session_id,
         )
+        return session
 
-    return _active_sessions[session_id]
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Test session {session_id} not found",
+    )
 
 
 @router.post("/test/sessions/{session_id}/stages/{stage}/run")
@@ -204,19 +338,19 @@ async def run_test_stage(
 ) -> dict[str, Any]:
     """
     [DEVELOPMENT ONLY] Run a stage on a test session without authentication.
+    Loads from database if not in memory, persists after completion.
     """
-    from config import settings
-    if settings.app_env == "production":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Test endpoint not available in production",
-        )
-
+    # Check in-memory cache first, then try database
     if session_id not in _active_sessions:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Test session {session_id} not found",
-        )
+        session = _load_session_from_db(session_id)
+        if session:
+            _active_sessions[session_id] = session
+            logger.info("v4_test_session_loaded_from_db", session_id=session_id)
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Test session {session_id} not found",
+            )
 
     session = _active_sessions[session_id]
     valid_stages = ["problem_love", "customer_truth", "opportunity_mapping",
@@ -238,6 +372,10 @@ async def run_test_stage(
         try:
             updated_session = await engine.run_stage(session, stage)
             _active_sessions[session_id] = updated_session
+
+            # Persist to database after successful completion
+            _persist_session_to_db(updated_session)
+
             logger.info(
                 "v4_test_stage_completed",
                 session_id=session_id,
@@ -254,11 +392,17 @@ async def run_test_stage(
             session.stages[stage].error_message = str(e)
             session.stages[stage].last_error_at = datetime.utcnow().isoformat()
 
+            # Persist error state to database
+            _persist_session_to_db(session)
+
     background_tasks.add_task(_run_stage)
 
     # Mark stage as in-progress
     session.stages[stage].status = StageStatus.IN_PROGRESS
     session.stages[stage].started_at = datetime.utcnow().isoformat()
+
+    # Persist in-progress state
+    _persist_session_to_db(session)
 
     return {
         "status": "started",
@@ -271,18 +415,16 @@ async def run_test_stage(
 @router.post("/test/sessions/{session_id}/stages/{stage}/approve")
 async def approve_test_stage(session_id: str, stage: str) -> dict[str, Any]:
     """[DEVELOPMENT ONLY] Approve a stage on a test session."""
-    from config import settings
-    if settings.app_env == "production":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Test endpoint not available in production",
-        )
-
+    # Load from cache or database
     if session_id not in _active_sessions:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Test session {session_id} not found",
-        )
+        session = _load_session_from_db(session_id)
+        if session:
+            _active_sessions[session_id] = session
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Test session {session_id} not found",
+            )
 
     session = _active_sessions[session_id]
     if stage not in session.stages:
@@ -290,6 +432,9 @@ async def approve_test_stage(session_id: str, stage: str) -> dict[str, Any]:
 
     session.stages[stage].status = StageStatus.APPROVED
     session.stages[stage].approved_at = datetime.utcnow().isoformat()
+
+    # Persist to database
+    _persist_session_to_db(session)
 
     # Find next stage
     stage_order = ["problem_love", "customer_truth", "opportunity_mapping",
@@ -303,24 +448,25 @@ async def approve_test_stage(session_id: str, stage: str) -> dict[str, Any]:
 @router.post("/test/sessions/{session_id}/stages/{stage}/skip")
 async def skip_test_stage(session_id: str, stage: str) -> dict[str, Any]:
     """[DEVELOPMENT ONLY] Skip a stage on a test session."""
-    from config import settings
-    if settings.app_env == "production":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Test endpoint not available in production",
-        )
-
+    # Load from cache or database
     if session_id not in _active_sessions:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Test session {session_id} not found",
-        )
+        session = _load_session_from_db(session_id)
+        if session:
+            _active_sessions[session_id] = session
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Test session {session_id} not found",
+            )
 
     session = _active_sessions[session_id]
     if stage not in session.stages:
         raise HTTPException(status_code=400, detail=f"Invalid stage: {stage}")
 
     session.stages[stage].status = StageStatus.SKIPPED
+
+    # Persist to database
+    _persist_session_to_db(session)
 
     return {"status": "skipped", "stage": stage}
 
@@ -332,18 +478,16 @@ async def save_test_stage_output(
     request: SaveStageOutputRequest,
 ) -> dict[str, Any]:
     """[DEVELOPMENT ONLY] Save output for a test session stage."""
-    from config import settings
-    if settings.app_env == "production":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Test endpoint not available in production",
-        )
-
+    # Load from cache or database
     if session_id not in _active_sessions:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Test session {session_id} not found",
-        )
+        session = _load_session_from_db(session_id)
+        if session:
+            _active_sessions[session_id] = session
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Test session {session_id} not found",
+            )
 
     session = _active_sessions[session_id]
     if stage not in session.stages:
@@ -354,28 +498,32 @@ async def save_test_stage_output(
     if request.notes:
         session.stages[stage].user_notes = request.notes
 
+    # Persist to database
+    _persist_session_to_db(session)
+
     return {"status": "saved", "stage": stage}
 
 
 @router.post("/test/sessions/{session_id}/interviews")
 async def add_test_interview(session_id: str, interview: Interview) -> Interview:
     """[DEVELOPMENT ONLY] Add interview to a test session."""
-    from config import settings
-    if settings.app_env == "production":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Test endpoint not available in production",
-        )
-
+    # Load from cache or database
     if session_id not in _active_sessions:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Test session {session_id} not found",
-        )
+        session = _load_session_from_db(session_id)
+        if session:
+            _active_sessions[session_id] = session
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Test session {session_id} not found",
+            )
 
     session = _active_sessions[session_id]
     interview.id = f"int_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
     session.interviews.append(interview)
+
+    # Persist to database
+    _persist_session_to_db(session)
 
     return interview
 
@@ -386,18 +534,16 @@ async def synthesize_test_interviews(
     background_tasks: BackgroundTasks,
 ) -> dict[str, Any]:
     """[DEVELOPMENT ONLY] Synthesize patterns from test session interviews."""
-    from config import settings
-    if settings.app_env == "production":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Test endpoint not available in production",
-        )
-
+    # Load from cache or database
     if session_id not in _active_sessions:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Test session {session_id} not found",
-        )
+        session = _load_session_from_db(session_id)
+        if session:
+            _active_sessions[session_id] = session
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Test session {session_id} not found",
+            )
 
     session = _active_sessions[session_id]
 
@@ -412,6 +558,10 @@ async def synthesize_test_interviews(
             stage = CustomerTruthStage()
             patterns = await stage.synthesize_patterns(session.interviews)
             session.patterns = patterns
+
+            # Persist to database
+            _persist_session_to_db(session)
+
             logger.info("test_interview_synthesis_completed", session_id=session_id)
         except Exception as e:
             logger.error("test_interview_synthesis_failed", error=str(e))
@@ -427,18 +577,16 @@ async def continue_test_session_to_strategy(session_id: str) -> dict[str, Any]:
     [DEVELOPMENT ONLY] Continue to strategy for a test session.
     Returns immediately with a simple success response (no full lifecycle).
     """
-    from config import settings
-    if settings.app_env == "production":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Test endpoint not available in production",
-        )
-
+    # Load from cache or database
     if session_id not in _active_sessions:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Test session {session_id} not found",
-        )
+        session = _load_session_from_db(session_id)
+        if session:
+            _active_sessions[session_id] = session
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Test session {session_id} not found",
+            )
 
     session = _active_sessions[session_id]
 
@@ -1373,14 +1521,21 @@ async def _run_quick_mode_pipeline(session_id: str, user_id: str) -> None:
 
         session = _active_sessions.get(session_id)
         if not session:
-            logger.error("quick_mode_session_not_found", session_id=session_id)
-            return
+            # Try loading from database
+            session = _load_session_from_db(session_id)
+            if not session:
+                logger.error("quick_mode_session_not_found", session_id=session_id)
+                return
+            _active_sessions[session_id] = session
 
         engine = DiscoveryEngineV4()
         updated_session = await engine.run_session(session)
         _active_sessions[session_id] = updated_session
 
-        # Update database
+        # Persist full session state to database
+        _persist_session_to_db(updated_session)
+
+        # Update status
         session_store.update_status(
             session_id,
             {
@@ -1418,12 +1573,19 @@ async def _run_stage_task(
 
         session = _active_sessions.get(session_id)
         if not session:
-            logger.error("stage_task_session_not_found", session_id=session_id)
-            return
+            # Try loading from database
+            session = _load_session_from_db(session_id)
+            if not session:
+                logger.error("stage_task_session_not_found", session_id=session_id)
+                return
+            _active_sessions[session_id] = session
 
         engine = DiscoveryEngineV4()
         updated_session = await engine.run_stage(session, stage)
         _active_sessions[session_id] = updated_session
+
+        # Persist to database
+        _persist_session_to_db(updated_session)
 
         logger.info("stage_task_complete", session_id=session_id, stage=stage)
 
@@ -1442,6 +1604,9 @@ async def _run_stage_task(
             session.stages[stage].error_message = str(e)
             session.stages[stage].last_error_at = datetime.utcnow().isoformat()
             session.stages[stage].coaching_messages.append(f"Error: {str(e)}")
+
+            # Persist error state to database
+            _persist_session_to_db(session)
 
 
 async def _run_full_lifecycle_with_v4(session_id: str, user_id: str) -> None:

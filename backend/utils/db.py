@@ -440,3 +440,165 @@ class SupabaseSessionStore:
                 pass
 
         return v4_sessions
+
+    # ═══════════════════════════════════════════════════════════════════════════════
+    # V4 SESSION PERSISTENCE (Full State)
+    # ═══════════════════════════════════════════════════════════════════════════════
+
+    def save_v4_session_state(
+        self, session_id: str, session_state: dict[str, Any]
+    ) -> bool:
+        """
+        Save the full V4 session state to database.
+        This includes stages, interviews, patterns, and all metadata.
+        """
+        import json
+
+        try:
+            # Build the context with full V4 state
+            v4_context = {
+                "discovery_version": "v4",
+                "mode": session_state.get("mode", "guided"),
+                "stages": session_state.get("stages", {}),
+                "patterns": session_state.get("patterns"),
+                "four_forces": session_state.get("four_forces"),
+                "opportunity_tree": session_state.get("opportunity_tree"),
+                "overall_evidence_quality": session_state.get("overall_evidence_quality", "E4"),
+                "quality_score": session_state.get("quality_score", 0),
+            }
+
+            # Calculate progress based on completed stages
+            stages = session_state.get("stages", {})
+            completed = sum(
+                1 for s in stages.values()
+                if isinstance(s, dict) and s.get("status") in ("completed", "approved", "skipped")
+            )
+            total = len(stages) if stages else 5
+            progress = int((completed / total) * 100)
+
+            # Update main session record
+            updates = {
+                "additional_context": json.dumps(v4_context),
+                "progress_percentage": progress,
+                "status": "completed" if progress == 100 else "in_progress",
+            }
+
+            result = (
+                self.client.table("discovery_sessions")
+                .update(updates)
+                .eq("id", session_id)
+                .execute()
+            )
+
+            logger.info(
+                "v4_session_state_saved",
+                session_id=session_id,
+                progress=progress,
+            )
+            return len(result.data) > 0
+
+        except Exception as e:
+            logger.error(
+                "v4_session_state_save_failed",
+                session_id=session_id,
+                error=str(e),
+            )
+            return False
+
+    def load_v4_session_state(self, session_id: str) -> Optional[dict[str, Any]]:
+        """
+        Load the full V4 session state from database.
+        Returns a dict that can be used to reconstruct DiscoverySessionV4.
+        """
+        import json
+
+        try:
+            # Get main session record
+            session = self.get(session_id)
+            if not session:
+                return None
+
+            # Parse V4 context
+            ctx = {}
+            try:
+                ctx = json.loads(session.get("additional_context") or "{}")
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+            # Check if this is a V4 session
+            if ctx.get("discovery_version") != "v4":
+                return None
+
+            # Get interviews from database
+            interviews = self.get_interviews(session_id)
+
+            # Build the full session state
+            return {
+                "session_id": session_id,
+                "user_id": session.get("user_id"),
+                "mode": ctx.get("mode", "guided"),
+                "product_idea": session.get("product_idea", ""),
+                "industry": session.get("industry"),
+                "target_market": session.get("target_market"),
+                "stages": ctx.get("stages", {}),
+                "interviews": interviews,
+                "patterns": ctx.get("patterns"),
+                "four_forces": ctx.get("four_forces"),
+                "opportunity_tree": ctx.get("opportunity_tree"),
+                "overall_evidence_quality": ctx.get("overall_evidence_quality", "E4"),
+                "quality_score": ctx.get("quality_score", 0),
+                "created_at": session.get("created_at"),
+                "updated_at": session.get("updated_at"),
+            }
+
+        except Exception as e:
+            logger.error(
+                "v4_session_state_load_failed",
+                session_id=session_id,
+                error=str(e),
+            )
+            return None
+
+    def save_v4_interviews(
+        self, session_id: str, interviews: list[dict[str, Any]]
+    ) -> None:
+        """Save all interviews for a V4 session (replaces existing)."""
+        import uuid
+
+        try:
+            # Delete existing interviews
+            self.client.table("interviews").delete().eq(
+                "session_id", session_id
+            ).execute()
+
+            # Insert new interviews
+            for interview in interviews:
+                row = {
+                    "id": interview.get("id") or str(uuid.uuid4()),
+                    "session_id": session_id,
+                    "interviewee_name": interview.get("interviewee_name"),
+                    "interviewee_role": interview.get("interviewee_role"),
+                    "company_type": interview.get("company_type"),
+                    "company_size": interview.get("company_size"),
+                    "interview_date": interview.get("interview_date"),
+                    "story_raw": interview.get("story_raw"),
+                    "key_quote": interview.get("key_quote"),
+                    "struggling_moment": interview.get("struggling_moment"),
+                    "emotions": interview.get("emotions", []),
+                    "current_workaround": interview.get("current_workaround"),
+                    "desired_outcome": interview.get("desired_outcome"),
+                    "ai_extracted_insights": interview.get("ai_extracted_insights", {}),
+                }
+                self.client.table("interviews").insert(row).execute()
+
+            logger.info(
+                "v4_interviews_saved",
+                session_id=session_id,
+                count=len(interviews),
+            )
+        except Exception as e:
+            logger.warning(
+                "v4_interviews_save_failed",
+                session_id=session_id,
+                error=str(e),
+            )
