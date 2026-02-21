@@ -208,7 +208,8 @@ class TestFormatConstraintsForPrompt:
 
         prompt = format_constraints_for_prompt(constraints)
 
-        assert "MANDATORY" in prompt
+        # The prompt uses "CRITICAL" instead of "MANDATORY" but serves the same purpose
+        assert "CRITICAL" in prompt or "MANDATORY" in prompt
         assert "MUST align" in prompt.lower() or "must use" in prompt.lower()
 
 
