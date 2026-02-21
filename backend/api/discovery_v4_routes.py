@@ -5,6 +5,7 @@ This module provides REST API endpoints for the V4 hybrid discovery system
 with three modes: Quick, Guided, and Deep.
 """
 
+import asyncio
 from datetime import datetime
 from typing import Any, Literal
 
@@ -572,10 +573,13 @@ async def synthesize_test_interviews(
 
 
 @router.post("/test/sessions/{session_id}/continue-to-strategy")
-async def continue_test_session_to_strategy(session_id: str) -> dict[str, Any]:
+async def continue_test_session_to_strategy(
+    session_id: str,
+    background_tasks: BackgroundTasks,
+) -> dict[str, Any]:
     """
     [DEVELOPMENT ONLY] Continue to strategy for a test session.
-    Returns immediately with a simple success response (no full lifecycle).
+    Starts the full lifecycle (Strategy, Delivery, Design) with SSE streaming.
     """
     # Load from cache or database
     if session_id not in _active_sessions:
@@ -602,9 +606,16 @@ async def continue_test_session_to_strategy(session_id: str) -> dict[str, Any]:
             detail="Complete at least one discovery stage before continuing",
         )
 
+    # Queue full lifecycle run with SSE streaming
+    background_tasks.add_task(
+        _run_full_lifecycle_with_v4,
+        session_id,
+        "test-user-dev",  # Test user ID
+    )
+
     return {
-        "status": "completed",
-        "message": "Test session ready for strategy (no full lifecycle in test mode)",
+        "status": "started",
+        "message": "Full lifecycle generation started. Connect to SSE stream for progress.",
         "session_id": session_id,
     }
 
@@ -1610,20 +1621,72 @@ async def _run_stage_task(
 
 
 async def _run_full_lifecycle_with_v4(session_id: str, user_id: str) -> None:
-    """Run full lifecycle using V4 discovery outputs."""
+    """Run full lifecycle using V4 discovery outputs with SSE streaming."""
     try:
         from agents.facilitator import Facilitator
+        from agents import orchestrator
+        from utils.sse import get_or_create_emitter, remove_emitter
+        from models.schemas import SessionStatus
 
         session = _active_sessions.get(session_id)
         if not session:
-            logger.error("full_lifecycle_session_not_found", session_id=session_id)
-            return
+            # Try to load from database
+            session = _load_session_from_db(session_id)
+            if session:
+                _active_sessions[session_id] = session
+            else:
+                logger.error("full_lifecycle_session_not_found", session_id=session_id)
+                return
 
+        # Set up SSE emitter for real-time streaming to frontend
+        emitter = get_or_create_emitter(session_id)
+        orchestrator._current_emitter = emitter
+
+        # Update session store status
+        session_store.update_status(
+            session_id,
+            {"status": "in_progress", "progress_percentage": 20},
+        )
+
+        # Emit start event
+        await emitter.emit_progress(20, "Starting Strategy & Delivery phases...")
+
+        logger.info(
+            "full_lifecycle_started",
+            session_id=session_id,
+            mode=session.mode,
+            evidence_quality=session.overall_evidence_quality,
+        )
+
+        # Run the full lifecycle through facilitator
         facilitator = Facilitator()
-        # Pass V4 session data to facilitator
-        await facilitator.run_with_v4_discovery(session)
+        final_state = await facilitator.run_with_v4_discovery(session)
+
+        # Store the final inception pack
+        if final_state:
+            from utils.helpers import build_inception_pack
+
+            inception_pack = build_inception_pack(final_state)
+
+            # Save to database
+            session_store.save_inception_pack(session_id, inception_pack)
+            session_store.update_status(
+                session_id,
+                {
+                    "status": SessionStatus.COMPLETED,
+                    "progress_percentage": 100,
+                },
+            )
+
+            # Emit completion
+            await emitter.emit_done(inception_pack)
 
         logger.info("full_lifecycle_complete", session_id=session_id)
+
+        # Clean up emitter after a delay
+        await asyncio.sleep(5)
+        remove_emitter(session_id)
+        orchestrator._current_emitter = None
 
     except Exception as e:
         logger.error(
@@ -1632,3 +1695,18 @@ async def _run_full_lifecycle_with_v4(session_id: str, user_id: str) -> None:
             error=str(e),
             exc_info=True,
         )
+
+        # Update status to failed
+        try:
+            session_store.update_status(
+                session_id,
+                {"status": "failed", "error_message": str(e)},
+            )
+
+            # Emit error event
+            from utils.sse import get_emitter
+            emitter = get_emitter(session_id)
+            if emitter:
+                await emitter.emit_error(str(e))
+        except Exception:
+            pass

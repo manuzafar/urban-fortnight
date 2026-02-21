@@ -298,6 +298,12 @@ function App() {
             setInceptionPack(pack as unknown as InceptionPack);
             setAppState('pack');
           }}
+          onContinueToExecution={(sessionId) => {
+            // Transition to ExecutionView which handles SSE streaming
+            // for the full lifecycle (Strategy, Delivery, Design phases)
+            setCurrentSessionId(sessionId);
+            setAppState('execution');
+          }}
         />
       );
     }

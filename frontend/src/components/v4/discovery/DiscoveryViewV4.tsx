@@ -21,6 +21,7 @@ interface DiscoveryViewV4Props {
   sessionId: string;
   onBack?: () => void;
   onComplete?: (pack: Record<string, unknown>) => void;
+  onContinueToExecution?: (sessionId: string) => void;
 }
 
 // Evidence quality badge component
@@ -259,6 +260,7 @@ export function DiscoveryViewV4({
   sessionId,
   onBack,
   onComplete,
+  onContinueToExecution,
 }: DiscoveryViewV4Props) {
   const {
     session,
@@ -355,13 +357,27 @@ export function DiscoveryViewV4({
   const handleContinueToStrategy = async () => {
     if (!session) return;
 
+    // If we have an execution callback, use it to transition to ExecutionView with SSE
+    if (onContinueToExecution) {
+      setLifecycleLoading(true);
+      try {
+        // Start the full lifecycle in the backend
+        await continueToStrategy();
+        // Transition to ExecutionView which will handle SSE streaming
+        onContinueToExecution(sessionId);
+      } catch (err) {
+        setLifecycleError(err instanceof Error ? err.message : 'Failed to start lifecycle');
+        setLifecycleLoading(false);
+      }
+      return;
+    }
+
+    // Fallback: Convert V4 session to pack format (for backwards compatibility)
     setLifecycleLoading(true);
     setLifecycleError(null);
 
     try {
       await continueToStrategy();
-
-      // Convert V4 session to pack format and call onComplete
       const pack = convertV4SessionToPack(session);
       onComplete?.(pack as unknown as Record<string, unknown>);
     } catch (err) {
