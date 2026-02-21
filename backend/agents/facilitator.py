@@ -1166,9 +1166,16 @@ class FacilitatorAgent:
 
         This allows downstream agents to use V4 insights as constraints.
         """
+        # Helper to safely get output from a stage (StageState is a Pydantic model)
+        def get_stage_output(stage_name: str) -> dict | None:
+            stage = v4_session.stages.get(stage_name)
+            if stage and hasattr(stage, 'output') and stage.output:
+                return stage.output
+            return None
+
         # Problem Love -> Problem statement and validation
-        if v4_session.stages.get("problem_love", {}).get("output"):
-            problem_love = v4_session.stages["problem_love"]["output"]
+        problem_love = get_stage_output("problem_love")
+        if problem_love:
             state["_v4_problem_statement"] = (
                 problem_love.get("problem_statement_refined")
                 or problem_love.get("problem_statement")
@@ -1176,9 +1183,8 @@ class FacilitatorAgent:
             state["_v4_problem_score"] = problem_love.get("overall_score")
 
         # Customer Truth -> Customer research and personas
-        if v4_session.stages.get("customer_truth", {}).get("output"):
-            customer_truth = v4_session.stages["customer_truth"]["output"]
-
+        customer_truth = get_stage_output("customer_truth")
+        if customer_truth:
             # Convert patterns to persona format
             patterns = customer_truth.get("patterns") or {}
             if patterns:
@@ -1194,9 +1200,8 @@ class FacilitatorAgent:
                 ][:5]
 
         # Opportunity Mapping -> Competitive analysis and strategy
-        if v4_session.stages.get("opportunity_mapping", {}).get("output"):
-            opp_mapping = v4_session.stages["opportunity_mapping"]["output"]
-
+        opp_mapping = get_stage_output("opportunity_mapping")
+        if opp_mapping:
             if opp_mapping.get("four_forces"):
                 state["_v4_four_forces"] = opp_mapping["four_forces"]
 
@@ -1206,16 +1211,15 @@ class FacilitatorAgent:
             state["_v4_primary_opportunity"] = opp_mapping.get("primary_opportunity")
 
         # Solution Design -> Solution constraints
-        if v4_session.stages.get("solution_design", {}).get("output"):
-            solution = v4_session.stages["solution_design"]["output"]
-
+        solution = get_stage_output("solution_design")
+        if solution:
             state["_v4_solution_concept"] = solution.get("solution_concept")
             state["_v4_dhm_score"] = solution.get("dhm_score")
             state["_v4_pre_mortem"] = solution.get("pre_mortem")
 
         # Validation Plan -> Validation experiments
-        if v4_session.stages.get("validation_plan", {}).get("output"):
-            validation = v4_session.stages["validation_plan"]["output"]
+        validation = get_stage_output("validation_plan")
+        if validation:
             state["_v4_validation_experiments"] = validation.get("experiments", [])
 
         # Build constraints prompt from V4 data
