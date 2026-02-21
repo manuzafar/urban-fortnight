@@ -132,6 +132,10 @@ async function apiRequest<T>(
   return response.json();
 }
 
+// Use test endpoints for development (no auth required)
+const USE_TEST_ENDPOINTS = true;
+const getEndpointPrefix = () => USE_TEST_ENDPOINTS ? '/api/discovery/v4/test' : '/api/discovery/v4';
+
 export function useDiscoveryV4(sessionId: string | null) {
   const [session, setSession] = useState<DiscoverySessionV4 | null>(null);
   const [loading, setLoading] = useState(true);
@@ -147,7 +151,7 @@ export function useDiscoveryV4(sessionId: string | null) {
 
     try {
       const data = await apiRequest<DiscoverySessionV4>(
-        `/api/discovery/v4/sessions/${sessionId}`
+        `${getEndpointPrefix()}/sessions/${sessionId}`
       );
       setSession(data);
       setError(null);
@@ -191,7 +195,7 @@ export function useDiscoveryV4(sessionId: string | null) {
     async (stage: string, forceRegenerate = false) => {
       if (!sessionId) return;
 
-      await apiRequest(`/api/discovery/v4/sessions/${sessionId}/stages/${stage}/run`, {
+      await apiRequest(`${getEndpointPrefix()}/sessions/${sessionId}/stages/${stage}/run`, {
         method: 'POST',
         body: JSON.stringify({ force_regenerate: forceRegenerate }),
       });
@@ -210,7 +214,7 @@ export function useDiscoveryV4(sessionId: string | null) {
     ) => {
       if (!sessionId) return;
 
-      await apiRequest(`/api/discovery/v4/sessions/${sessionId}/stages/${stage}/output`, {
+      await apiRequest(`${getEndpointPrefix()}/sessions/${sessionId}/stages/${stage}/output`, {
         method: 'PUT',
         body: JSON.stringify({ output, source, notes }),
       });
@@ -225,7 +229,7 @@ export function useDiscoveryV4(sessionId: string | null) {
       if (!sessionId) return;
 
       const result = await apiRequest<{ next_stage: string | null }>(
-        `/api/discovery/v4/sessions/${sessionId}/stages/${stage}/approve`,
+        `${getEndpointPrefix()}/sessions/${sessionId}/stages/${stage}/approve`,
         { method: 'POST' }
       );
 
@@ -239,7 +243,7 @@ export function useDiscoveryV4(sessionId: string | null) {
     async (stage: string) => {
       if (!sessionId) return;
 
-      await apiRequest(`/api/discovery/v4/sessions/${sessionId}/stages/${stage}/skip`, {
+      await apiRequest(`${getEndpointPrefix()}/sessions/${sessionId}/stages/${stage}/skip`, {
         method: 'POST',
       });
 
@@ -254,7 +258,7 @@ export function useDiscoveryV4(sessionId: string | null) {
       if (!sessionId) return;
 
       const result = await apiRequest<Interview>(
-        `/api/discovery/v4/sessions/${sessionId}/interviews`,
+        `${getEndpointPrefix()}/sessions/${sessionId}/interviews`,
         {
           method: 'POST',
           body: JSON.stringify(interview),
@@ -272,7 +276,7 @@ export function useDiscoveryV4(sessionId: string | null) {
       if (!sessionId) return;
 
       await apiRequest(
-        `/api/discovery/v4/sessions/${sessionId}/interviews/${interviewId}`,
+        `${getEndpointPrefix()}/sessions/${sessionId}/interviews/${interviewId}`,
         {
           method: 'PUT',
           body: JSON.stringify(interview),
@@ -289,7 +293,7 @@ export function useDiscoveryV4(sessionId: string | null) {
       if (!sessionId) return;
 
       await apiRequest(
-        `/api/discovery/v4/sessions/${sessionId}/interviews/${interviewId}`,
+        `${getEndpointPrefix()}/sessions/${sessionId}/interviews/${interviewId}`,
         { method: 'DELETE' }
       );
 
@@ -302,7 +306,7 @@ export function useDiscoveryV4(sessionId: string | null) {
     if (!sessionId) return;
 
     const patterns = await apiRequest<PatternSynthesis>(
-      `/api/discovery/v4/sessions/${sessionId}/interviews/synthesize`,
+      `${getEndpointPrefix()}/sessions/${sessionId}/interviews/synthesize`,
       { method: 'POST' }
     );
 
@@ -314,7 +318,7 @@ export function useDiscoveryV4(sessionId: string | null) {
     if (!sessionId) return;
 
     return apiRequest<Record<string, unknown>>(
-      `/api/discovery/v4/sessions/${sessionId}/interview-guide`
+      `${getEndpointPrefix()}/sessions/${sessionId}/interview-guide`
     );
   }, [sessionId]);
 
@@ -324,7 +328,7 @@ export function useDiscoveryV4(sessionId: string | null) {
       if (!sessionId) return null;
 
       return apiRequest<CoachingResult>(
-        `/api/discovery/v4/sessions/${sessionId}/stages/${stage}/ai-assist`,
+        `${getEndpointPrefix()}/sessions/${sessionId}/stages/${stage}/ai-assist`,
         {
           method: 'POST',
           body: JSON.stringify({
@@ -345,7 +349,7 @@ export function useDiscoveryV4(sessionId: string | null) {
       if (solution) params.append('solution', solution);
 
       return apiRequest<Record<string, unknown>>(
-        `/api/discovery/v4/sessions/${sessionId}/tarpit-check?${params}`,
+        `${getEndpointPrefix()}/sessions/${sessionId}/tarpit-check?${params}`,
         { method: 'POST' }
       );
     },
@@ -357,7 +361,7 @@ export function useDiscoveryV4(sessionId: string | null) {
     if (!sessionId) return;
 
     return apiRequest<{ status: string; message: string }>(
-      `/api/discovery/v4/sessions/${sessionId}/continue-to-strategy`,
+      `${getEndpointPrefix()}/sessions/${sessionId}/continue-to-strategy`,
       { method: 'POST' }
     );
   }, [sessionId]);
@@ -368,7 +372,7 @@ export function useDiscoveryV4(sessionId: string | null) {
       if (!sessionId) return;
 
       return apiRequest<Record<string, unknown>>(
-        `/api/discovery/v4/sessions/${sessionId}/export?format=${format}`
+        `${getEndpointPrefix()}/sessions/${sessionId}/export?format=${format}`
       );
     },
     [sessionId]

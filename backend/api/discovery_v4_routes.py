@@ -266,6 +266,159 @@ async def run_test_stage(
     }
 
 
+@router.post("/test/sessions/{session_id}/stages/{stage}/approve")
+async def approve_test_stage(session_id: str, stage: str) -> dict[str, Any]:
+    """[DEVELOPMENT ONLY] Approve a stage on a test session."""
+    from config import settings
+    if settings.app_env == "production":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Test endpoint not available in production",
+        )
+
+    if session_id not in _active_sessions:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Test session {session_id} not found",
+        )
+
+    session = _active_sessions[session_id]
+    if stage not in session.stages:
+        raise HTTPException(status_code=400, detail=f"Invalid stage: {stage}")
+
+    session.stages[stage].status = StageStatus.APPROVED
+    session.stages[stage].approved_at = datetime.utcnow().isoformat()
+
+    # Find next stage
+    stage_order = ["problem_love", "customer_truth", "opportunity_mapping",
+                   "solution_design", "validation_plan"]
+    current_idx = stage_order.index(stage)
+    next_stage = stage_order[current_idx + 1] if current_idx < len(stage_order) - 1 else None
+
+    return {"status": "approved", "stage": stage, "next_stage": next_stage}
+
+
+@router.post("/test/sessions/{session_id}/stages/{stage}/skip")
+async def skip_test_stage(session_id: str, stage: str) -> dict[str, Any]:
+    """[DEVELOPMENT ONLY] Skip a stage on a test session."""
+    from config import settings
+    if settings.app_env == "production":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Test endpoint not available in production",
+        )
+
+    if session_id not in _active_sessions:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Test session {session_id} not found",
+        )
+
+    session = _active_sessions[session_id]
+    if stage not in session.stages:
+        raise HTTPException(status_code=400, detail=f"Invalid stage: {stage}")
+
+    session.stages[stage].status = StageStatus.SKIPPED
+
+    return {"status": "skipped", "stage": stage}
+
+
+@router.put("/test/sessions/{session_id}/stages/{stage}/output")
+async def save_test_stage_output(
+    session_id: str,
+    stage: str,
+    request: SaveStageOutputRequest,
+) -> dict[str, Any]:
+    """[DEVELOPMENT ONLY] Save output for a test session stage."""
+    from config import settings
+    if settings.app_env == "production":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Test endpoint not available in production",
+        )
+
+    if session_id not in _active_sessions:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Test session {session_id} not found",
+        )
+
+    session = _active_sessions[session_id]
+    if stage not in session.stages:
+        raise HTTPException(status_code=400, detail=f"Invalid stage: {stage}")
+
+    session.stages[stage].output = request.output
+    session.stages[stage].output_source = request.source
+    if request.notes:
+        session.stages[stage].user_notes = request.notes
+
+    return {"status": "saved", "stage": stage}
+
+
+@router.post("/test/sessions/{session_id}/interviews")
+async def add_test_interview(session_id: str, interview: Interview) -> Interview:
+    """[DEVELOPMENT ONLY] Add interview to a test session."""
+    from config import settings
+    if settings.app_env == "production":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Test endpoint not available in production",
+        )
+
+    if session_id not in _active_sessions:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Test session {session_id} not found",
+        )
+
+    session = _active_sessions[session_id]
+    interview.id = f"int_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"
+    session.interviews.append(interview)
+
+    return interview
+
+
+@router.post("/test/sessions/{session_id}/interviews/synthesize")
+async def synthesize_test_interviews(
+    session_id: str,
+    background_tasks: BackgroundTasks,
+) -> dict[str, Any]:
+    """[DEVELOPMENT ONLY] Synthesize patterns from test session interviews."""
+    from config import settings
+    if settings.app_env == "production":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Test endpoint not available in production",
+        )
+
+    if session_id not in _active_sessions:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Test session {session_id} not found",
+        )
+
+    session = _active_sessions[session_id]
+
+    if not session.interviews:
+        raise HTTPException(status_code=400, detail="No interviews to synthesize")
+
+    # Run synthesis in background
+    from agents.discovery_v4.stages.customer_truth import CustomerTruthStage
+
+    async def _synthesize():
+        try:
+            stage = CustomerTruthStage()
+            patterns = await stage.synthesize_patterns(session.interviews)
+            session.patterns = patterns
+            logger.info("test_interview_synthesis_completed", session_id=session_id)
+        except Exception as e:
+            logger.error("test_interview_synthesis_failed", error=str(e))
+
+    background_tasks.add_task(_synthesize)
+
+    return {"status": "synthesizing", "interview_count": len(session.interviews)}
+
+
 # ═══════════════════════════════════════════════════════════════════════════════
 # SESSION MANAGEMENT
 # ═══════════════════════════════════════════════════════════════════════════════
