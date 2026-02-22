@@ -379,6 +379,28 @@ class CustomerTruthStage:
             readiness_score=data.get("readiness_score", 4),
         )
 
+    def _parse_evidence(self, raw_evidence: list) -> list[Evidence]:
+        """Parse evidence list, handling both dict and string formats."""
+        parsed = []
+        for e in raw_evidence:
+            if isinstance(e, dict):
+                parsed.append(
+                    Evidence(
+                        interview_id=e.get("interview_id", ""),
+                        quote=e.get("quote", ""),
+                    )
+                )
+            elif isinstance(e, str):
+                # Convert string evidence to Evidence format
+                parsed.append(
+                    Evidence(
+                        interview_id="",
+                        quote=e,
+                    )
+                )
+            # Skip other types
+        return parsed
+
     def _parse_patterns(
         self, data: dict[str, Any], interview_count: int
     ) -> PatternSynthesis:
@@ -386,13 +408,7 @@ class CustomerTruthStage:
         # Parse pain patterns
         pain_patterns = []
         for p in data.get("pain_patterns", []):
-            evidence = [
-                Evidence(
-                    interview_id=e.get("interview_id", ""),
-                    quote=e.get("quote", ""),
-                )
-                for e in p.get("evidence", [])
-            ]
+            evidence = self._parse_evidence(p.get("evidence", []))
             pain_patterns.append(
                 PainPattern(
                     description=p.get("description", ""),
@@ -405,13 +421,7 @@ class CustomerTruthStage:
         # Parse trigger patterns
         trigger_patterns = []
         for t in data.get("trigger_patterns", []):
-            evidence = [
-                Evidence(
-                    interview_id=e.get("interview_id", ""),
-                    quote=e.get("quote", ""),
-                )
-                for e in t.get("evidence", [])
-            ]
+            evidence = self._parse_evidence(t.get("evidence", []))
             trigger_patterns.append(
                 TriggerPattern(
                     description=t.get("description", ""),
@@ -423,13 +433,7 @@ class CustomerTruthStage:
         # Parse outcome patterns
         outcome_patterns = []
         for o in data.get("outcome_patterns", []):
-            evidence = [
-                Evidence(
-                    interview_id=e.get("interview_id", ""),
-                    quote=e.get("quote", ""),
-                )
-                for e in o.get("evidence", [])
-            ]
+            evidence = self._parse_evidence(o.get("evidence", []))
             outcome_patterns.append(
                 OutcomePattern(
                     description=o.get("description", ""),
