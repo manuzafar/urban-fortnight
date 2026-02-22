@@ -651,8 +651,9 @@ async def stream_test_session(session_id: str):
     session_data = session_store.get(session_id)
 
     # If session is already completed, send done event immediately
-    from models.schemas import SessionStatus
-    if session_data and session_data.get("status") == SessionStatus.COMPLETED:
+    # Note: session_data status is stored as string in DB, not SessionStatus enum
+    session_status = session_data.get("status", "").lower() if session_data else ""
+    if session_status == "completed":
         async def completed_stream():
             yield {
                 "event": "done",
@@ -666,7 +667,7 @@ async def stream_test_session(session_id: str):
         return EventSourceResponse(completed_stream())
 
     # If session failed, send error and done
-    if session_data and session_data.get("status") == SessionStatus.FAILED:
+    if session_status == "failed":
         async def failed_stream():
             error_msg = session_data.get("error_message") or "Unknown error"
             yield {
