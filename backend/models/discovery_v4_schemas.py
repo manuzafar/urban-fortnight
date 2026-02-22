@@ -42,10 +42,11 @@ class StageStatus(str, Enum):
 class EvidenceQuality(str, Enum):
     """Evidence quality tiers based on source."""
 
-    E1 = "E1"  # Direct customer quotes/interviews
-    E2 = "E2"  # Survey data, analytics
-    E3 = "E3"  # Expert analysis, market research
-    E4 = "E4"  # AI-generated hypotheses
+    E1 = "E1"  # Direct customer quotes/interviews (highest confidence ~1.0)
+    E2 = "E2"  # Verified patterns from 3+ interviews (~0.85)
+    E3 = "E3"  # Expert analysis, partial evidence (~0.7)
+    E4 = "E4"  # AI-generated hypotheses (~0.5)
+    E5 = "E5"  # Unvalidated assumptions (lowest confidence ~0.1)
 
 
 class Severity(str, Enum):
@@ -55,6 +56,26 @@ class Severity(str, Enum):
     HIGH = "high"
     MEDIUM = "medium"
     LOW = "low"
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# EVIDENCE TRACKING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class EvidencedClaim(BaseModel):
+    """A claim with evidence tier tracking for quality assessment."""
+
+    claim: str = Field(..., description="The claim or finding")
+    evidence_tier: EvidenceQuality = Field(
+        default=EvidenceQuality.E4, description="Evidence quality tier"
+    )
+    source: Optional[str] = Field(
+        default=None, description="Source of evidence (interview ID, 'AI-generated', etc.)"
+    )
+    confidence: float = Field(
+        default=0.5, ge=0.0, le=1.0, description="Confidence score (0.0-1.0)"
+    )
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -528,6 +549,23 @@ class StageState(BaseModel):
     )
     last_error_at: Optional[str] = Field(
         default=None, description="When the last error occurred"
+    )
+    # Quality gate fields (Step 4)
+    quality_score: Optional[float] = Field(
+        default=None, description="Quality score from critique (0-10)"
+    )
+    quality_passed: bool = Field(
+        default=False, description="Whether quality gate was passed"
+    )
+    quality_feedback: list[str] = Field(
+        default_factory=list, description="Feedback from quality critique"
+    )
+    blocked_reason: Optional[str] = Field(
+        default=None, description="Reason if progression is blocked"
+    )
+    # Evidence tracking (Step 3)
+    evidence_tier: EvidenceQuality = Field(
+        default=EvidenceQuality.E4, description="Evidence quality tier for this stage"
     )
 
 

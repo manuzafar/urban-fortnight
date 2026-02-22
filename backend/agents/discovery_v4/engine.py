@@ -162,6 +162,20 @@ class DiscoveryEngineV4:
             elif hasattr(output, "readiness_score"):
                 session.stages[stage].score = output.readiness_score
 
+            # Check quality gate (Step 4)
+            quality_passed, blocked_reason, quality_feedback = self._check_quality_gate(
+                session, stage
+            )
+            session.stages[stage].quality_passed = quality_passed
+            session.stages[stage].blocked_reason = blocked_reason
+            session.stages[stage].quality_feedback = quality_feedback
+            session.stages[stage].quality_score = float(session.stages[stage].score or 0)
+
+            # Calculate evidence tier (Step 3)
+            session.stages[stage].evidence_tier = self._calculate_evidence_tier(
+                session, stage
+            )
+
             # Update cross-stage data
             session = self._update_cross_stage_data(session, stage, output)
 
@@ -188,6 +202,8 @@ class DiscoveryEngineV4:
                 session_id=session.session_id,
                 stage=stage,
                 score=session.stages[stage].score,
+                quality_passed=quality_passed,
+                evidence_tier=session.stages[stage].evidence_tier,
             )
 
         except Exception as e:
@@ -200,6 +216,8 @@ class DiscoveryEngineV4:
             )
 
             session.stages[stage].status = StageStatus.NOT_STARTED
+            session.stages[stage].error_message = str(e)
+            session.stages[stage].last_error_at = datetime.utcnow().isoformat()
             session.stages[stage].coaching_messages.append(f"Error: {str(e)}")
 
             raise
@@ -333,6 +351,128 @@ class DiscoveryEngineV4:
             session_id=session.session_id,
             stage=stage,
         )
+
+    # ═══════════════════════════════════════════════════════════════════════════
+    # QUALITY GATE & EVIDENCE TIER METHODS (Step 3 & 4)
+    # ═══════════════════════════════════════════════════════════════════════════
+
+    # Quality requirements by stage
+    STAGE_QUALITY_REQUIREMENTS = {
+        "problem_love": {
+            "min_score": 6.0,
+            "required_fields": ["problem_statement", "frequency", "overall_score"],
+            "blocking_message": "Problem statement needs more specificity before proceeding.",
+        },
+        "customer_truth": {
+            "min_score": 5.0,
+            "required_fields": ["readiness_score"],
+            "blocking_message": "Need more customer insights to proceed.",
+        },
+        "opportunity_mapping": {
+            "min_score": 5.0,
+            "required_fields": ["primary_opportunity"],
+            "blocking_message": "Opportunity mapping needs refinement.",
+        },
+        "solution_design": {
+            "min_score": 5.0,
+            "required_fields": ["solution_concept"],
+            "blocking_message": "Solution design needs more detail.",
+        },
+        "validation_plan": {
+            "min_score": 5.0,
+            "required_fields": ["experiments"],
+            "blocking_message": "Validation plan needs more experiments.",
+        },
+    }
+
+    def _check_quality_gate(
+        self, session: DiscoverySessionV4, stage: str
+    ) -> tuple[bool, str | None, list[str]]:
+        """
+        Check if stage passes quality gate.
+
+        Returns:
+            tuple of (passed, blocked_reason, feedback_list)
+        """
+        requirements = self.STAGE_QUALITY_REQUIREMENTS.get(stage, {})
+        stage_state = session.stages[stage]
+        output = stage_state.output
+
+        feedback = []
+
+        if not output:
+            return False, "No output generated", ["Stage failed to generate output"]
+
+        # Check score threshold
+        score = stage_state.score or 0
+        min_score = requirements.get("min_score", 5.0)
+
+        if score < min_score:
+            feedback.append(f"Quality score {score} is below threshold {min_score}")
+
+        # Check required fields
+        for field in requirements.get("required_fields", []):
+            if not output.get(field):
+                feedback.append(f"Missing required field: {field}")
+
+        # Mode-specific checks
+        mode_value = session.mode.value if hasattr(session.mode, 'value') else str(session.mode)
+
+        if mode_value == "deep" and stage == "customer_truth":
+            if len(session.interviews) < 3:
+                feedback.append("Deep mode requires at least 3 interviews")
+
+        # Determine pass/fail
+        passed = len(feedback) == 0 or score >= min_score
+        blocked_reason = requirements.get("blocking_message") if not passed else None
+
+        logger.info(
+            "quality_gate_check",
+            session_id=session.session_id,
+            stage=stage,
+            score=score,
+            min_score=min_score,
+            passed=passed,
+            feedback_count=len(feedback),
+        )
+
+        return passed, blocked_reason, feedback
+
+    def _calculate_evidence_tier(
+        self, session: DiscoverySessionV4, stage: str
+    ) -> EvidenceQuality:
+        """
+        Calculate evidence tier for a stage based on interview backing.
+
+        Evidence Tiers:
+        - E1: Direct customer quotes (5+ interviews)
+        - E2: Verified patterns (3+ interviews)
+        - E3: Partial evidence (1-2 interviews)
+        - E4: AI-generated hypothesis (0 interviews)
+        - E5: Unvalidated assumption
+        """
+        interview_count = len(session.interviews)
+
+        # Customer truth stage gets tier based on actual interviews
+        if stage == "customer_truth":
+            if interview_count >= 5:
+                return EvidenceQuality.E1
+            elif interview_count >= 3:
+                return EvidenceQuality.E2
+            elif interview_count >= 1:
+                return EvidenceQuality.E3
+            else:
+                return EvidenceQuality.E4
+
+        # Other stages inherit from customer truth or default to E4
+        if session.stages["customer_truth"].output:
+            ct_output = session.stages["customer_truth"].output
+            patterns = ct_output.get("patterns", {})
+            evidence_quality = patterns.get("evidence_quality", "E4")
+            return EvidenceQuality(evidence_quality)
+
+        # Default: AI-generated
+        return EvidenceQuality.E4
 
     # ═══════════════════════════════════════════════════════════════════════════
     # AI ASSISTANCE METHODS

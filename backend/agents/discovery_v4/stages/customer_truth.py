@@ -3,6 +3,8 @@ Stage 2: Customer Truth
 
 Based on Teresa Torres's Continuous Discovery methodology.
 This stage captures and synthesizes customer interview insights.
+
+Includes reflection loop: Generate -> Critique -> Refine (max 2 iterations)
 """
 
 import json
@@ -14,9 +16,11 @@ import structlog
 from agents.base_agent import call_llm
 from agents.discovery_v4.prompts import (
     CUSTOMER_TRUTH_HYPOTHETICAL_PROMPT,
+    CUSTOMER_TRUTH_REFINE_PROMPT,
     INTERVIEW_GUIDE_PROMPT,
     INTERVIEW_SYNTHESIS_PROMPT,
 )
+from agents.discovery_v4.stages.mini_critique import critique_stage_output
 from models.discovery_v4_schemas import (
     Contradiction,
     CustomerTruthOutput,
@@ -32,6 +36,10 @@ from models.discovery_v4_schemas import (
 )
 
 logger = structlog.get_logger(__name__)
+
+# Reflection loop configuration
+MAX_REFLECTION_ITERATIONS = 2
+MIN_QUALITY_THRESHOLD = 7.0
 
 
 class CustomerTruthStage:
@@ -79,7 +87,78 @@ class CustomerTruthStage:
     async def _generate_hypothetical(
         self, context: dict[str, Any]
     ) -> CustomerTruthOutput:
-        """Generate hypothetical customer insights for Quick mode."""
+        """Generate hypothetical customer insights for Quick mode with reflection loop."""
+        return await self._generate_with_reflection(context)
+
+    async def _generate_with_reflection(
+        self, context: dict[str, Any]
+    ) -> CustomerTruthOutput:
+        """Generate with reflection loop: Generate -> Critique -> Refine."""
+        iteration = 0
+        critique_feedback = None
+        output = None
+
+        while iteration < MAX_REFLECTION_ITERATIONS:
+            logger.info(
+                "customer_truth_reflection_iteration",
+                iteration=iteration + 1,
+                max_iterations=MAX_REFLECTION_ITERATIONS,
+                has_feedback=critique_feedback is not None,
+            )
+
+            # Generate (or refine based on feedback)
+            if critique_feedback:
+                output = await self._generate_with_feedback(context, critique_feedback)
+            else:
+                output = await self._generate_initial(context)
+
+            # Critique the output
+            critique = await critique_stage_output(
+                "customer_truth",
+                output.model_dump(),
+                evidence_tier="E4",  # Quick mode is E4
+            )
+
+            logger.info(
+                "customer_truth_critique_result",
+                iteration=iteration + 1,
+                overall_score=critique.get("overall_score"),
+                passes_threshold=critique.get("passes_threshold"),
+            )
+
+            # Check quality gate
+            if critique.get("overall_score", 0) >= MIN_QUALITY_THRESHOLD:
+                output.readiness_score = int(critique.get("overall_score", 7))
+                logger.info(
+                    "customer_truth_quality_threshold_met",
+                    score=output.readiness_score,
+                    iteration=iteration + 1,
+                )
+                break
+
+            # Prepare feedback for next iteration
+            critique_feedback = {
+                "feedback": critique.get("feedback", []),
+                "suggested_improvements": critique.get("suggested_improvements", {}),
+                "previous_output": output.model_dump(),
+                "dimension_scores": critique.get("dimension_scores", {}),
+            }
+            iteration += 1
+
+        # If max iterations reached, allow progression with lower threshold
+        if iteration >= MAX_REFLECTION_ITERATIONS:
+            output.readiness_score = max(5, int(critique.get("overall_score", 5)))
+            logger.info(
+                "customer_truth_max_iterations_reached",
+                final_score=critique.get("overall_score"),
+            )
+
+        return output
+
+    async def _generate_initial(
+        self, context: dict[str, Any]
+    ) -> CustomerTruthOutput:
+        """Generate initial hypothetical customer insights."""
         prompt = CUSTOMER_TRUTH_HYPOTHETICAL_PROMPT.format(
             product_idea=context.get("product_idea", ""),
             industry=context.get("industry", "Not specified"),
@@ -104,6 +183,35 @@ class CustomerTruthStage:
                 interviews_completed=0,
                 readiness_score=2,
             )
+
+    async def _generate_with_feedback(
+        self, context: dict[str, Any], feedback: dict[str, Any]
+    ) -> CustomerTruthOutput:
+        """Generate refined output incorporating critique feedback."""
+        prompt = CUSTOMER_TRUTH_REFINE_PROMPT.format(
+            original_output=json.dumps(feedback["previous_output"], indent=2, default=str),
+            feedback="\n".join(f"- {f}" for f in feedback.get("feedback", [])),
+        )
+
+        logger.info("customer_truth_refine_generation_start")
+
+        result = await call_llm(prompt, "customer_truth_refine")
+
+        if result.get("success"):
+            data = result["data"]
+            output = self._parse_output(data)
+            logger.info(
+                "customer_truth_refine_generation_complete",
+                readiness_score=output.readiness_score,
+            )
+            return output
+        else:
+            logger.warning(
+                "customer_truth_refine_failed",
+                error=result.get("error"),
+            )
+            # Return the previous output if refinement fails
+            return self._parse_output(feedback["previous_output"])
 
     async def _synthesize_available(
         self,

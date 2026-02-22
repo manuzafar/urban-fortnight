@@ -714,3 +714,154 @@ Provide coaching feedback that:
 
 The best coaches make founders feel supported while pushing them to do better work.
 """
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REFINEMENT PROMPTS (used in reflection loops)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+PROBLEM_LOVE_REFINE_PROMPT = """You are refining a Problem Love analysis based on critique feedback.
+
+## Original Output:
+{original_output}
+
+## Critique Feedback:
+{feedback}
+
+## Suggested Improvements:
+{suggested_improvements}
+
+## Context:
+Product Idea: {product_idea}
+Industry: {industry}
+Target Market: {target_market}
+
+## YOUR TASK
+Generate an IMPROVED Problem Love analysis that addresses the feedback while maintaining the core insights.
+
+Focus on:
+1. Making the problem statement MORE SPECIFIC - who exactly, when exactly
+2. Adding REAL people evidence where missing - at least 3 people
+3. Strengthening FREQUENCY validation - daily/weekly/monthly with evidence
+4. Addressing any TARPIT concerns with clear differentiation
+5. Improving weak dimensions identified in the feedback
+
+## OUTPUT FORMAT
+Return the full ProblemLoveOutput JSON with improvements applied:
+{{
+  "problem_statement": "Clear, specific problem statement",
+  "problem_statement_refined": "AI-improved version focusing on the pain - MORE SPECIFIC THAN BEFORE",
+  "specificity_score": 8,
+
+  "real_people": [
+    {{
+      "name": "Real or realistic name",
+      "struggling_moment": "Specific moment when they struggle",
+      "how_you_know_them": "How you know this person"
+    }}
+  ],
+  "real_people_count": 3,
+
+  "frequency": "daily",
+  "frequency_analysis": "Analysis with evidence of how often this occurs",
+
+  "current_alternatives": ["Alternative 1", "Alternative 2"],
+  "alternatives_analysis": "Why these alternatives are inadequate",
+
+  "tarpit_check": {{
+    "is_tarpit": false,
+    "similarity_score": 0.3,
+    "similar_to": [],
+    "specific_concerns": [],
+    "user_differentiation": "Clear differentiation"
+  }},
+
+  "overall_score": 8,
+  "ai_coaching_notes": [
+    "What was improved",
+    "Remaining areas to strengthen"
+  ],
+  "proceed_recommendation": true
+}}
+
+IMPORTANT: Address EVERY piece of feedback. The score should be higher than the original.
+"""
+
+CUSTOMER_TRUTH_REFINE_PROMPT = """You are refining a Customer Truth analysis based on critique feedback.
+
+## Original Output:
+{original_output}
+
+## Critique Feedback:
+{feedback}
+
+## YOUR TASK
+Improve the Customer Truth analysis to address the critique feedback.
+
+Focus on:
+1. Strengthening pattern evidence with quotes
+2. Improving interview quality markers
+3. Identifying specific gaps for next interviews
+4. Ensuring patterns have 2+ interview backing
+
+Return an improved CustomerTruthOutput JSON.
+"""
+
+OPPORTUNITY_MAPPING_REFINE_PROMPT = """You are refining an Opportunity Mapping analysis based on critique feedback.
+
+## Original Output:
+{original_output}
+
+## Critique Feedback:
+{feedback}
+
+## YOUR TASK
+Improve the Opportunity Mapping to address the critique feedback.
+
+Focus on:
+1. Better evidence linkage to interviews
+2. Clearer primary opportunity justification
+3. More accurate four forces scoring
+4. Specific, actionable opportunities
+
+Return an improved OpportunityMappingOutput JSON.
+"""
+
+SOLUTION_DESIGN_REFINE_PROMPT = """You are refining a Solution Design based on critique feedback.
+
+## Original Output:
+{original_output}
+
+## Critique Feedback:
+{feedback}
+
+## YOUR TASK
+Improve the Solution Design to address the critique feedback.
+
+Focus on:
+1. Better DHM score justification
+2. More insightful pre-mortem risks
+3. Clearer moat articulation
+4. Stronger solution-problem fit
+
+Return an improved SolutionDesignOutput JSON.
+"""
+
+VALIDATION_PLAN_REFINE_PROMPT = """You are refining a Validation Plan based on critique feedback.
+
+## Original Output:
+{original_output}
+
+## Critique Feedback:
+{feedback}
+
+## YOUR TASK
+Improve the Validation Plan to address the critique feedback.
+
+Focus on:
+1. More falsifiable hypotheses
+2. Clearer success/failure criteria
+3. Realistic timelines
+4. Proper rung progression
+
+Return an improved ValidationPlanOutput JSON.
+"""

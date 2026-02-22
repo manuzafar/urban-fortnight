@@ -3,6 +3,8 @@ Stage 4: Solution Design
 
 Based on DHM (Delight, Hard-to-copy, Margin) framework + Pre-mortem analysis.
 This stage designs and evaluates solution concepts.
+
+Includes reflection loop: Generate -> Critique -> Refine (max 2 iterations)
 """
 
 import json
@@ -15,7 +17,9 @@ from agents.discovery_v4.prompts import (
     DHM_ANALYSIS_PROMPT,
     PRE_MORTEM_PROMPT,
     SOLUTION_DESIGN_FULL_PROMPT,
+    SOLUTION_DESIGN_REFINE_PROMPT,
 )
+from agents.discovery_v4.stages.mini_critique import critique_stage_output
 from models.discovery_v4_schemas import (
     DHMScore,
     DiscoverySessionV4,
@@ -25,6 +29,10 @@ from models.discovery_v4_schemas import (
 )
 
 logger = structlog.get_logger(__name__)
+
+# Reflection loop configuration
+MAX_REFLECTION_ITERATIONS = 2
+MIN_QUALITY_THRESHOLD = 7.0
 
 
 class SolutionDesignStage:
@@ -41,13 +49,80 @@ class SolutionDesignStage:
         session: DiscoverySessionV4,
         context: dict[str, Any],
     ) -> SolutionDesignOutput:
-        """Run solution design stage."""
+        """Run solution design stage with reflection loop."""
         logger.info(
             "solution_design_stage_run",
             session_id=session.session_id,
             has_opportunity=context.get("primary_opportunity") is not None,
         )
 
+        return await self._generate_with_reflection(context)
+
+    async def _generate_with_reflection(
+        self, context: dict[str, Any]
+    ) -> SolutionDesignOutput:
+        """Generate with reflection loop: Generate -> Critique -> Refine."""
+        iteration = 0
+        critique_feedback = None
+        output = None
+
+        while iteration < MAX_REFLECTION_ITERATIONS:
+            logger.info(
+                "solution_design_reflection_iteration",
+                iteration=iteration + 1,
+                max_iterations=MAX_REFLECTION_ITERATIONS,
+                has_feedback=critique_feedback is not None,
+            )
+
+            # Generate (or refine based on feedback)
+            if critique_feedback:
+                output = await self._generate_with_feedback(context, critique_feedback)
+            else:
+                output = await self._generate_initial(context)
+
+            # Critique the output
+            critique = await critique_stage_output(
+                "solution_design",
+                output.model_dump(),
+                evidence_tier="E4",
+            )
+
+            logger.info(
+                "solution_design_critique_result",
+                iteration=iteration + 1,
+                overall_score=critique.get("overall_score"),
+                passes_threshold=critique.get("passes_threshold"),
+            )
+
+            # Check quality gate
+            if critique.get("overall_score", 0) >= MIN_QUALITY_THRESHOLD:
+                logger.info(
+                    "solution_design_quality_threshold_met",
+                    score=critique.get("overall_score"),
+                    iteration=iteration + 1,
+                )
+                break
+
+            # Prepare feedback for next iteration
+            critique_feedback = {
+                "feedback": critique.get("feedback", []),
+                "suggested_improvements": critique.get("suggested_improvements", {}),
+                "previous_output": output.model_dump(),
+                "dimension_scores": critique.get("dimension_scores", {}),
+            }
+            iteration += 1
+
+        # If max iterations reached, log and return best effort
+        if iteration >= MAX_REFLECTION_ITERATIONS:
+            logger.info(
+                "solution_design_max_iterations_reached",
+                final_score=critique.get("overall_score"),
+            )
+
+        return output
+
+    async def _generate_initial(self, context: dict[str, Any]) -> SolutionDesignOutput:
+        """Generate initial solution design."""
         prompt = SOLUTION_DESIGN_FULL_PROMPT.format(
             product_idea=context.get("product_idea", ""),
             problem_statement=context.get("problem_statement", ""),
@@ -75,6 +150,37 @@ class SolutionDesignStage:
                 error=result.get("error"),
             )
             return self._default_output(context)
+
+    async def _generate_with_feedback(
+        self, context: dict[str, Any], feedback: dict[str, Any]
+    ) -> SolutionDesignOutput:
+        """Generate refined output incorporating critique feedback."""
+        prompt = SOLUTION_DESIGN_REFINE_PROMPT.format(
+            original_output=json.dumps(feedback["previous_output"], indent=2, default=str),
+            feedback="\n".join(f"- {f}" for f in feedback.get("feedback", [])),
+        )
+
+        logger.info("solution_design_refine_generation_start")
+
+        result = await call_llm(prompt, "solution_design_refine")
+
+        if result.get("success"):
+            data = result["data"]
+            if isinstance(data, str):
+                try:
+                    data = json.loads(data)
+                except json.JSONDecodeError:
+                    return self._parse_output(feedback["previous_output"])
+            output = self._parse_output(data)
+            logger.info("solution_design_refine_generation_complete")
+            return output
+        else:
+            logger.warning(
+                "solution_design_refine_failed",
+                error=result.get("error"),
+            )
+            # Return the previous output if refinement fails
+            return self._parse_output(feedback["previous_output"])
 
     async def analyze_dhm(
         self,
