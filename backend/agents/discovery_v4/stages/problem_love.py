@@ -296,6 +296,28 @@ class ProblemLoveStage:
                 specific_concerns=["Unable to check - please try again"],
             )
 
+    def _normalize_frequency(self, raw_frequency: str) -> str:
+        """Normalize frequency to valid enum value."""
+        valid_frequencies = {"daily", "weekly", "monthly", "rarely"}
+        freq_lower = raw_frequency.lower().strip()
+
+        # Direct match
+        if freq_lower in valid_frequencies:
+            return freq_lower
+
+        # Handle common variations
+        if "daily" in freq_lower or "day" in freq_lower:
+            return "daily"
+        if "weekly" in freq_lower or "week" in freq_lower:
+            return "weekly"
+        if "monthly" in freq_lower or "month" in freq_lower:
+            return "monthly"
+        if "rarely" in freq_lower or "rare" in freq_lower or "never" in freq_lower:
+            return "rarely"
+
+        # Default to weekly if unrecognized
+        return "weekly"
+
     def _parse_output(self, data: dict[str, Any]) -> ProblemLoveOutput:
         """Parse LLM output into ProblemLoveOutput model."""
         # Parse real people
@@ -319,13 +341,17 @@ class ProblemLoveStage:
             user_differentiation=tarpit_data.get("user_differentiation"),
         )
 
+        # Normalize frequency to valid enum value
+        raw_frequency = data.get("frequency", "weekly")
+        frequency = self._normalize_frequency(raw_frequency)
+
         return ProblemLoveOutput(
             problem_statement=data.get("problem_statement", ""),
             problem_statement_refined=data.get("problem_statement_refined"),
             specificity_score=data.get("specificity_score", 5),
             real_people=real_people,
             real_people_count=len(real_people),
-            frequency=data.get("frequency", "weekly"),
+            frequency=frequency,
             frequency_analysis=data.get("frequency_analysis", ""),
             current_alternatives=data.get("current_alternatives", []),
             alternatives_analysis=data.get("alternatives_analysis", ""),
