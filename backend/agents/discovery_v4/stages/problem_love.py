@@ -63,12 +63,12 @@ class ProblemLoveStage:
             mode=context.get("mode"),
         )
 
-        if context.get("mode") == "quick":
-            # Full AI generation with reflection loop
-            return await self._generate_with_reflection(context)
-        else:
-            # Coaching mode - analyze user input and provide feedback
+        if context.get("mode") == "deep":
+            # Deep mode: Coaching only (user provides interviews)
             return await self._coach(context)
+        else:
+            # Quick/Guided modes: Full AI generation with reflection loop
+            return await self._generate_with_reflection(context)
 
     async def _generate_with_reflection(
         self, context: dict[str, Any]
