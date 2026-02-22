@@ -11,11 +11,19 @@ import {
   Shield,
   Loader2,
   AlertCircle,
+  X,
 } from 'lucide-react';
 import { useDiscoveryV4, type Interview } from '../../../hooks/useDiscoveryV4';
 import StageProgress from './StageProgress';
 import InterviewForm from './InterviewForm';
 import CoachingPanel from './CoachingPanel';
+import {
+  ProblemLoveRenderer,
+  CustomerTruthRenderer,
+  OpportunityMappingRenderer,
+  SolutionDesignRenderer,
+  ValidationPlanRenderer,
+} from './renderers';
 
 interface DiscoveryViewV4Props {
   sessionId: string;
@@ -68,12 +76,41 @@ function QualityScoreBadge({
   );
 }
 
+// Render stage output with appropriate renderer
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function renderStageOutput(stage: string, output: Record<string, unknown>) {
+  // Cast to any to allow passing to renderers - they handle optional fields gracefully
+  const outputData = output as any;
+
+  switch (stage) {
+    case 'problem_love':
+      return <ProblemLoveRenderer output={outputData} />;
+    case 'customer_truth':
+      return <CustomerTruthRenderer output={outputData} />;
+    case 'opportunity_mapping':
+      return <OpportunityMappingRenderer output={outputData} />;
+    case 'solution_design':
+      return <SolutionDesignRenderer output={outputData} />;
+    case 'validation_plan':
+      return <ValidationPlanRenderer output={outputData} />;
+    default:
+      // Fallback to formatted JSON for unknown stages
+      return <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{JSON.stringify(output, null, 2)}</pre>;
+  }
+}
+
 // Stage content renderer
 function StageContent({
   stage,
   stageState,
   onRunStage,
   isLoading,
+  isEditing,
+  editingOutput,
+  onStartEdit,
+  onSaveEdit,
+  onCancelEdit,
+  onUpdateField,
 }: {
   stage: string;
   stageState: {
@@ -87,6 +124,12 @@ function StageContent({
   };
   onRunStage: () => void;
   isLoading: boolean;
+  isEditing: boolean;
+  editingOutput: Record<string, unknown> | null;
+  onStartEdit: () => void;
+  onSaveEdit: () => void;
+  onCancelEdit: () => void;
+  onUpdateField: (field: string, value: unknown) => void;
 }) {
   const hasOutput = stageState.output && Object.keys(stageState.output).length > 0;
 
@@ -173,22 +216,63 @@ function StageContent({
   }
 
   if (hasOutput) {
+    // Edit mode - show JSON editor
+    if (isEditing && editingOutput) {
+      return (
+        <div className="stage-output editing">
+          <div className="output-header">
+            <h3>Editing: {stage.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</h3>
+            <div className="output-actions">
+              <button className="icon-btn cancel-edit" onClick={onCancelEdit} title="Cancel">
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+          <p className="edit-hint">Edit the JSON below. Changes are saved when you click Save.</p>
+          <div className="json-editor-container">
+            <textarea
+              className="json-editor"
+              value={JSON.stringify(editingOutput, null, 2)}
+              onChange={(e) => {
+                try {
+                  const parsed = JSON.parse(e.target.value);
+                  onUpdateField('_full', parsed);
+                } catch {
+                  // Invalid JSON, keep the raw text
+                }
+              }}
+              rows={20}
+            />
+          </div>
+          <div className="edit-actions">
+            <button className="secondary-btn" onClick={onCancelEdit}>
+              Cancel
+            </button>
+            <button className="primary-btn" onClick={onSaveEdit}>
+              <Check size={16} /> Save Changes
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    // View mode - use stage-specific renderer
     return (
       <div className="stage-output">
         <div className="output-header">
           <h3>{stage.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</h3>
           <div className="output-actions">
-            <button className="icon-btn" onClick={onRunStage} title="Regenerate">
+            <button className="icon-btn" onClick={onRunStage} title="Regenerate" disabled={isLoading}>
               <RefreshCw size={16} />
             </button>
-            <button className="icon-btn" title="Edit">
+            <button className="icon-btn" onClick={onStartEdit} title="Edit">
               <Edit3 size={16} />
             </button>
           </div>
         </div>
 
         <div className="output-content">
-          <pre>{JSON.stringify(stageState.output, null, 2)}</pre>
+          {renderStageOutput(stage, stageState.output!)}
         </div>
 
         {stageState.score && (
@@ -267,7 +351,7 @@ export function DiscoveryViewV4({
     loading,
     error,
     runStage,
-    saveStageOutput: _saveStageOutput,
+    saveStageOutput,
     approveStage,
     addInterview,
     synthesizeInterviews,
@@ -284,6 +368,44 @@ export function DiscoveryViewV4({
     messages: Array<{ type: 'suggestion' | 'warning' | 'tip' | 'question'; content: string }>;
     suggestion?: string;
   } | null>(null);
+
+  // Edit mode state
+  const [isEditing, setIsEditing] = useState(false);
+  const [editingOutput, setEditingOutput] = useState<Record<string, unknown> | null>(null);
+
+  // Edit mode handlers
+  const handleStartEdit = () => {
+    const currentOutput = session?.stages[activeStage]?.output;
+    if (currentOutput) {
+      setEditingOutput({ ...currentOutput });
+      setIsEditing(true);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingOutput) return;
+    try {
+      await saveStageOutput(activeStage, editingOutput);
+      setIsEditing(false);
+      setEditingOutput(null);
+    } catch (err) {
+      console.error('Failed to save stage output:', err);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditingOutput(null);
+  };
+
+  const handleUpdateField = (field: string, value: unknown) => {
+    if (field === '_full') {
+      // Full JSON replacement
+      setEditingOutput(value as Record<string, unknown>);
+    } else {
+      setEditingOutput((prev) => (prev ? { ...prev, [field]: value } : null));
+    }
+  };
 
   // Set initial active stage based on session progress
   useEffect(() => {
@@ -489,6 +611,12 @@ export function DiscoveryViewV4({
               stageState={currentStage}
               onRunStage={handleRunStage}
               isLoading={stageLoading === activeStage}
+              isEditing={isEditing}
+              editingOutput={editingOutput}
+              onStartEdit={handleStartEdit}
+              onSaveEdit={handleSaveEdit}
+              onCancelEdit={handleCancelEdit}
+              onUpdateField={handleUpdateField}
             />
           </div>
 
@@ -507,12 +635,13 @@ export function DiscoveryViewV4({
 
           {/* Checkpoint Controls (for Guided/Deep modes) */}
           {!isQuickMode &&
+            !isEditing &&
             (currentStage.status === 'completed' ||
               currentStage.status === 'approved') && (
               <div className="checkpoint-controls">
                 <p>Review the output above. Ready to continue?</p>
                 <div className="checkpoint-actions">
-                  <button className="secondary-btn">
+                  <button className="secondary-btn" onClick={handleStartEdit}>
                     <Edit3 size={16} /> Edit First
                   </button>
                   <button className="primary-btn" onClick={handleApproveStage}>
@@ -934,8 +1063,13 @@ export function DiscoveryViewV4({
         }
 
         .stage-output {
-          max-height: 500px;
+          max-height: 600px;
           overflow-y: auto;
+        }
+
+        .stage-output .output-content {
+          padding: 0;
+          background: transparent;
         }
 
         .output-header {
@@ -985,6 +1119,57 @@ export function DiscoveryViewV4({
           line-height: 1.5;
           white-space: pre-wrap;
           word-break: break-word;
+        }
+
+        /* Edit mode styles */
+        .stage-output.editing {
+          max-height: none;
+        }
+
+        .edit-hint {
+          margin: 0 0 12px 0;
+          font-size: 13px;
+          color: var(--text-secondary, #6b7280);
+        }
+
+        .json-editor-container {
+          margin-bottom: 16px;
+        }
+
+        .json-editor {
+          width: 100%;
+          min-height: 300px;
+          padding: 12px;
+          font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+          font-size: 13px;
+          line-height: 1.5;
+          border: 1px solid var(--border-color, #e5e7eb);
+          border-radius: 8px;
+          background: var(--bg-secondary, #f9fafb);
+          resize: vertical;
+        }
+
+        .json-editor:focus {
+          outline: none;
+          border-color: var(--primary, #3b82f6);
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .edit-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 12px;
+          padding-top: 16px;
+          border-top: 1px solid var(--border-color, #e5e7eb);
+        }
+
+        .cancel-edit {
+          color: var(--text-error, #dc2626) !important;
+          border-color: var(--text-error, #dc2626) !important;
+        }
+
+        .cancel-edit:hover {
+          background: #fef2f2 !important;
         }
 
         .output-score {
