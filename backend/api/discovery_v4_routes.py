@@ -623,6 +623,111 @@ async def continue_test_session_to_strategy(
     }
 
 
+@router.get("/test/sessions/{session_id}/stream")
+async def stream_test_session(session_id: str):
+    """
+    [DEVELOPMENT ONLY] Stream session events without authentication.
+    This endpoint is for testing purposes only and bypasses ownership validation.
+    """
+    import json as json_module
+    from sse_starlette.sse import EventSourceResponse
+    from utils.sse import get_or_create_emitter, stream_session_events
+
+    # Load session from cache or database (no ownership check)
+    if session_id not in _active_sessions:
+        session = _load_session_from_db(session_id)
+        if session:
+            _active_sessions[session_id] = session
+        else:
+            # Check if session exists in main session store (V3 style)
+            session_data = session_store.get(session_id)
+            if not session_data:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Test session {session_id} not found",
+                )
+
+    # Get session data from main store (may have been registered by lifecycle)
+    session_data = session_store.get(session_id)
+
+    # If session is already completed, send done event immediately
+    from models.schemas import SessionStatus
+    if session_data and session_data.get("status") == SessionStatus.COMPLETED:
+        async def completed_stream():
+            yield {
+                "event": "done",
+                "data": json_module.dumps({
+                    "type": "done",
+                    "agent": None,
+                    "data": {"session_id": session_id, "status": "completed"},
+                    "timestamp": datetime.utcnow().isoformat(),
+                }),
+            }
+        return EventSourceResponse(completed_stream())
+
+    # If session failed, send error and done
+    if session_data and session_data.get("status") == SessionStatus.FAILED:
+        async def failed_stream():
+            error_msg = session_data.get("error_message") or "Unknown error"
+            yield {
+                "event": "workflow_error",
+                "data": json_module.dumps({
+                    "type": "workflow_error",
+                    "agent": None,
+                    "data": {"message": error_msg},
+                    "timestamp": datetime.utcnow().isoformat(),
+                }),
+            }
+            yield {
+                "event": "done",
+                "data": json_module.dumps({
+                    "type": "done",
+                    "agent": None,
+                    "data": {"session_id": session_id, "status": "failed"},
+                    "timestamp": datetime.utcnow().isoformat(),
+                }),
+            }
+        return EventSourceResponse(failed_stream())
+
+    # Stream events for in-progress sessions
+    async def event_stream():
+        # Send an immediate heartbeat to establish the connection
+        yield {
+            "event": "heartbeat",
+            "data": json_module.dumps({
+                "type": "heartbeat",
+                "agent": None,
+                "data": {"timestamp": datetime.utcnow().isoformat(), "session_id": session_id},
+                "timestamp": datetime.utcnow().isoformat(),
+            }),
+        }
+
+        async for event_str in stream_session_events(session_id):
+            # Parse the SSE format to extract event and data
+            lines = event_str.strip().split("\n")
+            event_type = None
+            event_data = None
+
+            for line in lines:
+                if line.startswith("event: "):
+                    event_type = line[7:]
+                elif line.startswith("data: "):
+                    event_data = line[6:]
+
+            if event_type and event_data:
+                yield {
+                    "event": event_type,
+                    "data": event_data,
+                }
+
+            # Stop on done event
+            if event_type == "done":
+                break
+
+    logger.info("test_session_stream_started", session_id=session_id)
+    return EventSourceResponse(event_stream())
+
+
 @router.get("/test/sessions/{session_id}/lifecycle-check")
 async def check_lifecycle_status(session_id: str) -> dict[str, Any]:
     """

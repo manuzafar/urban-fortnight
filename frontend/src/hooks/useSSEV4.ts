@@ -164,11 +164,17 @@ export interface UseSSEV4Result {
 /**
  * V4 Hook for subscribing to SSE events for a discovery session.
  * Enhanced with transparency features for the V4 UI.
+ *
+ * @param sessionId - The session ID to connect to
+ * @param authToken - The auth token for authenticated endpoints
+ * @param enabled - Whether the hook should connect
+ * @param useTestEndpoint - If true, uses the V4 test stream endpoint (no auth required)
  */
 export function useSSEV4(
   sessionId: string | null,
   authToken: string | null,
-  enabled: boolean = true
+  enabled: boolean = true,
+  useTestEndpoint: boolean = false
 ): UseSSEV4Result {
   const [isConnected, setIsConnected] = useState(false);
   const [currentAgent, setCurrentAgent] = useState<string | null>(null);
@@ -298,8 +304,12 @@ export function useSSEV4(
       return reset;
     });
 
-    // Create EventSource with auth token in URL
-    const url = `${API_BASE_URL}/api/discovery/session/${sessionId}/stream?token=${encodeURIComponent(authToken)}`;
+    // Create EventSource with appropriate endpoint
+    // For V4 test sessions, use the test stream endpoint (no auth required)
+    // For regular sessions, use the authenticated endpoint
+    const url = useTestEndpoint
+      ? `${API_BASE_URL}/api/discovery/v4/test/sessions/${sessionId}/stream`
+      : `${API_BASE_URL}/api/discovery/session/${sessionId}/stream?token=${encodeURIComponent(authToken)}`;
     const eventSource = new EventSource(url);
     eventSourceRef.current = eventSource;
 

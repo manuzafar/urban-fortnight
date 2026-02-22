@@ -20,9 +20,11 @@ interface ExecutionViewV4Props {
   authToken: string;
   onComplete: (pack: InceptionPack) => void;
   onBack: () => void;
+  /** If true, uses the V4 test stream endpoint (no auth required) */
+  useTestEndpoint?: boolean;
 }
 
-export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack }: ExecutionViewV4Props) {
+export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useTestEndpoint = false }: ExecutionViewV4Props) {
   const {
     isConnected,
     currentAgent,
@@ -37,7 +39,7 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack }: Ex
     revisionState,
     phases,
     elapsedTime,
-  } = useSSEV4(sessionId, authToken);
+  } = useSSEV4(sessionId, authToken, true, useTestEndpoint);
 
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
 

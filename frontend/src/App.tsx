@@ -40,6 +40,8 @@ function App() {
   const [isHealthy, setIsHealthy] = useState<boolean | null>(null);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [_discoveryMode, setDiscoveryMode] = useState<DiscoveryMode>('quick');
+  // Track if current session is a V4 test session (uses test stream endpoint)
+  const [isV4TestSession, setIsV4TestSession] = useState<boolean>(false);
 
   // Sync auth token to API client whenever session changes
   useEffect(() => {
@@ -105,6 +107,7 @@ function App() {
       // Quick mode: use the existing full pipeline
       const response = await startDiscovery(request);
       setCurrentSessionId(response.session_id);
+      setIsV4TestSession(false);  // Regular session, use authenticated stream
 
       // Get initial status
       const status = await getSessionStatus(response.session_id);
@@ -273,6 +276,7 @@ function App() {
           authToken={session.access_token}
           onComplete={handleExecutionComplete}
           onBack={handleBackToDashboard}
+          useTestEndpoint={isV4TestSession}
         />
       );
     }
@@ -301,7 +305,9 @@ function App() {
           onContinueToExecution={(sessionId) => {
             // Transition to ExecutionView which handles SSE streaming
             // for the full lifecycle (Strategy, Delivery, Design phases)
+            // Mark as V4 test session so it uses the test stream endpoint
             setCurrentSessionId(sessionId);
+            setIsV4TestSession(true);
             setAppState('execution');
           }}
         />
