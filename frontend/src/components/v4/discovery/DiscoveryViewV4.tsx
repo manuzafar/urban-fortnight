@@ -133,8 +133,9 @@ function StageContent({
 }) {
   const hasOutput = stageState.output && Object.keys(stageState.output).length > 0;
 
-  // Check for timeout (2 minutes = 120 seconds)
-  const TIMEOUT_MS = 120000;
+  // Check for timeout (5 minutes = 300 seconds)
+  // LLM calls can take several minutes for complex analysis
+  const TIMEOUT_MS = 300000;
   const isTimedOut = stageState.status === 'in_progress' && stageState.started_at &&
     (Date.now() - new Date(stageState.started_at).getTime() > TIMEOUT_MS);
 
@@ -206,11 +207,23 @@ function StageContent({
       );
     }
 
+    // Calculate elapsed time
+    const elapsedMs = stageState.started_at
+      ? Date.now() - new Date(stageState.started_at).getTime()
+      : 0;
+    const elapsedSec = Math.floor(elapsedMs / 1000);
+    const elapsedMin = Math.floor(elapsedSec / 60);
+    const elapsedSecRemainder = elapsedSec % 60;
+    const elapsedText = elapsedMin > 0
+      ? `${elapsedMin}m ${elapsedSecRemainder}s`
+      : `${elapsedSec}s`;
+
     return (
       <div className="stage-loading">
         <Loader2 size={32} className="spin" />
         <h3>Analyzing...</h3>
-        <p>AI is working on this stage. This usually takes 30-60 seconds.</p>
+        <p>AI is analyzing your idea. This can take 1-3 minutes for thorough analysis.</p>
+        <p className="elapsed-time">Elapsed: {elapsedText}</p>
       </div>
     );
   }
@@ -979,6 +992,13 @@ export function DiscoveryViewV4({
         .stage-error p {
           margin: 0 0 24px 0;
           color: var(--text-secondary, #6b7280);
+        }
+
+        .stage-loading .elapsed-time {
+          font-size: 14px;
+          font-weight: 500;
+          color: var(--primary, #3b82f6);
+          margin-top: 8px;
         }
 
         .stage-error {
