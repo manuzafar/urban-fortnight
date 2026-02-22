@@ -282,9 +282,20 @@ class OpportunityMappingStage:
 
     def _parse_force(self, data: dict[str, Any]) -> Force:
         """Parse a single force."""
+        # Handle evidence that may be strings or dicts
+        raw_evidence = data.get("evidence", [])
+        parsed_evidence = []
+        for ev in raw_evidence:
+            if isinstance(ev, dict):
+                parsed_evidence.append(ev)
+            elif isinstance(ev, str):
+                # Convert string evidence to dict format
+                parsed_evidence.append({"quote": ev, "source": "interview"})
+            # Skip other types
+
         return Force(
             items=data.get("items", []),
-            evidence=data.get("evidence", []),
+            evidence=parsed_evidence,
             strength=data.get("strength", 5),
         )
 
@@ -306,12 +317,21 @@ class OpportunityMappingStage:
         """Parse LLM output into OpportunitySolutionTree."""
         opportunities = []
         for opp in data.get("opportunities", []):
+            # Handle evidence that may be strings or dicts
+            raw_evidence = opp.get("evidence", [])
+            parsed_evidence = []
+            for ev in raw_evidence:
+                if isinstance(ev, dict):
+                    parsed_evidence.append(ev)
+                elif isinstance(ev, str):
+                    parsed_evidence.append({"quote": ev, "source": "interview"})
+
             opportunities.append(
                 Opportunity(
                     id=opp.get("id", f"opp_{len(opportunities)}"),
                     description=opp.get("description", ""),
                     interview_count=opp.get("interview_count", 0),
-                    evidence=opp.get("evidence", []),
+                    evidence=parsed_evidence,
                     solutions=opp.get("solutions", []),
                     priority=opp.get("priority", len(opportunities) + 1),
                 )
