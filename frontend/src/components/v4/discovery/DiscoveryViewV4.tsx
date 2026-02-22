@@ -111,6 +111,7 @@ function StageContent({
   onSaveEdit,
   onCancelEdit,
   onUpdateField,
+  clientStartTime,
 }: {
   stage: string;
   stageState: {
@@ -130,14 +131,27 @@ function StageContent({
   onSaveEdit: () => void;
   onCancelEdit: () => void;
   onUpdateField: (field: string, value: unknown) => void;
+  clientStartTime?: number; // Timestamp when user started this stage in current session
 }) {
   const hasOutput = stageState.output && Object.keys(stageState.output).length > 0;
 
   // Check for timeout (5 minutes = 300 seconds)
   // LLM calls can take several minutes for complex analysis
   const TIMEOUT_MS = 300000;
-  const isTimedOut = stageState.status === 'in_progress' && stageState.started_at &&
-    (Date.now() - new Date(stageState.started_at).getTime() > TIMEOUT_MS);
+
+  // Only show timeout if:
+  // 1. Stage is in_progress
+  // 2. User started this stage in the current session (clientStartTime exists)
+  // 3. It's been longer than TIMEOUT_MS
+  const isTimedOut = stageState.status === 'in_progress' &&
+    clientStartTime && // Only timeout if user started it in this session
+    (Date.now() - clientStartTime > TIMEOUT_MS);
+
+  // Check for stale in_progress state (from a previous session that was interrupted)
+  const isStaleInProgress = stageState.status === 'in_progress' &&
+    !clientStartTime && // User didn't start it in this session
+    stageState.started_at &&
+    (Date.now() - new Date(stageState.started_at).getTime() > 60000); // More than 1 minute old
 
   // Show error state if stage failed
   if (stageState.error_message) {
@@ -184,6 +198,30 @@ function StageContent({
     );
   }
 
+  // Handle stale in_progress state (from previous interrupted session)
+  if (isStaleInProgress) {
+    return (
+      <div className="stage-error stale">
+        <AlertCircle size={32} />
+        <h3>Stage Interrupted</h3>
+        <p className="error-message">
+          This stage was started previously but didn&apos;t complete. Click below to restart.
+        </p>
+        <button className="retry-btn" onClick={onRunStage} disabled={isLoading}>
+          {isLoading ? (
+            <>
+              <Loader2 size={18} className="spin" /> Running...
+            </>
+          ) : (
+            <>
+              <RefreshCw size={18} /> Restart Stage
+            </>
+          )}
+        </button>
+      </div>
+    );
+  }
+
   if (stageState.status === 'in_progress') {
     // Show timeout error if stage has been running too long
     if (isTimedOut) {
@@ -207,10 +245,10 @@ function StageContent({
       );
     }
 
-    // Calculate elapsed time
-    const elapsedMs = stageState.started_at
-      ? Date.now() - new Date(stageState.started_at).getTime()
-      : 0;
+    // Calculate elapsed time using client-side start time for accuracy
+    const elapsedMs = clientStartTime
+      ? Date.now() - clientStartTime
+      : (stageState.started_at ? Date.now() - new Date(stageState.started_at).getTime() : 0);
     const elapsedSec = Math.floor(elapsedMs / 1000);
     const elapsedMin = Math.floor(elapsedSec / 60);
     const elapsedSecRemainder = elapsedSec % 60;
@@ -386,6 +424,9 @@ export function DiscoveryViewV4({
   const [isEditing, setIsEditing] = useState(false);
   const [editingOutput, setEditingOutput] = useState<Record<string, unknown> | null>(null);
 
+  // Track when user starts a stage (client-side) to avoid false timeouts from stale server data
+  const [clientStageStartTime, setClientStageStartTime] = useState<Record<string, number>>({});
+
   // Edit mode handlers
   const handleStartEdit = () => {
     const currentOutput = session?.stages[activeStage]?.output;
@@ -470,6 +511,8 @@ export function DiscoveryViewV4({
 
   const handleRunStage = async () => {
     setStageLoading(activeStage);
+    // Track when user started this stage client-side
+    setClientStageStartTime(prev => ({ ...prev, [activeStage]: Date.now() }));
     try {
       await runStage(activeStage);
     } finally {
@@ -630,6 +673,7 @@ export function DiscoveryViewV4({
               onSaveEdit={handleSaveEdit}
               onCancelEdit={handleCancelEdit}
               onUpdateField={handleUpdateField}
+              clientStartTime={clientStageStartTime[activeStage]}
             />
           </div>
 
@@ -1006,8 +1050,20 @@ export function DiscoveryViewV4({
           border-radius: 12px;
         }
 
+        .stage-error.stale {
+          background: #fefce8;
+        }
+
         .stage-error h3 {
           color: #b91c1c;
+        }
+
+        .stage-error.stale h3 {
+          color: #a16207;
+        }
+
+        .stage-error.stale .error-message {
+          color: #ca8a04;
         }
 
         .stage-error .error-message {
