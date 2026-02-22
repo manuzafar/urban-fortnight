@@ -68,21 +68,25 @@ class CustomerTruthStage:
 
         mode = context.get("mode", "guided")
 
-        if mode == "quick":
-            # Generate hypothetical customer insights
-            return await self._generate_hypothetical(context)
+        if mode == "deep":
+            # Deep mode: Require real interviews
+            if len(session.interviews) > 0:
+                return await self._synthesize_available(session, context)
+            else:
+                # Return empty state with guidance for Deep mode
+                return CustomerTruthOutput(
+                    interviews=[],
+                    patterns=None,
+                    interview_goal=5,
+                    interviews_completed=0,
+                    readiness_score=1,
+                )
         elif len(session.interviews) > 0:
-            # Synthesize from available interviews
+            # Quick/Guided mode with interviews: Synthesize real data
             return await self._synthesize_available(session, context)
         else:
-            # No interviews yet - return empty state with guidance
-            return CustomerTruthOutput(
-                interviews=[],
-                patterns=None,
-                interview_goal=5,
-                interviews_completed=0,
-                readiness_score=1,
-            )
+            # Quick/Guided mode without interviews: Generate hypothetical insights
+            return await self._generate_hypothetical(context)
 
     async def _generate_hypothetical(
         self, context: dict[str, Any]
