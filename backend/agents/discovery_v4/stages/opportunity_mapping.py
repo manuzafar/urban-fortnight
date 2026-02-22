@@ -326,6 +326,10 @@ class OpportunityMappingStage:
                 elif isinstance(ev, str):
                     parsed_evidence.append({"quote": ev, "source": "interview"})
 
+            # Clamp priority to valid range (1-5)
+            raw_priority = opp.get("priority", len(opportunities) + 1)
+            clamped_priority = max(1, min(5, raw_priority))
+
             opportunities.append(
                 Opportunity(
                     id=opp.get("id", f"opp_{len(opportunities)}"),
@@ -333,7 +337,7 @@ class OpportunityMappingStage:
                     interview_count=opp.get("interview_count", 0),
                     evidence=parsed_evidence,
                     solutions=opp.get("solutions", []),
-                    priority=opp.get("priority", len(opportunities) + 1),
+                    priority=clamped_priority,
                 )
             )
 
