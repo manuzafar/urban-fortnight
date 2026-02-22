@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
 // Types
 interface StageState {
@@ -142,7 +142,8 @@ export function useDiscoveryV4(sessionId: string | null) {
   const [session, setSession] = useState<DiscoverySessionV4 | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [pollingInterval, setPollingInterval] = useState<NodeJS.Timeout | null>(null);
+  // Use ref for polling interval to avoid cleanup issues with useEffect
+  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch session
   const fetchSession = useCallback(async () => {
@@ -170,6 +171,7 @@ export function useDiscoveryV4(sessionId: string | null) {
   }, [fetchSession]);
 
   // Polling for updates during stage execution
+  // Uses ref to avoid cleanup issues that were causing polling to stop
   useEffect(() => {
     if (!session) return;
 
@@ -177,20 +179,29 @@ export function useDiscoveryV4(sessionId: string | null) {
       (s) => s.status === 'in_progress'
     );
 
-    if (hasActiveStage && !pollingInterval) {
-      const interval = setInterval(fetchSession, 2000);
-      setPollingInterval(interval);
-    } else if (!hasActiveStage && pollingInterval) {
-      clearInterval(pollingInterval);
-      setPollingInterval(null);
+    if (hasActiveStage) {
+      // Start polling if not already polling
+      if (!pollingIntervalRef.current) {
+        pollingIntervalRef.current = setInterval(fetchSession, 2000);
+      }
+    } else {
+      // Stop polling if no active stage
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
+      }
     }
+  }, [session, fetchSession]);
 
+  // Cleanup interval on unmount only
+  useEffect(() => {
     return () => {
-      if (pollingInterval) {
-        clearInterval(pollingInterval);
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+        pollingIntervalRef.current = null;
       }
     };
-  }, [session, pollingInterval, fetchSession]);
+  }, []);
 
   // Stage operations
   const runStage = useCallback(
