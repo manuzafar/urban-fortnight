@@ -68,9 +68,9 @@ def _persist_session_to_db(session: DiscoverySessionV4) -> bool:
         session_state = {
             "mode": session.mode.value if hasattr(session.mode, 'value') else str(session.mode),
             "stages": stages_dict,
-            "patterns": session.patterns.model_dump() if session.patterns else None,
-            "four_forces": session.four_forces.model_dump() if session.four_forces else None,
-            "opportunity_tree": session.opportunity_tree.model_dump() if session.opportunity_tree else None,
+            "patterns": session.patterns.model_dump(mode="json") if session.patterns else None,
+            "four_forces": session.four_forces.model_dump(mode="json") if session.four_forces else None,
+            "opportunity_tree": session.opportunity_tree.model_dump(mode="json") if session.opportunity_tree else None,
             "overall_evidence_quality": session.overall_evidence_quality.value if hasattr(session.overall_evidence_quality, 'value') else str(session.overall_evidence_quality),
             "quality_score": session.quality_score,
         }

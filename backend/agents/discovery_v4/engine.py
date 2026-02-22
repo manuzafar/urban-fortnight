@@ -151,8 +151,8 @@ class DiscoveryEngineV4:
             # Run stage
             output = await runner.run(session, context)
 
-            # Update session with output
-            session.stages[stage].output = output.model_dump() if hasattr(output, "model_dump") else output
+            # Update session with output (mode="json" ensures date objects are serialized)
+            session.stages[stage].output = output.model_dump(mode="json") if hasattr(output, "model_dump") else output
             session.stages[stage].status = StageStatus.COMPLETED
             session.stages[stage].completed_at = datetime.utcnow().isoformat()
 
