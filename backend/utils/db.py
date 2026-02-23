@@ -53,14 +53,18 @@ class SupabaseSessionStore:
 
     def get(self, session_id: str) -> Optional[dict[str, Any]]:
         """Get session data by ID."""
-        result = (
-            self.client.table("discovery_sessions")
-            .select("*")
-            .eq("id", session_id)
-            .maybe_single()
-            .execute()
-        )
-        return result.data
+        try:
+            result = (
+                self.client.table("discovery_sessions")
+                .select("*")
+                .eq("id", session_id)
+                .maybe_single()
+                .execute()
+            )
+            return result.data if result else None
+        except Exception as e:
+            logger.warning("session_get_error", session_id=session_id, error=str(e))
+            return None
 
     def update_status(self, session_id: str, updates: dict[str, Any]) -> bool:
         """Update session status fields."""
