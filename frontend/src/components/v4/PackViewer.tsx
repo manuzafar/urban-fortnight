@@ -8,6 +8,7 @@ import { Share2, Printer, Download, ChevronLeft, ChevronRight } from 'lucide-rea
 import { QualityScore } from './QualityScore';
 import { SectionNav, type NavSection } from './SectionNav';
 import { EvidenceBadge, EvidenceLegend } from './EvidenceBadge';
+import { MermaidDiagram } from '../MermaidDiagram';
 import type { InceptionPack, RiskItem as RiskItemType, RiskMatrixItem, CompetitorDetail } from '../../types/api';
 import '../../styles/theme-v4.css';
 
@@ -1774,33 +1775,27 @@ function TechArchitectureSection({ pack }: { pack: InceptionPack }) {
           {arch.architecture_diagram_mermaid && (
             <div style={{ marginBottom: arch.sequence_diagram_mermaid ? '16px' : 0 }}>
               <h5 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)', marginBottom: '8px' }}>System Architecture</h5>
-              <pre style={{
+              <div style={{
                 padding: '14px',
                 background: 'var(--v4-bg)',
                 borderRadius: 'var(--v4-radius)',
-                fontSize: '12px',
                 overflow: 'auto',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
               }}>
-                {arch.architecture_diagram_mermaid}
-              </pre>
+                <MermaidDiagram chart={arch.architecture_diagram_mermaid} />
+              </div>
             </div>
           )}
           {arch.sequence_diagram_mermaid && (
             <div>
               <h5 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)', marginBottom: '8px' }}>Sequence Diagram</h5>
-              <pre style={{
+              <div style={{
                 padding: '14px',
                 background: 'var(--v4-bg)',
                 borderRadius: 'var(--v4-radius)',
-                fontSize: '12px',
                 overflow: 'auto',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word',
               }}>
-                {arch.sequence_diagram_mermaid}
-              </pre>
+                <MermaidDiagram chart={arch.sequence_diagram_mermaid} />
+              </div>
             </div>
           )}
         </Card>
