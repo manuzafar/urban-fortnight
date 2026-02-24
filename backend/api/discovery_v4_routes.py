@@ -846,7 +846,7 @@ async def run_lifecycle_sync(session_id: str) -> dict[str, Any]:
                 "pack_sections": list(inception_pack.keys()),
             })
 
-            await emitter.emit_done(inception_pack)
+            await emitter.emit_done(status="completed")
             result["status"] = "success"
             result["pack_preview"] = {
                 "has_product_brief": "product_brief" in inception_pack,
@@ -1973,7 +1973,7 @@ async def _run_full_lifecycle_with_v4(session_id: str, user_id: str) -> None:
                 )
 
             # ALWAYS emit completion - this is what the frontend needs
-            await emitter.emit_done(inception_pack)
+            await emitter.emit_done(status="completed")
 
         logger.info("full_lifecycle_complete", session_id=session_id)
 
