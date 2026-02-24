@@ -269,11 +269,12 @@ function App() {
     }
 
     // V4 Execution View
-    if (appState === 'execution' && currentSessionId && session?.access_token) {
+    // For V4 test sessions, allow without auth (useTestEndpoint handles this)
+    if (appState === 'execution' && currentSessionId && (session?.access_token || isV4TestSession)) {
       return (
         <ExecutionViewV4
           sessionId={currentSessionId}
-          authToken={session.access_token}
+          authToken={session?.access_token || ''}
           onComplete={handleExecutionComplete}
           onBack={handleBackToDashboard}
           useTestEndpoint={isV4TestSession}
