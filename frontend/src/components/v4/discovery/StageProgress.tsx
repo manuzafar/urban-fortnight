@@ -8,6 +8,11 @@ import {
   Check,
   Loader2,
   Lock,
+  Target,
+  FileText,
+  Cpu,
+  Palette,
+  Award,
 } from 'lucide-react';
 
 interface StageState {
@@ -58,7 +63,7 @@ const DISCOVERY_STAGES = [
     shortName: 'Solution',
     icon: Lightbulb,
     description: 'Design and evaluate the solution',
-    color: '#3b82f6', // blue
+    color: '#c2410c', // terracotta (V4 accent)
   },
   {
     id: 'validation_plan',
@@ -67,6 +72,40 @@ const DISCOVERY_STAGES = [
     icon: CheckCircle,
     description: 'Plan validation experiments',
     color: '#8b5cf6', // purple
+  },
+];
+
+// Upcoming phases after Discovery completes
+const UPCOMING_PHASES = [
+  {
+    id: 'strategy',
+    name: 'Strategy & Planning',
+    icon: Target,
+    description: 'Business model & go-to-market',
+  },
+  {
+    id: 'requirements',
+    name: 'Product Requirements',
+    icon: FileText,
+    description: 'PRD, epics & user stories',
+  },
+  {
+    id: 'architecture',
+    name: 'Technical Architecture',
+    icon: Cpu,
+    description: 'System design & tech stack',
+  },
+  {
+    id: 'design',
+    name: 'Design & Prototype',
+    icon: Palette,
+    description: 'Wireframes & interactive prototype',
+  },
+  {
+    id: 'quality',
+    name: 'Quality Review',
+    icon: Award,
+    description: 'Cross-validation & scoring',
   },
 ];
 
@@ -102,10 +141,16 @@ export function StageProgress({
     return false;
   };
 
+  // Calculate if all discovery stages are complete
+  const allDiscoveryComplete = DISCOVERY_STAGES.every((stage) => {
+    const state = session.stages[stage.id];
+    return state?.status === 'completed' || state?.status === 'approved' || state?.status === 'skipped';
+  });
+
   return (
     <div className="stage-progress-container">
       <div className="stage-progress-header">
-        <h3>Discovery Progress</h3>
+        <h3>Discovery</h3>
       </div>
 
       <div className="stage-progress-list">
@@ -153,24 +198,49 @@ export function StageProgress({
         })}
       </div>
 
+      {/* Upcoming Phases Preview */}
+      <div className="upcoming-phases-section">
+        <div className="upcoming-header">
+          <h4>Coming Up</h4>
+          <Lock size={14} className="lock-icon" />
+        </div>
+        <div className="upcoming-phases-list">
+          {UPCOMING_PHASES.map((phase) => {
+            const Icon = phase.icon;
+            return (
+              <div
+                key={phase.id}
+                className={`upcoming-phase-item ${allDiscoveryComplete ? 'ready' : ''}`}
+                title={allDiscoveryComplete ? 'Complete Discovery to unlock' : 'Locked - complete Discovery first'}
+              >
+                <div className="upcoming-phase-icon">
+                  {allDiscoveryComplete ? <Icon size={16} /> : <Lock size={14} />}
+                </div>
+                <span className="upcoming-phase-name">{phase.name}</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       <style>{`
         .stage-progress-container {
-          background: white;
+          background: var(--v4-surface, white);
           border-radius: 12px;
-          border: 1px solid var(--border-color, #e5e7eb);
+          border: 1px solid var(--v4-border, #e5e7eb);
           overflow: hidden;
         }
 
         .stage-progress-header {
           padding: 16px 20px;
-          border-bottom: 1px solid var(--border-color, #e5e7eb);
+          border-bottom: 1px solid var(--v4-border, #e5e7eb);
         }
 
         .stage-progress-header h3 {
           margin: 0;
           font-size: 14px;
           font-weight: 600;
-          color: var(--text-primary, #1a1a2e);
+          color: var(--v4-text, #1a1a2e);
           text-transform: uppercase;
           letter-spacing: 0.5px;
         }
@@ -188,7 +258,7 @@ export function StageProgress({
           padding: 16px 20px;
           background: none;
           border: none;
-          border-bottom: 1px solid var(--border-color, #e5e7eb);
+          border-bottom: 1px solid var(--v4-border, #e5e7eb);
           cursor: pointer;
           transition: all 0.2s ease;
           text-align: left;
@@ -199,7 +269,7 @@ export function StageProgress({
         }
 
         .stage-item:hover:not(.locked) {
-          background: var(--bg-hover, #f9fafb);
+          background: var(--v4-bg, #f9fafb);
         }
 
         .stage-item.active {
@@ -217,7 +287,7 @@ export function StageProgress({
           top: -8px;
           width: 2px;
           height: 16px;
-          background: var(--border-color, #e5e7eb);
+          background: var(--v4-border, #e5e7eb);
         }
 
         .stage-item.complete .stage-connector,
@@ -232,8 +302,8 @@ export function StageProgress({
           align-items: center;
           justify-content: center;
           border-radius: 50%;
-          background: var(--bg-secondary, #f3f4f6);
-          color: var(--text-secondary, #6b7280);
+          background: var(--v4-bg, #f3f4f6);
+          color: var(--v4-text-secondary, #6b7280);
           flex-shrink: 0;
         }
 
@@ -253,8 +323,8 @@ export function StageProgress({
         }
 
         .stage-item.skipped .stage-icon {
-          background: var(--bg-secondary, #f3f4f6);
-          color: var(--text-muted, #9ca3af);
+          background: var(--v4-bg, #f3f4f6);
+          color: var(--v4-text-muted, #9ca3af);
         }
 
         .stage-info {
@@ -266,18 +336,18 @@ export function StageProgress({
           display: block;
           font-size: 14px;
           font-weight: 500;
-          color: var(--text-primary, #1a1a2e);
+          color: var(--v4-text, #1a1a2e);
         }
 
         .stage-item.skipped .stage-name {
           text-decoration: line-through;
-          color: var(--text-muted, #9ca3af);
+          color: var(--v4-text-muted, #9ca3af);
         }
 
         .stage-description {
           display: block;
           font-size: 12px;
-          color: var(--text-secondary, #6b7280);
+          color: var(--v4-text-secondary, #6b7280);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -309,6 +379,83 @@ export function StageProgress({
           .stage-description {
             display: none;
           }
+        }
+
+        /* Upcoming Phases Section */
+        .upcoming-phases-section {
+          border-top: 1px solid var(--v4-border, #e5e7eb);
+          padding: 16px 20px;
+          background: var(--v4-bg, #f9fafb);
+        }
+
+        .upcoming-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 12px;
+        }
+
+        .upcoming-header h4 {
+          margin: 0;
+          font-size: 12px;
+          font-weight: 600;
+          color: var(--v4-text-muted, #9ca3af);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .upcoming-header .lock-icon {
+          color: var(--v4-text-muted, #9ca3af);
+        }
+
+        .upcoming-phases-list {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+        }
+
+        .upcoming-phase-item {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 8px 10px;
+          border-radius: 6px;
+          opacity: 0.6;
+          transition: all 0.2s ease;
+        }
+
+        .upcoming-phase-item.ready {
+          opacity: 0.8;
+        }
+
+        .upcoming-phase-item:hover {
+          background: rgba(0, 0, 0, 0.03);
+        }
+
+        .upcoming-phase-icon {
+          width: 28px;
+          height: 28px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: var(--v4-surface, white);
+          border: 1px dashed var(--v4-border, #e5e7eb);
+          color: var(--v4-text-muted, #9ca3af);
+        }
+
+        .upcoming-phase-item.ready .upcoming-phase-icon {
+          border-color: var(--v4-accent, #c2410c);
+          color: var(--v4-accent, #c2410c);
+        }
+
+        .upcoming-phase-name {
+          font-size: 13px;
+          color: var(--v4-text-muted, #9ca3af);
+        }
+
+        .upcoming-phase-item.ready .upcoming-phase-name {
+          color: var(--v4-text-secondary, #6b7280);
         }
       `}</style>
     </div>

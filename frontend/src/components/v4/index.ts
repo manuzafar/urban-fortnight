@@ -11,6 +11,7 @@ export { PhaseTimeline, type Phase, type Agent } from './PhaseTimeline';
 export { AgentCard, type AgentInsight } from './AgentCard';
 export { ConstraintFlow, type ConstraintFlowItem } from './ConstraintFlow';
 export { RevisionIndicator, RevisionCompleteBanner, type RevisionState } from './RevisionIndicator';
+export { JourneyTimeline, type DiscoveryStage, type ExecutionPhase, type ExecutionAgent } from './JourneyTimeline';
 
 // Page components
 export { LandingPageV4 } from './LandingPage';

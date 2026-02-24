@@ -573,6 +573,10 @@ export function DiscoveryViewV4({
   const totalStages = Object.keys(session.stages).length;
   const progressPercent = Math.round((stagesComplete / totalStages) * 100);
 
+  // Calculate journey progress (Discovery = 0-20% of total journey)
+  const discoveryProgress = Math.round((stagesComplete / totalStages) * 100);
+  const journeyProgress = Math.round(discoveryProgress * 0.2); // Discovery is 20% of total
+
   return (
     <div className="discovery-view-v4">
       {/* Header */}
@@ -584,11 +588,30 @@ export function DiscoveryViewV4({
             </button>
           )}
           <div className="header-titles">
-            <h1>Discovery</h1>
+            <h1>Seedform</h1>
             <p className="product-idea">
-              {session.product_idea.slice(0, 60)}
-              {session.product_idea.length > 60 ? '...' : ''}
+              {session.product_idea.slice(0, 50)}
+              {session.product_idea.length > 50 ? '...' : ''}
             </p>
+          </div>
+        </div>
+        <div className="header-center">
+          <div className="journey-progress">
+            <span className="journey-label">Journey: Discovery ({stagesComplete}/{totalStages})</span>
+            <div className="journey-bar">
+              <div
+                className="journey-fill"
+                style={{ width: `${journeyProgress}%` }}
+                title={`${journeyProgress}% complete`}
+              />
+              <div className="journey-phases">
+                <div className="phase-marker active" style={{ left: '0%' }} title="Discovery" />
+                <div className="phase-marker" style={{ left: '20%' }} title="Strategy" />
+                <div className="phase-marker" style={{ left: '45%' }} title="Delivery" />
+                <div className="phase-marker" style={{ left: '70%' }} title="Design" />
+                <div className="phase-marker" style={{ left: '90%' }} title="Quality" />
+              </div>
+            </div>
           </div>
         </div>
         <div className="header-right">
@@ -764,7 +787,7 @@ export function DiscoveryViewV4({
       <style>{`
         .discovery-view-v4 {
           min-height: 100vh;
-          background: var(--bg-primary, #f9fafb);
+          background: var(--v4-bg);
         }
 
         .discovery-loading,
@@ -779,7 +802,7 @@ export function DiscoveryViewV4({
 
         .discovery-loading p,
         .discovery-error p {
-          color: var(--text-secondary, #6b7280);
+          color: var(--v4-text-secondary);
         }
 
         .spin {
@@ -797,8 +820,8 @@ export function DiscoveryViewV4({
           align-items: center;
           justify-content: space-between;
           padding: 16px 24px;
-          background: white;
-          border-bottom: 1px solid var(--border-color, #e5e7eb);
+          background: var(--v4-surface);
+          border-bottom: 1px solid var(--v4-border);
           position: sticky;
           top: 0;
           z-index: 100;
@@ -816,32 +839,99 @@ export function DiscoveryViewV4({
           border: none;
           border-radius: 8px;
           cursor: pointer;
-          color: var(--text-secondary, #6b7280);
+          color: var(--v4-text-secondary);
           transition: all 0.2s;
         }
 
         .back-btn:hover {
-          background: var(--bg-hover, #f3f4f6);
-          color: var(--text-primary, #1a1a2e);
+          background: var(--v4-bg);
+          color: var(--v4-text);
         }
 
         .header-titles h1 {
           margin: 0;
           font-size: 20px;
           font-weight: 600;
-          color: var(--text-primary, #1a1a2e);
+          color: var(--v4-text);
         }
 
         .product-idea {
           margin: 2px 0 0;
           font-size: 13px;
-          color: var(--text-secondary, #6b7280);
+          color: var(--v4-text-secondary);
         }
 
         .header-right {
           display: flex;
           align-items: center;
           gap: 12px;
+        }
+
+        /* Journey Progress Bar */
+        .header-center {
+          flex: 1;
+          display: flex;
+          justify-content: center;
+          padding: 0 24px;
+        }
+
+        .journey-progress {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          min-width: 280px;
+          max-width: 400px;
+        }
+
+        .journey-label {
+          font-size: 12px;
+          font-weight: 500;
+          color: var(--v4-text-secondary);
+          text-align: center;
+        }
+
+        .journey-bar {
+          position: relative;
+          height: 6px;
+          background: var(--v4-bg);
+          border-radius: 3px;
+          overflow: visible;
+        }
+
+        .journey-fill {
+          height: 100%;
+          background: var(--v4-accent);
+          border-radius: 3px;
+          transition: width 0.3s ease;
+        }
+
+        .journey-phases {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 100%;
+        }
+
+        .phase-marker {
+          position: absolute;
+          top: -3px;
+          width: 12px;
+          height: 12px;
+          border-radius: 50%;
+          background: var(--v4-surface);
+          border: 2px solid var(--v4-border);
+          transform: translateX(-50%);
+        }
+
+        .phase-marker.active {
+          background: var(--v4-accent);
+          border-color: var(--v4-accent);
+        }
+
+        .phase-marker.complete {
+          background: var(--v4-success);
+          border-color: var(--v4-success);
         }
 
         .mode-badge {
@@ -853,18 +943,18 @@ export function DiscoveryViewV4({
         }
 
         .mode-quick {
-          background: #dcfce7;
-          color: #166534;
+          background: var(--v4-success-bg);
+          color: var(--v4-success);
         }
 
         .mode-guided {
-          background: #dbeafe;
-          color: #1e40af;
+          background: var(--v4-accent-light);
+          color: var(--v4-accent);
         }
 
         .mode-deep {
-          background: #f3e8ff;
-          color: #7c3aed;
+          background: #fef3c7;
+          color: #92400e;
         }
 
         .quality-badge {
@@ -876,7 +966,7 @@ export function DiscoveryViewV4({
         .quality-badge .score {
           font-size: 14px;
           font-weight: 600;
-          color: var(--text-primary, #1a1a2e);
+          color: var(--v4-text);
         }
 
         /* Layout */
@@ -897,8 +987,8 @@ export function DiscoveryViewV4({
         }
 
         .interview-tracker {
-          background: white;
-          border: 1px solid var(--border-color, #e5e7eb);
+          background: var(--v4-surface);
+          border: 1px solid var(--v4-border);
           border-radius: 12px;
           padding: 16px;
         }
@@ -914,17 +1004,17 @@ export function DiscoveryViewV4({
           margin: 0;
           font-size: 14px;
           font-weight: 600;
-          color: var(--text-primary, #1a1a2e);
+          color: var(--v4-text);
         }
 
         .interview-count {
           font-size: 13px;
-          color: var(--text-secondary, #6b7280);
+          color: var(--v4-text-secondary);
         }
 
         .interview-progress {
           height: 6px;
-          background: var(--bg-secondary, #f3f4f6);
+          background: var(--v4-bg);
           border-radius: 3px;
           margin-bottom: 12px;
           overflow: hidden;
@@ -932,7 +1022,7 @@ export function DiscoveryViewV4({
 
         .interview-progress-bar {
           height: 100%;
-          background: var(--primary, #3b82f6);
+          background: var(--v4-accent);
           border-radius: 3px;
           transition: width 0.3s ease;
         }
@@ -953,24 +1043,24 @@ export function DiscoveryViewV4({
         }
 
         .add-interview-btn {
-          background: var(--primary, #3b82f6);
+          background: var(--v4-accent);
           border: none;
           color: white;
           margin-bottom: 8px;
         }
 
         .add-interview-btn:hover {
-          background: var(--primary-dark, #2563eb);
+          background: var(--v4-accent-hover);
         }
 
         .synthesize-btn {
-          background: white;
-          border: 1px solid var(--border-color, #e5e7eb);
-          color: var(--text-secondary, #6b7280);
+          background: var(--v4-surface);
+          border: 1px solid var(--v4-border);
+          color: var(--v4-text-secondary);
         }
 
         .synthesize-btn:hover {
-          background: var(--bg-hover, #f3f4f6);
+          background: var(--v4-bg);
         }
 
         .sidebar-actions {
@@ -985,17 +1075,17 @@ export function DiscoveryViewV4({
           justify-content: center;
           gap: 6px;
           padding: 8px;
-          background: white;
-          border: 1px solid var(--border-color, #e5e7eb);
+          background: var(--v4-surface);
+          border: 1px solid var(--v4-border);
           border-radius: 8px;
           font-size: 12px;
-          color: var(--text-secondary, #6b7280);
+          color: var(--v4-text-secondary);
           cursor: pointer;
           transition: all 0.2s;
         }
 
         .action-btn:hover {
-          background: var(--bg-hover, #f3f4f6);
+          background: var(--v4-bg);
         }
 
         /* Main */
@@ -1006,8 +1096,8 @@ export function DiscoveryViewV4({
         }
 
         .stage-container {
-          background: white;
-          border: 1px solid var(--border-color, #e5e7eb);
+          background: var(--v4-surface);
+          border: 1px solid var(--v4-border);
           border-radius: 12px;
           padding: 24px;
           min-height: 400px;
@@ -1029,53 +1119,53 @@ export function DiscoveryViewV4({
         .stage-error h3 {
           margin: 0 0 8px 0;
           font-size: 18px;
-          color: var(--text-primary, #1a1a2e);
+          color: var(--v4-text);
         }
 
         .stage-empty p,
         .stage-loading p,
         .stage-error p {
           margin: 0 0 24px 0;
-          color: var(--text-secondary, #6b7280);
+          color: var(--v4-text-secondary);
         }
 
         .stage-loading .elapsed-time {
           font-size: 14px;
           font-weight: 500;
-          color: var(--primary, #3b82f6);
+          color: var(--v4-accent);
           margin-top: 8px;
         }
 
         .stage-error {
-          background: #fef2f2;
+          background: var(--v4-error-bg);
           border-radius: 12px;
         }
 
         .stage-error.stale {
-          background: #fefce8;
+          background: var(--v4-warning-bg);
         }
 
         .stage-error h3 {
-          color: #b91c1c;
+          color: var(--v4-error);
         }
 
         .stage-error.stale h3 {
-          color: #a16207;
+          color: var(--v4-warning);
         }
 
         .stage-error.stale .error-message {
-          color: #ca8a04;
+          color: var(--v4-warning);
         }
 
         .stage-error .error-message {
-          color: #dc2626;
+          color: var(--v4-error);
           max-width: 400px;
           word-break: break-word;
         }
 
         .stage-error .error-time {
           font-size: 12px;
-          color: #9ca3af;
+          color: var(--v4-text-muted);
         }
 
         .stage-error .retry-btn {
@@ -1083,7 +1173,7 @@ export function DiscoveryViewV4({
           align-items: center;
           gap: 8px;
           padding: 10px 20px;
-          background: #dc2626;
+          background: var(--v4-error);
           border: none;
           border-radius: 8px;
           color: white;
@@ -1106,10 +1196,10 @@ export function DiscoveryViewV4({
           align-items: center;
           gap: 8px;
           padding: 12px 16px;
-          background: #fef2f2;
-          border: 1px solid #fecaca;
+          background: var(--v4-error-bg);
+          border: 1px solid rgba(220, 38, 38, 0.2);
           border-radius: 8px;
-          color: #dc2626;
+          color: var(--v4-error);
           font-size: 14px;
           margin-bottom: 16px;
         }
@@ -1119,7 +1209,7 @@ export function DiscoveryViewV4({
           align-items: center;
           gap: 8px;
           padding: 12px 24px;
-          background: var(--primary, #3b82f6);
+          background: var(--v4-accent);
           border: none;
           border-radius: 10px;
           font-size: 15px;
@@ -1130,7 +1220,7 @@ export function DiscoveryViewV4({
         }
 
         .run-stage-btn:hover:not(:disabled) {
-          background: var(--primary-dark, #2563eb);
+          background: var(--v4-accent-hover);
           transform: translateY(-1px);
         }
 
@@ -1160,7 +1250,7 @@ export function DiscoveryViewV4({
           margin: 0;
           font-size: 16px;
           font-weight: 600;
-          color: var(--text-primary, #1a1a2e);
+          color: var(--v4-text);
         }
 
         .output-actions {
@@ -1171,21 +1261,21 @@ export function DiscoveryViewV4({
         .icon-btn {
           padding: 8px;
           background: none;
-          border: 1px solid var(--border-color, #e5e7eb);
+          border: 1px solid var(--v4-border);
           border-radius: 6px;
           cursor: pointer;
-          color: var(--text-secondary, #6b7280);
+          color: var(--v4-text-secondary);
           transition: all 0.2s;
         }
 
         .icon-btn:hover {
-          background: var(--bg-hover, #f3f4f6);
-          color: var(--text-primary, #1a1a2e);
+          background: var(--v4-bg);
+          color: var(--v4-text);
         }
 
         .output-content {
           padding: 16px;
-          background: var(--bg-secondary, #f9fafb);
+          background: var(--v4-bg);
           border-radius: 8px;
           overflow-x: auto;
         }
@@ -1206,7 +1296,7 @@ export function DiscoveryViewV4({
         .edit-hint {
           margin: 0 0 12px 0;
           font-size: 13px;
-          color: var(--text-secondary, #6b7280);
+          color: var(--v4-text-secondary);
         }
 
         .json-editor-container {
@@ -1220,16 +1310,16 @@ export function DiscoveryViewV4({
           font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
           font-size: 13px;
           line-height: 1.5;
-          border: 1px solid var(--border-color, #e5e7eb);
+          border: 1px solid var(--v4-border);
           border-radius: 8px;
-          background: var(--bg-secondary, #f9fafb);
+          background: var(--v4-bg);
           resize: vertical;
         }
 
         .json-editor:focus {
           outline: none;
-          border-color: var(--primary, #3b82f6);
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: var(--v4-accent);
+          box-shadow: 0 0 0 3px var(--v4-accent-light);
         }
 
         .edit-actions {
@@ -1237,31 +1327,31 @@ export function DiscoveryViewV4({
           justify-content: flex-end;
           gap: 12px;
           padding-top: 16px;
-          border-top: 1px solid var(--border-color, #e5e7eb);
+          border-top: 1px solid var(--v4-border);
         }
 
         .cancel-edit {
-          color: var(--text-error, #dc2626) !important;
-          border-color: var(--text-error, #dc2626) !important;
+          color: var(--v4-error) !important;
+          border-color: var(--v4-error) !important;
         }
 
         .cancel-edit:hover {
-          background: #fef2f2 !important;
+          background: var(--v4-error-bg) !important;
         }
 
         .output-score {
           margin-top: 16px;
           padding: 12px 16px;
-          background: var(--bg-success, #dcfce7);
+          background: var(--v4-success-bg);
           border-radius: 8px;
           font-size: 14px;
-          color: var(--text-success, #166534);
+          color: var(--v4-success);
         }
 
         /* Checkpoint Controls */
         .checkpoint-controls {
-          background: white;
-          border: 1px solid var(--border-color, #e5e7eb);
+          background: var(--v4-surface);
+          border: 1px solid var(--v4-border);
           border-radius: 12px;
           padding: 20px 24px;
           display: flex;
@@ -1271,7 +1361,7 @@ export function DiscoveryViewV4({
 
         .checkpoint-controls p {
           margin: 0;
-          color: var(--text-secondary, #6b7280);
+          color: var(--v4-text-secondary);
         }
 
         .checkpoint-actions {
@@ -1293,23 +1383,23 @@ export function DiscoveryViewV4({
         }
 
         .primary-btn {
-          background: var(--primary, #3b82f6);
+          background: var(--v4-accent);
           border: none;
           color: white;
         }
 
         .primary-btn:hover {
-          background: var(--primary-dark, #2563eb);
+          background: var(--v4-accent-hover);
         }
 
         .secondary-btn {
-          background: white;
-          border: 1px solid var(--border-color, #e5e7eb);
-          color: var(--text-secondary, #6b7280);
+          background: var(--v4-surface);
+          border: 1px solid var(--v4-border);
+          color: var(--v4-text-secondary);
         }
 
         .secondary-btn:hover {
-          background: var(--bg-hover, #f3f4f6);
+          background: var(--v4-bg);
         }
 
         /* Auto Continue */
@@ -1319,10 +1409,10 @@ export function DiscoveryViewV4({
           justify-content: center;
           gap: 12px;
           padding: 16px;
-          background: var(--bg-info, #eff6ff);
-          border: 1px solid #bfdbfe;
+          background: var(--v4-accent-light);
+          border: 1px solid rgba(194, 65, 12, 0.2);
           border-radius: 12px;
-          color: var(--text-info, #1d4ed8);
+          color: var(--v4-accent);
         }
 
         .auto-continue p {
@@ -1332,8 +1422,8 @@ export function DiscoveryViewV4({
 
         /* Discovery Complete */
         .discovery-complete {
-          background: linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%);
-          border: 1px solid #86efac;
+          background: linear-gradient(135deg, rgba(22, 163, 74, 0.1) 0%, rgba(22, 163, 74, 0.05) 100%);
+          border: 1px solid rgba(22, 163, 74, 0.2);
           border-radius: 12px;
           padding: 24px;
           text-align: center;
@@ -1342,7 +1432,7 @@ export function DiscoveryViewV4({
         .discovery-complete h3 {
           margin: 0 0 8px 0;
           font-size: 18px;
-          color: #166534;
+          color: var(--v4-success);
         }
 
         .discovery-complete p {
@@ -1355,7 +1445,7 @@ export function DiscoveryViewV4({
           align-items: center;
           gap: 8px;
           padding: 12px 24px;
-          background: #166534;
+          background: var(--v4-accent);
           border: none;
           border-radius: 10px;
           font-size: 15px;
@@ -1366,11 +1456,17 @@ export function DiscoveryViewV4({
         }
 
         .continue-strategy-btn:hover {
-          background: #15803d;
+          background: var(--v4-accent-hover);
           transform: translateY(-1px);
         }
 
         /* Responsive */
+        @media (max-width: 1100px) {
+          .header-center {
+            display: none;
+          }
+        }
+
         @media (max-width: 900px) {
           .discovery-layout {
             grid-template-columns: 1fr;

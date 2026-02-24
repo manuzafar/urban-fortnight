@@ -1,13 +1,14 @@
 /**
  * V4 Execution View Component
  * Real-time agent execution with transparency features
+ * Shows unified journey with Discovery as completed phase
  */
 
-import { useEffect, useState } from 'react';
-import { ArrowLeft, Radio, Clock, AlertCircle } from 'lucide-react';
+import { useEffect, useState, useMemo } from 'react';
+import { ArrowLeft, Radio, Clock, AlertCircle, Check } from 'lucide-react';
 import { useSSEV4 } from '../../hooks/useSSEV4';
 import { getInceptionPack } from '../../api/client';
-import { PhaseTimeline } from './PhaseTimeline';
+import { JourneyTimeline, type ExecutionPhase, type DiscoveryStage } from './JourneyTimeline';
 import { AgentCard } from './AgentCard';
 import { ConstraintFlow } from './ConstraintFlow';
 import { RevisionIndicator } from './RevisionIndicator';
@@ -42,6 +43,38 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
   } = useSSEV4(sessionId, authToken, true, useTestEndpoint);
 
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
+
+  // Create completed Discovery stages for JourneyTimeline
+  const completedDiscoveryStages: Record<string, DiscoveryStage> = useMemo(() => ({
+    problem_love: { id: 'problem_love', status: 'completed' },
+    customer_truth: { id: 'customer_truth', status: 'completed' },
+    opportunity_mapping: { id: 'opportunity_mapping', status: 'completed' },
+    solution_design: { id: 'solution_design', status: 'completed' },
+    validation_plan: { id: 'validation_plan', status: 'completed' },
+  }), []);
+
+  // Convert SSE phases to JourneyTimeline format
+  const executionPhases: ExecutionPhase[] = useMemo(() => {
+    return phases.map(phase => ({
+      id: phase.id,
+      name: phase.name,
+      status: phase.status,
+      agents: phase.agents.map(agent => ({
+        id: agent.id,
+        name: agent.name,
+        status: agent.status,
+      })),
+    }));
+  }, [phases]);
+
+  // Calculate overall journey progress (Discovery = 20%, rest = 80%)
+  const journeyProgress = useMemo(() => {
+    // Discovery is complete (20%)
+    const discoveryPercent = 20;
+    // Execution progress (80% of remaining)
+    const executionPercent = (progress / 100) * 80;
+    return Math.round(discoveryPercent + executionPercent);
+  }, [progress]);
 
   // Format elapsed time as mm:ss
   const formatTime = (seconds: number) => {
@@ -113,9 +146,14 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
             <ArrowLeft size={16} />
             Back
           </button>
-          <h1 style={{ fontSize: '16px', fontWeight: 500, color: 'var(--v4-text)' }}>
-            Generating inception pack...
-          </h1>
+          <div>
+            <h1 style={{ fontSize: '16px', fontWeight: 500, color: 'var(--v4-text)', margin: 0 }}>
+              Seedform
+            </h1>
+            <p style={{ fontSize: '12px', color: 'var(--v4-text-secondary)', margin: '2px 0 0' }}>
+              {currentPhase ? `Strategy & Delivery` : 'Generating inception pack...'}
+            </p>
+          </div>
           {isConnected && (
             <span
               style={{
@@ -136,31 +174,42 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
           )}
         </div>
 
+        {/* Journey Progress */}
+        <div style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '0 24px' }}>
+          <div style={{ minWidth: '280px', maxWidth: '400px' }}>
+            <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--v4-text-secondary)', textAlign: 'center', marginBottom: '4px' }}>
+              Journey: {currentPhase || 'Strategy'} ({journeyProgress}%)
+            </div>
+            <div style={{ position: 'relative', height: '6px', background: 'var(--v4-bg)', borderRadius: '3px' }}>
+              <div
+                style={{
+                  height: '100%',
+                  background: 'var(--v4-accent)',
+                  borderRadius: '3px',
+                  width: `${journeyProgress}%`,
+                  transition: 'width 0.3s ease',
+                }}
+              />
+              {/* Phase markers */}
+              <div style={{ position: 'absolute', top: '-3px', left: '0%', transform: 'translateX(-50%)' }}>
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--v4-success)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Check size={8} color="white" />
+                </div>
+              </div>
+              <div style={{ position: 'absolute', top: '-3px', left: '20%', transform: 'translateX(-50%)', width: '12px', height: '12px', borderRadius: '50%', background: journeyProgress >= 20 ? 'var(--v4-accent)' : 'var(--v4-surface)', border: '2px solid ' + (journeyProgress >= 20 ? 'var(--v4-accent)' : 'var(--v4-border)') }} />
+              <div style={{ position: 'absolute', top: '-3px', left: '45%', transform: 'translateX(-50%)', width: '12px', height: '12px', borderRadius: '50%', background: journeyProgress >= 45 ? 'var(--v4-accent)' : 'var(--v4-surface)', border: '2px solid ' + (journeyProgress >= 45 ? 'var(--v4-accent)' : 'var(--v4-border)') }} />
+              <div style={{ position: 'absolute', top: '-3px', left: '70%', transform: 'translateX(-50%)', width: '12px', height: '12px', borderRadius: '50%', background: journeyProgress >= 70 ? 'var(--v4-accent)' : 'var(--v4-surface)', border: '2px solid ' + (journeyProgress >= 70 ? 'var(--v4-accent)' : 'var(--v4-border)') }} />
+              <div style={{ position: 'absolute', top: '-3px', left: '90%', transform: 'translateX(-50%)', width: '12px', height: '12px', borderRadius: '50%', background: journeyProgress >= 90 ? 'var(--v4-accent)' : 'var(--v4-surface)', border: '2px solid ' + (journeyProgress >= 90 ? 'var(--v4-accent)' : 'var(--v4-border)') }} />
+            </div>
+          </div>
+        </div>
+
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--v4-text-muted)' }}>
             <Clock size={14} />
             <span style={{ fontSize: '14px', fontFamily: 'monospace' }}>{formatTime(elapsedTime)}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div
-              style={{
-                width: '120px',
-                height: '6px',
-                background: 'var(--v4-bg)',
-                borderRadius: '3px',
-                overflow: 'hidden',
-              }}
-            >
-              <div
-                style={{
-                  height: '100%',
-                  background: 'var(--v4-accent)',
-                  borderRadius: '3px',
-                  width: `${progress}%`,
-                  transition: 'width 0.3s ease',
-                }}
-              />
-            </div>
             <span style={{ fontSize: '14px', fontWeight: 600, color: 'var(--v4-text)' }}>{progress}%</span>
           </div>
         </div>
@@ -191,18 +240,22 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
           minHeight: 'calc(100vh - 57px)',
         }}
       >
-        {/* Left Sidebar: Phase Timeline */}
+        {/* Left Sidebar: Journey Timeline */}
         <aside
           style={{
             background: 'var(--v4-surface)',
             borderRight: '1px solid var(--v4-border)',
             overflowY: 'auto',
+            padding: '16px',
           }}
         >
-          <PhaseTimeline
-            phases={phases}
-            currentPhase={currentPhase}
+          <JourneyTimeline
+            discoveryStages={completedDiscoveryStages}
+            discoveryComplete={true}
+            executionPhases={executionPhases}
+            currentExecutionPhase={currentPhase || undefined}
             onAgentClick={(agentId) => setExpandedAgent(expandedAgent === agentId ? null : agentId)}
+            currentView="execution"
           />
         </aside>
 

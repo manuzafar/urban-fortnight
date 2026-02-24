@@ -272,13 +272,24 @@ function App() {
     // For V4 test sessions, allow without auth (useTestEndpoint handles this)
     if (appState === 'execution' && currentSessionId && (session?.access_token || isV4TestSession)) {
       return (
-        <ExecutionViewV4
-          sessionId={currentSessionId}
-          authToken={session?.access_token || ''}
-          onComplete={handleExecutionComplete}
-          onBack={handleBackToDashboard}
-          useTestEndpoint={isV4TestSession}
-        />
+        <div className="v4-view-transition">
+          <ExecutionViewV4
+            sessionId={currentSessionId}
+            authToken={session?.access_token || ''}
+            onComplete={handleExecutionComplete}
+            onBack={handleBackToDashboard}
+            useTestEndpoint={isV4TestSession}
+          />
+          <style>{`
+            .v4-view-transition {
+              animation: v4-fade-in 0.3s ease-out;
+            }
+            @keyframes v4-fade-in {
+              from { opacity: 0; transform: translateY(10px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+          `}</style>
+        </div>
       );
     }
 
@@ -296,22 +307,33 @@ function App() {
     // V4 Discovery View (Hybrid Discovery)
     if (appState === 'discovery-v4' && currentSessionId) {
       return (
-        <DiscoveryViewV4
-          sessionId={currentSessionId}
-          onBack={handleBackToDashboard}
-          onComplete={(pack) => {
-            setInceptionPack(pack as unknown as InceptionPack);
-            setAppState('pack');
-          }}
-          onContinueToExecution={(sessionId) => {
-            // Transition to ExecutionView which handles SSE streaming
-            // for the full lifecycle (Strategy, Delivery, Design phases)
-            // Mark as V4 test session so it uses the test stream endpoint
-            setCurrentSessionId(sessionId);
-            setIsV4TestSession(true);
-            setAppState('execution');
-          }}
-        />
+        <div className="v4-view-transition">
+          <DiscoveryViewV4
+            sessionId={currentSessionId}
+            onBack={handleBackToDashboard}
+            onComplete={(pack) => {
+              setInceptionPack(pack as unknown as InceptionPack);
+              setAppState('pack');
+            }}
+            onContinueToExecution={(sessionId) => {
+              // Transition to ExecutionView which handles SSE streaming
+              // for the full lifecycle (Strategy, Delivery, Design phases)
+              // Mark as V4 test session so it uses the test stream endpoint
+              setCurrentSessionId(sessionId);
+              setIsV4TestSession(true);
+              setAppState('execution');
+            }}
+          />
+          <style>{`
+            .v4-view-transition {
+              animation: v4-fade-in 0.3s ease-out;
+            }
+            @keyframes v4-fade-in {
+              from { opacity: 0; transform: translateY(10px); }
+              to { opacity: 1; transform: translateY(0); }
+            }
+          `}</style>
+        </div>
       );
     }
 
