@@ -24,6 +24,7 @@ import {
   SolutionDesignRenderer,
   ValidationPlanRenderer,
 } from './renderers';
+import './DiscoveryViewV4.css';
 
 interface DiscoveryViewV4Props {
   sessionId: string;
