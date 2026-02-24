@@ -480,8 +480,8 @@ export function InterviewForm({ onSave, onCancel, initialData }: InterviewFormPr
         .form-field select:focus,
         .form-field textarea:focus {
           outline: none;
-          border-color: var(--primary, #3b82f6);
-          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+          border-color: var(--v4-accent, #c2410c);
+          box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.1);
         }
 
         .form-field input.error,
@@ -520,8 +520,8 @@ export function InterviewForm({ onSave, onCancel, initialData }: InterviewFormPr
         }
 
         .emotion-chip.selected {
-          background: var(--primary, #3b82f6);
-          border-color: var(--primary, #3b82f6);
+          background: var(--v4-accent, #c2410c);
+          border-color: var(--v4-accent, #c2410c);
           color: white;
         }
 
@@ -554,13 +554,13 @@ export function InterviewForm({ onSave, onCancel, initialData }: InterviewFormPr
         }
 
         .btn-primary {
-          background: var(--primary, #3b82f6);
+          background: var(--v4-accent, #c2410c);
           border: none;
           color: white;
         }
 
         .btn-primary:hover {
-          background: var(--primary-dark, #2563eb);
+          background: var(--v4-accent-hover, #9a3412);
         }
 
         @media (max-width: 480px) {

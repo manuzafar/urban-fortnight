@@ -29,7 +29,7 @@ const MODES = [
     description: 'Best for: Balanced approach, some customization, learning the frameworks',
     features: ['AI with checkpoints', 'Optional interviews', 'Edit any section'],
     recommended: true,
-    color: '#3b82f6', // blue
+    color: '#c2410c', // terracotta (V4 accent)
   },
   {
     id: 'deep' as const,

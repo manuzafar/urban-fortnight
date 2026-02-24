@@ -126,7 +126,7 @@ export function ValidationPlanRenderer({ output }: ValidationPlanRendererProps) 
                   <span
                     className="rung-number"
                     style={{
-                      background: isCurrentRung ? '#3b82f6' : isPastRung ? '#16a34a' : '#e5e7eb',
+                      background: isCurrentRung ? '#c2410c' : isPastRung ? '#16a34a' : '#e5e7eb',
                       color: isCurrentRung || isPastRung ? 'white' : '#6b7280'
                     }}
                   >
