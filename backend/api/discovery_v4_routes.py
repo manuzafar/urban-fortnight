@@ -652,7 +652,23 @@ async def stream_test_session(session_id: str):
 
     # If session is already completed, send done event immediately
     # Note: session_data status is stored as string in DB, not SessionStatus enum
+    # For test sessions, also check the in-memory cache since they may not be in the main store
     session_status = session_data.get("status", "").lower() if session_data else ""
+
+    # Also check in-memory session for completion (test sessions may not be in main store)
+    if not session_status and session_id in _active_sessions:
+        in_memory_session = _active_sessions[session_id]
+        # Check if all stages are complete and lifecycle has run
+        all_stages_complete = all(
+            s.status in (StageStatus.COMPLETED, StageStatus.APPROVED, StageStatus.SKIPPED)
+            for s in in_memory_session.stages.values()
+        )
+        # Also check if there's no active emitter (lifecycle finished)
+        from utils.sse import get_emitter
+        emitter = get_emitter(session_id)
+        if all_stages_complete and emitter is None:
+            session_status = "completed"
+
     if session_status == "completed":
         async def completed_stream():
             yield {
