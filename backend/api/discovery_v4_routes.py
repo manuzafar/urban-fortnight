@@ -633,46 +633,26 @@ async def stream_test_session(session_id: str):
     from sse_starlette.sse import EventSourceResponse
     from utils.sse import get_or_create_emitter, stream_session_events
 
-    logger.info("stream_test_session_start", session_id=session_id)
-
-    try:
-        # Load session from cache or database (no ownership check)
-        if session_id not in _active_sessions:
-            logger.info("stream_loading_from_db", session_id=session_id)
-            session = _load_session_from_db(session_id)
-            if session:
-                _active_sessions[session_id] = session
-                logger.info("stream_loaded_v4_session", session_id=session_id)
-            else:
-                # Check if session exists in main session store (V3 style)
-                session_data = session_store.get(session_id)
-                if not session_data:
-                    logger.info("stream_session_not_found", session_id=session_id)
-                    raise HTTPException(
-                        status_code=status.HTTP_404_NOT_FOUND,
-                        detail=f"Test session {session_id} not found",
-                    )
-                logger.info("stream_found_v3_session", session_id=session_id)
+    # Load session from cache or database (no ownership check)
+    if session_id not in _active_sessions:
+        session = _load_session_from_db(session_id)
+        if session:
+            _active_sessions[session_id] = session
         else:
-            logger.info("stream_found_in_cache", session_id=session_id)
+            # Check if session exists in main session store (V3 style)
+            session_data = session_store.get(session_id)
+            if not session_data:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"Test session {session_id} not found",
+                )
 
-        # Get session data from main store (may have been registered by lifecycle)
-        session_data = session_store.get(session_id)
-        logger.info(
-            "stream_session_data",
-            session_id=session_id,
-            has_data=session_data is not None,
-            status=session_data.get("status") if session_data else None,
-        )
+    # Get session data from main store (may have been registered by lifecycle)
+    session_data = session_store.get(session_id)
 
-        # If session is already completed, send done event immediately
-        # Note: session_data status is stored as string in DB, not SessionStatus enum
-        session_status = session_data.get("status", "").lower() if session_data else ""
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error("stream_test_session_error", session_id=session_id, error=str(e), error_type=type(e).__name__)
-        raise
+    # If session is already completed, send done event immediately
+    # Note: session_data status is stored as string in DB, not SessionStatus enum
+    session_status = session_data.get("status", "").lower() if session_data else ""
     if session_status == "completed":
         async def completed_stream():
             yield {
