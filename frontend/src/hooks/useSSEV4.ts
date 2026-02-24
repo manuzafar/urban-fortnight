@@ -137,6 +137,8 @@ export interface UseSSEV4Result {
   isComplete: boolean;
   /** Final completion status */
   completionStatus: 'completed' | 'failed' | null;
+  /** Completed inception pack (included in done event for test sessions) */
+  completedPack: Record<string, unknown> | null;
   /** Error message if any */
   error: string | null;
   /** All received events (for debugging) */
@@ -183,6 +185,7 @@ export function useSSEV4(
   const [progress, setProgress] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [completionStatus, setCompletionStatus] = useState<'completed' | 'failed' | null>(null);
+  const [completedPack, setCompletedPack] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [events, setEvents] = useState<StreamEventV4[]>([]);
 
@@ -432,6 +435,10 @@ export function useSSEV4(
             setIsComplete(true);
             setCompletionStatus(parsed.data.status as 'completed' | 'failed');
             setProgress(100);
+            // Capture the pack if included in the done event (for test sessions)
+            if (parsed.data.pack) {
+              setCompletedPack(parsed.data.pack as Record<string, unknown>);
+            }
             eventSource.close();
             setIsConnected(false);
             if (timerRef.current) {
@@ -588,6 +595,7 @@ export function useSSEV4(
     progress,
     isComplete,
     completionStatus,
+    completedPack,
     error,
     events,
     agentOrder: AGENT_ORDER,

@@ -1988,8 +1988,9 @@ async def _run_full_lifecycle_with_v4(session_id: str, user_id: str) -> None:
                     error=str(store_err),
                 )
 
-            # ALWAYS emit completion - this is what the frontend needs
-            await emitter.emit_done(status="completed")
+            # ALWAYS emit completion with the pack - this is what the frontend needs
+            # Include the pack data so test sessions can still get results even if DB save failed
+            await emitter.emit_done(status="completed", pack=inception_pack)
 
         logger.info("full_lifecycle_complete", session_id=session_id)
 

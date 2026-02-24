@@ -34,6 +34,7 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
     progress,
     isComplete,
     completionStatus,
+    completedPack,
     error,
     currentPhase,
     constraintFlow,
@@ -83,9 +84,15 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Fetch pack when complete
+  // Handle completion - use pack from SSE if available, otherwise fetch
   useEffect(() => {
     if (isComplete && completionStatus === 'completed') {
+      // If pack was included in the done event (test sessions), use it directly
+      if (completedPack) {
+        onComplete(completedPack as unknown as InceptionPack);
+        return;
+      }
+      // Otherwise fetch from API (authenticated sessions)
       getInceptionPack(sessionId)
         .then((pack: InceptionPack) => {
           onComplete(pack);
@@ -94,7 +101,7 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
           console.error('Failed to fetch pack:', err);
         });
     }
-  }, [isComplete, completionStatus, sessionId, onComplete]);
+  }, [isComplete, completionStatus, completedPack, sessionId, onComplete]);
 
   // Get current agent insights
   const currentInsights = currentAgent ? insights[currentAgent] || [] : [];

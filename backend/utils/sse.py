@@ -276,15 +276,23 @@ class SessionEventEmitter:
             )
         )
 
-    async def emit_done(self, status: str = "completed") -> None:
-        """Emit completion event and close the emitter."""
+    async def emit_done(self, status: str = "completed", pack: dict | None = None) -> None:
+        """Emit completion event and close the emitter.
+
+        Args:
+            status: Completion status ('completed' or 'failed')
+            pack: Optional inception pack data to include in the done event
+        """
+        data = {
+            "session_id": self.session_id,
+            "status": status,
+        }
+        if pack is not None:
+            data["pack"] = pack
         await self.emit(
             StreamEvent(
                 type=StreamEventType.DONE,
-                data={
-                    "session_id": self.session_id,
-                    "status": status,
-                },
+                data=data,
             )
         )
         self._closed = True
