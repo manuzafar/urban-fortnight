@@ -1,0 +1,653 @@
+{
+  "metadata": {
+    "name": "B2B SaaS Meeting Room Booking",
+    "version": "1.0",
+    "created_at": "2026-02-25T00:00:00Z",
+    "quality_score": 0.85,
+    "product_idea": "AI-powered meeting room booking system for enterprise offices",
+    "domain": "B2B_SaaS",
+    "description": "Golden set reference for B2B SaaS products with enterprise focus"
+  },
+  "state": {
+    "product_idea": "AI-powered meeting room booking system for enterprise offices that optimizes space utilization and reduces scheduling conflicts",
+    "executive_summary": {
+      "product_name": "RoomSync",
+      "tagline": "Smart meeting room management for the modern enterprise",
+      "problem_statement": "Enterprise offices waste 30-40% of meeting room capacity due to no-shows, phantom bookings, and inefficient scheduling. This costs companies thousands annually in underutilized real estate.",
+      "solution_overview": "RoomSync uses AI to predict meeting patterns, automatically release unused rooms, and optimize space allocation across the enterprise with real-time occupancy sensing.",
+      "value_proposition": "Reduce meeting room conflicts by 80% and increase space utilization by 40% with intelligent automation and predictive scheduling.",
+      "target_users": [
+        "Office managers responsible for space planning",
+        "Executive assistants who book meeting rooms daily",
+        "IT administrators managing workplace tools"
+      ],
+      "target_market_size": "TAM: $8.5B (global workplace management software). SAM: $2.1B (enterprise meeting room management). SOM: $210M (mid-market and enterprise in North America).",
+      "key_differentiators": [
+        "AI-powered no-show prediction with 95% accuracy",
+        "Real-time occupancy sensing integration",
+        "Seamless calendar integration with all major platforms",
+        "Enterprise-grade security and compliance"
+      ],
+      "competitive_landscape": "Competing with Robin, Envoy, and Teem. Key differentiator is AI-first approach versus rule-based systems.",
+      "funding_required": "$2.5M seed funding for product development and initial go-to-market over 18 months",
+      "revenue_model": "SaaS subscription with per-seat pricing: $5/employee/month for Standard, $12/employee/month for Enterprise",
+      "financial_projections": "Year 1: $500K ARR, 50 customers. Year 3: $5M ARR, 300 customers.",
+      "break_even_timeline": "Month 24 with current burn rate and projected growth",
+      "expected_roi": "4x ROI by Year 3 based on enterprise deal expansion",
+      "top_risks": [
+        "Enterprise sales cycle length (6-12 months) may delay revenue recognition",
+        "Integration complexity with legacy calendar systems",
+        "Privacy concerns around occupancy monitoring",
+        "Competition from established workplace platforms adding similar features"
+      ],
+      "regulatory_summary": "GDPR and CCPA compliance required for employee data handling. SOC 2 Type II certification needed for enterprise sales.",
+      "gtm_strategy": "Enterprise-focused sales motion with initial focus on tech companies in SF Bay Area, expand to finance and professional services.",
+      "key_milestones": [
+        "MVP launch with 3 design partners (Month 3)",
+        "SOC 2 Type II certification (Month 9)",
+        "First 10 paying customers (Month 12)",
+        "Series A readiness (Month 18)"
+      ],
+      "success_metrics": [
+        "Monthly Active Users (MAU)",
+        "Net Revenue Retention (NRR) > 120%",
+        "Customer Acquisition Cost (CAC) < $5,000",
+        "Time to Value < 30 days"
+      ],
+      "recommendation": "PROCEED",
+      "key_decisions": [
+        {
+          "decision": "Build vs Buy occupancy sensing hardware",
+          "options": ["Build custom sensors", "Integrate with existing IoT platforms", "Partner with hardware vendor"],
+          "recommendation": "Partner with existing IoT platform (e.g., Density) to accelerate time-to-market",
+          "deadline": "End of Month 2",
+          "decision_owner": "CTO"
+        }
+      ]
+    },
+    "customer_research": {
+      "research_scope": {
+        "segments_examined": [
+          "Office managers at companies with 500+ employees",
+          "Executive assistants at Fortune 500 companies",
+          "Workplace experience directors"
+        ],
+        "observation_context": "Conducted 12 customer interviews, analyzed 50+ LinkedIn posts about meeting room frustrations, reviewed Gartner reports on workplace management.",
+        "known_gaps": ["Limited data on companies under 200 employees", "No direct observation of meeting booking behavior"],
+        "confidence_level": "high"
+      },
+      "job_to_be_done": {
+        "trigger_situation": "Employee needs to book a meeting room for an important client presentation or team sync",
+        "underlying_goal": "Ensure productive meeting time without technical issues or room conflicts",
+        "success_definition": "Meeting starts on time in an appropriately-sized room with working AV equipment"
+      },
+      "current_behaviour": {
+        "existing_solutions": [
+          "Microsoft Outlook calendar integration",
+          "Google Calendar room booking",
+          "Manual sign-up sheets",
+          "Robin or Envoy platforms"
+        ],
+        "tools_and_workarounds": [
+          "Booking rooms 'just in case' to ensure availability",
+          "Sending scouts to check room availability",
+          "Using personal phones to join remote meetings from different locations",
+          "Creating recurring blocks to reserve favorite rooms"
+        ],
+        "friction_points": [
+          "Double-bookings and conflicts occur weekly",
+          "No-shows waste 30% of booked time",
+          "Finding available rooms takes 10+ minutes",
+          "AV equipment often not working"
+        ],
+        "why_problem_persists": "Existing solutions are reactive rather than predictive. No system optimizes for actual usage patterns."
+      },
+      "pain_signals": [
+        {
+          "description": "Employees spend 15+ minutes per day searching for available meeting rooms",
+          "evidence_tier": "E2",
+          "evidence_detail": "Harvard Business Review study on workplace productivity (2024)",
+          "impact": "Lost productivity valued at $2,000+ per employee annually",
+          "severity": "high",
+          "challenges_solution": false
+        },
+        {
+          "description": "30% of booked meeting rooms go unused due to no-shows",
+          "evidence_tier": "E2",
+          "evidence_detail": "JLL Workplace Survey 2024",
+          "impact": "Significant real estate waste and employee frustration",
+          "severity": "high",
+          "challenges_solution": false
+        },
+        {
+          "description": "IT teams spend 8+ hours weekly troubleshooting meeting room AV issues",
+          "evidence_tier": "E3",
+          "evidence_detail": "Customer interview with 3 IT managers",
+          "impact": "IT resources diverted from strategic initiatives",
+          "severity": "medium",
+          "challenges_solution": false
+        }
+      ],
+      "uncomfortable_insights": [
+        {
+          "insight": "Many employees intentionally over-book rooms to game the system, making optimization culturally challenging",
+          "evidence_tier": "E3",
+          "implication": "Solution needs to address behavioral incentives, not just technology"
+        }
+      ],
+      "what_customers_dont_care_about": [
+        {
+          "assumed_need": "Detailed analytics dashboards for space utilization",
+          "reality": "Office managers want actionable recommendations, not more data to analyze",
+          "evidence_tier": "E3"
+        }
+      ],
+      "open_questions": [
+        {
+          "question": "What is the willingness to pay for AI-powered features vs basic booking?",
+          "why_it_matters": "Determines pricing strategy and feature prioritization",
+          "validation_needed": "Run pricing experiments with design partners"
+        }
+      ],
+      "competitive_landscape": {
+        "competitors": [
+          {
+            "name": "Robin",
+            "how_they_solve_it": "Desk and room booking with basic analytics",
+            "why_they_havent_won": "Limited AI/ML capabilities, expensive for mid-market",
+            "switching_barriers": "Deep integrations with existing systems"
+          },
+          {
+            "name": "Envoy",
+            "how_they_solve_it": "Visitor management with room booking add-on",
+            "why_they_havent_won": "Room booking is secondary feature, not core focus",
+            "switching_barriers": "Part of broader workplace platform"
+          }
+        ],
+        "market_position": "Opportunity exists for AI-first player focused specifically on room optimization",
+        "direct_competitors": ["Robin", "Teem", "Condeco"],
+        "indirect_competitors": ["Microsoft Teams Rooms", "Google Workspace"],
+        "potential_entrants": ["Zoom", "Slack"],
+        "positioning_map": "Premium/AI-powered quadrant",
+        "competitive_gaps": ["No competitor offers predictive no-show detection"],
+        "differentiation_thesis": "AI-first approach delivers 3x better utilization than rule-based systems",
+        "moat_analysis": "Data network effects - more usage data improves predictions",
+        "competitive_risks": ["Microsoft could add similar features to Teams"]
+      },
+      "market_context": {
+        "total_addressable_market": "$8.5B globally for workplace management software",
+        "serviceable_addressable_market": "$2.1B for meeting room and space management",
+        "serviceable_obtainable_market": "$210M in North America mid-market and enterprise",
+        "uncertainty_factors": [
+          "Remote work trends affecting office space needs",
+          "Economic conditions impacting real estate decisions"
+        ],
+        "market_trends": [
+          {
+            "trend": "Hybrid work driving need for flexible space management",
+            "helps_or_hurts": "helps",
+            "evidence_tier": "E2"
+          },
+          {
+            "trend": "Companies reducing office footprint",
+            "helps_or_hurts": "helps",
+            "evidence_tier": "E2"
+          }
+        ]
+      },
+      "research_quality_check": {
+        "could_kill_idea": false,
+        "skeptic_would_trust": true,
+        "assumptions_separated": true,
+        "self_critique": "Need more quantitative data on willingness to pay and competitive win rates"
+      }
+    },
+    "business_case": {
+      "lean_canvas": {
+        "problem": ["Meeting room conflicts and no-shows waste 30%+ of space", "Employees waste 15+ min/day finding rooms", "No predictive optimization exists"],
+        "solution": ["AI-powered predictive booking", "Automatic no-show detection and release", "Smart room recommendations"],
+        "unique_value_proposition": "Reduce meeting room waste by 40% with AI-powered automation",
+        "unfair_advantage": "Proprietary ML models trained on 10M+ meeting patterns",
+        "customer_segments": ["Enterprise (1000+ employees)", "Mid-market (200-1000 employees)"],
+        "key_metrics": ["Room utilization rate", "Time to book", "No-show reduction %"],
+        "channels": ["Direct enterprise sales", "Partner channels (IT resellers)", "Product-led growth for mid-market"],
+        "cost_structure": ["Engineering team (60%)", "Sales & marketing (25%)", "Infrastructure (10%)", "G&A (5%)"],
+        "revenue_streams": ["SaaS subscriptions", "Professional services", "Hardware partner referrals"]
+      },
+      "business_model_type": "B2B SaaS with enterprise sales motion",
+      "revenue_model_details": {
+        "model_type": "Subscription per-seat",
+        "pricing_strategy": "Tiered pricing based on features and company size",
+        "price_points": ["Standard: $5/user/month", "Enterprise: $12/user/month"],
+        "billing_frequency": "Annual, with monthly option at 20% premium"
+      },
+      "unit_economics": {
+        "ltv": 36000,
+        "cac": 5000,
+        "ltv_cac_ratio": 7.2,
+        "payback_period_months": 6,
+        "gross_margin": 0.82
+      },
+      "strategic_assumptions": [
+        {
+          "assumption": "Enterprises will pay premium for AI-powered features",
+          "risk_if_wrong": "high",
+          "validation_approach": "Design partner pricing experiments"
+        },
+        {
+          "assumption": "Occupancy data from IoT sensors will be accessible",
+          "risk_if_wrong": "medium",
+          "validation_approach": "Technical POC with 3 sensor vendors"
+        }
+      ],
+      "resource_requirements": {
+        "team": ["CTO/Technical Lead", "3 Senior Engineers", "1 ML Engineer", "1 Sales Lead", "1 Customer Success"],
+        "infrastructure": ["AWS/GCP cloud hosting", "ML training infrastructure", "Integration platform"],
+        "timeline": "18 months to Series A milestones"
+      },
+      "confidence_level": "medium-high",
+      "evidence_strength": "Based on customer interviews and market research"
+    },
+    "product_requirements_document": {
+      "vision_statement": "Every meeting starts on time in the right room, every time",
+      "target_users": [
+        {
+          "persona": "Office Manager Olivia",
+          "needs": ["Space utilization reporting", "Easy room configuration", "Conflict resolution tools"],
+          "pain_points": ["Manual tracking of room usage", "Handling booking complaints", "Reporting to leadership"]
+        },
+        {
+          "persona": "Executive Assistant Alex",
+          "needs": ["Quick room booking", "Reliable AV setup", "Calendar integration"],
+          "pain_points": ["Last-minute room changes", "Double bookings", "AV troubleshooting"]
+        }
+      ],
+      "epics": [
+        {
+          "id": "E1",
+          "title": "Smart Room Booking",
+          "description": "AI-powered room recommendation and booking system",
+          "business_value": "Reduce time to book from 10 minutes to 30 seconds",
+          "priority": "critical",
+          "stories": [
+            {
+              "id": "S1.1",
+              "title": "Room Recommendation Engine",
+              "as_a": "meeting organizer",
+              "i_want": "AI-suggested rooms based on meeting context",
+              "so_that": "I can book the optimal room without manual searching",
+              "acceptance_criteria": [
+                "System recommends 3 best-fit rooms within 2 seconds",
+                "Recommendations consider meeting size, duration, and AV needs",
+                "Users can filter and override recommendations"
+              ],
+              "priority": "critical",
+              "size": "L",
+              "dependencies": ["Calendar integration", "Room inventory setup"]
+            },
+            {
+              "id": "S1.2",
+              "title": "Calendar Integration",
+              "as_a": "user",
+              "i_want": "seamless sync with my existing calendar",
+              "so_that": "I can see and manage bookings in my normal workflow",
+              "acceptance_criteria": [
+                "Two-way sync with Google Calendar and Outlook",
+                "Real-time updates within 30 seconds",
+                "Conflict detection before booking"
+              ],
+              "priority": "critical",
+              "size": "L",
+              "dependencies": []
+            }
+          ]
+        },
+        {
+          "id": "E2",
+          "title": "No-Show Detection",
+          "description": "Automatic detection and release of unused room bookings",
+          "business_value": "Recover 30% of wasted room capacity",
+          "priority": "high",
+          "stories": [
+            {
+              "id": "S2.1",
+              "title": "Occupancy Sensing Integration",
+              "as_a": "system",
+              "i_want": "to know when rooms are actually occupied",
+              "so_that": "I can detect no-shows in real-time",
+              "acceptance_criteria": [
+                "Integration with at least 2 occupancy sensor vendors",
+                "Occupancy status updates within 1 minute",
+                "Privacy-compliant (no cameras, no individual tracking)"
+              ],
+              "priority": "high",
+              "size": "M",
+              "dependencies": ["Sensor vendor partnership"]
+            }
+          ]
+        }
+      ],
+      "non_functional_requirements": [
+        {
+          "category": "performance",
+          "requirement": "API response time < 200ms p95",
+          "rationale": "Users expect instant room availability checks"
+        },
+        {
+          "category": "security",
+          "requirement": "SOC 2 Type II compliant",
+          "rationale": "Required for enterprise sales"
+        },
+        {
+          "category": "availability",
+          "requirement": "99.9% uptime SLA",
+          "rationale": "Mission-critical for daily meetings"
+        }
+      ],
+      "success_metrics": [
+        {
+          "metric": "Time to Book",
+          "target": "< 30 seconds",
+          "measurement": "Analytics tracking from search to confirmation"
+        },
+        {
+          "metric": "Room Utilization",
+          "target": "> 70%",
+          "measurement": "Actual occupancy vs booked time"
+        }
+      ],
+      "out_of_scope": [
+        "Desk booking (Phase 2)",
+        "Visitor management integration",
+        "Hardware manufacturing"
+      ],
+      "risks_and_mitigations": [
+        {
+          "risk": "Calendar integration complexity varies by enterprise",
+          "mitigation": "Start with standard OAuth flows, add custom connectors as needed"
+        }
+      ]
+    },
+    "technical_architecture": {
+      "system_overview": "Cloud-native microservices architecture with AI/ML pipeline for predictions",
+      "architecture_style": "Microservices with event-driven communication",
+      "key_components": [
+        {
+          "name": "Booking Service",
+          "purpose": "Handles room reservations and calendar sync",
+          "technology": "Node.js with TypeScript",
+          "interfaces": ["REST API", "GraphQL subscription for real-time updates"]
+        },
+        {
+          "name": "ML Prediction Service",
+          "purpose": "No-show prediction and room recommendations",
+          "technology": "Python with FastAPI, scikit-learn",
+          "interfaces": ["gRPC for internal communication"]
+        },
+        {
+          "name": "Occupancy Ingestion Service",
+          "purpose": "Receives and processes sensor data",
+          "technology": "Go for high throughput",
+          "interfaces": ["MQTT, webhooks from sensor vendors"]
+        }
+      ],
+      "data_architecture": {
+        "primary_database": "PostgreSQL for transactional data",
+        "cache_layer": "Redis for session and real-time data",
+        "analytics_store": "ClickHouse for usage analytics",
+        "ml_feature_store": "Feast for ML features"
+      },
+      "integration_points": [
+        {
+          "system": "Google Calendar",
+          "integration_type": "OAuth + REST API",
+          "data_flow": "Bidirectional sync"
+        },
+        {
+          "system": "Microsoft Graph",
+          "integration_type": "OAuth + REST API",
+          "data_flow": "Bidirectional sync"
+        },
+        {
+          "system": "Density Sensors",
+          "integration_type": "Webhook",
+          "data_flow": "Inbound occupancy events"
+        }
+      ],
+      "security_considerations": [
+        "All data encrypted at rest and in transit",
+        "OAuth 2.0 for calendar integrations",
+        "SAML/OIDC SSO for enterprise customers",
+        "Role-based access control (RBAC)"
+      ],
+      "scalability_approach": "Horizontal scaling with Kubernetes, auto-scaling based on booking load",
+      "deployment_strategy": "Blue-green deployment with feature flags",
+      "technology_choices": [
+        {
+          "choice": "TypeScript for backend services",
+          "rationale": "Type safety and developer productivity",
+          "alternatives_considered": ["Go", "Python"]
+        }
+      ],
+      "architecture_diagrams": [
+        {
+          "name": "System Context Diagram",
+          "type": "C4-Context",
+          "description": "High-level view of RoomSync and external systems",
+          "mermaid": "graph TB\n    User[User] --> RoomSync[RoomSync Platform]\n    RoomSync --> Calendar[Calendar Services]\n    RoomSync --> Sensors[Occupancy Sensors]\n    Admin[Admin] --> RoomSync"
+        }
+      ]
+    },
+    "gtm_strategy": {
+      "launch_strategy": "Design partner beta with 3-5 tech companies, followed by controlled GA",
+      "positioning": "The AI-powered meeting room optimization platform for enterprises",
+      "messaging": {
+        "headline": "Stop wasting 30% of your meeting room capacity",
+        "value_props": [
+          "AI predicts no-shows before they happen",
+          "Automatic room release recovers lost time",
+          "Smart recommendations find the perfect room instantly"
+        ]
+      },
+      "channels": [
+        {
+          "channel": "Direct Enterprise Sales",
+          "strategy": "Target workplace experience leaders at tech companies",
+          "expected_cac": 5000
+        },
+        {
+          "channel": "Partner Channel",
+          "strategy": "IT reseller partnerships for mid-market",
+          "expected_cac": 3000
+        }
+      ],
+      "launch_phases": [
+        {
+          "phase": "Design Partner Beta",
+          "duration": "3 months",
+          "goals": ["Validate core features", "Collect usage data for ML", "Refine pricing"],
+          "success_criteria": "3+ partners actively using daily"
+        },
+        {
+          "phase": "Limited GA",
+          "duration": "6 months",
+          "goals": ["First 10 paying customers", "Prove sales motion"],
+          "success_criteria": "$200K ARR"
+        }
+      ],
+      "pricing_strategy": {
+        "model": "Per-seat SaaS",
+        "tiers": [
+          {
+            "name": "Standard",
+            "price": "$5/user/month",
+            "features": ["Basic booking", "Calendar sync", "Usage reports"]
+          },
+          {
+            "name": "Enterprise",
+            "price": "$12/user/month",
+            "features": ["AI recommendations", "No-show detection", "SSO", "API access"]
+          }
+        ]
+      },
+      "competitive_differentiation": "Only solution with AI-powered no-show prediction"
+    },
+    "financial_model": {
+      "projections": {
+        "year_1": {
+          "revenue": 500000,
+          "customers": 50,
+          "arr_growth": "N/A - first year"
+        },
+        "year_2": {
+          "revenue": 2000000,
+          "customers": 150,
+          "arr_growth": "300%"
+        },
+        "year_3": {
+          "revenue": 5000000,
+          "customers": 300,
+          "arr_growth": "150%"
+        }
+      },
+      "cost_structure": {
+        "personnel": 0.6,
+        "sales_marketing": 0.25,
+        "infrastructure": 0.1,
+        "other": 0.05
+      },
+      "unit_economics": {
+        "arpu": 10000,
+        "ltv": 36000,
+        "cac": 5000,
+        "gross_margin": 0.82,
+        "payback_months": 6
+      },
+      "funding_requirements": {
+        "seed_amount": 2500000,
+        "use_of_funds": {
+          "engineering": 0.5,
+          "sales_marketing": 0.3,
+          "operations": 0.2
+        },
+        "runway_months": 18
+      },
+      "break_even_analysis": {
+        "monthly_burn": 140000,
+        "break_even_arr": 1700000,
+        "expected_date": "Month 24"
+      },
+      "key_assumptions": [
+        "Enterprise sales cycle of 90 days",
+        "Net revenue retention of 120%",
+        "12% monthly churn in mid-market"
+      ]
+    },
+    "legal_regulatory_review": {
+      "compliance_requirements": [
+        {
+          "regulation": "GDPR",
+          "applicability": "Required for EU customers",
+          "compliance_status": "In progress",
+          "requirements": ["Data processing agreements", "Right to deletion", "Privacy by design"],
+          "estimated_effort": "2 months"
+        },
+        {
+          "regulation": "SOC 2 Type II",
+          "applicability": "Required for enterprise sales",
+          "compliance_status": "Planned",
+          "requirements": ["Security controls", "Annual audits", "Continuous monitoring"],
+          "estimated_effort": "6 months"
+        }
+      ],
+      "data_privacy_considerations": [
+        "Occupancy data must be anonymized",
+        "No individual tracking without consent",
+        "Clear data retention policies required"
+      ],
+      "intellectual_property": {
+        "patents": "ML algorithms potentially patentable",
+        "trademarks": "RoomSync name to be trademarked",
+        "trade_secrets": "Training data and model weights"
+      },
+      "risk_assessment": [
+        {
+          "risk": "Privacy concerns around occupancy monitoring",
+          "likelihood": "medium",
+          "impact": "high",
+          "mitigation": "Use aggregate-only sensing, clear privacy policies"
+        }
+      ]
+    },
+    "risk_assessment": {
+      "risks": [
+        {
+          "category": "market",
+          "description": "Enterprise sales cycle longer than expected",
+          "likelihood": "medium",
+          "impact": "high",
+          "mitigation": "Build product-led growth channel for mid-market"
+        },
+        {
+          "category": "technical",
+          "description": "Calendar integration complexity",
+          "likelihood": "medium",
+          "impact": "medium",
+          "mitigation": "Start with standard OAuth, add custom connectors iteratively"
+        },
+        {
+          "category": "competitive",
+          "description": "Microsoft adds AI features to Teams Rooms",
+          "likelihood": "low",
+          "impact": "high",
+          "mitigation": "Build deep integrations Microsoft can't replicate"
+        }
+      ],
+      "overall_risk_level": "medium",
+      "risk_adjusted_recommendation": "Proceed with strong design partner validation"
+    },
+    "stakeholder_views": {
+      "ceo_view": {
+        "strategic_fit": "Aligns with workplace tech focus",
+        "market_opportunity": "Large TAM with clear wedge",
+        "key_concerns": ["Sales cycle length", "Competition from big tech"]
+      },
+      "cto_view": {
+        "technical_feasibility": "Achievable with current team",
+        "integration_complexity": "Medium - calendar APIs well documented",
+        "key_concerns": ["ML model accuracy requirements", "Sensor integration variability"]
+      },
+      "cfo_view": {
+        "financial_viability": "Strong unit economics",
+        "funding_requirements": "Reasonable for seed stage",
+        "key_concerns": ["Time to break-even", "Enterprise payment terms"]
+      }
+    },
+    "validation_playbook": {
+      "experiments": [
+        {
+          "hypothesis": "Enterprises will pay $12/user/month for AI-powered features",
+          "experiment": "Price testing with design partners",
+          "success_criteria": "3/5 partners willing to pay at this price point",
+          "timeline": "4 weeks"
+        },
+        {
+          "hypothesis": "Our no-show prediction model achieves 90%+ accuracy",
+          "experiment": "Train on partner data, measure false positive/negative rates",
+          "success_criteria": "90% accuracy with <5% false positive rate",
+          "timeline": "8 weeks"
+        }
+      ],
+      "riskiest_assumptions": [
+        "Enterprises will share occupancy data",
+        "ML predictions will be accurate enough to be useful"
+      ],
+      "validation_sequence": [
+        "Validate problem severity with 10 more interviews",
+        "Test ML accuracy with synthetic data",
+        "Price testing with 3 design partners",
+        "Full pilot with paying customer"
+      ]
+    }
+  }
+}

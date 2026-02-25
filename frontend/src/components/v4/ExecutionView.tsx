@@ -84,6 +84,8 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
   // Handle completion - use pack from SSE if available, otherwise fetch
   useEffect(() => {
     if (isComplete && completionStatus === 'completed') {
@@ -93,12 +95,18 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
         return;
       }
       // Otherwise fetch from API (authenticated sessions)
+      setFetchError(null);
       getInceptionPack(sessionId)
         .then((pack: InceptionPack) => {
           onComplete(pack);
         })
         .catch((err: unknown) => {
           console.error('Failed to fetch pack:', err);
+          setFetchError(
+            err instanceof Error
+              ? `Failed to load pack: ${err.message}. Try refreshing the page.`
+              : 'Failed to load inception pack. Try refreshing the page.'
+          );
         });
     }
   }, [isComplete, completionStatus, completedPack, sessionId, onComplete]);
@@ -396,7 +404,11 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
             <div
               style={{
                 padding: '24px',
-                background: completionStatus === 'completed' ? 'var(--v4-success-bg)' : 'var(--v4-error-bg)',
+                background: fetchError
+                  ? 'var(--v4-error-bg)'
+                  : completionStatus === 'completed'
+                    ? 'var(--v4-success-bg)'
+                    : 'var(--v4-error-bg)',
                 borderRadius: 'var(--v4-radius)',
                 textAlign: 'center',
               }}
@@ -405,22 +417,53 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
                 style={{
                   fontSize: '18px',
                   fontWeight: 600,
-                  color: completionStatus === 'completed' ? '#166534' : '#b91c1c',
+                  color: fetchError
+                    ? '#b91c1c'
+                    : completionStatus === 'completed'
+                      ? '#166534'
+                      : '#b91c1c',
                   marginBottom: '8px',
                 }}
               >
-                {completionStatus === 'completed' ? 'Inception Pack Ready!' : 'Generation Failed'}
+                {fetchError
+                  ? 'Failed to Load Pack'
+                  : completionStatus === 'completed'
+                    ? 'Inception Pack Ready!'
+                    : 'Generation Failed'}
               </h3>
               <p
                 style={{
                   fontSize: '14px',
-                  color: completionStatus === 'completed' ? '#15803d' : '#dc2626',
+                  color: fetchError
+                    ? '#dc2626'
+                    : completionStatus === 'completed'
+                      ? '#15803d'
+                      : '#dc2626',
                 }}
               >
-                {completionStatus === 'completed'
-                  ? 'Your inception pack has been generated. Loading results...'
-                  : 'Something went wrong. Please try again.'}
+                {fetchError
+                  ? fetchError
+                  : completionStatus === 'completed'
+                    ? 'Your inception pack has been generated. Loading results...'
+                    : 'Something went wrong. Please try again.'}
               </p>
+              {fetchError && (
+                <button
+                  onClick={() => window.location.reload()}
+                  style={{
+                    marginTop: '12px',
+                    padding: '8px 16px',
+                    background: 'var(--v4-accent)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 'var(--v4-radius)',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                  }}
+                >
+                  Refresh Page
+                </button>
+              )}
             </div>
           )}
         </main>

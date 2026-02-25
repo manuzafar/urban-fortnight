@@ -1,0 +1,679 @@
+{
+  "metadata": {
+    "name": "Healthcare Patient Portal",
+    "version": "1.0",
+    "created_at": "2026-02-25T00:00:00Z",
+    "quality_score": 0.83,
+    "product_idea": "AI-powered patient portal for chronic disease management",
+    "domain": "Healthcare",
+    "description": "Golden set reference for Healthcare B2B2C products with regulatory considerations"
+  },
+  "state": {
+    "product_idea": "AI-powered patient portal that helps patients with chronic diseases manage their conditions through medication reminders, symptom tracking, and AI-assisted care plan adherence",
+    "executive_summary": {
+      "product_name": "ChronicCare",
+      "tagline": "AI-powered chronic disease management that patients actually use",
+      "problem_statement": "50% of patients with chronic diseases don't follow their care plans, leading to $300B in avoidable healthcare costs annually. Existing patient portals have less than 15% monthly engagement.",
+      "solution_overview": "ChronicCare uses AI to personalize engagement, predict adherence risks, and provide proactive interventions through a patient-friendly mobile app integrated with provider EHRs.",
+      "value_proposition": "Increase care plan adherence by 40% and reduce hospital readmissions by 25% with AI-powered personalized patient engagement.",
+      "target_users": [
+        "Patients with Type 2 Diabetes aged 45-70",
+        "Patients with Hypertension requiring daily medication",
+        "Care managers overseeing chronic disease populations"
+      ],
+      "target_market_size": "TAM: $25B (chronic care management). SAM: $5B (digital patient engagement platforms). SOM: $500M (mid-size health systems in US).",
+      "key_differentiators": [
+        "AI predicts non-adherence 3 days before it happens",
+        "Behavioral science-based engagement sequences",
+        "Deep EHR integration (Epic, Cerner certified)",
+        "Proven clinical outcomes with published studies"
+      ],
+      "competitive_landscape": "Competing with Livongo (now Teladoc), Omada Health, and health system-built solutions. Differentiated by AI-first approach and EHR depth.",
+      "funding_required": "$8M Series A for clinical validation studies and health system partnerships",
+      "revenue_model": "B2B SaaS to health systems: $8 PMPM for enrolled patients, plus outcomes-based bonuses",
+      "financial_projections": "Year 1: $1M ARR, 10,000 enrolled patients. Year 3: $10M ARR, 100,000 enrolled patients.",
+      "break_even_timeline": "Month 30 due to longer enterprise sales cycles",
+      "expected_roi": "5x ROI by Year 3 based on health system cost savings",
+      "top_risks": [
+        "Clinical validation takes longer than expected",
+        "Health system sales cycles of 12-18 months",
+        "EHR integration complexity varies by implementation",
+        "Regulatory requirements (HIPAA, FDA) add compliance burden"
+      ],
+      "regulatory_summary": "HIPAA compliance required for all patient data. FDA 510(k) may be needed if claims include clinical decision support. HITRUST certification required for health system sales.",
+      "gtm_strategy": "Partner with 3-5 health systems for pilot programs, then expand through case study-driven enterprise sales",
+      "key_milestones": [
+        "HITRUST certification (Month 6)",
+        "First health system pilot live (Month 9)",
+        "Publish clinical outcomes study (Month 15)",
+        "10 health system customers (Month 24)"
+      ],
+      "success_metrics": [
+        "Patient Monthly Active Usage (MAU) > 60%",
+        "Care Plan Adherence Rate > 75%",
+        "Hospital Readmission Reduction > 20%",
+        "Net Promoter Score > 40"
+      ],
+      "recommendation": "PROCEED",
+      "key_decisions": [
+        {
+          "decision": "Pursue FDA clearance for AI recommendations",
+          "options": ["Pursue FDA 510(k)", "Limit claims to avoid FDA", "Start without FDA, add later"],
+          "recommendation": "Start with non-clinical claims, pursue FDA in Year 2 once product-market fit proven",
+          "deadline": "Month 12",
+          "decision_owner": "CEO/Regulatory Lead"
+        }
+      ]
+    },
+    "customer_research": {
+      "research_scope": {
+        "segments_examined": [
+          "Type 2 Diabetes patients ages 50-65",
+          "Care managers at mid-size health systems",
+          "Chief Digital Officers at academic medical centers"
+        ],
+        "observation_context": "Conducted 25 patient interviews, 10 care manager interviews, shadowed 3 care management programs, analyzed patient portal usage data from 2 health systems.",
+        "known_gaps": ["Limited data on rural patient populations", "Need more data on Medicaid patients"],
+        "confidence_level": "high"
+      },
+      "job_to_be_done": {
+        "trigger_situation": "Patient diagnosed with chronic condition and given complex care plan to follow at home",
+        "underlying_goal": "Manage condition effectively to maintain quality of life and avoid hospitalization",
+        "success_definition": "Controlled symptoms, good lab results, and feeling in control of condition"
+      },
+      "current_behaviour": {
+        "existing_solutions": [
+          "MyChart and other EHR patient portals",
+          "Paper medication lists and calendars",
+          "Family member reminders",
+          "Disease-specific apps (MySugr, Blood Pressure Monitor)"
+        ],
+        "tools_and_workarounds": [
+          "Setting phone alarms for medications",
+          "Keeping paper logs of blood sugar readings",
+          "Calling clinic with questions during business hours",
+          "Using general health tracking apps"
+        ],
+        "friction_points": [
+          "MyChart only used for appointments, not daily management",
+          "Too many apps for different conditions",
+          "No connection between tracking data and care team",
+          "Generic reminders ignored after first week"
+        ],
+        "why_problem_persists": "Patient portals designed for administrative tasks, not daily chronic care management. No personalization or behavioral science applied."
+      },
+      "pain_signals": [
+        {
+          "description": "Patients stop using medication reminders after 7-10 days",
+          "evidence_tier": "E2",
+          "evidence_detail": "Journal of Medical Internet Research study on reminder app retention (2024)",
+          "impact": "Adherence drops and conditions worsen over time",
+          "severity": "high",
+          "challenges_solution": false
+        },
+        {
+          "description": "Care managers can only reach 20% of their panel proactively",
+          "evidence_tier": "E1",
+          "evidence_detail": "Direct interviews with 8 care managers",
+          "impact": "Most intervention happens after problems occur",
+          "severity": "high",
+          "challenges_solution": false
+        },
+        {
+          "description": "Patients feel overwhelmed by complex care plans",
+          "evidence_tier": "E1",
+          "evidence_detail": "Patient interview quotes about feeling confused",
+          "impact": "Selective adherence or complete abandonment of care plan",
+          "severity": "critical",
+          "challenges_solution": false
+        }
+      ],
+      "uncomfortable_insights": [
+        {
+          "insight": "Many patients lie to their care team about adherence due to shame",
+          "evidence_tier": "E2",
+          "implication": "Self-reported adherence data is unreliable; need passive tracking and non-judgmental communication"
+        }
+      ],
+      "what_customers_dont_care_about": [
+        {
+          "assumed_need": "Gamification and rewards for adherence",
+          "reality": "Older patients find games patronizing; prefer straightforward health tracking",
+          "evidence_tier": "E3"
+        },
+        {
+          "assumed_need": "Social features to connect with other patients",
+          "reality": "Privacy concerns outweigh desire for community features",
+          "evidence_tier": "E3"
+        }
+      ],
+      "open_questions": [
+        {
+          "question": "What is the optimal frequency for AI-generated nudges?",
+          "why_it_matters": "Too many causes notification fatigue, too few loses effectiveness",
+          "validation_needed": "A/B testing with pilot patients"
+        }
+      ],
+      "competitive_landscape": {
+        "competitors": [
+          {
+            "name": "Livongo (Teladoc)",
+            "how_they_solve_it": "Connected glucose monitoring with coaching",
+            "why_they_havent_won": "Focused on employers, expensive for health systems",
+            "switching_barriers": "Long-term contracts with employers"
+          },
+          {
+            "name": "Omada Health",
+            "how_they_solve_it": "Digital behavioral health programs for prediabetes",
+            "why_they_havent_won": "Prevention focused, not chronic disease management",
+            "switching_barriers": "Clinical evidence base"
+          },
+          {
+            "name": "Health system-built portals",
+            "how_they_solve_it": "Custom solutions integrated with EHR",
+            "why_they_havent_won": "Low engagement, poor UX, no AI",
+            "switching_barriers": "Sunk cost and IT ownership"
+          }
+        ],
+        "market_position": "Opportunity for AI-first chronic care management with deep EHR integration",
+        "direct_competitors": ["Livongo", "Omada", "Wellframe"],
+        "indirect_competitors": ["Epic MyChart", "Apple Health"],
+        "potential_entrants": ["Amazon Care", "Google Health"],
+        "positioning_map": "AI-powered with healthcare system focus",
+        "competitive_gaps": ["No solution combines AI prediction with deep EHR integration"],
+        "differentiation_thesis": "AI-predicted interventions delivered through EHR-integrated workflows",
+        "moat_analysis": "Clinical evidence and EHR certifications create barriers to entry",
+        "competitive_risks": ["Epic could build similar features into MyChart"]
+      },
+      "market_context": {
+        "total_addressable_market": "$25B for chronic care management globally",
+        "serviceable_addressable_market": "$5B for digital patient engagement platforms",
+        "serviceable_obtainable_market": "$500M in US mid-size health systems",
+        "uncertainty_factors": [
+          "Healthcare policy changes affecting reimbursement",
+          "Technology adoption rates among older patients",
+          "EHR vendor strategies"
+        ],
+        "market_trends": [
+          {
+            "trend": "Value-based care incentivizing chronic disease management",
+            "helps_or_hurts": "helps",
+            "evidence_tier": "E2"
+          },
+          {
+            "trend": "Rising smartphone adoption among seniors",
+            "helps_or_hurts": "helps",
+            "evidence_tier": "E2"
+          },
+          {
+            "trend": "Health system consolidation",
+            "helps_or_hurts": "helps",
+            "evidence_tier": "E2"
+          }
+        ]
+      },
+      "research_quality_check": {
+        "could_kill_idea": false,
+        "skeptic_would_trust": true,
+        "assumptions_separated": true,
+        "self_critique": "Need more evidence on willingness of health systems to pay premium for AI features"
+      }
+    },
+    "business_case": {
+      "lean_canvas": {
+        "problem": ["50% care plan non-adherence", "15% patient portal engagement", "Care managers overwhelmed"],
+        "solution": ["AI-predicted interventions", "Personalized engagement sequences", "EHR-integrated workflows"],
+        "unique_value_proposition": "Increase adherence by 40% with AI that predicts non-compliance before it happens",
+        "unfair_advantage": "Clinical evidence base and EHR certifications",
+        "customer_segments": ["Mid-size health systems", "ACOs", "Medicare Advantage plans"],
+        "key_metrics": ["Patient MAU", "Adherence rate", "Readmission reduction", "PMPM cost savings"],
+        "channels": ["Enterprise sales", "Health IT conferences", "Clinical publications"],
+        "cost_structure": ["Engineering (50%)", "Clinical team (20%)", "Sales (20%)", "G&A (10%)"],
+        "revenue_streams": ["PMPM subscription", "Outcomes-based bonuses", "Implementation services"]
+      },
+      "business_model_type": "B2B2C SaaS with outcomes-based component",
+      "revenue_model_details": {
+        "model_type": "Per-member-per-month subscription",
+        "pricing_strategy": "Value-based with shared savings",
+        "price_points": ["Standard: $8 PMPM", "Premium: $12 PMPM with outcomes guarantee"],
+        "billing_frequency": "Monthly based on enrolled patients"
+      },
+      "unit_economics": {
+        "ltv": 120000,
+        "cac": 25000,
+        "ltv_cac_ratio": 4.8,
+        "payback_period_months": 12,
+        "gross_margin": 0.75
+      },
+      "strategic_assumptions": [
+        {
+          "assumption": "Health systems will pay $8+ PMPM for chronic care management",
+          "risk_if_wrong": "high",
+          "validation_approach": "Pilot program pricing validation"
+        },
+        {
+          "assumption": "AI can predict non-adherence with 80%+ accuracy",
+          "risk_if_wrong": "high",
+          "validation_approach": "Clinical study with pilot health system"
+        }
+      ],
+      "resource_requirements": {
+        "team": ["Chief Medical Officer", "4 Engineers", "2 Data Scientists", "Clinical Implementation Lead", "Enterprise Sales Lead"],
+        "infrastructure": ["HIPAA-compliant cloud (AWS HIPAA)", "HITRUST certified environment"],
+        "timeline": "24-30 months to meaningful scale"
+      },
+      "confidence_level": "medium",
+      "evidence_strength": "Strong patient research, need more health system buyer validation"
+    },
+    "product_requirements_document": {
+      "vision_statement": "Every chronic disease patient has an AI health companion that keeps them on track",
+      "target_users": [
+        {
+          "persona": "Patient Patricia",
+          "needs": ["Simple daily reminders", "Easy symptom logging", "Connection to care team"],
+          "pain_points": ["Too many apps", "Complex medical instructions", "Feeling alone in disease management"]
+        },
+        {
+          "persona": "Care Manager Carol",
+          "needs": ["Risk stratification", "Efficient outreach tools", "EHR integration"],
+          "pain_points": ["Manual data gathering", "Too many patients to manage", "Reactive vs proactive care"]
+        }
+      ],
+      "epics": [
+        {
+          "id": "E1",
+          "title": "Personalized Patient Engagement",
+          "description": "AI-driven medication reminders and health nudges",
+          "business_value": "Increase adherence from 50% to 70%",
+          "priority": "critical",
+          "stories": [
+            {
+              "id": "S1.1",
+              "title": "Smart Medication Reminders",
+              "as_a": "patient",
+              "i_want": "personalized medication reminders that learn my schedule",
+              "so_that": "I take my medications at the right times without constant nagging",
+              "acceptance_criteria": [
+                "Reminders adapt to patient response patterns",
+                "Option to snooze with intelligent re-remind",
+                "Tracks confirmed vs missed doses"
+              ],
+              "priority": "critical",
+              "size": "L",
+              "dependencies": []
+            },
+            {
+              "id": "S1.2",
+              "title": "Symptom Tracking",
+              "as_a": "patient",
+              "i_want": "to quickly log how I'm feeling each day",
+              "so_that": "my care team can see trends and help me",
+              "acceptance_criteria": [
+                "Log symptoms in under 30 seconds",
+                "Visual trend charts patients understand",
+                "Alerts care team on concerning patterns"
+              ],
+              "priority": "high",
+              "size": "M",
+              "dependencies": []
+            }
+          ]
+        },
+        {
+          "id": "E2",
+          "title": "Care Team Dashboard",
+          "description": "Tools for care managers to monitor and intervene",
+          "business_value": "Increase care manager efficiency by 50%",
+          "priority": "high",
+          "stories": [
+            {
+              "id": "S2.1",
+              "title": "Risk Stratification View",
+              "as_a": "care manager",
+              "i_want": "to see which patients are at highest risk of non-adherence",
+              "so_that": "I can prioritize my outreach effectively",
+              "acceptance_criteria": [
+                "Patients ranked by predicted non-adherence risk",
+                "Risk factors explained for each patient",
+                "One-click outreach initiation"
+              ],
+              "priority": "critical",
+              "size": "L",
+              "dependencies": ["AI prediction model"]
+            }
+          ]
+        }
+      ],
+      "non_functional_requirements": [
+        {
+          "category": "security",
+          "requirement": "HIPAA and HITRUST compliant",
+          "rationale": "Required for handling PHI"
+        },
+        {
+          "category": "accessibility",
+          "requirement": "WCAG 2.1 AA compliance",
+          "rationale": "Required for elderly and disabled patients"
+        },
+        {
+          "category": "availability",
+          "requirement": "99.9% uptime with no data loss",
+          "rationale": "Healthcare critical application"
+        }
+      ],
+      "success_metrics": [
+        {
+          "metric": "Patient MAU",
+          "target": "> 60%",
+          "measurement": "Percentage of enrolled patients with activity in past 30 days"
+        },
+        {
+          "metric": "Medication Adherence",
+          "target": "> 75%",
+          "measurement": "Doses confirmed / doses scheduled"
+        }
+      ],
+      "out_of_scope": [
+        "Telemedicine video visits",
+        "Medication dispensing hardware",
+        "Direct patient billing"
+      ],
+      "risks_and_mitigations": [
+        {
+          "risk": "Elderly patients struggle with mobile app",
+          "mitigation": "Progressive disclosure, large touch targets, caregiver mode"
+        }
+      ]
+    },
+    "technical_architecture": {
+      "system_overview": "HIPAA-compliant mobile platform with EHR integration and AI prediction engine",
+      "architecture_style": "Microservices with FHIR-based EHR integration",
+      "key_components": [
+        {
+          "name": "Patient Mobile App",
+          "purpose": "Patient-facing engagement and tracking",
+          "technology": "React Native for cross-platform",
+          "interfaces": ["REST API to backend"]
+        },
+        {
+          "name": "Care Manager Dashboard",
+          "purpose": "Web-based care coordination tools",
+          "technology": "React with TypeScript",
+          "interfaces": ["REST API, WebSockets for real-time alerts"]
+        },
+        {
+          "name": "AI Prediction Service",
+          "purpose": "Predicts non-adherence risk and optimizes interventions",
+          "technology": "Python with TensorFlow",
+          "interfaces": ["gRPC internal API"]
+        },
+        {
+          "name": "EHR Integration Layer",
+          "purpose": "Bidirectional sync with Epic/Cerner",
+          "technology": "Node.js with FHIR R4",
+          "interfaces": ["FHIR APIs, HL7 for legacy systems"]
+        }
+      ],
+      "data_architecture": {
+        "primary_database": "PostgreSQL with encryption at rest",
+        "cache_layer": "Redis for session management",
+        "analytics_store": "Snowflake for population health analytics",
+        "ml_feature_store": "Internal feature store on PostgreSQL"
+      },
+      "integration_points": [
+        {
+          "system": "Epic MyChart",
+          "integration_type": "FHIR R4 API",
+          "data_flow": "Bidirectional patient data, care plans"
+        },
+        {
+          "system": "Cerner Millennium",
+          "integration_type": "FHIR R4 API",
+          "data_flow": "Bidirectional patient data, care plans"
+        }
+      ],
+      "security_considerations": [
+        "All PHI encrypted at rest and in transit",
+        "Role-based access control with audit logging",
+        "BAA agreements with all vendors",
+        "Annual penetration testing"
+      ],
+      "scalability_approach": "Horizontal scaling with patient data partitioning by health system",
+      "deployment_strategy": "Blue-green deployment with health system-specific environments",
+      "technology_choices": [
+        {
+          "choice": "React Native for mobile",
+          "rationale": "Cross-platform efficiency, good accessibility support",
+          "alternatives_considered": ["Native iOS/Android", "Flutter"]
+        }
+      ],
+      "architecture_diagrams": [
+        {
+          "name": "System Architecture",
+          "type": "C4-Container",
+          "description": "Container-level view of ChronicCare platform",
+          "mermaid": "graph TB\n    Patient[Patient App] --> API[API Gateway]\n    CareManager[Care Manager Dashboard] --> API\n    API --> Core[Core Services]\n    Core --> AI[AI Prediction]\n    Core --> EHR[EHR Integration]\n    EHR --> Epic[Epic]\n    EHR --> Cerner[Cerner]"
+        }
+      ]
+    },
+    "gtm_strategy": {
+      "launch_strategy": "Clinical pilot with 2-3 health systems, expand through case studies",
+      "positioning": "The AI-powered patient engagement platform built for health systems",
+      "messaging": {
+        "headline": "Predict and prevent non-adherence before patients fall off track",
+        "value_props": [
+          "AI predicts non-adherence 3 days in advance",
+          "60% patient engagement vs 15% industry average",
+          "Proven 25% reduction in readmissions"
+        ]
+      },
+      "channels": [
+        {
+          "channel": "Health IT Conferences",
+          "strategy": "Present clinical evidence at HIMSS, HLTH",
+          "expected_cac": 25000
+        },
+        {
+          "channel": "Clinical Publications",
+          "strategy": "Publish outcomes studies in peer-reviewed journals",
+          "expected_cac": 10000
+        }
+      ],
+      "launch_phases": [
+        {
+          "phase": "Clinical Pilot",
+          "duration": "12 months",
+          "goals": ["3 health system pilots", "Publish clinical outcomes"],
+          "success_criteria": "Statistically significant adherence improvement"
+        },
+        {
+          "phase": "Commercial Expansion",
+          "duration": "18 months",
+          "goals": ["10 health system customers", "100,000 enrolled patients"],
+          "success_criteria": "$5M ARR with positive unit economics"
+        }
+      ],
+      "pricing_strategy": {
+        "model": "Per-member-per-month",
+        "tiers": [
+          {
+            "name": "Standard",
+            "price": "$8 PMPM",
+            "features": ["Patient app", "Care manager dashboard", "Basic EHR integration"]
+          },
+          {
+            "name": "Premium",
+            "price": "$12 PMPM",
+            "features": ["AI predictions", "Advanced analytics", "Outcomes guarantee"]
+          }
+        ]
+      },
+      "competitive_differentiation": "Only solution with AI-predicted interventions and deep EHR integration"
+    },
+    "financial_model": {
+      "projections": {
+        "year_1": {
+          "revenue": 1000000,
+          "customers": 5,
+          "arr_growth": "N/A"
+        },
+        "year_2": {
+          "revenue": 4000000,
+          "customers": 15,
+          "arr_growth": "300%"
+        },
+        "year_3": {
+          "revenue": 10000000,
+          "customers": 30,
+          "arr_growth": "150%"
+        }
+      },
+      "cost_structure": {
+        "personnel": 0.5,
+        "clinical_operations": 0.2,
+        "sales_marketing": 0.2,
+        "infrastructure": 0.1
+      },
+      "unit_economics": {
+        "arpu": 200000,
+        "ltv": 600000,
+        "cac": 25000,
+        "gross_margin": 0.75,
+        "payback_months": 12
+      },
+      "funding_requirements": {
+        "series_a_amount": 8000000,
+        "use_of_funds": {
+          "engineering": 0.4,
+          "clinical_validation": 0.25,
+          "sales_marketing": 0.25,
+          "operations": 0.1
+        },
+        "runway_months": 24
+      },
+      "break_even_analysis": {
+        "monthly_burn": 300000,
+        "break_even_arr": 4800000,
+        "expected_date": "Month 30"
+      },
+      "key_assumptions": [
+        "Average health system has 10,000 chronic disease patients",
+        "Implementation time of 3-6 months",
+        "Net revenue retention of 110%"
+      ]
+    },
+    "legal_regulatory_review": {
+      "compliance_requirements": [
+        {
+          "regulation": "HIPAA",
+          "applicability": "Required for all PHI handling",
+          "compliance_status": "Achieved",
+          "requirements": ["BAA with all vendors", "Encryption", "Access controls", "Audit logging"],
+          "estimated_effort": "Ongoing"
+        },
+        {
+          "regulation": "HITRUST",
+          "applicability": "Required for health system enterprise sales",
+          "compliance_status": "In progress",
+          "requirements": ["HITRUST CSF certification", "Annual assessment"],
+          "estimated_effort": "6 months"
+        },
+        {
+          "regulation": "FDA 510(k)",
+          "applicability": "May be required for clinical decision support claims",
+          "compliance_status": "Under evaluation",
+          "requirements": ["Clinical studies", "Regulatory filing", "Quality management system"],
+          "estimated_effort": "12-18 months if pursued"
+        }
+      ],
+      "data_privacy_considerations": [
+        "Patient consent required for data sharing",
+        "Minimum necessary PHI principle",
+        "Patient right to access and delete data"
+      ],
+      "intellectual_property": {
+        "patents": "AI prediction algorithms potentially patentable",
+        "trademarks": "ChronicCare name and logo",
+        "trade_secrets": "Clinical engagement sequences and prediction models"
+      },
+      "risk_assessment": [
+        {
+          "risk": "FDA determines product requires clearance",
+          "likelihood": "medium",
+          "impact": "high",
+          "mitigation": "Design product to stay in exempt category, prepare contingency regulatory strategy"
+        }
+      ]
+    },
+    "risk_assessment": {
+      "risks": [
+        {
+          "category": "regulatory",
+          "description": "FDA classification as medical device",
+          "likelihood": "medium",
+          "impact": "high",
+          "mitigation": "Conservative feature claims, regulatory counsel review"
+        },
+        {
+          "category": "market",
+          "description": "Health system budget constraints",
+          "likelihood": "medium",
+          "impact": "medium",
+          "mitigation": "Outcomes-based pricing to reduce budget risk"
+        },
+        {
+          "category": "technical",
+          "description": "EHR integration more complex than expected",
+          "likelihood": "high",
+          "impact": "medium",
+          "mitigation": "Start with most common Epic configurations, expand iteratively"
+        }
+      ],
+      "overall_risk_level": "medium-high",
+      "risk_adjusted_recommendation": "Proceed with strong regulatory counsel and clinical validation"
+    },
+    "stakeholder_views": {
+      "ceo_view": {
+        "strategic_fit": "Aligns with digital health transformation thesis",
+        "market_opportunity": "Large TAM with value-based care tailwinds",
+        "key_concerns": ["Regulatory uncertainty", "Long sales cycles"]
+      },
+      "cto_view": {
+        "technical_feasibility": "Achievable with healthcare-experienced team",
+        "integration_complexity": "High due to EHR variability",
+        "key_concerns": ["HIPAA compliance maintenance", "AI model accuracy"]
+      },
+      "cfo_view": {
+        "financial_viability": "Strong unit economics if sales cycle managed",
+        "funding_requirements": "Appropriate for healthcare B2B",
+        "key_concerns": ["Time to break-even", "Clinical validation costs"]
+      }
+    },
+    "validation_playbook": {
+      "experiments": [
+        {
+          "hypothesis": "AI can predict non-adherence with 80%+ accuracy",
+          "experiment": "Retrospective analysis on partner health system data",
+          "success_criteria": "80% accuracy with <15% false positive rate",
+          "timeline": "8 weeks"
+        },
+        {
+          "hypothesis": "Patients will use app daily for 30+ days",
+          "experiment": "Beta test with 100 patients at pilot site",
+          "success_criteria": "50% retention at day 30",
+          "timeline": "6 weeks"
+        }
+      ],
+      "riskiest_assumptions": [
+        "Health systems will pay $8+ PMPM",
+        "Patients will engage with mobile app long-term"
+      ],
+      "validation_sequence": [
+        "Validate AI accuracy with retrospective data",
+        "Test patient engagement in small pilot",
+        "Measure clinical outcomes over 6 months",
+        "Confirm health system willingness to pay"
+      ]
+    }
+  }
+}

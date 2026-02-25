@@ -89,14 +89,20 @@ class SupabaseSessionStore:
 
     def get_inception_pack(self, session_id: str) -> Optional[dict[str, Any]]:
         """Get inception pack for a session."""
-        result = (
-            self.client.table("inception_packs")
-            .select("pack")
-            .eq("session_id", session_id)
-            .maybe_single()
-            .execute()
-        )
-        return result.data["pack"] if result.data else None
+        try:
+            result = (
+                self.client.table("inception_packs")
+                .select("pack")
+                .eq("session_id", session_id)
+                .maybe_single()
+                .execute()
+            )
+            if result and result.data:
+                return result.data.get("pack")
+            return None
+        except Exception as e:
+            logger.warning("get_inception_pack_error", session_id=session_id, error=str(e))
+            return None
 
     def delete(self, session_id: str) -> bool:
         """Delete a session (cascade deletes inception_pack)."""
