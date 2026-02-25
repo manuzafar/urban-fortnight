@@ -46,8 +46,6 @@ function EvidenceBadge({ quality }: { quality: string }) {
   return (
     <span
       className="evidence-badge"
-      role="status"
-      aria-label={`Evidence quality: ${style.label}`}
       style={{
         background: style.bg,
         color: style.text,
@@ -57,7 +55,7 @@ function EvidenceBadge({ quality }: { quality: string }) {
         fontWeight: 500,
       }}
     >
-      <Shield size={12} style={{ marginRight: 4, verticalAlign: -1 }} aria-hidden="true" />
+      <Shield size={12} style={{ marginRight: 4, verticalAlign: -1 }} />
       {style.label}
     </span>
   );
@@ -72,8 +70,8 @@ function QualityScoreBadge({
   evidence: string;
 }) {
   return (
-    <div className="quality-badge" role="status" aria-label={`Quality score: ${score}%`}>
-      <span className="score" aria-hidden="true">{score}%</span>
+    <div className="quality-badge">
+      <span className="score">{score}%</span>
       <EvidenceBadge quality={evidence} />
     </div>
   );
@@ -166,14 +164,14 @@ function StageContent({
         {stageState.last_error_at && (
           <p className="error-time">Failed at: {new Date(stageState.last_error_at).toLocaleString()}</p>
         )}
-        <button className="retry-btn" onClick={onRunStage} disabled={isLoading} aria-label={isLoading ? 'Retrying stage' : 'Retry failed stage'}>
+        <button className="retry-btn" onClick={onRunStage} disabled={isLoading}>
           {isLoading ? (
             <>
-              <Loader2 size={18} className="spin" aria-hidden="true" /> Retrying...
+              <Loader2 size={18} className="spin" /> Retrying...
             </>
           ) : (
             <>
-              <RefreshCw size={18} aria-hidden="true" /> Retry Stage
+              <RefreshCw size={18} /> Retry Stage
             </>
           )}
         </button>
@@ -186,14 +184,14 @@ function StageContent({
       <div className="stage-empty">
         <h3>Ready to Start</h3>
         <p>Click the button below to run AI analysis for this stage.</p>
-        <button className="run-stage-btn" onClick={onRunStage} disabled={isLoading} aria-label={isLoading ? `Running ${stage.replace(/_/g, ' ')} stage` : `Run ${stage.replace(/_/g, ' ')} stage`}>
+        <button className="run-stage-btn" onClick={onRunStage} disabled={isLoading}>
           {isLoading ? (
             <>
-              <Loader2 size={18} className="spin" aria-hidden="true" /> Running...
+              <Loader2 size={18} className="spin" /> Running...
             </>
           ) : (
             <>
-              <Play size={18} aria-hidden="true" /> Run {stage.replace(/_/g, ' ')}
+              <Play size={18} /> Run {stage.replace(/_/g, ' ')}
             </>
           )}
         </button>
@@ -210,14 +208,14 @@ function StageContent({
         <p className="error-message">
           This stage was started previously but didn&apos;t complete. Click below to restart.
         </p>
-        <button className="retry-btn" onClick={onRunStage} disabled={isLoading} aria-label={isLoading ? 'Restarting stage' : 'Restart interrupted stage'}>
+        <button className="retry-btn" onClick={onRunStage} disabled={isLoading}>
           {isLoading ? (
             <>
-              <Loader2 size={18} className="spin" aria-hidden="true" /> Running...
+              <Loader2 size={18} className="spin" /> Running...
             </>
           ) : (
             <>
-              <RefreshCw size={18} aria-hidden="true" /> Restart Stage
+              <RefreshCw size={18} /> Restart Stage
             </>
           )}
         </button>
@@ -275,10 +273,10 @@ function StageContent({
       return (
         <div className="stage-output editing">
           <div className="output-header">
-            <h2>Editing: {stage.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</h2>
+            <h3>Editing: {stage.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</h3>
             <div className="output-actions">
-              <button className="icon-btn cancel-edit" onClick={onCancelEdit} aria-label="Cancel editing">
-                <X size={16} aria-hidden="true" />
+              <button className="icon-btn cancel-edit" onClick={onCancelEdit} title="Cancel">
+                <X size={16} />
               </button>
             </div>
           </div>
@@ -296,16 +294,14 @@ function StageContent({
                 }
               }}
               rows={20}
-              aria-label="JSON editor for stage output"
-              spellCheck="false"
             />
           </div>
           <div className="edit-actions">
-            <button className="secondary-btn" onClick={onCancelEdit} aria-label="Cancel editing">
+            <button className="secondary-btn" onClick={onCancelEdit}>
               Cancel
             </button>
-            <button className="primary-btn" onClick={onSaveEdit} aria-label="Save changes to stage output">
-              <Check size={16} aria-hidden="true" /> Save Changes
+            <button className="primary-btn" onClick={onSaveEdit}>
+              <Check size={16} /> Save Changes
             </button>
           </div>
         </div>
@@ -316,13 +312,13 @@ function StageContent({
     return (
       <div className="stage-output">
         <div className="output-header">
-          <h2>{stage.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</h2>
+          <h3>{stage.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}</h3>
           <div className="output-actions">
-            <button className="icon-btn" onClick={onRunStage} aria-label="Regenerate stage output" disabled={isLoading}>
-              <RefreshCw size={16} aria-hidden="true" />
+            <button className="icon-btn" onClick={onRunStage} title="Regenerate" disabled={isLoading}>
+              <RefreshCw size={16} />
             </button>
-            <button className="icon-btn" onClick={onStartEdit} aria-label="Edit stage output">
-              <Edit3 size={16} aria-hidden="true" />
+            <button className="icon-btn" onClick={onStartEdit} title="Edit">
+              <Edit3 size={16} />
             </button>
           </div>
         </div>
@@ -584,16 +580,16 @@ export function DiscoveryViewV4({
   return (
     <div className="discovery-view-v4">
       {/* Header */}
-      <header className="discovery-header" role="banner">
+      <header className="discovery-header">
         <div className="header-left">
           {onBack && (
-            <button className="back-btn" onClick={onBack} aria-label="Go back to previous page">
-              <ArrowLeft size={20} aria-hidden="true" />
+            <button className="back-btn" onClick={onBack}>
+              <ArrowLeft size={20} />
             </button>
           )}
           <div className="header-titles">
             <h1>Seedform</h1>
-            <p className="product-idea" title={session.product_idea}>
+            <p className="product-idea">
               {session.product_idea.slice(0, 50)}
               {session.product_idea.length > 50 ? '...' : ''}
             </p>
@@ -601,22 +597,14 @@ export function DiscoveryViewV4({
         </div>
         <div className="header-center">
           <div className="journey-progress">
-            <span className="journey-label" id="journey-progress-label">Journey: Discovery ({stagesComplete}/{totalStages})</span>
-            <div
-              className="journey-bar"
-              role="progressbar"
-              aria-labelledby="journey-progress-label"
-              aria-valuenow={journeyProgress}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-valuetext={`${journeyProgress}% complete, ${stagesComplete} of ${totalStages} stages done`}
-            >
+            <span className="journey-label">Journey: Discovery ({stagesComplete}/{totalStages})</span>
+            <div className="journey-bar">
               <div
                 className="journey-fill"
                 style={{ width: `${journeyProgress}%` }}
-                aria-hidden="true"
+                title={`${journeyProgress}% complete`}
               />
-              <div className="journey-phases" aria-hidden="true">
+              <div className="journey-phases">
                 <div className="phase-marker active" style={{ left: '0%' }} title="Discovery" />
                 <div className="phase-marker" style={{ left: '20%' }} title="Strategy" />
                 <div className="phase-marker" style={{ left: '45%' }} title="Delivery" />
@@ -640,7 +628,7 @@ export function DiscoveryViewV4({
       {/* Main Layout */}
       <div className="discovery-layout">
         {/* Sidebar */}
-        <aside className="discovery-sidebar" aria-label="Discovery navigation">
+        <aside className="discovery-sidebar">
           <StageProgress
             session={session}
             activeStage={activeStage}
@@ -649,64 +637,53 @@ export function DiscoveryViewV4({
 
           {/* Interview tracker for Deep mode */}
           {isDeepMode && (
-            <section className="interview-tracker" aria-labelledby="interview-tracker-heading">
+            <div className="interview-tracker">
               <div className="tracker-header">
-                <h2 id="interview-tracker-heading">Interviews</h2>
-                <span className="interview-count" aria-label={`${session.interviews.length} interviews completed out of 5 goal`}>
+                <h4>Interviews</h4>
+                <span className="interview-count">
                   {session.interviews.length} / 5 goal
                 </span>
               </div>
-              <div
-                className="interview-progress"
-                role="progressbar"
-                aria-label="Interview progress"
-                aria-valuenow={session.interviews.length}
-                aria-valuemin={0}
-                aria-valuemax={5}
-                aria-valuetext={`${session.interviews.length} of 5 interviews completed`}
-              >
+              <div className="interview-progress">
                 <div
                   className="interview-progress-bar"
                   style={{
                     width: `${Math.min((session.interviews.length / 5) * 100, 100)}%`,
                   }}
-                  aria-hidden="true"
                 />
               </div>
               <button
                 className="add-interview-btn"
                 onClick={() => setShowInterviewForm(true)}
-                aria-label="Add new interview"
               >
-                <Plus size={16} aria-hidden="true" />
+                <Plus size={16} />
                 Add Interview
               </button>
               {session.interviews.length >= 2 && (
                 <button
                   className="synthesize-btn"
                   onClick={synthesizeInterviews}
-                  aria-label="Synthesize patterns from interviews"
                 >
-                  <RefreshCw size={14} aria-hidden="true" />
+                  <RefreshCw size={14} />
                   Synthesize Patterns
                 </button>
               )}
-            </section>
+            </div>
           )}
 
           {/* Quick actions */}
           <div className="sidebar-actions">
-            <button className="action-btn" onClick={() => refetch()} aria-label="Refresh session data">
-              <RefreshCw size={14} aria-hidden="true" /> Refresh
+            <button className="action-btn" onClick={() => refetch()}>
+              <RefreshCw size={14} /> Refresh
             </button>
-            <button className="action-btn" aria-label="Export discovery pack">
-              <Download size={14} aria-hidden="true" /> Export
+            <button className="action-btn">
+              <Download size={14} /> Export
             </button>
           </div>
         </aside>
 
         {/* Main Content */}
-        <main className="discovery-main" role="main" aria-label="Discovery stage content">
+        <main className="discovery-main">
           {/* Stage Content */}
           <div className="stage-container">
             <StageContent
@@ -745,11 +722,11 @@ export function DiscoveryViewV4({
               <div className="checkpoint-controls">
                 <p>Review the output above. Ready to continue?</p>
                 <div className="checkpoint-actions">
-                  <button className="secondary-btn" onClick={handleStartEdit} aria-label="Edit stage output before continuing">
-                    <Edit3 size={16} aria-hidden="true" /> Edit First
+                  <button className="secondary-btn" onClick={handleStartEdit}>
+                    <Edit3 size={16} /> Edit First
                   </button>
-                  <button className="primary-btn" onClick={handleApproveStage} aria-label="Approve stage and continue to next">
-                    <Check size={16} aria-hidden="true" /> Approve & Continue
+                  <button className="primary-btn" onClick={handleApproveStage}>
+                    <Check size={16} /> Approve & Continue
                   </button>
                 </div>
               </div>
@@ -757,23 +734,23 @@ export function DiscoveryViewV4({
 
           {/* Auto-continue indicator (Quick mode) */}
           {isQuickMode && currentStage.status === 'in_progress' && (
-            <div className="auto-continue" role="status" aria-live="polite">
-              <Loader2 className="spin" aria-hidden="true" />
+            <div className="auto-continue">
+              <Loader2 className="spin" />
               <p>Generating... Will continue automatically</p>
             </div>
           )}
 
           {/* Discovery Complete */}
           {progressPercent === 100 && (
-            <section className="discovery-complete" role="region" aria-labelledby="discovery-complete-heading">
-              <h2 id="discovery-complete-heading">Discovery Complete!</h2>
+            <div className="discovery-complete">
+              <h3>Discovery Complete!</h3>
               <p>
                 All stages are complete. You can now continue to full lifecycle
                 generation.
               </p>
               {lifecycleError && (
-                <div className="lifecycle-error" role="alert">
-                  <AlertCircle size={16} aria-hidden="true" />
+                <div className="lifecycle-error">
+                  <AlertCircle size={16} />
                   <span>{lifecycleError}</span>
                 </div>
               )}
@@ -781,21 +758,20 @@ export function DiscoveryViewV4({
                 className="continue-strategy-btn"
                 onClick={handleContinueToStrategy}
                 disabled={lifecycleLoading}
-                aria-label={lifecycleLoading ? 'Generating lifecycle, please wait' : 'Continue to Strategy and Delivery phase'}
               >
                 {lifecycleLoading ? (
                   <>
-                    <Loader2 size={18} className="spin" aria-hidden="true" />
+                    <Loader2 size={18} className="spin" />
                     Generating Lifecycle...
                   </>
                 ) : (
                   <>
                     Continue to Strategy & Delivery
-                    <ArrowRight size={18} aria-hidden="true" />
+                    <ArrowRight size={18} />
                   </>
                 )}
               </button>
-            </section>
+            </div>
           )}
         </main>
       </div>
@@ -870,11 +846,6 @@ export function DiscoveryViewV4({
         .back-btn:hover {
           background: var(--v4-bg);
           color: var(--v4-text);
-        }
-
-        .back-btn:focus {
-          outline: 2px solid var(--v4-accent);
-          outline-offset: 2px;
         }
 
         .header-titles h1 {
@@ -1302,11 +1273,6 @@ export function DiscoveryViewV4({
           color: var(--v4-text);
         }
 
-        .icon-btn:focus {
-          outline: 2px solid var(--v4-accent);
-          outline-offset: 2px;
-        }
-
         .output-content {
           padding: 16px;
           background: var(--v4-bg);
@@ -1426,12 +1392,6 @@ export function DiscoveryViewV4({
           background: var(--v4-accent-hover);
         }
 
-        .primary-btn:focus,
-        .secondary-btn:focus {
-          outline: 2px solid var(--v4-accent);
-          outline-offset: 2px;
-        }
-
         .secondary-btn {
           background: var(--v4-surface);
           border: 1px solid var(--v4-border);
@@ -1498,11 +1458,6 @@ export function DiscoveryViewV4({
         .continue-strategy-btn:hover {
           background: var(--v4-accent-hover);
           transform: translateY(-1px);
-        }
-
-        .continue-strategy-btn:focus {
-          outline: 2px solid var(--v4-accent);
-          outline-offset: 2px;
         }
 
         /* Responsive */

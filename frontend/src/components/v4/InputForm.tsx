@@ -1,10 +1,9 @@
 /**
  * V4 Input Form Component
  * Two-column layout with form sections and output preview sidebar
- * Accessible implementation with ARIA attributes and keyboard navigation
  */
 
-import { useState, useId, type FormEvent, type ChangeEvent, type KeyboardEvent } from 'react';
+import { useState, type FormEvent, type ChangeEvent } from 'react';
 import { Zap, Compass, Microscope, Clock, Shield } from 'lucide-react';
 import { ChipInput, ChipSelect } from './ChipInput';
 import '../../styles/theme-v4.css';
@@ -91,8 +90,6 @@ const MODE_OPTIONS: Array<{
 
 export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4Props) {
   const [selectedMode, setSelectedMode] = useState<DiscoveryMode>('quick');
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-  const formId = useId();
   const [formData, setFormData] = useState({
     productName: '',
     productDescription: '',
@@ -115,58 +112,10 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear validation error when user starts typing
-    if (validationErrors[name]) {
-      setValidationErrors((prev) => {
-        const updated = { ...prev };
-        delete updated[name];
-        return updated;
-      });
-    }
-  };
-
-  const handleModeKeyDown = (e: KeyboardEvent<HTMLButtonElement>, currentMode: DiscoveryMode) => {
-    const modeIds = MODE_OPTIONS.map((m) => m.id);
-    const currentIndex = modeIds.indexOf(currentMode);
-
-    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-      e.preventDefault();
-      const nextIndex = (currentIndex + 1) % modeIds.length;
-      setSelectedMode(modeIds[nextIndex]);
-      // Focus the next button
-      const buttons = e.currentTarget.parentElement?.querySelectorAll('button[role="radio"]');
-      (buttons?.[nextIndex] as HTMLButtonElement)?.focus();
-    } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      const prevIndex = (currentIndex - 1 + modeIds.length) % modeIds.length;
-      setSelectedMode(modeIds[prevIndex]);
-      const buttons = e.currentTarget.parentElement?.querySelectorAll('button[role="radio"]');
-      (buttons?.[prevIndex] as HTMLButtonElement)?.focus();
-    }
-  };
-
-  const validateForm = (): boolean => {
-    const errors: Record<string, string> = {};
-    if (!formData.productName.trim()) {
-      errors.productName = 'Initiative name is required';
-    }
-    if (!formData.productDescription.trim()) {
-      errors.productDescription = 'Description is required';
-    }
-    setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      // Focus the first invalid field
-      const firstErrorField = Object.keys(validationErrors)[0];
-      const element = document.querySelector(`[name="${firstErrorField}"]`) as HTMLElement;
-      element?.focus();
-      return;
-    }
 
     const constraintsList = [
       formData.technicalConstraints,
@@ -215,7 +164,6 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
       >
         <button
           onClick={onBack}
-          aria-label="Go back to home page"
           style={{
             fontSize: '16px',
             fontWeight: 600,
@@ -227,17 +175,15 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
         >
           Seedcraft
         </button>
-        <nav aria-label="Form progress">
-          <ol role="list" style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--v4-text-muted)', listStyle: 'none', margin: 0, padding: 0 }}>
-            <ProgressStep label="Start" status="done" />
-            <ProgressLine />
-            <ProgressStep label="Define" status="active" />
-            <ProgressLine />
-            <ProgressStep label="Generate" status="pending" />
-            <ProgressLine />
-            <ProgressStep label="Review" status="pending" />
-          </ol>
-        </nav>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--v4-text-muted)' }}>
+          <ProgressStep label="Start" status="done" />
+          <ProgressLine />
+          <ProgressStep label="Define" status="active" />
+          <ProgressLine />
+          <ProgressStep label="Generate" status="pending" />
+          <ProgressLine />
+          <ProgressStep label="Review" status="pending" />
+        </div>
       </nav>
 
       {/* Main Layout */}
@@ -309,16 +255,11 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
 
           <form onSubmit={handleSubmit}>
             {/* Discovery Mode Selection */}
-            <FormSection label="Mode" title="Discovery Mode" id={`${formId}-mode-section`}>
-              <p id={`${formId}-mode-description`} style={{ fontSize: '14px', color: 'var(--v4-text-secondary)', marginBottom: '16px' }}>
+            <FormSection label="Mode" title="Discovery Mode">
+              <p style={{ fontSize: '14px', color: 'var(--v4-text-secondary)', marginBottom: '16px' }}>
                 Choose how you want to run discovery. You can always switch later.
               </p>
-              <div
-                role="radiogroup"
-                aria-labelledby={`${formId}-mode-section-title`}
-                aria-describedby={`${formId}-mode-description`}
-                style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}
-              >
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
                 {MODE_OPTIONS.map((mode) => {
                   const Icon = mode.icon;
                   const isSelected = selectedMode === mode.id;
@@ -326,12 +267,7 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
                     <button
                       key={mode.id}
                       type="button"
-                      role="radio"
-                      aria-checked={isSelected}
-                      aria-describedby={`${formId}-mode-${mode.id}-desc`}
-                      tabIndex={isSelected ? 0 : -1}
                       onClick={() => setSelectedMode(mode.id)}
-                      onKeyDown={(e) => handleModeKeyDown(e, mode.id)}
                       style={{
                         padding: '16px',
                         border: isSelected ? '2px solid var(--v4-accent)' : '1px solid var(--v4-border)',
@@ -343,36 +279,33 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
                       }}
                     >
                       {mode.recommended && (
-                        <span
-                          aria-label="Recommended option"
-                          style={{
-                            position: 'absolute',
-                            top: '-8px',
-                            right: '8px',
-                            background: 'var(--v4-accent)',
-                            color: 'white',
-                            fontSize: '10px',
-                            fontWeight: 600,
-                            padding: '2px 8px',
-                            borderRadius: '10px',
-                          }}
-                        >
+                        <span style={{
+                          position: 'absolute',
+                          top: '-8px',
+                          right: '8px',
+                          background: 'var(--v4-accent)',
+                          color: 'white',
+                          fontSize: '10px',
+                          fontWeight: 600,
+                          padding: '2px 8px',
+                          borderRadius: '10px',
+                        }}>
                           Recommended
                         </span>
                       )}
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                        <Icon size={18} style={{ color: isSelected ? 'var(--v4-accent)' : 'var(--v4-text-muted)' }} aria-hidden="true" />
+                        <Icon size={18} style={{ color: isSelected ? 'var(--v4-accent)' : 'var(--v4-text-muted)' }} />
                         <span style={{ fontWeight: 600, color: 'var(--v4-text)' }}>{mode.title}</span>
                       </div>
-                      <p id={`${formId}-mode-${mode.id}-desc`} style={{ fontSize: '12px', color: 'var(--v4-text-secondary)', margin: '0 0 8px 0' }}>
+                      <p style={{ fontSize: '12px', color: 'var(--v4-text-secondary)', margin: '0 0 8px 0' }}>
                         {mode.subtitle}
                       </p>
                       <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: 'var(--v4-text-muted)' }}>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Clock size={12} aria-hidden="true" /> <span aria-label={`Duration: ${mode.duration}`}>{mode.duration}</span>
+                          <Clock size={12} /> {mode.duration}
                         </span>
                         <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <Shield size={12} aria-hidden="true" /> <span aria-label={`Evidence level: ${mode.evidence}`}>{mode.evidence}</span>
+                          <Shield size={12} /> {mode.evidence}
                         </span>
                       </div>
                     </button>
@@ -385,9 +318,8 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
 
             {/* Section 1: Product Idea */}
             <FormSection label="Required" title="Product Idea">
-              <Field label="Initiative name" required inputId={`${formId}-productName`} error={validationErrors.productName}>
+              <Field label="Initiative name">
                 <input
-                  id={`${formId}-productName`}
                   type="text"
                   name="productName"
                   value={formData.productName}
@@ -395,14 +327,10 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
                   placeholder="e.g., Enterprise Customer Portal 2.0"
                   className="v4-input"
                   required
-                  aria-required="true"
-                  aria-invalid={!!validationErrors.productName}
-                  aria-describedby={validationErrors.productName ? `${formId}-productName-error` : undefined}
                 />
               </Field>
-              <Field label="Description" required inputId={`${formId}-productDescription`} error={validationErrors.productDescription}>
+              <Field label="Description">
                 <textarea
-                  id={`${formId}-productDescription`}
                   name="productDescription"
                   value={formData.productDescription}
                   onChange={handleChange}
@@ -410,9 +338,6 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
                   className="v4-textarea"
                   style={{ minHeight: '160px' }}
                   required
-                  aria-required="true"
-                  aria-invalid={!!validationErrors.productDescription}
-                  aria-describedby={validationErrors.productDescription ? `${formId}-productDescription-error` : undefined}
                 />
               </Field>
             </FormSection>
@@ -422,8 +347,8 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
             {/* Section 2: Target Market */}
             <FormSection label="Discovery" title="Target Market">
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-                <Field label="Market type" inputId={`${formId}-marketType`}>
-                  <select id={`${formId}-marketType`} name="marketType" value={formData.marketType} onChange={handleChange} className="v4-select" aria-label="Select market type">
+                <Field label="Market type">
+                  <select name="marketType" value={formData.marketType} onChange={handleChange} className="v4-select">
                     <option value="">Select</option>
                     {MARKET_TYPES.map((type) => (
                       <option key={type} value={type}>
@@ -432,8 +357,8 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
                     ))}
                   </select>
                 </Field>
-                <Field label="Geography" inputId={`${formId}-geography`}>
-                  <select id={`${formId}-geography`} name="geography" value={formData.geography} onChange={handleChange} className="v4-select" aria-label="Select target geography">
+                <Field label="Geography">
+                  <select name="geography" value={formData.geography} onChange={handleChange} className="v4-select">
                     <option value="">Select</option>
                     {GEOGRAPHIES.map((geo) => (
                       <option key={geo} value={geo}>
@@ -443,15 +368,13 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
                   </select>
                 </Field>
               </div>
-              <Field label="Target customer" optional inputId={`${formId}-targetCustomer`}>
+              <Field label="Target customer" optional>
                 <textarea
-                  id={`${formId}-targetCustomer`}
                   name="targetCustomer"
                   value={formData.targetCustomer}
                   onChange={handleChange}
                   placeholder="Role, industry, company size, pain points..."
                   className="v4-textarea"
-                  aria-label="Describe target customer"
                 />
               </Field>
               <Field label="Known competitors" optional>
@@ -468,8 +391,8 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
             {/* Section 3: Enterprise Context */}
             <FormSection label="Strategy" title="Enterprise Context">
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-                <Field label="Your industry" inputId={`${formId}-industry`}>
-                  <select id={`${formId}-industry`} name="industry" value={formData.industry} onChange={handleChange} className="v4-select" aria-label="Select your industry">
+                <Field label="Your industry">
+                  <select name="industry" value={formData.industry} onChange={handleChange} className="v4-select">
                     <option value="">Select</option>
                     {INDUSTRIES.map((ind) => (
                       <option key={ind} value={ind}>
@@ -478,8 +401,8 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
                     ))}
                   </select>
                 </Field>
-                <Field label="Company size" inputId={`${formId}-companySize`}>
-                  <select id={`${formId}-companySize`} name="companySize" value={formData.companySize} onChange={handleChange} className="v4-select" aria-label="Select company size">
+                <Field label="Company size">
+                  <select name="companySize" value={formData.companySize} onChange={handleChange} className="v4-select">
                     <option value="">Select</option>
                     {COMPANY_SIZES.map((size) => (
                       <option key={size} value={size}>
@@ -511,15 +434,13 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
                   suggestions={TECH_STACK}
                 />
               </Field>
-              <Field label="Technical constraints" optional inputId={`${formId}-technicalConstraints`}>
+              <Field label="Technical constraints" optional>
                 <textarea
-                  id={`${formId}-technicalConstraints`}
                   name="technicalConstraints"
                   value={formData.technicalConstraints}
                   onChange={handleChange}
                   placeholder="Integration requirements, security needs, performance expectations..."
                   className="v4-textarea"
-                  aria-label="Describe technical constraints"
                 />
               </Field>
             </FormSection>
@@ -573,15 +494,13 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
                   onChange={(stakeholders) => setFormData((prev) => ({ ...prev, stakeholders }))}
                 />
               </Field>
-              <Field label="Known concerns" optional inputId={`${formId}-knownConcerns`}>
+              <Field label="Known concerns" optional>
                 <textarea
-                  id={`${formId}-knownConcerns`}
                   name="knownConcerns"
                   value={formData.knownConcerns}
                   onChange={handleChange}
                   placeholder="Budget concerns, technical feasibility doubts, competitive threats..."
                   className="v4-textarea"
-                  aria-label="Describe known concerns"
                 />
               </Field>
             </FormSection>
@@ -626,19 +545,6 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
 
       {/* Responsive styles */}
       <style>{`
-        /* Accessibility improvements - focus styles */
-        .v4-input:focus,
-        .v4-textarea:focus,
-        .v4-select:focus {
-          outline: 2px solid var(--v4-accent);
-          outline-offset: 2px;
-        }
-
-        .v4-btn:focus {
-          outline: 2px solid var(--v4-accent);
-          outline-offset: 2px;
-        }
-
         @media (max-width: 900px) {
           .v4-root > div {
             grid-template-columns: 1fr !important;
@@ -665,78 +571,35 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
   );
 }
 
-function FormSection({
-  label,
-  title,
-  children,
-  id,
-}: {
-  label: string;
-  title: string;
-  children: React.ReactNode;
-  id?: string;
-}) {
+function FormSection({ label, title, children }: { label: string; title: string; children: React.ReactNode }) {
   return (
-    <section aria-labelledby={id ? `${id}-title` : undefined} style={{ marginBottom: '40px' }}>
+    <section style={{ marginBottom: '40px' }}>
       <div style={{ marginBottom: '24px' }}>
         <div className="v4-eyebrow" style={{ marginBottom: '8px' }}>
           {label}
         </div>
-        <h2 id={id ? `${id}-title` : undefined} style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.01em' }}>
-          {title}
-        </h2>
+        <h2 style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.01em' }}>{title}</h2>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>{children}</div>
     </section>
   );
 }
 
-function Field({
-  label,
-  optional,
-  required,
-  children,
-  inputId,
-  error,
-}: {
-  label: string;
-  optional?: boolean;
-  required?: boolean;
-  children: React.ReactNode;
-  inputId?: string;
-  error?: string;
-}) {
+function Field({ label, optional, children }: { label: string; optional?: boolean; children: React.ReactNode }) {
   return (
     <div>
-      <label htmlFor={inputId} className="v4-label">
+      <label className="v4-label">
         {label}
-        {required && <span className="v4-label-required" aria-hidden="true"> *</span>}
         {optional && <span className="v4-label-optional"> — optional</span>}
       </label>
       {children}
-      {error && (
-        <div
-          id={inputId ? `${inputId}-error` : undefined}
-          role="alert"
-          style={{
-            color: 'var(--v4-error, #dc2626)',
-            fontSize: '12px',
-            marginTop: '4px',
-          }}
-        >
-          {error}
-        </div>
-      )}
     </div>
   );
 }
 
 function ProgressStep({ label, status }: { label: string; status: 'done' | 'active' | 'pending' }) {
-  const statusLabel = status === 'done' ? 'completed' : status === 'active' ? 'current step' : 'upcoming';
   return (
     <div
-      role="listitem"
-      aria-current={status === 'active' ? 'step' : undefined}
       style={{
         display: 'flex',
         alignItems: 'center',
@@ -746,7 +609,6 @@ function ProgressStep({ label, status }: { label: string; status: 'done' | 'acti
       }}
     >
       <span
-        aria-hidden="true"
         style={{
           width: '6px',
           height: '6px',
@@ -755,16 +617,13 @@ function ProgressStep({ label, status }: { label: string; status: 'done' | 'acti
             status === 'done' ? 'var(--v4-success)' : status === 'active' ? 'var(--v4-accent)' : 'var(--v4-text-muted)',
         }}
       />
-      <span>
-        {label}
-        <span className="sr-only"> ({statusLabel})</span>
-      </span>
+      {label}
     </div>
   );
 }
 
 function ProgressLine() {
-  return <div aria-hidden="true" style={{ width: '24px', height: '1px', background: 'var(--v4-border)' }} />;
+  return <div style={{ width: '24px', height: '1px', background: 'var(--v4-border)' }} />;
 }
 
 export default InputFormV4;

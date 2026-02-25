@@ -5,8 +5,6 @@
  * - Phase tracking with parallel execution grouping
  * - Constraint flow visualization
  * - Revision loop state tracking
- * - Automatic reconnection with exponential backoff
- * - Network offline detection
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -14,13 +12,6 @@ import type { ConstraintFlowItem } from '../components/v4/ConstraintFlow';
 import type { RevisionState } from '../components/v4/RevisionIndicator';
 import type { Phase, Agent } from '../components/v4/PhaseTimeline';
 import type { EvidenceTier } from '../components/v4/EvidenceBadge';
-import {
-  isOffline,
-  calculateSSEReconnectDelay,
-  getSSEErrorMessage,
-  onNetworkStatusChange,
-  DEFAULT_SSE_RETRY_CONFIG,
-} from '../utils/errorHandling';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
@@ -170,14 +161,6 @@ export interface UseSSEV4Result {
   phases: Phase[];
   /** Elapsed time in seconds */
   elapsedTime: number;
-
-  // Connection status fields
-  /** Whether the connection is being reconnected */
-  isReconnecting: boolean;
-  /** Current reconnection attempt number */
-  reconnectAttempt: number;
-  /** Whether the browser is offline */
-  isOffline: boolean;
 }
 
 /**
@@ -213,16 +196,9 @@ export function useSSEV4(
   const [revisionState, setRevisionState] = useState<RevisionState | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
 
-  // Connection status state
-  const [isReconnecting, setIsReconnecting] = useState(false);
-  const [reconnectAttempt, setReconnectAttempt] = useState(0);
-  const [browserIsOffline, setBrowserIsOffline] = useState(isOffline());
-
   const eventSourceRef = useRef<EventSource | null>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number | null>(null);
-  const reconnectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const isMountedRef = useRef(true);
 
   // Build phases for timeline display
   const phases: Phase[] = PHASE_CONFIG.map((phaseConfig) => {
@@ -283,32 +259,7 @@ export function useSSEV4(
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    if (reconnectTimeoutRef.current) {
-      clearTimeout(reconnectTimeoutRef.current);
-      reconnectTimeoutRef.current = null;
-    }
-    setIsReconnecting(false);
-    setReconnectAttempt(0);
   }, []);
-
-  // Listen for online/offline status
-  useEffect(() => {
-    isMountedRef.current = true;
-    const cleanup = onNetworkStatusChange((online) => {
-      if (isMountedRef.current) {
-        setBrowserIsOffline(!online);
-        if (online && !isConnected && !isComplete && sessionId && authToken) {
-          // Browser came back online, trigger reconnect
-          setReconnectAttempt(0);
-          setError('Back online. Reconnecting...');
-        }
-      }
-    });
-    return () => {
-      isMountedRef.current = false;
-      cleanup();
-    };
-  }, [isConnected, isComplete, sessionId, authToken]);
 
   useEffect(() => {
     if (!sessionId || !authToken || !enabled) {
@@ -366,90 +317,19 @@ export function useSSEV4(
     eventSourceRef.current = eventSource;
 
     eventSource.onopen = () => {
-      if (!isMountedRef.current) return;
       setIsConnected(true);
-      setIsReconnecting(false);
-      setReconnectAttempt(0);
       setError(null);
     };
 
     eventSource.onerror = (e) => {
       console.error('SSE Error:', e);
-      if (!isMountedRef.current) return;
       setIsConnected(false);
 
-      // Don't try to reconnect if already complete or explicitly closed
       if (eventSource.readyState === EventSource.CLOSED) {
         return;
       }
 
-      // Check if offline
-      if (isOffline()) {
-        setError('You are offline. Waiting for connection...');
-        setBrowserIsOffline(true);
-        return;
-      }
-
-      // Attempt reconnection with exponential backoff
-      const nextAttempt = reconnectAttempt + 1;
-
-      if (nextAttempt > DEFAULT_SSE_RETRY_CONFIG.maxReconnects) {
-        setError('Connection failed after multiple attempts. Please refresh the page.');
-        setIsReconnecting(false);
-        return;
-      }
-
-      setIsReconnecting(true);
-      setReconnectAttempt(nextAttempt);
-
-      const delay = calculateSSEReconnectDelay(nextAttempt, DEFAULT_SSE_RETRY_CONFIG);
-      setError(getSSEErrorMessage(e, nextAttempt, DEFAULT_SSE_RETRY_CONFIG.maxReconnects));
-
-      // Close current connection
-      eventSource.close();
-      eventSourceRef.current = null;
-
-      // Schedule reconnection
-      reconnectTimeoutRef.current = setTimeout(() => {
-        if (isMountedRef.current && !isComplete) {
-          // The effect will re-run due to the dependency on reconnectAttempt
-          // We need to create a new connection here
-          createConnection();
-        }
-      }, delay);
-    };
-
-    // Store createConnection for reconnection attempts
-    const createConnection = () => {
-      if (!isMountedRef.current || !sessionId || !authToken || isComplete) return;
-
-      const newUrl = useTestEndpoint
-        ? `${API_BASE_URL}/api/discovery/v4/test/sessions/${sessionId}/stream`
-        : `${API_BASE_URL}/api/discovery/session/${sessionId}/stream?token=${encodeURIComponent(authToken)}`;
-
-      const newEventSource = new EventSource(newUrl);
-      eventSourceRef.current = newEventSource;
-
-      newEventSource.onopen = () => {
-        if (!isMountedRef.current) return;
-        setIsConnected(true);
-        setIsReconnecting(false);
-        setReconnectAttempt(0);
-        setError(null);
-      };
-
-      newEventSource.onerror = eventSource.onerror;
-
-      // Re-attach all event listeners
-      eventTypes.forEach((type) => {
-        newEventSource.addEventListener(type, safeEventHandler(type));
-      });
-
-      newEventSource.onmessage = (e) => {
-        if (e.data !== undefined && e.data !== null) {
-          handleEvent('message', e.data);
-        }
-      };
+      setError('Connection lost. Attempting to reconnect...');
     };
 
     // Handle different event types
@@ -727,10 +607,6 @@ export function useSSEV4(
     revisionState,
     phases,
     elapsedTime,
-    // Connection status fields
-    isReconnecting,
-    reconnectAttempt,
-    isOffline: browserIsOffline,
   };
 }
 
