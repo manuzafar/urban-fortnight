@@ -148,12 +148,12 @@ export function StageProgress({
   });
 
   return (
-    <div className="stage-progress-container">
+    <nav className="stage-progress-container" aria-label="Discovery stages">
       <div className="stage-progress-header">
-        <h3>Discovery</h3>
+        <h2>Discovery</h2>
       </div>
 
-      <div className="stage-progress-list">
+      <ul className="stage-progress-list" role="list">
         {DISCOVERY_STAGES.map((stage, idx) => {
           const state = session.stages[stage.id] || { status: 'not_started' };
           const isActive = activeStage === stage.id;
@@ -164,66 +164,88 @@ export function StageProgress({
           const Icon = stage.icon;
 
           return (
-            <button
-              key={stage.id}
-              className={`stage-item ${isActive ? 'active' : ''} ${isComplete ? 'complete' : ''} ${isInProgress ? 'in-progress' : ''} ${isSkipped ? 'skipped' : ''} ${!isClickable ? 'locked' : ''}`}
-              onClick={() => isClickable && onSelectStage?.(stage.id)}
-              disabled={!isClickable}
-              style={{ '--stage-color': stage.color } as React.CSSProperties}
-            >
-              {idx > 0 && <div className="stage-connector" />}
+            <li key={stage.id} role="listitem">
+              <button
+                className={`stage-item ${isActive ? 'active' : ''} ${isComplete ? 'complete' : ''} ${isInProgress ? 'in-progress' : ''} ${isSkipped ? 'skipped' : ''} ${!isClickable ? 'locked' : ''}`}
+                onClick={() => isClickable && onSelectStage?.(stage.id)}
+                disabled={!isClickable}
+                aria-current={isActive ? 'step' : undefined}
+                aria-disabled={!isClickable}
+                aria-label={`${stage.name}: ${isComplete ? 'completed' : isInProgress ? 'in progress' : isSkipped ? 'skipped' : 'not started'}${state.score ? `, score ${state.score} out of 10` : ''}`}
+                title={stage.description}
+                style={{ '--stage-color': stage.color } as React.CSSProperties}
+              >
+                {idx > 0 && <div className="stage-connector" aria-hidden="true" />}
 
-              <div className="stage-icon">
-                {isComplete ? (
-                  <Check size={18} />
-                ) : isInProgress ? (
-                  <Loader2 size={18} className="spin" />
-                ) : !isClickable ? (
-                  <Lock size={16} />
-                ) : (
-                  <Icon size={18} />
+                <div className="stage-icon" aria-hidden="true">
+                  {isComplete ? (
+                    <Check size={18} />
+                  ) : isInProgress ? (
+                    <Loader2 size={18} className="spin" />
+                  ) : !isClickable ? (
+                    <Lock size={16} />
+                  ) : (
+                    <Icon size={18} />
+                  )}
+                </div>
+
+                <div className="stage-info">
+                  <span className="stage-name">{stage.name}</span>
+                  <span className="stage-description">{stage.description}</span>
+                </div>
+
+                {state.score !== undefined && state.score !== null && (
+                  <span className="stage-score" aria-hidden="true">{state.score}/10</span>
                 )}
-              </div>
-
-              <div className="stage-info">
-                <span className="stage-name">{stage.name}</span>
-                <span className="stage-description">{stage.description}</span>
-              </div>
-
-              {state.score !== undefined && state.score !== null && (
-                <span className="stage-score">{state.score}/10</span>
-              )}
-            </button>
+              </button>
+            </li>
           );
         })}
-      </div>
+      </ul>
 
       {/* Upcoming Phases Preview */}
-      <div className="upcoming-phases-section">
+      <div className="upcoming-phases-section" role="region" aria-label="Upcoming phases">
         <div className="upcoming-header">
-          <h4>Coming Up</h4>
-          <Lock size={14} className="lock-icon" />
+          <h3>Coming Up</h3>
+          <Lock size={14} className="lock-icon" aria-hidden="true" />
         </div>
-        <div className="upcoming-phases-list">
+        <ul className="upcoming-phases-list" role="list">
           {UPCOMING_PHASES.map((phase) => {
             const Icon = phase.icon;
             return (
-              <div
+              <li
                 key={phase.id}
                 className={`upcoming-phase-item ${allDiscoveryComplete ? 'ready' : ''}`}
-                title={allDiscoveryComplete ? 'Complete Discovery to unlock' : 'Locked - complete Discovery first'}
+                role="listitem"
               >
-                <div className="upcoming-phase-icon">
+                <div className="upcoming-phase-icon" aria-hidden="true">
                   {allDiscoveryComplete ? <Icon size={16} /> : <Lock size={14} />}
                 </div>
-                <span className="upcoming-phase-name">{phase.name}</span>
-              </div>
+                <span className="upcoming-phase-name">
+                  {phase.name}
+                  <span className="sr-only">
+                    {allDiscoveryComplete ? ' - ready to unlock' : ' - locked, complete Discovery first'}
+                  </span>
+                </span>
+              </li>
             );
           })}
-        </div>
+        </ul>
       </div>
 
       <style>{`
+        .sr-only {
+          position: absolute;
+          width: 1px;
+          height: 1px;
+          padding: 0;
+          margin: -1px;
+          overflow: hidden;
+          clip: rect(0, 0, 0, 0);
+          white-space: nowrap;
+          border: 0;
+        }
+
         .stage-progress-container {
           background: var(--v4-surface, white);
           border-radius: 12px;
@@ -236,6 +258,7 @@ export function StageProgress({
           border-bottom: 1px solid var(--v4-border, #e5e7eb);
         }
 
+        .stage-progress-header h2,
         .stage-progress-header h3 {
           margin: 0;
           font-size: 14px;
@@ -248,6 +271,14 @@ export function StageProgress({
         .stage-progress-list {
           display: flex;
           flex-direction: column;
+          list-style: none;
+          margin: 0;
+          padding: 0;
+        }
+
+        .stage-progress-list > li {
+          margin: 0;
+          padding: 0;
         }
 
         .stage-item {
@@ -270,6 +301,12 @@ export function StageProgress({
 
         .stage-item:hover:not(.locked) {
           background: var(--v4-bg, #f9fafb);
+        }
+
+        .stage-item:focus {
+          outline: 2px solid var(--v4-accent, #c2410c);
+          outline-offset: -2px;
+          z-index: 1;
         }
 
         .stage-item.active {
@@ -395,6 +432,7 @@ export function StageProgress({
           margin-bottom: 12px;
         }
 
+        .upcoming-header h3,
         .upcoming-header h4 {
           margin: 0;
           font-size: 12px;
@@ -412,6 +450,14 @@ export function StageProgress({
           display: flex;
           flex-direction: column;
           gap: 4px;
+          list-style: none;
+          margin: 0;
+          padding: 0;
+        }
+
+        .upcoming-phases-list > li {
+          margin: 0;
+          padding: 0;
         }
 
         .upcoming-phase-item {
@@ -458,7 +504,7 @@ export function StageProgress({
           color: var(--v4-text-secondary, #6b7280);
         }
       `}</style>
-    </div>
+    </nav>
   );
 }
 

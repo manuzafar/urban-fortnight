@@ -16,8 +16,11 @@ import structlog
 logger = structlog.get_logger(__name__)
 
 
-# Default location for golden sets
-GOLDEN_SETS_DIR = Path(__file__).parent.parent / "fixtures" / "golden_sets"
+# Default location for golden sets - now in evals/golden/sets/
+GOLDEN_SETS_DIR = Path(__file__).parent / "sets"
+
+# Fallback to legacy location for backwards compatibility
+LEGACY_GOLDEN_SETS_DIR = Path(__file__).parent.parent / "fixtures" / "golden_sets"
 
 
 class GoldenSetManager:
@@ -31,7 +34,14 @@ class GoldenSetManager:
 
     def __init__(self, golden_sets_dir: Path | str | None = None):
         """Initialize with optional custom directory."""
-        self.golden_sets_dir = Path(golden_sets_dir) if golden_sets_dir else GOLDEN_SETS_DIR
+        if golden_sets_dir:
+            self.golden_sets_dir = Path(golden_sets_dir)
+        elif GOLDEN_SETS_DIR.exists():
+            self.golden_sets_dir = GOLDEN_SETS_DIR
+        elif LEGACY_GOLDEN_SETS_DIR.exists():
+            self.golden_sets_dir = LEGACY_GOLDEN_SETS_DIR
+        else:
+            self.golden_sets_dir = GOLDEN_SETS_DIR
         self._cache: dict[str, dict[str, Any]] = {}
 
     def list_golden_sets(self) -> list[dict[str, Any]]:
@@ -58,6 +68,7 @@ class GoldenSetManager:
                     "version": metadata.get("version", "1.0"),
                     "created_at": metadata.get("created_at", "unknown"),
                     "quality_score": metadata.get("quality_score"),
+                    "domain": metadata.get("domain", ""),
                     "product_idea": data.get("state", {}).get("product_idea", "")[:100],
                     "path": str(path),
                 })
@@ -208,3 +219,121 @@ class GoldenSetManager:
     def clear_cache(self) -> None:
         """Clear the in-memory cache."""
         self._cache.clear()
+
+    def list_by_domain(self, domain: str) -> list[dict[str, Any]]:
+        """
+        List golden sets filtered by domain.
+
+        Args:
+            domain: Domain to filter by (e.g., 'B2B_SaaS', 'Fintech', 'Healthcare')
+
+        Returns:
+            List of golden sets matching the domain
+        """
+        all_sets = self.list_golden_sets()
+        return [
+            gs for gs in all_sets
+            if gs.get("domain", "").lower() == domain.lower()
+            or domain.lower() in gs.get("id", "").lower()
+        ]
+
+    def find_best_match(self, product_idea: str) -> dict[str, Any] | None:
+        """
+        Find the golden set most similar to a given product idea.
+
+        Uses simple keyword matching for domain detection.
+
+        Args:
+            product_idea: The product idea to match against
+
+        Returns:
+            Best matching golden set info or None
+        """
+        idea_lower = product_idea.lower()
+
+        # Domain keywords
+        domain_keywords = {
+            "healthcare": ["health", "medical", "patient", "doctor", "hospital", "clinic", "care"],
+            "fintech": ["payment", "bank", "finance", "money", "transaction", "lending", "crypto"],
+            "b2b_saas": ["enterprise", "saas", "b2b", "business", "workspace", "team", "collaboration"],
+        }
+
+        # Find matching domain
+        best_domain = None
+        best_score = 0
+
+        for domain, keywords in domain_keywords.items():
+            score = sum(1 for kw in keywords if kw in idea_lower)
+            if score > best_score:
+                best_score = score
+                best_domain = domain
+
+        # Get golden sets for that domain
+        if best_domain:
+            domain_sets = self.list_by_domain(best_domain)
+            if domain_sets:
+                return domain_sets[0]
+
+        # Fallback to first available golden set
+        all_sets = self.list_golden_sets()
+        return all_sets[0] if all_sets else None
+
+    def get_all_golden_states(self) -> dict[str, dict[str, Any]]:
+        """
+        Load all golden sets and return their states.
+
+        Returns:
+            Dictionary mapping golden set ID to state
+        """
+        result = {}
+        for gs_info in self.list_golden_sets():
+            gs_id = gs_info["id"]
+            state = self.get_state(gs_id)
+            if state:
+                result[gs_id] = state
+        return result
+
+    def compare_to_all(
+        self,
+        state: dict[str, Any],
+        scorer: Any = None,
+    ) -> dict[str, Any]:
+        """
+        Compare a state against all golden sets and find best match.
+
+        Args:
+            state: The state to compare
+            scorer: Optional SimilarityScorer instance
+
+        Returns:
+            Comparison results with best match and all scores
+        """
+        if scorer is None:
+            from evals.golden.similarity_scorer import SimilarityScorer
+            scorer = SimilarityScorer(self)
+
+        results = {}
+        best_match = None
+        best_score = 0.0
+
+        for gs_info in self.list_golden_sets():
+            gs_id = gs_info["id"]
+            golden_state = self.get_state(gs_id)
+
+            if golden_state:
+                comparison = scorer.score_full_state(state, golden_state)
+                results[gs_id] = {
+                    "name": gs_info.get("name", gs_id),
+                    "domain": gs_info.get("domain", "unknown"),
+                    "scores": comparison,
+                }
+
+                if comparison["overall"] > best_score:
+                    best_score = comparison["overall"]
+                    best_match = gs_id
+
+        return {
+            "best_match": best_match,
+            "best_score": best_score,
+            "all_comparisons": results,
+        }

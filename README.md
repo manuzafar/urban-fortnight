@@ -1,52 +1,109 @@
-# Seedcraft - Multi-Agent Product Discovery System
+# Seedform - AI-Powered Multi-Agent Product Discovery System
 
 <p align="center">
-  <img src="docs/logo.svg" alt="Seedcraft Logo" width="120" height="120">
+  <img src="docs/logo.svg" alt="Seedform Logo" width="120" height="120">
 </p>
 
 <p align="center">
-  <strong>Transform product ideas into decision-ready inception packs using 12+ specialized AI agents with swarm architecture and cross-run learning</strong>
+  <strong>Transform product ideas into comprehensive inception packs using 16+ specialized AI agents with swarm architecture, V4 staged discovery, and cross-run learning</strong>
 </p>
 
 <p align="center">
+  <a href="https://mindful-luck-production.up.railway.app">Live Demo</a> |
   <a href="#features">Features</a> |
+  <a href="#v4-discovery">V4 Discovery</a> |
   <a href="#architecture">Architecture</a> |
   <a href="#getting-started">Getting Started</a> |
-  <a href="#usage">Usage</a> |
-  <a href="#api-reference">API Reference</a> |
-  <a href="#configuration">Configuration</a>
+  <a href="#api-reference">API Reference</a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3.11+-blue.svg" alt="Python">
+  <img src="https://img.shields.io/badge/React-19-61DAFB.svg" alt="React">
+  <img src="https://img.shields.io/badge/LangGraph-Latest-green.svg" alt="LangGraph">
+  <img src="https://img.shields.io/badge/Gemini-Flash%20%2B%20Pro-orange.svg" alt="Gemini">
 </p>
 
 ---
 
 ## Overview
 
-Seedcraft is an AI-powered product discovery system that compresses weeks of discovery work into a single, structured inception pack. It uses a **swarm-based multi-agent architecture** built on **LangGraph** and powered by **Google Gemini**, orchestrating 12+ specialized agents organized into three parallel swarms with a Facilitator agent for coordination.
+Seedform is an AI-powered product discovery system that compresses weeks of discovery work into a single, structured inception pack. It uses a **swarm-based multi-agent architecture** built on **LangGraph** and powered by **Google Gemini**, orchestrating 16+ specialized agents organized into parallel swarms.
 
-The system features:
-- **Swarm Architecture**: Agents run in parallel within Discovery, Strategy, and Delivery swarms
-- **Cross-Run Learning**: High-quality outputs are stored with embeddings for future retrieval
-- **Contradiction Detection**: Facilitator agent detects and resolves inconsistencies between agent outputs
-- **Hypothesis-First Approach**: All outputs are framed as testable hypotheses requiring customer validation
-- **Quality Improvement System**: Evidence-aware context, constraint broadcasting, confidence calibration, and structured revisions
+**Live URLs:**
+- 🌐 Frontend: https://mindful-luck-production.up.railway.app
+- 🔌 Backend API: https://urban-fortnight-production.up.railway.app
+
+### Key Features
+
+| Feature | Description |
+|---------|-------------|
+| **V4 Staged Discovery** | 5-stage guided discovery with Problem Love, Customer Truth, Opportunity Mapping, Solution Design, and Validation Plan |
+| **Three Discovery Modes** | Quick (AI-only), Guided (AI + checkpoints), Deep (customer interviews + AI synthesis) |
+| **16+ Specialized Agents** | Organized into Discovery, Strategy, and Delivery swarms with parallel execution |
+| **Evidence Tiers (E1-E5)** | Explicit confidence tracking from customer quotes (E1) to AI hypotheses (E5) |
+| **Real-time SSE Streaming** | Live progress updates with 20+ event types for granular UI feedback |
+| **Cross-Run Learning** | High-quality outputs stored with pgvector embeddings for future retrieval |
+| **Quality System** | 700+ validation rules, constraint broadcasting, confidence calibration |
+
+---
+
+## V4 Discovery System
+
+The V4 Discovery system provides a **staged, interactive approach** to product discovery with three modes:
+
+### Discovery Modes
+
+| Mode | Description | Time | Evidence Quality |
+|------|-------------|------|------------------|
+| **Quick** | AI generates all stages automatically | 3-5 min | E3-E4 (AI-generated) |
+| **Guided** | AI generates with user checkpoints for review/edit | 5-8 min | E2-E4 (validated) |
+| **Deep** | User conducts interviews, AI synthesizes patterns | Days | E1-E2 (customer quotes) |
+
+### 5 Discovery Stages
+
+| Stage | Framework | Output |
+|-------|-----------|--------|
+| **1. Problem Love** | Uri Levine's "Fall in Love with the Problem" | Problem validation, severity score, market signals |
+| **2. Customer Truth** | Teresa Torres' Opportunity Solution Trees | Interview synthesis, pain patterns, JTBD mapping |
+| **3. Opportunity Mapping** | Four Forces Model (Push/Pull/Anxiety/Habit) | Switching analysis, opportunity scoring |
+| **4. Solution Design** | DHM Scoring (Desirability/Viability/Feasibility) | Solution evaluation, feature prioritization |
+| **5. Validation Plan** | Lean Startup Experiment Ladder | Validation experiments by rung (1-5) |
+
+### Journey Progress
+
+The V4 UI shows a unified journey from Discovery through Execution:
+
+```
+Discovery (20%)     Strategy (25%)     Delivery (25%)     Design (20%)     Quality (10%)
+████████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░
+   └─ 5 stages          └─ Planner        └─ PRD Loop      └─ Wireframes   └─ Critique
+                           Business          Tech Arch        Prototype       Summary
+                           GTM               Legal
+                           Financial
+```
+
+---
 
 ### What You Get
 
-A complete inception pack containing 10+ sections produced by three parallel swarms:
+A complete inception pack containing 12+ sections produced by parallel agent swarms:
 
 | Swarm | Agents | Output Sections |
 |-------|--------|-----------------|
 | **Discovery** | Customer Research, Competitive Intelligence, Persona Development | Market Hypotheses, Competitive Analysis, Detailed Personas |
 | **Strategy** | Business Strategy, GTM Strategy, Financial Modeling | Lean Canvas, Go-to-Market Plan, Financial Projections |
-| **Delivery** | PRD Generator, Technical Architect, Legal & Regulatory, Risk Assessment | PRD, Architecture, Legal Review, Risk Matrix |
+| **Delivery** | PRD Generator, Technical Architect, Legal & Regulatory, Risk Assessment | PRD with Epics/Stories, Architecture Diagrams, Legal Review, Risk Matrix |
+| **Design** | Wireframe Designer, Prototype Generator | UI Wireframes, Interactive React Prototype |
+| **Quality** | Critique Agent, Claim Extractor | Calibrated Scoring, Evidence-Graded Claims |
 
 **Additional Components:**
 | Component | Agent | Description |
 |-----------|-------|-------------|
 | Research Plan | Planning Agent | Domain classification, competitor list, regulatory focus |
 | Executive Summary | Synthesizer | Decision brief with key decisions requiring executive action |
-| Quality Assessment | Critique Agent | Calibrated scoring with mandatory deductions |
-| Coordination | Facilitator Agent | Contradiction detection, conflict resolution, synthesis |
+| Stakeholder Views | View Generator | CEO, CTO, CFO-specific briefings |
+| Validation Playbook | Experiment Designer | Lean validation experiments by rung |
 
 ---
 
@@ -117,12 +174,18 @@ Enhanced SSE events for granular progress tracking:
 - `diagram` - Architecture diagram ready
 - `citation` - Source citation for claim
 
-### Modern Tech Stack
-- **Backend**: Python 3.11+ / FastAPI / LangGraph / Google Gemini API (Flash + Pro)
-- **Frontend**: React 18 / TypeScript / Vite
-- **Validation**: Pydantic v2 with 60+ strict schemas
-- **Testing**: pytest with 180+ tests (including 73 quality module tests)
-- **Deployment**: Docker / Railway
+### Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| **Backend** | Python 3.11+ / FastAPI / LangGraph |
+| **Frontend** | React 19 / TypeScript / Vite |
+| **LLM** | Google Gemini (Flash 2.0 + Pro 2.5) |
+| **Database** | Supabase PostgreSQL + pgvector |
+| **Auth** | Supabase JWT |
+| **Deployment** | Docker / Railway |
+| **Validation** | Pydantic v2 with 60+ strict schemas |
+| **Testing** | pytest with 200+ tests across unit, integration, and evals |
 
 ---
 
@@ -370,16 +433,35 @@ work offline and sync when connectivity is restored.
 
 ## API Reference
 
-### Endpoints
+### Core Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/discovery/start` | Start a new discovery session |
+| `GET` | `/api/health` | Health check |
+| `POST` | `/api/discovery/start` | Start a new discovery session (V3 full pipeline) |
 | `GET` | `/api/discovery/session/{id}` | Get session status and results |
+| `GET` | `/api/discovery/session/{id}/stream` | SSE stream for real-time updates |
 | `GET` | `/api/discovery/session/{id}/pack` | Get inception pack only |
 | `GET` | `/api/discovery/sessions` | List all active sessions |
 | `DELETE` | `/api/discovery/session/{id}` | Delete a session |
-| `GET` | `/api/health` | Health check |
+| `GET` | `/api/discovery/session/{id}/export/pdf` | Export pack as PDF |
+| `GET` | `/api/discovery/session/{id}/export/docx` | Export pack as DOCX |
+
+### V4 Discovery Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/discovery/v4/sessions` | Create V4 session (authenticated) |
+| `POST` | `/api/discovery/v4/test/sessions` | Create V4 session (test mode) |
+| `GET` | `/api/discovery/v4/test/sessions/{id}` | Get V4 session state |
+| `POST` | `/api/discovery/v4/test/sessions/{id}/stages/{stage}/run` | Run a discovery stage |
+| `POST` | `/api/discovery/v4/test/sessions/{id}/stages/{stage}/approve` | Approve stage output |
+| `POST` | `/api/discovery/v4/test/sessions/{id}/stages/{stage}/skip` | Skip a stage |
+| `PUT` | `/api/discovery/v4/test/sessions/{id}/stages/{stage}/output` | Save edited output |
+| `POST` | `/api/discovery/v4/test/sessions/{id}/interviews` | Add customer interview |
+| `POST` | `/api/discovery/v4/test/sessions/{id}/synthesize` | Synthesize interview patterns |
+| `POST` | `/api/discovery/v4/test/sessions/{id}/continue` | Continue to Strategy & Delivery |
+| `GET` | `/api/discovery/v4/test/sessions/{id}/stream` | SSE stream for V4 lifecycle |
 
 ### Start Discovery Request
 
@@ -474,117 +556,102 @@ For frontend visualization, the following structured data is available:
 ## Project Structure
 
 ```
-seedcraft/
-|
-|-- backend/
-|   |-- main.py                       # FastAPI application entry point
-|   |-- config.py                     # Settings + AGENT_MODEL_CONFIG routing
-|   |-- requirements.txt              # Python dependencies
-|   |-- Dockerfile                    # Backend container config
-|   |-- .env.example                  # Environment variable template
-|   |
-|   |-- agents/
-|   |   |-- orchestrator.py           # LangGraph workflow + parallel execution
-|   |   |-- facilitator.py            # Facilitator Agent (swarm coordination)
-|   |   |-- planner.py                # Planning Agent (domain, competitors, regs)
-|   |   |-- base_agent.py             # call_llm + call_llm_with_memory + self-reflection
-|   |   |-- state.py                  # DiscoveryState with swarm outputs
-|   |   |-- prompts.py                # All prompts with search protocols
-|   |   |-- customer_research.py      # Customer Research [Flash + grounding]
-|   |   |-- business_strategy.py      # Business Strategy [Pro + grounding]
-|   |   |-- legal_regulatory.py       # Legal & Regulatory [Pro + grounding]
-|   |   |-- technical_architect.py    # Technical Architect [Flash]
-|   |   |-- critique.py               # Critique with calibrated scoring [Pro]
-|   |   |-- prd_generator.py          # PRD generation [Flash]
-|   |   |-- prd_critic.py             # PRD quality critic [Pro]
-|   |   |-- prd_formatter.py          # PRD formatting [Flash]
-|   |   |-- prd_subgraph.py           # PRD sub-workflow orchestration
-|   |   |-- context_builder.py        # Evidence-aware context summaries (NEW)
-|   |   |-- constraint_broadcaster.py # Pre-execution constraint generation (NEW)
-|   |   |-- two_stage_reasoning.py    # Research/structure separation (NEW)
-|   |   |-- versioning.py             # Output version tracking (NEW)
-|   |   |-- confidence_calibrator.py  # Evidence-based confidence adjustment (NEW)
-|   |   |-- claim_extractor.py        # Mandatory claim extraction with minimums
-|   |   |-- __init__.py
-|   |   |
-|   |   +-- swarms/                   # Swarm implementations
-|   |       |-- __init__.py           # Swarm exports
-|   |       |-- base.py               # BaseSwarm (parallel execution)
-|   |       |-- discovery_swarm.py    # Customer, Competitive, Persona agents
-|   |       |-- strategy_swarm.py     # Business, GTM, Financial agents
-|   |       +-- delivery_swarm.py     # PRD, Tech, Legal, Risk agents
-|   |
-|   |-- models/
-|   |   |-- schemas.py                # Pydantic models (60+ types)
-|   |   |-- visual_schemas.py         # Chart/visualization data models
-|   |   +-- __init__.py
-|   |
-|   |-- services/                     # Cross-run learning services
-|   |   |-- __init__.py
-|   |   |-- embeddings.py             # Gemini embeddings + similarity search
-|   |   +-- memory_pipeline.py        # Memory storage and retrieval
-|   |
-|   |-- migrations/
-|   |   +-- 002_add_run_memories.sql  # pgvector schema for memories
-|   |
-|   |-- utils/
-|   |   |-- helpers.py                # Session store, sanitization
-|   |   |-- sse.py                    # Enhanced SSE event types
-|   |   +-- __init__.py
-|   |
-|   +-- tests/
-|       |-- unit/
-|       |   |-- test_orchestrator_routing.py  # Targeted revision tests
-|       |   |-- test_planner.py               # Planning agent tests
-|       |   |-- test_visual_schemas.py        # Visual schema validation
-|       |   |-- test_export_formatting.py     # Export formatting tests
-|       |   |-- test_confidence_calibrator.py # Confidence calibration tests
-|       |   |-- test_versioning.py            # Output versioning tests
-|       |   |-- test_two_stage_reasoning.py   # Two-stage reasoning tests
-|       |   |-- test_constraint_broadcaster.py # Constraint generation tests
-|       |   +-- test_critique_retry.py        # Critique retry logic tests (NEW)
-|       +-- integration/
-|           +-- test_export_pipeline.py       # End-to-end export tests
-|
-|-- frontend/
-|   |-- index.html                    # HTML entry point
-|   |-- package.json                  # NPM dependencies
-|   |-- vite.config.ts                # Vite build configuration
-|   |-- tsconfig.json                 # TypeScript configuration
-|   |-- Dockerfile                    # Frontend container config
-|   |
-|   +-- src/
-|       |-- main.tsx                  # React entry point
-|       |-- App.tsx                   # Main app component (state machine)
-|       |-- App.css                   # Full application styles
-|       |
-|       |-- components/
-|       |   |-- LandingPage.tsx       # Landing page with value proposition
-|       |   |-- DiscoveryForm.tsx     # Product idea input form
-|       |   |-- ProgressTracker.tsx   # Real-time agent progress display
-|       |   |-- PackViewer.tsx        # Tabbed results viewer with charts
-|       |   |
-|       |   +-- charts/               # Visualization components
-|       |       |-- index.ts
-|       |       |-- charts.css
-|       |       |-- CompetitivePositionChart.tsx  # Scatter plot
-|       |       |-- FinancialProjectionChart.tsx  # Area chart
-|       |       |-- RiskMatrixChart.tsx           # 5x5 heatmap
-|       |       +-- LeanCanvasVisual.tsx          # Canvas grid
-|       |
-|       |-- api/
-|       |   +-- client.ts            # API client with SSE support
-|       |
-|       +-- types/
-|           +-- api.ts               # TypeScript type definitions
-|
-|-- docs/
-|   |-- logo.svg
-|   +-- seedcraft-evolution-roadmap.md  # Future roadmap
-|
-|-- README.md
-|-- CONTRIBUTING.md
-+-- LICENSE
+seedform/
+├── backend/
+│   ├── main.py                       # FastAPI application entry point
+│   ├── config.py                     # Settings + AGENT_MODEL_CONFIG routing
+│   │
+│   ├── agents/
+│   │   ├── orchestrator.py           # LangGraph workflow + parallel execution
+│   │   ├── facilitator.py            # Facilitator Agent (swarm coordination)
+│   │   ├── planner.py                # Planning Agent
+│   │   ├── customer_research.py      # Customer Research [Flash + grounding]
+│   │   ├── business_strategy.py      # Business Strategy [Pro + grounding]
+│   │   ├── technical_architect.py    # Technical Architect [Flash]
+│   │   ├── legal_regulatory.py       # Legal & Regulatory [Pro + grounding]
+│   │   ├── prd_subgraph.py           # PRD quality loop
+│   │   ├── wireframe_agent.py        # UI wireframes
+│   │   ├── prototype_agent.py        # Interactive prototype
+│   │   ├── critique.py               # Quality scoring [Pro]
+│   │   ├── constraint_broadcaster.py # Constraint validation
+│   │   ├── output_validator.py       # 700+ validation rules
+│   │   │
+│   │   └── discovery_v4/             # V4 Staged Discovery
+│   │       ├── engine.py             # Discovery engine orchestrator
+│   │       └── stages/               # 5 discovery stages
+│   │           ├── problem_love.py
+│   │           ├── customer_truth.py
+│   │           ├── opportunity_mapping.py
+│   │           ├── solution_design.py
+│   │           └── validation_plan.py
+│   │
+│   ├── api/
+│   │   └── discovery_v4_routes.py    # V4 REST endpoints
+│   │
+│   ├── models/
+│   │   ├── schemas.py                # 60+ Pydantic models
+│   │   ├── discovery_v4_schemas.py   # V4 stage schemas
+│   │   └── constraint_schemas.py     # Constraint validation
+│   │
+│   ├── utils/
+│   │   ├── db.py                     # Supabase session store
+│   │   ├── sse.py                    # Server-Sent Events (20+ types)
+│   │   ├── state_pruning.py          # State size management
+│   │   ├── export_pdf.py
+│   │   └── export_docx.py
+│   │
+│   ├── evals/                        # 22 evaluation types
+│   │   ├── cli.py                    # Eval CLI
+│   │   ├── unit/
+│   │   ├── llm_judge/
+│   │   ├── consistency/
+│   │   └── golden/                   # Golden set regression
+│   │
+│   ├── tests/
+│   │   ├── unit/                     # 100+ unit tests
+│   │   │   ├── test_discovery_v4_engine.py
+│   │   │   ├── test_constraint_validation.py
+│   │   │   └── test_state_pruning.py
+│   │   └── integration/              # 82 API tests
+│   │       └── test_api_endpoints.py
+│   │
+│   └── migrations/
+│       ├── 002_add_run_memories.sql
+│       ├── 003_add_discovery_v4_tables.sql
+│       └── 004_add_revision_archive.sql
+│
+├── frontend/
+│   └── src/
+│       ├── App.tsx                   # Main app with V4 routing
+│       ├── styles/theme-v4.css       # Terracotta theme
+│       │
+│       ├── components/v4/            # V4 UI Components
+│       │   ├── LandingPageV4.tsx
+│       │   ├── InputFormV4.tsx
+│       │   ├── ExecutionViewV4.tsx
+│       │   ├── PackViewerV4.tsx
+│       │   ├── JourneyTimeline.tsx   # Unified sidebar
+│       │   │
+│       │   └── discovery/            # V4 Discovery
+│       │       ├── DiscoveryViewV4.tsx
+│       │       ├── StageProgress.tsx
+│       │       ├── CoachingPanel.tsx
+│       │       └── renderers/        # Stage-specific renderers
+│       │           ├── ProblemLoveRenderer.tsx
+│       │           ├── CustomerTruthRenderer.tsx
+│       │           ├── OpportunityMappingRenderer.tsx
+│       │           ├── SolutionDesignRenderer.tsx
+│       │           └── ValidationPlanRenderer.tsx
+│       │
+│       ├── hooks/
+│       │   ├── useAuth.ts            # Supabase auth
+│       │   └── useDiscoveryV4.ts     # V4 session hook
+│       │
+│       └── api/client.ts             # API client with SSE
+│
+├── docs/
+├── CLAUDE.md                         # AI assistant instructions
+└── README.md
 ```
 
 ---
@@ -875,36 +942,37 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Roadmap
 
-See [docs/seedcraft-evolution-roadmap.md](docs/seedcraft-evolution-roadmap.md) for planned features:
+### Completed Phases
 
-- [x] **Phase 1**: Targeted revision, multi-model routing, structured grounding
-- [x] **Phase 2**: Planning Agent, parallel execution, enhanced SSE events
-- [x] **Phase 3**: Visual data schemas and interactive charts (recharts)
-- [x] **Phase 4**: Cross-run learning with embeddings (pgvector + Gemini embeddings)
-- [x] **Phase 5**: Swarm architecture with Facilitator agent and contradiction detection
-- [x] **Phase 6**: Agent Quality Improvement System
-  - Evidence-aware context preservation (E1-E5 markers in summaries)
-  - Pre-execution constraint broadcasting between phases
-  - Two-stage grounded reasoning (research then structure)
-  - Self-reflection pattern for agents
-  - Confidence calibration based on evidence tiers
-  - Structured revision framework with history tracking
-  - Mandatory claim extraction with minimum thresholds
-  - 73 new unit tests for quality modules
+- [x] **Phase 1-5**: Core multi-agent architecture, swarm execution, cross-run learning
+- [x] **Phase 6**: Agent Quality Improvement System (evidence tiers, constraint broadcasting, confidence calibration)
 - [x] **Phase 7**: Critique Resilience & Quality Display
-  - Critique retry mechanism prevents silent quality gate bypass
-  - Configurable `MAX_CRITIQUE_RETRIES` setting (default: 2)
-  - Clear `QUALITY GATE BYPASSED` warnings when retries exhausted
-  - Fixed quality score display to show consistent percentages
-  - 7 new unit tests for critique retry logic
-- [x] **Phase 8**: Comprehensive Eval System (NEW)
-  - 22 evaluations across 5 categories (unit, llm_judge, golden, consistency, agent_specific)
-  - OUTPUT CHECKLIST added to all 16 agent prompts
-  - Pre-output validation with `output_validator.py` (700+ validation rules)
-  - Eval feedback bridge for revision loop integration
-  - Strengthened constraint broadcasting (E4 → E2 evidence tier)
-  - CLI interface: `python -m evals.cli run STATE_PATH`
-  - Agent-specific eval score: 59.3% → 82.2%
+- [x] **Phase 8**: Comprehensive Eval System (22 evals, 700+ validation rules)
+- [x] **Phase 9**: V4 Discovery System
+  - 5-stage guided discovery (Problem Love → Validation Plan)
+  - Three modes: Quick, Guided, Deep
+  - Customer interview integration with AI synthesis
+  - Evidence tier tracking (E1-E5) based on interview count
+  - Stage-specific renderers for rich UI
+- [x] **Phase 10**: Unified Discovery + Execution Experience
+  - Terracotta theme (#c2410c) across all V4 views
+  - Journey progress bar showing full lifecycle
+  - Upcoming phases preview in sidebar
+  - Smooth view transitions with animations
+  - JourneyTimeline unified sidebar component
+- [x] **Phase 11**: Quality & Testing Infrastructure
+  - State pruning for unbounded fields (revision history, errors, claims)
+  - Constraint validation with Pydantic schemas
+  - API integration tests (82 tests)
+  - V4 discovery engine tests (17 tests)
+  - Frontend accessibility improvements (ARIA labels, focus indicators, semantic HTML)
+  - Golden set regression testing framework
+
+### Current Focus
+
+- [ ] End-to-end testing and verification
+- [ ] Performance optimization for large sessions
+- [ ] Mobile-responsive V4 UI improvements
 
 ---
 

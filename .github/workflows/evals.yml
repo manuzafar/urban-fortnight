@@ -120,6 +120,113 @@ jobs:
           PYTHON_SCRIPT
           fi
 
+  golden-set-comparison:
+    name: Golden Set Regression Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('backend/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          pip install -r requirements.txt
+
+      - name: List Golden Sets
+        run: |
+          cd backend
+          echo "## Available Golden Sets" >> $GITHUB_STEP_SUMMARY
+          python -m evals.cli golden list --format json | python3 -c "
+          import json, sys
+          sets = json.load(sys.stdin)
+          print(f'Found {len(sets)} golden sets')
+          for gs in sets:
+              print(f\"- {gs['id']}: {gs['name']} ({gs.get('domain', 'N/A')})\")
+          " >> $GITHUB_STEP_SUMMARY || echo "No golden sets found"
+
+      - name: Run Golden Set Comparison
+        id: golden_compare
+        run: |
+          cd backend
+          LATEST_OUTPUT=$(ls -t test_outputs/e2e_test_*.json 2>/dev/null | head -1)
+          if [ -z "$LATEST_OUTPUT" ]; then
+            echo "No test outputs found, skipping golden set comparison"
+            echo "status=skipped" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Comparing $LATEST_OUTPUT against golden sets..."
+
+          # Run comparison with 40% threshold (allow some variation)
+          python -m evals.cli golden compare "$LATEST_OUTPUT" \
+            --output golden_comparison.json \
+            --threshold 0.4 \
+            --verbose || COMPARE_FAILED=1
+
+          if [ "$COMPARE_FAILED" = "1" ]; then
+            echo "status=regression" >> $GITHUB_OUTPUT
+          else
+            echo "status=passed" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Post Golden Set Results
+        if: always()
+        run: |
+          cd backend
+          if [ -f golden_comparison.json ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "## Golden Set Comparison Results" >> $GITHUB_STEP_SUMMARY
+            python3 << 'PYTHON_SCRIPT' >> $GITHUB_STEP_SUMMARY
+          import json
+          try:
+              with open('golden_comparison.json') as f:
+                  results = json.load(f)
+
+              best_match = results.get('best_match', 'N/A')
+              best_score = results.get('best_score', 0)
+
+              print(f"| Metric | Value |")
+              print(f"|--------|-------|")
+              print(f"| Best Match | {best_match} |")
+              print(f"| Best Score | {best_score:.1%} |")
+              print(f"| Golden Sets Compared | {len(results.get('all_comparisons', {}))} |")
+
+              if best_score < 0.4:
+                  print("")
+                  print("**Warning**: Low similarity to golden sets. Review output quality.")
+          except Exception as e:
+              print(f"Error reading results: {e}")
+          PYTHON_SCRIPT
+          fi
+
+      - name: Upload Golden Set Comparison
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: golden-set-comparison
+          path: backend/golden_comparison.json
+          retention-days: 30
+
+      - name: Fail on Critical Regression
+        if: steps.golden_compare.outputs.status == 'regression'
+        run: |
+          echo "Golden set regression detected! Output quality significantly lower than baselines."
+          echo "Review golden_comparison.json for details."
+          exit 1
+
   eval-tests:
     name: Eval System Tests
     runs-on: ubuntu-latest
@@ -140,4 +247,4 @@ jobs:
       - name: Run Eval Tests
         run: |
           cd backend
-          pytest tests/evals/ -v --tb=short 2>/dev/null || echo "No eval tests found yet"
+          pytest tests/evals/ -v --tb=short

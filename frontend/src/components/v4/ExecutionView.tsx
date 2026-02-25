@@ -2,9 +2,10 @@
  * V4 Execution View Component
  * Real-time agent execution with transparency features
  * Shows unified journey with Discovery as completed phase
+ * Accessible implementation with ARIA live regions and proper semantics
  */
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useId } from 'react';
 import { ArrowLeft, Radio, Clock, AlertCircle, Check } from 'lucide-react';
 import { useSSEV4 } from '../../hooks/useSSEV4';
 import { getInceptionPack } from '../../api/client';
@@ -44,6 +45,22 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
   } = useSSEV4(sessionId, authToken, true, useTestEndpoint);
 
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
+  const [progressAnnouncement, setProgressAnnouncement] = useState('');
+  const progressBarId = useId();
+
+  // Announce progress changes to screen readers (throttled to avoid excessive announcements)
+  useEffect(() => {
+    if (progress > 0 && progress % 25 === 0) {
+      setProgressAnnouncement(`Progress: ${progress}% complete`);
+    }
+    if (isComplete) {
+      setProgressAnnouncement(
+        completionStatus === 'completed'
+          ? 'Inception pack generation complete'
+          : 'Generation failed'
+      );
+    }
+  }, [progress, isComplete, completionStatus]);
 
   // Create completed Discovery stages for JourneyTimeline
   const completedDiscoveryStages: Record<string, DiscoveryStage> = useMemo(() => ({
@@ -120,8 +137,30 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
 
   return (
     <div className="v4-root" style={{ minHeight: '100vh' }}>
+      {/* Screen reader live region for progress announcements */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        style={{
+          position: 'absolute',
+          width: '1px',
+          height: '1px',
+          padding: 0,
+          margin: '-1px',
+          overflow: 'hidden',
+          clip: 'rect(0, 0, 0, 0)',
+          whiteSpace: 'nowrap',
+          border: 0,
+        }}
+      >
+        {progressAnnouncement}
+      </div>
+
       {/* Header */}
       <header
+        role="banner"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -137,6 +176,7 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <button
             onClick={onBack}
+            aria-label="Go back to previous page"
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -150,7 +190,7 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
               cursor: 'pointer',
             }}
           >
-            <ArrowLeft size={16} />
+            <ArrowLeft size={16} aria-hidden="true" />
             Back
           </button>
           <div>
@@ -163,6 +203,8 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
           </div>
           {isConnected && (
             <span
+              role="status"
+              aria-label="Live connection active"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -175,7 +217,7 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
                 color: 'var(--v4-success)',
               }}
             >
-              <Radio size={12} />
+              <Radio size={12} aria-hidden="true" />
               Live
             </span>
           )}
@@ -184,10 +226,21 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
         {/* Journey Progress */}
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '0 24px' }}>
           <div style={{ minWidth: '280px', maxWidth: '400px' }}>
-            <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--v4-text-secondary)', textAlign: 'center', marginBottom: '4px' }}>
+            <div
+              id={`${progressBarId}-label`}
+              style={{ fontSize: '12px', fontWeight: 500, color: 'var(--v4-text-secondary)', textAlign: 'center', marginBottom: '4px' }}
+            >
               Journey: {currentPhase || 'Strategy'} ({journeyProgress}%)
             </div>
-            <div style={{ position: 'relative', height: '6px', background: 'var(--v4-bg)', borderRadius: '3px' }}>
+            <div
+              role="progressbar"
+              aria-labelledby={`${progressBarId}-label`}
+              aria-valuenow={journeyProgress}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuetext={`${journeyProgress}% complete, currently in ${currentPhase || 'Strategy'} phase`}
+              style={{ position: 'relative', height: '6px', background: 'var(--v4-bg)', borderRadius: '3px' }}
+            >
               <div
                 style={{
                   height: '100%',
@@ -198,15 +251,15 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
                 }}
               />
               {/* Phase markers */}
-              <div style={{ position: 'absolute', top: '-3px', left: '0%', transform: 'translateX(-50%)' }}>
+              <div aria-hidden="true" style={{ position: 'absolute', top: '-3px', left: '0%', transform: 'translateX(-50%)' }}>
                 <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--v4-success)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <Check size={8} color="white" />
                 </div>
               </div>
-              <div style={{ position: 'absolute', top: '-3px', left: '20%', transform: 'translateX(-50%)', width: '12px', height: '12px', borderRadius: '50%', background: journeyProgress >= 20 ? 'var(--v4-accent)' : 'var(--v4-surface)', border: '2px solid ' + (journeyProgress >= 20 ? 'var(--v4-accent)' : 'var(--v4-border)') }} />
-              <div style={{ position: 'absolute', top: '-3px', left: '45%', transform: 'translateX(-50%)', width: '12px', height: '12px', borderRadius: '50%', background: journeyProgress >= 45 ? 'var(--v4-accent)' : 'var(--v4-surface)', border: '2px solid ' + (journeyProgress >= 45 ? 'var(--v4-accent)' : 'var(--v4-border)') }} />
-              <div style={{ position: 'absolute', top: '-3px', left: '70%', transform: 'translateX(-50%)', width: '12px', height: '12px', borderRadius: '50%', background: journeyProgress >= 70 ? 'var(--v4-accent)' : 'var(--v4-surface)', border: '2px solid ' + (journeyProgress >= 70 ? 'var(--v4-accent)' : 'var(--v4-border)') }} />
-              <div style={{ position: 'absolute', top: '-3px', left: '90%', transform: 'translateX(-50%)', width: '12px', height: '12px', borderRadius: '50%', background: journeyProgress >= 90 ? 'var(--v4-accent)' : 'var(--v4-surface)', border: '2px solid ' + (journeyProgress >= 90 ? 'var(--v4-accent)' : 'var(--v4-border)') }} />
+              <div aria-hidden="true" style={{ position: 'absolute', top: '-3px', left: '20%', transform: 'translateX(-50%)', width: '12px', height: '12px', borderRadius: '50%', background: journeyProgress >= 20 ? 'var(--v4-accent)' : 'var(--v4-surface)', border: '2px solid ' + (journeyProgress >= 20 ? 'var(--v4-accent)' : 'var(--v4-border)') }} />
+              <div aria-hidden="true" style={{ position: 'absolute', top: '-3px', left: '45%', transform: 'translateX(-50%)', width: '12px', height: '12px', borderRadius: '50%', background: journeyProgress >= 45 ? 'var(--v4-accent)' : 'var(--v4-surface)', border: '2px solid ' + (journeyProgress >= 45 ? 'var(--v4-accent)' : 'var(--v4-border)') }} />
+              <div aria-hidden="true" style={{ position: 'absolute', top: '-3px', left: '70%', transform: 'translateX(-50%)', width: '12px', height: '12px', borderRadius: '50%', background: journeyProgress >= 70 ? 'var(--v4-accent)' : 'var(--v4-surface)', border: '2px solid ' + (journeyProgress >= 70 ? 'var(--v4-accent)' : 'var(--v4-border)') }} />
+              <div aria-hidden="true" style={{ position: 'absolute', top: '-3px', left: '90%', transform: 'translateX(-50%)', width: '12px', height: '12px', borderRadius: '50%', background: journeyProgress >= 90 ? 'var(--v4-accent)' : 'var(--v4-surface)', border: '2px solid ' + (journeyProgress >= 90 ? 'var(--v4-accent)' : 'var(--v4-border)') }} />
             </div>
           </div>
         </div>
@@ -225,6 +278,8 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
       {/* Error Banner */}
       {error && (
         <div
+          role="alert"
+          aria-live="assertive"
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -234,7 +289,7 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
             borderBottom: '1px solid rgba(220, 38, 38, 0.2)',
           }}
         >
-          <AlertCircle size={18} style={{ color: 'var(--v4-error)' }} />
+          <AlertCircle size={18} style={{ color: 'var(--v4-error)' }} aria-hidden="true" />
           <span style={{ fontSize: '14px', color: '#b91c1c' }}>{error}</span>
         </div>
       )}
@@ -249,6 +304,7 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
       >
         {/* Left Sidebar: Journey Timeline */}
         <aside
+          aria-label="Journey timeline"
           style={{
             background: 'var(--v4-surface)',
             borderRight: '1px solid var(--v4-border)',
@@ -267,18 +323,19 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
         </aside>
 
         {/* Main Area */}
-        <main style={{ padding: '24px', overflowY: 'auto' }}>
+        <main aria-label="Execution progress" style={{ padding: '24px', overflowY: 'auto' }}>
           {/* Revision Indicator */}
           {revisionState && (
-            <div style={{ marginBottom: '20px' }}>
+            <section aria-label="Revision status" style={{ marginBottom: '20px' }}>
               <RevisionIndicator state={revisionState} />
-            </div>
+            </section>
           )}
 
           {/* Current Agent Card */}
           {currentAgent && (
-            <div style={{ marginBottom: '24px' }}>
-              <div
+            <section aria-labelledby="current-agent-heading" style={{ marginBottom: '24px' }}>
+              <h2
+                id="current-agent-heading"
                 style={{
                   fontSize: '11px',
                   fontWeight: 600,
@@ -289,7 +346,7 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
                 }}
               >
                 Current Agent
-              </div>
+              </h2>
               <AgentCard
                 name={agentStates[currentAgent]?.displayName || currentAgent}
                 status={agentStates[currentAgent]?.status || 'running'}
@@ -302,13 +359,14 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
                 isExpanded={expandedAgent === currentAgent}
                 onToggle={() => setExpandedAgent(expandedAgent === currentAgent ? null : currentAgent)}
               />
-            </div>
+            </section>
           )}
 
           {/* Key Insights Section */}
           {recentInsights.length > 0 && (
-            <div style={{ marginBottom: '24px' }}>
-              <div
+            <section aria-labelledby="key-insights-heading" style={{ marginBottom: '24px' }}>
+              <h2
+                id="key-insights-heading"
                 style={{
                   fontSize: '11px',
                   fontWeight: 600,
@@ -319,7 +377,7 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
                 }}
               >
                 Key Insights
-              </div>
+              </h2>
               <div
                 style={{
                   background: 'var(--v4-surface)',
@@ -381,19 +439,21 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
           )}
 
           {/* Constraint Flow */}
           {constraintFlow.length > 0 && (
-            <div style={{ marginBottom: '24px' }}>
+            <section aria-label="Constraint flow" style={{ marginBottom: '24px' }}>
               <ConstraintFlow items={constraintFlow} />
-            </div>
+            </section>
           )}
 
           {/* Completion Message */}
           {isComplete && (
-            <div
+            <section
+              role="alert"
+              aria-live="polite"
               style={{
                 padding: '24px',
                 background: completionStatus === 'completed' ? 'var(--v4-success-bg)' : 'var(--v4-error-bg)',
@@ -401,7 +461,7 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
                 textAlign: 'center',
               }}
             >
-              <h3
+              <h2
                 style={{
                   fontSize: '18px',
                   fontWeight: 600,
@@ -410,7 +470,7 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
                 }}
               >
                 {completionStatus === 'completed' ? 'Inception Pack Ready!' : 'Generation Failed'}
-              </h3>
+              </h2>
               <p
                 style={{
                   fontSize: '14px',
@@ -421,7 +481,7 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
                   ? 'Your inception pack has been generated. Loading results...'
                   : 'Something went wrong. Please try again.'}
               </p>
-            </div>
+            </section>
           )}
         </main>
       </div>

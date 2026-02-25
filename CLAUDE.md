@@ -30,14 +30,18 @@ Product LifeCycle/
 │   │   │   ├── v4/              # V4 UI (current)
 │   │   │   │   ├── LandingPageV4.tsx
 │   │   │   │   ├── InputFormV4.tsx
-│   │   │   │   ├── ExecutionViewV4.tsx
+│   │   │   │   ├── ExecutionView.tsx
 │   │   │   │   ├── PackViewerV4.tsx
 │   │   │   │   └── discovery/   # V4 discovery stages
-│   │   │   │       └── DiscoveryViewV4.tsx
+│   │   │   │       ├── DiscoveryViewV4.tsx
+│   │   │   │       └── renderers/  # Stage output renderers
 │   │   │   ├── PackViewer/      # Inception pack viewer
 │   │   │   └── charts/          # Recharts components
 │   │   ├── api/client.ts        # API client
-│   │   ├── hooks/useAuth.ts     # Supabase auth hook
+│   │   ├── hooks/
+│   │   │   ├── useAuth.ts       # Supabase auth hook
+│   │   │   ├── useSSE.ts        # SSE streaming hook
+│   │   │   └── useSSEV4.ts      # V4 SSE streaming
 │   │   └── types/api.ts         # TypeScript types
 │   └── package.json
 │
@@ -45,29 +49,62 @@ Product LifeCycle/
 │   ├── main.py                  # FastAPI app entry
 │   ├── config.py                # Settings & env vars
 │   ├── agents/                  # AI agents (LangGraph)
-│   │   ├── orchestrator.py      # Main workflow
-│   │   ├── state.py             # LangGraph state
+│   │   ├── orchestrator.py      # Main workflow graph
+│   │   ├── state.py             # LangGraph state definition
 │   │   ├── facilitator.py       # Master orchestrator
-│   │   ├── planner.py           # Domain analysis
-│   │   ├── customer_research.py
-│   │   ├── business_strategy.py
-│   │   ├── gtm_agent.py
-│   │   ├── financial_model_agent.py
-│   │   ├── product_requirements.py
-│   │   ├── prd_subgraph.py      # PRD quality loop
-│   │   ├── technical_architect.py
-│   │   ├── legal_regulatory.py
-│   │   ├── wireframe_agent.py
-│   │   ├── prototype_agent.py
-│   │   ├── critique.py          # Quality scoring
+│   │   ├── base_agent.py        # Base agent class
 │   │   ├── prompts.py           # All agent prompts
-│   │   ├── constraint_broadcaster.py
+│   │   │
+│   │   │   # Core Agents
+│   │   ├── planner.py           # Domain analysis
+│   │   ├── customer_research.py # Market research
+│   │   ├── business_strategy.py # Lean Canvas, revenue model
+│   │   ├── gtm_agent.py         # Go-to-market strategy
+│   │   ├── financial_model_agent.py  # Financial projections
+│   │   ├── technical_architect.py    # System design
+│   │   ├── legal_regulatory.py  # Compliance analysis
+│   │   ├── wireframe_agent.py   # UI mockups
+│   │   ├── prototype_agent.py   # Interactive prototype
+│   │   ├── critique.py          # Quality scoring
+│   │   │
+│   │   │   # PRD Agents
+│   │   ├── product_requirements.py  # Requirements generation
+│   │   ├── prd_generator.py     # PRD generation
+│   │   ├── prd_critic.py        # PRD quality check
+│   │   ├── prd_formatter.py     # PRD JSON structuring
+│   │   ├── prd_subgraph.py      # PRD quality loop
+│   │   │
+│   │   │   # Synthesis Agents
+│   │   ├── executive_summary_agent.py  # Decision brief
+│   │   ├── stakeholder_agent.py # Stakeholder views
+│   │   ├── validation_agent.py  # Validation playbook
+│   │   ├── claim_extractor.py   # Evidence extraction
+│   │   │
+│   │   │   # Support Modules
+│   │   ├── constraint_broadcaster.py  # Pre-execution constraints
 │   │   ├── output_validator.py  # 700+ validation rules
+│   │   ├── confidence_calibrator.py   # Evidence-weighted scoring
+│   │   ├── context_builder.py   # Evidence-aware context
+│   │   ├── two_stage_reasoning.py     # Research then structure
+│   │   ├── eval_feedback_bridge.py    # Eval integration
+│   │   │
+│   │   │   # Swarms (Parallel Execution)
+│   │   ├── swarms/
+│   │   │   ├── base.py          # Base swarm class
+│   │   │   ├── discovery_swarm.py   # Customer + competitive research
+│   │   │   ├── strategy_swarm.py    # Business + GTM + financial
+│   │   │   └── delivery_swarm.py    # PRD + tech + legal
+│   │   │
 │   │   └── discovery_v4/        # V4 hybrid discovery
 │   │       ├── engine.py
-│   │       └── stages/
+│   │       └── stages/          # 5 discovery stages
+│   │
+│   ├── services/                # Cross-run learning
+│   │   ├── embeddings.py        # Vector embeddings
+│   │   └── memory_pipeline.py   # Memory augmentation
+│   │
 │   ├── api/
-│   │   └── discovery_v4_routes.py
+│   │   └── discovery_v4_routes.py  # V4 API (30+ endpoints)
 │   ├── models/
 │   │   ├── schemas.py           # 60+ Pydantic models
 │   │   └── discovery_v4_schemas.py
@@ -81,10 +118,10 @@ Product LifeCycle/
 │   │   ├── unit/
 │   │   ├── llm_judge/
 │   │   ├── consistency/
-│   │   └── agents/              # 16 agent-specific evals
+│   │   └── agents/              # Agent-specific evals
 │   ├── tests/
-│   │   ├── unit/                # 73+ unit tests
-│   │   └── integration/
+│   │   ├── unit/                # Unit tests
+│   │   └── integration/         # Integration tests
 │   └── migrations/
 │       ├── 002_add_run_memories.sql
 │       └── 003_add_discovery_v4_tables.sql
@@ -132,26 +169,47 @@ SYNTHESIS PHASE
 END
 ```
 
-### Agent List (16 total)
+### Agent List (20+ Specialized Agents)
 
+#### Core Agents
 | Agent | File | Purpose |
 |-------|------|---------|
-| Planner | `planner.py` | Domain analysis, competitor ID |
-| Customer Research | `customer_research.py` | Market analysis |
-| Competitive Intel | `customer_research.py` | Competitor profiles |
-| Persona | `customer_research.py` | User personas |
-| Business Strategy | `business_strategy.py` | Lean Canvas |
-| GTM | `gtm_agent.py` | Go-to-market |
-| Financial Model | `financial_model_agent.py` | Projections |
-| PRD Generator | `prd_generator.py` | Requirements |
-| PRD Critic | `prd_critic.py` | Quality check |
-| PRD Formatter | `prd_formatter.py` | Structuring |
-| Tech Architect | `technical_architect.py` | System design |
-| Legal/Regulatory | `legal_regulatory.py` | Compliance |
-| Wireframe | `wireframe_agent.py` | UI mockups |
-| Prototype | `prototype_agent.py` | Interactive code |
-| Critique | `critique.py` | Cross-validation |
-| Facilitator | `facilitator.py` | Orchestration |
+| Planner | `planner.py` | Domain classification, competitor ID, regulatory scope |
+| Customer Research | `customer_research.py` | Market size, pain points, positioning |
+| Business Strategy | `business_strategy.py` | Lean Canvas, revenue model, value proposition |
+| GTM Strategy | `gtm_agent.py` | Go-to-market, launch phases, pricing |
+| Financial Model | `financial_model_agent.py` | Revenue projections, unit economics |
+| Technical Architect | `technical_architect.py` | System design, Mermaid diagrams |
+| Legal/Regulatory | `legal_regulatory.py` | Compliance analysis, regulatory risks |
+| Wireframe Designer | `wireframe_agent.py` | UI/UX mockups, screen flows |
+| Prototype Generator | `prototype_agent.py` | Interactive HTML/CSS prototype |
+
+#### PRD Agents (Sub-workflow)
+| Agent | File | Purpose |
+|-------|------|---------|
+| PRD Generator | `prd_generator.py` | Epic and story generation |
+| PRD Critic | `prd_critic.py` | Quality scoring, gap identification |
+| PRD Formatter | `prd_formatter.py` | JSON structuring, schema compliance |
+| Product Requirements | `product_requirements.py` | Requirements orchestration |
+
+#### Synthesis Agents
+| Agent | File | Purpose |
+|-------|------|---------|
+| Executive Summary | `executive_summary_agent.py` | Decision brief, go/no-go recommendation |
+| Stakeholder Views | `stakeholder_agent.py` | Role-specific briefings (CEO, CTO, etc.) |
+| Validation Playbook | `validation_agent.py` | Experiment design, hypothesis testing |
+| Claim Extractor | `claim_extractor.py` | Evidence extraction with E1-E5 tiers |
+| Critique | `critique.py` | Cross-validation, calibrated scoring |
+| Facilitator | `facilitator.py` | Master orchestration, constraint routing |
+
+#### Support Modules
+| Module | File | Purpose |
+|--------|------|---------|
+| Constraint Broadcaster | `constraint_broadcaster.py` | Pre-execution constraints between phases |
+| Output Validator | `output_validator.py` | 700+ validation rules, placeholder detection |
+| Confidence Calibrator | `confidence_calibrator.py` | Evidence-weighted confidence scoring |
+| Context Builder | `context_builder.py` | Evidence-aware context for agents |
+| Two-Stage Reasoning | `two_stage_reasoning.py` | Research then structure pattern |
 
 ## API Endpoints
 
@@ -165,12 +223,44 @@ GET    /api/discovery/sessions                  # List sessions
 DELETE /api/discovery/session/{id}              # Delete session
 ```
 
-### Discovery V4 (Staged/Hybrid)
+### Discovery V4 (Staged/Hybrid) - 30+ Endpoints
 
+#### Test Mode (No Auth Required)
 ```
-POST   /api/discovery/v4/test/sessions                           # Create V4 session
-GET    /api/discovery/v4/test/sessions/{id}                      # Get session state
-POST   /api/discovery/v4/test/sessions/{id}/stages/{stage}/run   # Run stage
+POST   /api/discovery/v4/test/sessions                              # Create test session
+GET    /api/discovery/v4/test/sessions/{id}                         # Get session state
+POST   /api/discovery/v4/test/sessions/{id}/stages/{stage}/run      # Run stage
+POST   /api/discovery/v4/test/sessions/{id}/stages/{stage}/approve  # Approve stage
+POST   /api/discovery/v4/test/sessions/{id}/stages/{stage}/skip     # Skip stage
+PUT    /api/discovery/v4/test/sessions/{id}/stages/{stage}/output   # Update stage output
+GET    /api/discovery/v4/test/sessions/{id}/stream                  # SSE stream
+POST   /api/discovery/v4/test/sessions/{id}/interviews              # Add interview
+POST   /api/discovery/v4/test/sessions/{id}/interviews/synthesize   # Synthesize interviews
+POST   /api/discovery/v4/test/sessions/{id}/continue-to-strategy    # Continue to execution
+GET    /api/discovery/v4/test/sessions/{id}/lifecycle-check         # Check lifecycle status
+POST   /api/discovery/v4/test/sessions/{id}/run-lifecycle-sync      # Run full lifecycle
+```
+
+#### Authenticated Mode
+```
+POST   /api/discovery/v4/sessions                              # Create session
+GET    /api/discovery/v4/sessions/{id}                         # Get session
+GET    /api/discovery/v4/sessions/{id}/status                  # Get status
+GET    /api/discovery/v4/sessions                              # List sessions
+POST   /api/discovery/v4/sessions/{id}/stages/{stage}/run      # Run stage
+POST   /api/discovery/v4/sessions/{id}/stages/{stage}/ai-assist # AI assistance
+PUT    /api/discovery/v4/sessions/{id}/stages/{stage}/output   # Update output
+POST   /api/discovery/v4/sessions/{id}/stages/{stage}/approve  # Approve stage
+POST   /api/discovery/v4/sessions/{id}/stages/{stage}/skip     # Skip stage
+POST   /api/discovery/v4/sessions/{id}/interviews              # Add interview
+GET    /api/discovery/v4/sessions/{id}/interviews              # List interviews
+PUT    /api/discovery/v4/sessions/{id}/interviews/{iid}        # Update interview
+DELETE /api/discovery/v4/sessions/{id}/interviews/{iid}        # Delete interview
+POST   /api/discovery/v4/sessions/{id}/interviews/synthesize   # Synthesize
+GET    /api/discovery/v4/sessions/{id}/interview-guide         # Get guide
+POST   /api/discovery/v4/sessions/{id}/tarpit-check            # Check tarpit
+POST   /api/discovery/v4/sessions/{id}/four-forces             # Four forces analysis
+POST   /api/discovery/v4/sessions/{id}/opportunity-tree        # Opportunity tree
 ```
 
 ### Export
@@ -298,6 +388,37 @@ FOUNDER_EMAIL=
 # CORS
 CORS_ORIGINS=http://localhost:3000,http://localhost:5173
 ```
+
+## Swarm Architecture
+
+Parallel agent execution groups for improved performance:
+
+### Discovery Swarm
+- Customer Research Agent
+- Competitive Intelligence
+- Persona Development
+- Executes in parallel, results merged via state reducers
+
+### Strategy Swarm
+- Business Strategy Agent
+- GTM Strategy Agent
+- Financial Model Agent
+- Parallel execution, ~30-40% latency reduction
+
+### Delivery Swarm
+- PRD Generator/Critic/Formatter
+- Technical Architect
+- Legal/Regulatory
+- Risk Assessment
+- Parallel with dependency ordering
+
+## Services Layer
+
+### Memory Augmentation
+- `services/embeddings.py` - Vector embeddings for similarity search
+- `services/memory_pipeline.py` - Cross-run learning from past sessions
+- Uses pgvector for efficient similarity queries
+- Retrieves relevant past insights before agent execution
 
 ## Quality System
 

@@ -38,6 +38,12 @@ from agents.technical_architect import run_technical_architect_agent
 from agents.legal_regulatory import run_legal_regulatory_agent, run_legal_preliminary_scan
 from config import settings
 from models.schemas import ExecutiveSummary, SessionStatus
+from utils.state_pruning import (
+    prune_state,
+    get_state_size,
+    PruningConfig,
+    default_pruning_config,
+)
 
 if TYPE_CHECKING:
     from utils.sse import SessionEventEmitter
@@ -732,6 +738,7 @@ async def prepare_revision_node(state: DiscoveryState) -> DiscoveryState:
     - Increments the iteration counter
     - Clears outputs from the failing agent onwards (targeted revision)
     - Preserves outputs from earlier agents that passed
+    - Prunes unbounded state fields to manage memory
     - Logs the revision event
 
     Args:
@@ -774,6 +781,9 @@ async def prepare_revision_node(state: DiscoveryState) -> DiscoveryState:
     agents_to_clear = agent_order[start_index:]
     agents_preserved = agent_order[:start_index]
 
+    # Log state size before pruning
+    size_before = get_state_size(state)
+
     logger.info(
         "revision_started",
         session_id=state["session_id"],
@@ -783,6 +793,7 @@ async def prepare_revision_node(state: DiscoveryState) -> DiscoveryState:
         target_agent=target_agent,
         agents_to_clear=agents_to_clear,
         agents_preserved=agents_preserved,
+        state_size_before=size_before,
     )
 
     # Increment iteration
@@ -799,6 +810,25 @@ async def prepare_revision_node(state: DiscoveryState) -> DiscoveryState:
     # Keep quality_assessment for reference
     # Keep critique_feedback for agents to use
 
+    # Prune unbounded state fields after revision loop
+    pruning_config = PruningConfig.from_settings()
+    if pruning_config.prune_after_revision:
+        state = await prune_state(
+            state,
+            max_revision_history=pruning_config.max_revision_history,
+            max_errors=pruning_config.max_errors,
+            max_claims=pruning_config.max_claims,
+            archive_revisions=pruning_config.archive_revisions,
+        )
+
+        size_after = get_state_size(state)
+        logger.info(
+            "revision_state_pruned",
+            session_id=state["session_id"],
+            size_before=size_before,
+            size_after=size_after,
+        )
+
     return state
 
 
@@ -806,8 +836,9 @@ async def finalize_node(state: DiscoveryState) -> DiscoveryState:
     """
     Finalize the workflow and mark as completed.
 
-    Also stores high-quality outputs as memories for future runs
-    (cross-run learning).
+    Also:
+    - Prunes unbounded state fields to reduce storage size
+    - Stores high-quality outputs as memories for future runs (cross-run learning)
 
     Args:
         state: Current workflow state.
@@ -821,6 +852,9 @@ async def finalize_node(state: DiscoveryState) -> DiscoveryState:
 
     quality_score = (state.get("quality_assessment") or {}).get("overall_score")
 
+    # Log state size before finalization
+    size_before = get_state_size(state)
+
     logger.info(
         "workflow_completed",
         session_id=state["session_id"],
@@ -829,7 +863,28 @@ async def finalize_node(state: DiscoveryState) -> DiscoveryState:
         total_duration=round(state.get("total_duration_seconds", 0), 2),
         quality_score=quality_score,
         quality_passed=state.get("quality_passed", False),
+        state_size_before_finalize=size_before,
     )
+
+    # Prune unbounded state fields before final storage
+    pruning_config = PruningConfig.from_settings()
+    if pruning_config.prune_on_finalize:
+        state = await prune_state(
+            state,
+            max_revision_history=pruning_config.max_revision_history,
+            max_errors=pruning_config.max_errors,
+            max_claims=pruning_config.max_claims,
+            archive_revisions=pruning_config.archive_revisions,
+        )
+
+        size_after = get_state_size(state)
+        logger.info(
+            "finalize_state_pruned",
+            session_id=state["session_id"],
+            size_before=size_before,
+            size_after=size_after,
+            reduction_bytes=size_before - size_after,
+        )
 
     # Store memories for cross-run learning (non-blocking)
     try:

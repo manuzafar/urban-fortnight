@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { AlertCircle, LogOut, History } from 'lucide-react';
+import { AlertCircle, LogOut, History, WifiOff, X } from 'lucide-react';
 import { useAuth } from './hooks/useAuth';
 import { LandingPage } from './components/LandingPage';
 import { DiscoveryForm } from './components/DiscoveryForm';
@@ -9,6 +9,7 @@ import { SessionHistory } from './components/SessionHistory';
 import { Dashboard } from './components/Dashboard';
 import { ExecutionView } from './components/ExecutionView';
 import { PackViewer } from './components/PackViewer';
+import { ErrorBoundary } from './components/ErrorBoundary';
 // V4 Components
 import { LandingPageV4, InputFormV4, ExecutionViewV4, PackViewerV4, DiscoveryViewV4 } from './components/v4';
 import {
@@ -19,6 +20,7 @@ import {
   setAuthToken,
   ApiError,
 } from './api/client';
+import { formatErrorMessage, onNetworkStatusChange, isOffline } from './utils/errorHandling';
 import type { DiscoveryRequest, SessionStatusResponse, InceptionPack } from './types/api';
 import './App.css';
 import './styles/theme-v4.css';
@@ -42,6 +44,19 @@ function App() {
   const [_discoveryMode, setDiscoveryMode] = useState<DiscoveryMode>('quick');
   // Track if current session is a V4 test session (uses test stream endpoint)
   const [isV4TestSession, setIsV4TestSession] = useState<boolean>(false);
+  // Track network offline status for global banner
+  const [isNetworkOffline, setIsNetworkOffline] = useState<boolean>(isOffline());
+
+  // Listen for network status changes
+  useEffect(() => {
+    const cleanup = onNetworkStatusChange((online) => {
+      setIsNetworkOffline(!online);
+      if (online && error?.includes('offline')) {
+        setError(null);
+      }
+    });
+    return cleanup;
+  }, [error]);
 
   // Sync auth token to API client whenever session changes
   useEffect(() => {
@@ -124,9 +139,9 @@ function App() {
           await signInWithGoogle();
           return;
         }
-        setError(err.message);
+        setError(formatErrorMessage(err));
       } else {
-        setError('Failed to start discovery. Please try again.');
+        setError(formatErrorMessage(err));
       }
     } finally {
       setIsLoading(false);
@@ -169,9 +184,9 @@ function App() {
           await signInWithGoogle();
           return;
         }
-        setError(err.message);
+        setError(formatErrorMessage(err));
       } else {
-        setError('Failed to start discovery. Please try again.');
+        setError(formatErrorMessage(err));
       }
     } finally {
       setIsLoading(false);
@@ -272,68 +287,96 @@ function App() {
     // For V4 test sessions, allow without auth (useTestEndpoint handles this)
     if (appState === 'execution' && currentSessionId && (session?.access_token || isV4TestSession)) {
       return (
-        <div className="v4-view-transition">
-          <ExecutionViewV4
-            sessionId={currentSessionId}
-            authToken={session?.access_token || ''}
-            onComplete={handleExecutionComplete}
-            onBack={handleBackToDashboard}
-            useTestEndpoint={isV4TestSession}
-          />
-          <style>{`
-            .v4-view-transition {
-              animation: v4-fade-in 0.3s ease-out;
-            }
-            @keyframes v4-fade-in {
-              from { opacity: 0; transform: translateY(10px); }
-              to { opacity: 1; transform: translateY(0); }
-            }
-          `}</style>
-        </div>
+        <ErrorBoundary
+          componentName="ExecutionViewV4"
+          onGoHome={handleNewDiscovery}
+          onRetry={() => {
+            // Re-render the execution view
+            setAppState('landing');
+            setTimeout(() => setAppState('execution'), 0);
+          }}
+        >
+          <div className="v4-view-transition">
+            <ExecutionViewV4
+              sessionId={currentSessionId}
+              authToken={session?.access_token || ''}
+              onComplete={handleExecutionComplete}
+              onBack={handleBackToDashboard}
+              useTestEndpoint={isV4TestSession}
+            />
+            <style>{`
+              .v4-view-transition {
+                animation: v4-fade-in 0.3s ease-out;
+              }
+              @keyframes v4-fade-in {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+              }
+            `}</style>
+          </div>
+        </ErrorBoundary>
       );
     }
 
     // V4 Pack Viewer
     if (appState === 'pack' && inceptionPack && currentSessionId) {
       return (
-        <PackViewerV4
-          pack={inceptionPack}
-          sessionId={currentSessionId}
-          onBack={handleBackToDashboard}
-        />
+        <ErrorBoundary
+          componentName="PackViewerV4"
+          onGoHome={handleNewDiscovery}
+          onRetry={() => {
+            setAppState('landing');
+            setTimeout(() => setAppState('pack'), 0);
+          }}
+        >
+          <PackViewerV4
+            pack={inceptionPack}
+            sessionId={currentSessionId}
+            onBack={handleBackToDashboard}
+          />
+        </ErrorBoundary>
       );
     }
 
     // V4 Discovery View (Hybrid Discovery)
     if (appState === 'discovery-v4' && currentSessionId) {
       return (
-        <div className="v4-view-transition">
-          <DiscoveryViewV4
-            sessionId={currentSessionId}
-            onBack={handleBackToDashboard}
-            onComplete={(pack) => {
-              setInceptionPack(pack as unknown as InceptionPack);
-              setAppState('pack');
-            }}
-            onContinueToExecution={(sessionId) => {
-              // Transition to ExecutionView which handles SSE streaming
-              // for the full lifecycle (Strategy, Delivery, Design phases)
-              // Mark as V4 test session so it uses the test stream endpoint
-              setCurrentSessionId(sessionId);
-              setIsV4TestSession(true);
-              setAppState('execution');
-            }}
-          />
-          <style>{`
-            .v4-view-transition {
-              animation: v4-fade-in 0.3s ease-out;
-            }
-            @keyframes v4-fade-in {
-              from { opacity: 0; transform: translateY(10px); }
-              to { opacity: 1; transform: translateY(0); }
-            }
-          `}</style>
-        </div>
+        <ErrorBoundary
+          componentName="DiscoveryViewV4"
+          onGoHome={handleNewDiscovery}
+          onRetry={() => {
+            setAppState('landing');
+            setTimeout(() => setAppState('discovery-v4'), 0);
+          }}
+        >
+          <div className="v4-view-transition">
+            <DiscoveryViewV4
+              sessionId={currentSessionId}
+              onBack={handleBackToDashboard}
+              onComplete={(pack) => {
+                setInceptionPack(pack as unknown as InceptionPack);
+                setAppState('pack');
+              }}
+              onContinueToExecution={(sessionId) => {
+                // Transition to ExecutionView which handles SSE streaming
+                // for the full lifecycle (Strategy, Delivery, Design phases)
+                // Mark as V4 test session so it uses the test stream endpoint
+                setCurrentSessionId(sessionId);
+                setIsV4TestSession(true);
+                setAppState('execution');
+              }}
+            />
+            <style>{`
+              .v4-view-transition {
+                animation: v4-fade-in 0.3s ease-out;
+              }
+              @keyframes v4-fade-in {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+              }
+            `}</style>
+          </div>
+        </ErrorBoundary>
       );
     }
 
@@ -403,13 +446,23 @@ function App() {
         </header>
       )}
 
+      {/* Network Offline Banner */}
+      {isNetworkOffline && (
+        <div className="offline-banner">
+          <WifiOff size={16} />
+          <span>You are offline. Some features may not work.</span>
+        </div>
+      )}
+
       {/* Main content area */}
       <main className="app-main">
         {error && (
           <div className="error-toast">
             <AlertCircle size={18} />
             <p>{error}</p>
-            <button onClick={() => setError(null)}>×</button>
+            <button onClick={() => setError(null)} aria-label="Dismiss error">
+              <X size={16} />
+            </button>
           </div>
         )}
 
@@ -434,12 +487,17 @@ function App() {
         )}
 
         {appState === 'execution' && currentSessionId && session?.access_token && (
-          <ExecutionView
-            sessionId={currentSessionId}
-            authToken={session.access_token}
-            onComplete={handleExecutionComplete}
-            onBack={handleBackToDashboard}
-          />
+          <ErrorBoundary
+            componentName="ExecutionView"
+            onGoHome={handleNewDiscovery}
+          >
+            <ExecutionView
+              sessionId={currentSessionId}
+              authToken={session.access_token}
+              onComplete={handleExecutionComplete}
+              onBack={handleBackToDashboard}
+            />
+          </ErrorBoundary>
         )}
 
         {appState === 'sessions' && (
@@ -451,11 +509,16 @@ function App() {
         )}
 
         {appState === 'pack' && inceptionPack && currentSessionId && (
-          <PackViewer
-            pack={inceptionPack}
-            sessionId={currentSessionId}
-            onBack={handleBackToDashboard}
-          />
+          <ErrorBoundary
+            componentName="PackViewer"
+            onGoHome={handleNewDiscovery}
+          >
+            <PackViewer
+              pack={inceptionPack}
+              sessionId={currentSessionId}
+              onBack={handleBackToDashboard}
+            />
+          </ErrorBoundary>
         )}
       </main>
 

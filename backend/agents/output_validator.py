@@ -827,3 +827,440 @@ Key fields that need fixing: {', '.join(e.replace('FAILED: ', '') for e in valid
 
 Please regenerate the complete output, ensuring all mandatory fields are present and properly formatted.
 """
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSTRAINT VALIDATION
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@dataclass
+class ConstraintValidationResult:
+    """Result of constraint validation."""
+    valid: bool
+    violations: list[dict[str, Any]]
+    critical_count: int
+    warning_count: int
+    details: str
+
+    def should_trigger_revision(self) -> bool:
+        """Check if violations are severe enough to trigger revision."""
+        return self.critical_count > 0
+
+
+def _normalize_value(value: Any) -> str:
+    """Normalize a value for comparison."""
+    if value is None:
+        return ""
+    return str(value).lower().strip()
+
+
+def _extract_numeric(value: Any) -> float | None:
+    """Extract numeric value from string or number."""
+    import re
+    if value is None:
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+
+    val_str = str(value).lower().replace(",", "").replace("$", "")
+    multipliers = {"k": 1e3, "m": 1e6, "b": 1e9, "t": 1e12}
+
+    match = re.search(r"(\d+(?:\.\d+)?)\s*(k|m|b|t|billion|million|thousand|trillion)?", val_str)
+    if match:
+        num = float(match.group(1))
+        mult = match.group(2) or ""
+        if mult.startswith("b"):
+            num *= 1e9
+        elif mult.startswith("m"):
+            num *= 1e6
+        elif mult.startswith("t"):
+            if "thousand" in mult:
+                num *= 1e3
+            else:
+                num *= 1e12
+        elif mult.startswith("k"):
+            num *= 1e3
+        elif mult in multipliers:
+            num *= multipliers[mult]
+        return num
+    return None
+
+
+def _deep_search_value(data: Any, target_field: str) -> Any:
+    """
+    Search for a field value in a nested dictionary structure.
+
+    Args:
+        data: The dictionary or value to search
+        target_field: The field name to find
+
+    Returns:
+        The field value if found, None otherwise
+    """
+    if not isinstance(data, dict):
+        return None
+
+    # Direct match
+    if target_field in data:
+        return data[target_field]
+
+    # Search nested dicts
+    for key, value in data.items():
+        if isinstance(value, dict):
+            result = _deep_search_value(value, target_field)
+            if result is not None:
+                return result
+        elif isinstance(value, list):
+            for item in value:
+                if isinstance(item, dict):
+                    result = _deep_search_value(item, target_field)
+                    if result is not None:
+                        return result
+
+    return None
+
+
+def _value_contains_reference(output: dict, target_value: str) -> bool:
+    """Check if the target value is referenced anywhere in the output."""
+    output_str = str(output).lower()
+    target_lower = target_value.lower()
+
+    # Check for exact substring
+    if target_lower in output_str:
+        return True
+
+    # Check for key terms from the value
+    terms = [t.strip() for t in target_lower.replace(",", " ").split() if len(t.strip()) > 3]
+    if terms:
+        matches = sum(1 for term in terms if term in output_str)
+        # At least 50% of significant terms should match
+        return matches >= len(terms) * 0.5
+
+    return False
+
+
+def _check_must_use_constraint(
+    output: dict[str, Any],
+    constraint: dict[str, Any],
+) -> dict[str, Any] | None:
+    """
+    Check a must_use constraint.
+
+    Must_use constraints require the exact value to be present in the output.
+
+    Args:
+        output: The agent output dictionary
+        constraint: The constraint to check
+
+    Returns:
+        Violation dict if constraint is violated, None otherwise
+    """
+    field = constraint.get("field", "")
+    expected = constraint.get("value")
+
+    # Try to find the field value
+    actual = _safe_get(output, field)
+    if actual is None:
+        actual = _deep_search_value(output, field)
+
+    if actual is None:
+        return {
+            "field": field,
+            "constraint_type": "must_use",
+            "expected": expected,
+            "actual": "NOT FOUND",
+            "severity": "critical",
+            "source_section": constraint.get("source_section"),
+            "message": f"Required field '{field}' with value '{expected}' not found in output",
+        }
+
+    # Compare values (case-insensitive for strings)
+    expected_norm = _normalize_value(expected)
+    actual_norm = _normalize_value(actual)
+
+    # Exact match or value contained
+    if expected_norm == actual_norm or expected_norm in actual_norm:
+        return None
+
+    # For numeric values, check if within 10% tolerance
+    expected_num = _extract_numeric(expected)
+    actual_num = _extract_numeric(actual)
+    if expected_num is not None and actual_num is not None:
+        if abs(expected_num - actual_num) / max(expected_num, actual_num, 1) <= 0.1:
+            return None
+
+    return {
+        "field": field,
+        "constraint_type": "must_use",
+        "expected": expected,
+        "actual": actual,
+        "severity": "warning",  # Downgrade if value exists but differs
+        "source_section": constraint.get("source_section"),
+        "message": f"Field '{field}' has value '{actual}' but expected '{expected}'",
+    }
+
+
+def _check_must_align_constraint(
+    output: dict[str, Any],
+    constraint: dict[str, Any],
+) -> dict[str, Any] | None:
+    """
+    Check a must_align constraint.
+
+    Must_align constraints require the output to be directionally consistent
+    with the constraint value.
+
+    Args:
+        output: The agent output dictionary
+        constraint: The constraint to check
+
+    Returns:
+        Violation dict if constraint is violated, None otherwise
+    """
+    field = constraint.get("field", "")
+    expected = constraint.get("value")
+
+    # For must_align, we check if the value is referenced or consistent
+    actual = _safe_get(output, field)
+    if actual is None:
+        actual = _deep_search_value(output, field)
+
+    # If field exists and contains reference to expected value, it aligns
+    if actual is not None:
+        expected_norm = _normalize_value(expected)
+        actual_norm = _normalize_value(actual)
+
+        # Check for overlap in content
+        if expected_norm in actual_norm or actual_norm in expected_norm:
+            return None
+
+        # Check for key term overlap
+        expected_terms = set(expected_norm.split())
+        actual_terms = set(actual_norm.split())
+        if expected_terms & actual_terms:  # Any common terms
+            return None
+
+    # Check if the value is referenced elsewhere in output
+    if _value_contains_reference(output, str(expected)):
+        return None
+
+    return {
+        "field": field,
+        "constraint_type": "must_align",
+        "expected": expected,
+        "actual": actual if actual else "NOT REFERENCED",
+        "severity": "warning",
+        "source_section": constraint.get("source_section"),
+        "message": f"Output does not align with '{field}' constraint value '{expected}'",
+    }
+
+
+def _check_must_reference_constraint(
+    output: dict[str, Any],
+    constraint: dict[str, Any],
+) -> dict[str, Any] | None:
+    """
+    Check a must_reference constraint.
+
+    Must_reference constraints require the constraint value to be cited
+    or referenced somewhere in the output.
+
+    Args:
+        output: The agent output dictionary
+        constraint: The constraint to check
+
+    Returns:
+        Violation dict if constraint is violated, None otherwise
+    """
+    field = constraint.get("field", "")
+    expected = constraint.get("value")
+
+    # Check if value is referenced anywhere in output
+    if _value_contains_reference(output, str(expected)):
+        return None
+
+    return {
+        "field": field,
+        "constraint_type": "must_reference",
+        "expected": expected,
+        "actual": "NOT REFERENCED",
+        "severity": "warning",
+        "source_section": constraint.get("source_section"),
+        "message": f"Output does not reference '{field}' value '{expected}'",
+    }
+
+
+def _check_must_not_exceed_constraint(
+    output: dict[str, Any],
+    constraint: dict[str, Any],
+) -> dict[str, Any] | None:
+    """
+    Check a must_not_exceed constraint.
+
+    Must_not_exceed constraints set an upper bound on numeric values.
+
+    Args:
+        output: The agent output dictionary
+        constraint: The constraint to check
+
+    Returns:
+        Violation dict if constraint is violated, None otherwise
+    """
+    field = constraint.get("field", "")
+    limit = constraint.get("value")
+
+    # Find the field value
+    actual = _safe_get(output, field)
+    if actual is None:
+        actual = _deep_search_value(output, field)
+
+    if actual is None:
+        # Field not found - not a violation for must_not_exceed
+        return None
+
+    # Extract numeric values
+    limit_num = _extract_numeric(limit)
+    actual_num = _extract_numeric(actual)
+
+    if limit_num is None or actual_num is None:
+        # Cannot compare non-numeric values
+        return None
+
+    if actual_num > limit_num:
+        return {
+            "field": field,
+            "constraint_type": "must_not_exceed",
+            "expected": f"<= {limit}",
+            "actual": actual,
+            "severity": "critical",
+            "source_section": constraint.get("source_section"),
+            "message": f"Field '{field}' value '{actual}' exceeds limit '{limit}'",
+        }
+
+    return None
+
+
+def validate_against_constraints(
+    output: dict[str, Any],
+    constraints: list[dict[str, Any]],
+) -> ConstraintValidationResult:
+    """
+    Validate an agent's output against execution constraints.
+
+    This function checks that agent output respects constraints generated
+    by the constraint broadcaster from upstream agent outputs.
+
+    Args:
+        output: The agent's output dictionary
+        constraints: List of constraint dictionaries with fields:
+            - field: The field being constrained
+            - value: The constraint value
+            - constraint_type: One of "must_use", "must_align",
+              "must_reference", "must_not_exceed"
+            - source_section: Where the constraint came from
+
+    Returns:
+        ConstraintValidationResult with validation status and violations
+    """
+    violations = []
+
+    for constraint in constraints:
+        constraint_type = constraint.get("constraint_type", "")
+        violation = None
+
+        if constraint_type == "must_use":
+            violation = _check_must_use_constraint(output, constraint)
+        elif constraint_type == "must_align":
+            violation = _check_must_align_constraint(output, constraint)
+        elif constraint_type == "must_reference":
+            violation = _check_must_reference_constraint(output, constraint)
+        elif constraint_type == "must_not_exceed":
+            violation = _check_must_not_exceed_constraint(output, constraint)
+
+        if violation:
+            violations.append(violation)
+
+    # Count by severity
+    critical_count = sum(1 for v in violations if v.get("severity") == "critical")
+    warning_count = sum(1 for v in violations if v.get("severity") == "warning")
+
+    # Generate details string
+    if violations:
+        details_lines = ["Constraint violations detected:"]
+        for v in violations:
+            details_lines.append(
+                f"  - [{v['severity'].upper()}] {v['constraint_type']}: {v['message']}"
+            )
+        details = "\n".join(details_lines)
+    else:
+        details = "All constraints satisfied"
+
+    logger.info(
+        "constraint_validation_complete",
+        constraint_count=len(constraints),
+        violation_count=len(violations),
+        critical_count=critical_count,
+        warning_count=warning_count,
+    )
+
+    return ConstraintValidationResult(
+        valid=len(violations) == 0,
+        violations=violations,
+        critical_count=critical_count,
+        warning_count=warning_count,
+        details=details,
+    )
+
+
+def get_constraint_violation_fix_instructions(
+    violations: list[dict[str, Any]],
+) -> str:
+    """
+    Generate fix instructions for constraint violations.
+
+    Args:
+        violations: List of constraint violation dictionaries
+
+    Returns:
+        Formatted string with fix instructions
+    """
+    if not violations:
+        return ""
+
+    instructions = [
+        "## CONSTRAINT VIOLATIONS - MUST FIX",
+        "",
+        "Your output violated the following constraints from upstream agents.",
+        "These must be corrected to maintain consistency across the discovery pack.",
+        "",
+    ]
+
+    # Group by constraint type
+    by_type: dict[str, list] = {}
+    for v in violations:
+        ct = v.get("constraint_type", "unknown")
+        if ct not in by_type:
+            by_type[ct] = []
+        by_type[ct].append(v)
+
+    for constraint_type, type_violations in by_type.items():
+        type_label = constraint_type.replace("_", " ").upper()
+        instructions.append(f"### {type_label} Violations:")
+
+        for v in type_violations:
+            severity = v.get("severity", "warning").upper()
+            field = v.get("field", "unknown")
+            expected = v.get("expected", "N/A")
+            actual = v.get("actual", "N/A")
+            source = v.get("source_section", "unknown")
+
+            instructions.append(f"- **{field}** [{severity}]")
+            instructions.append(f"  Expected: {expected}")
+            instructions.append(f"  Actual: {actual}")
+            instructions.append(f"  Source: {source}")
+
+        instructions.append("")
+
+    instructions.append("**Fix all violations above to ensure cross-section consistency.**")
+
+    return "\n".join(instructions)

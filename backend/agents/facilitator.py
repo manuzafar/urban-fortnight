@@ -31,7 +31,13 @@ from agents.constraint_broadcaster import (
     generate_phase_constraints,
     format_constraints_for_prompt,
 )
-from agents.output_validator import validate_agent_output, ValidationResult
+from agents.output_validator import (
+    validate_agent_output,
+    ValidationResult,
+    validate_against_constraints,
+    ConstraintValidationResult,
+    get_constraint_violation_fix_instructions,
+)
 from agents.eval_feedback_bridge import (
     process_eval_output_to_feedback,
     get_agents_needing_revision,
@@ -133,6 +139,75 @@ class FacilitatorAgent:
                 agent=agent_name,
                 session_id=state.get("session_id"),
                 warning_count=len(result.warnings),
+            )
+
+        return result
+
+    def _validate_constraints(
+        self,
+        agent_name: str,
+        output: dict,
+        state: DiscoveryState,
+    ) -> ConstraintValidationResult:
+        """
+        Validate agent output against active constraints.
+
+        Args:
+            agent_name: Name of the agent
+            output: The agent's output dictionary
+            state: Current discovery state with active_constraints
+
+        Returns:
+            ConstraintValidationResult with validation status
+        """
+        constraints = state.get("active_constraints", [])
+
+        if not constraints:
+            self.logger.debug(
+                "no_active_constraints",
+                agent=agent_name,
+                session_id=state.get("session_id"),
+            )
+            return ConstraintValidationResult(
+                valid=True,
+                violations=[],
+                critical_count=0,
+                warning_count=0,
+                details="No active constraints to validate",
+            )
+
+        result = validate_against_constraints(output, constraints)
+
+        if not result.valid:
+            self.logger.warning(
+                "constraint_validation_failed",
+                agent=agent_name,
+                session_id=state.get("session_id"),
+                violation_count=len(result.violations),
+                critical_count=result.critical_count,
+                warning_count=result.warning_count,
+            )
+
+            # Store constraint violations for revision
+            if "constraint_violations" not in state:
+                state["constraint_violations"] = {}
+            state["constraint_violations"][agent_name] = result.violations
+
+            # If critical violations, prepare fix instructions
+            if result.should_trigger_revision():
+                fix_instructions = get_constraint_violation_fix_instructions(
+                    result.violations
+                )
+                # Store for retry prompt
+                if "constraint_fix_instructions" not in state:
+                    state["constraint_fix_instructions"] = {}
+                state["constraint_fix_instructions"][agent_name] = fix_instructions
+        else:
+            self.logger.info(
+                "constraint_validation_passed",
+                agent=agent_name,
+                session_id=state.get("session_id"),
+                constraint_count=len(constraints),
             )
 
         return result
@@ -395,19 +470,44 @@ class FacilitatorAgent:
 
         await self._emit_progress(40, "strategy")
 
-        # Validate strategy outputs
+        # Validate strategy outputs (schema validation)
         if state.get("business_case"):
             self._validate_agent_output(
                 "Business Strategy Agent",
                 state["business_case"],
                 state
             )
+            # Validate against constraints
+            constraint_result = self._validate_constraints(
+                "Business Strategy Agent",
+                state["business_case"],
+                state
+            )
+            if constraint_result.should_trigger_revision():
+                self.logger.warning(
+                    "business_strategy_constraint_violation",
+                    session_id=state.get("session_id"),
+                    critical_violations=constraint_result.critical_count,
+                )
+
         if state.get("gtm_plan"):
             self._validate_agent_output(
                 "Go-to-Market",
                 state["gtm_plan"],
                 state
             )
+            # Validate against constraints
+            constraint_result = self._validate_constraints(
+                "Go-to-Market",
+                state["gtm_plan"],
+                state
+            )
+            if constraint_result.should_trigger_revision():
+                self.logger.warning(
+                    "gtm_constraint_violation",
+                    session_id=state.get("session_id"),
+                    critical_violations=constraint_result.critical_count,
+                )
 
         return state
 
@@ -482,25 +582,63 @@ class FacilitatorAgent:
         await self._emit_progress(60, "delivery")
         self.logger.info("delivery_phase_complete", session_id=state["session_id"])
 
-        # Validate delivery outputs
+        # Validate delivery outputs (schema validation + constraint validation)
         if state.get("product_requirements"):
             self._validate_agent_output(
                 "Product Requirements Agent",
                 state["product_requirements"],
                 state
             )
+            # Validate against constraints
+            constraint_result = self._validate_constraints(
+                "Product Requirements Agent",
+                state["product_requirements"],
+                state
+            )
+            if constraint_result.should_trigger_revision():
+                self.logger.warning(
+                    "prd_constraint_violation",
+                    session_id=state.get("session_id"),
+                    critical_violations=constraint_result.critical_count,
+                )
+
         if state.get("technical_architecture"):
             self._validate_agent_output(
                 "Technical Architect Agent",
                 state["technical_architecture"],
                 state
             )
+            # Validate against constraints
+            constraint_result = self._validate_constraints(
+                "Technical Architect Agent",
+                state["technical_architecture"],
+                state
+            )
+            if constraint_result.should_trigger_revision():
+                self.logger.warning(
+                    "tech_arch_constraint_violation",
+                    session_id=state.get("session_id"),
+                    critical_violations=constraint_result.critical_count,
+                )
+
         if state.get("legal_regulatory_review"):
             self._validate_agent_output(
                 "Legal & Regulatory Review",
                 state["legal_regulatory_review"],
                 state
             )
+            # Validate against constraints
+            constraint_result = self._validate_constraints(
+                "Legal & Regulatory Review",
+                state["legal_regulatory_review"],
+                state
+            )
+            if constraint_result.should_trigger_revision():
+                self.logger.warning(
+                    "legal_constraint_violation",
+                    session_id=state.get("session_id"),
+                    critical_violations=constraint_result.critical_count,
+                )
 
         return state
 
@@ -512,6 +650,9 @@ class FacilitatorAgent:
 
         # Integrate any validation failures into revision priority
         state = _integrate_validation_failures_into_revision(state)
+
+        # Integrate constraint violations into revision priority
+        state = _integrate_constraint_violations_into_revision(state)
 
         await self._emit_agent_start("critique", "Checking quality...")
 

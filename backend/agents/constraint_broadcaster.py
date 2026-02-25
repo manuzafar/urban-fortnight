@@ -16,6 +16,16 @@ from dataclasses import dataclass, asdict
 from typing import Any, Optional
 
 import structlog
+from pydantic import ValidationError
+
+from models.constraint_schemas import (
+    ConstraintPayload,
+    ConstraintType,
+    EvidenceTier,
+    LegalConstraint,
+    ConstraintAcknowledgment,
+    ConstraintPropagationLog,
+)
 
 logger = structlog.get_logger(__name__)
 
@@ -500,3 +510,274 @@ def validate_output_against_constraints(
                     })
 
     return violations
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# CONSTRAINT VALIDATION FUNCTIONS
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+def validate_constraint_payload(constraint: ExecutionConstraint) -> tuple[bool, Optional[str]]:
+    """
+    Validate a constraint using Pydantic schema.
+
+    Args:
+        constraint: ExecutionConstraint to validate
+
+    Returns:
+        Tuple of (is_valid, error_message)
+    """
+    try:
+        # Convert dataclass to dict
+        constraint_dict = constraint.to_dict()
+
+        # Map constraint_type to enum
+        constraint_type_map = {
+            "must_use": ConstraintType.MUST_USE,
+            "must_align": ConstraintType.MUST_ALIGN,
+            "must_reference": ConstraintType.MUST_REFERENCE,
+            "must_not_exceed": ConstraintType.MUST_NOT_EXCEED,
+        }
+
+        # Map evidence_tier to enum
+        evidence_tier_map = {
+            "E1": EvidenceTier.E1,
+            "E2": EvidenceTier.E2,
+            "E3": EvidenceTier.E3,
+            "E4": EvidenceTier.E4,
+            "E5": EvidenceTier.E5,
+        }
+
+        # Create validated payload
+        ConstraintPayload(
+            field=constraint_dict["field"],
+            value=constraint_dict["value"],
+            source_section=constraint_dict["source_section"],
+            source_claim_id=constraint_dict["source_claim_id"],
+            constraint_type=constraint_type_map.get(
+                constraint_dict["constraint_type"],
+                ConstraintType.MUST_ALIGN,
+            ),
+            evidence_tier=evidence_tier_map.get(
+                constraint_dict["evidence_tier"],
+                EvidenceTier.E4,
+            ),
+            confidence=constraint_dict.get("confidence", 0.5),
+        )
+
+        return True, None
+
+    except ValidationError as e:
+        error_msg = f"Constraint validation failed: {str(e)}"
+        logger.error(
+            "constraint_validation_failed",
+            field=constraint.field,
+            error=str(e),
+        )
+        return False, error_msg
+
+
+def validate_legal_constraints(
+    preliminary_legal_scan: dict[str, Any]
+) -> tuple[list[LegalConstraint], list[str]]:
+    """
+    Validate legal constraints from preliminary_legal_scan.
+
+    Args:
+        preliminary_legal_scan: Output from legal_preliminary agent
+
+    Returns:
+        Tuple of (valid_constraints, errors)
+    """
+    valid_constraints = []
+    errors = []
+
+    regulations = preliminary_legal_scan.get("applicable_regulations", [])
+
+    for idx, reg in enumerate(regulations):
+        try:
+            # Extract regulation data
+            legal_constraint = LegalConstraint(
+                regulation_name=reg.get("name", f"Unknown Regulation {idx}"),
+                requirement=reg.get("description", "No description provided"),
+                applicability=reg.get("applicability", "Applicability not specified"),
+                impact_level=reg.get("impact_level", "medium").lower(),
+                compliance_timeline=reg.get(
+                    "estimated_compliance_timeline",
+                    "Timeline not specified"
+                ),
+                blocking=reg.get("impact_level", "").lower() == "high",
+            )
+
+            valid_constraints.append(legal_constraint)
+
+        except ValidationError as e:
+            error_msg = f"Legal constraint {idx} validation failed: {str(e)}"
+            errors.append(error_msg)
+            logger.error(
+                "legal_constraint_validation_failed",
+                index=idx,
+                regulation=reg.get("name", "unknown"),
+                error=str(e),
+            )
+
+    logger.info(
+        "legal_constraints_validated",
+        total=len(regulations),
+        valid=len(valid_constraints),
+        errors=len(errors),
+    )
+
+    return valid_constraints, errors
+
+
+def create_constraint_acknowledgment(
+    agent_name: str,
+    phase: str,
+    constraints: list[ExecutionConstraint],
+    prompt_injected: bool = False,
+) -> ConstraintAcknowledgment:
+    """
+    Create an acknowledgment that an agent received constraints.
+
+    Args:
+        agent_name: Name of the agent
+        phase: Phase name
+        constraints: List of constraints received
+        prompt_injected: Whether constraints were injected into prompt
+
+    Returns:
+        ConstraintAcknowledgment object
+    """
+    try:
+        acknowledgment = ConstraintAcknowledgment(
+            agent_name=agent_name,
+            phase=phase,
+            constraints_received_count=len(constraints),
+            constraint_fields=[c.field for c in constraints],
+            prompt_injection_confirmed=prompt_injected,
+        )
+
+        logger.info(
+            "constraint_acknowledgment_created",
+            agent=agent_name,
+            phase=phase,
+            count=len(constraints),
+            prompt_injected=prompt_injected,
+        )
+
+        return acknowledgment
+
+    except ValidationError as e:
+        logger.error(
+            "constraint_acknowledgment_failed",
+            agent=agent_name,
+            phase=phase,
+            error=str(e),
+        )
+        raise
+
+
+def log_constraint_propagation(
+    session_id: str,
+    source_phase: str,
+    target_phase: str,
+    generated_constraints: list[ExecutionConstraint],
+    delivered_constraints: list[ExecutionConstraint],
+    acknowledgment: Optional[ConstraintAcknowledgment] = None,
+    errors: Optional[list[str]] = None,
+) -> ConstraintPropagationLog:
+    """
+    Log constraint propagation from one phase to another.
+
+    Args:
+        session_id: Session identifier
+        source_phase: Phase generating constraints
+        target_phase: Phase receiving constraints
+        generated_constraints: Constraints generated
+        delivered_constraints: Constraints successfully delivered
+        acknowledgment: Optional acknowledgment from receiving agent
+        errors: Optional list of errors
+
+    Returns:
+        ConstraintPropagationLog object
+    """
+    generated_count = len(generated_constraints)
+    delivered_count = len(delivered_constraints)
+    acknowledged_count = (
+        acknowledgment.constraints_received_count if acknowledgment else 0
+    )
+
+    # Determine status
+    if delivered_count == 0 and generated_count > 0:
+        status = "failed"
+    elif delivered_count < generated_count or acknowledged_count < delivered_count:
+        status = "partial"
+    else:
+        status = "success"
+
+    try:
+        propagation_log = ConstraintPropagationLog(
+            session_id=session_id,
+            source_phase=source_phase,
+            target_phase=target_phase,
+            constraints_generated=generated_count,
+            constraints_delivered=delivered_count,
+            constraints_acknowledged=acknowledged_count,
+            propagation_status=status,
+            errors=errors or [],
+        )
+
+        logger.info(
+            "constraint_propagation_logged",
+            session_id=session_id,
+            source=source_phase,
+            target=target_phase,
+            status=status,
+            generated=generated_count,
+            delivered=delivered_count,
+            acknowledged=acknowledged_count,
+        )
+
+        return propagation_log
+
+    except ValidationError as e:
+        logger.error(
+            "constraint_propagation_log_failed",
+            session_id=session_id,
+            error=str(e),
+        )
+        raise
+
+
+def validate_all_constraints(
+    constraints: list[ExecutionConstraint]
+) -> tuple[list[ExecutionConstraint], list[str]]:
+    """
+    Validate all constraints in a list.
+
+    Args:
+        constraints: List of constraints to validate
+
+    Returns:
+        Tuple of (valid_constraints, error_messages)
+    """
+    valid_constraints = []
+    errors = []
+
+    for constraint in constraints:
+        is_valid, error_msg = validate_constraint_payload(constraint)
+
+        if is_valid:
+            valid_constraints.append(constraint)
+        else:
+            errors.append(error_msg)
+
+    logger.info(
+        "constraints_batch_validated",
+        total=len(constraints),
+        valid=len(valid_constraints),
+        invalid=len(errors),
+    )
+
+    return valid_constraints, errors
