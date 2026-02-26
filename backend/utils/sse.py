@@ -288,7 +288,13 @@ class SessionEventEmitter:
             "status": status,
         }
         if pack is not None:
-            data["pack"] = pack
+            # Ensure pack is JSON-serializable
+            if hasattr(pack, 'model_dump'):
+                data["pack"] = pack.model_dump(mode="json")
+            elif hasattr(pack, '__dict__') and not isinstance(pack, dict):
+                data["pack"] = dict(pack)
+            else:
+                data["pack"] = pack
         await self.emit(
             StreamEvent(
                 type=StreamEventType.DONE,

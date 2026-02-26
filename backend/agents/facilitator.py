@@ -370,12 +370,14 @@ class FacilitatorAgent:
         state = await run_planner_agent(state)
 
         # Emit insights from research plan
-        plan = state.get("research_plan", {})
+        plan = state.get("research_plan") or {}
         if plan.get("domain_type"):
             await self._emit_insight("planner", "domain_type", f"Domain: {plan['domain_type']}")
-        if plan.get("competitors_to_analyze"):
-            names = [c.get("name", "Unknown") for c in plan["competitors_to_analyze"][:3]]
-            await self._emit_insight("planner", "competitors", f"Competitors: {', '.join(names)}")
+        competitors = plan.get("competitors_to_analyze") or []
+        if competitors:
+            names = [c.get("name", "Unknown") for c in competitors[:3] if isinstance(c, dict)]
+            if names:
+                await self._emit_insight("planner", "competitors", f"Competitors: {', '.join(names)}")
 
         await self._emit_agent_complete("planner", "Research plan created", insights_count=2)
         await self._emit_progress(5, "planner")

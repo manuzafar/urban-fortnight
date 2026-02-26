@@ -408,6 +408,13 @@ async def run_test_stage(
             detail=f"Invalid stage. Must be one of: {valid_stages}",
         )
 
+    # Validate stage exists in session
+    if stage not in session.stages:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Stage {stage} not initialized in session",
+        )
+
     # Import and run the engine
     from agents.discovery_v4.engine import DiscoveryEngineV4
 
@@ -434,12 +441,14 @@ async def run_test_stage(
                 stage=stage,
                 error=str(e),
             )
-            session.stages[stage].status = StageStatus.NOT_STARTED
-            session.stages[stage].error_message = str(e)
-            session.stages[stage].last_error_at = datetime.utcnow().isoformat()
-
-            # Persist error state to database
-            _persist_session_to_db(session)
+            # Safely access session from cache (may have been updated)
+            current_session = _active_sessions.get(session_id)
+            if current_session and stage in current_session.stages:
+                current_session.stages[stage].status = StageStatus.NOT_STARTED
+                current_session.stages[stage].error_message = str(e)
+                current_session.stages[stage].last_error_at = datetime.utcnow().isoformat()
+                # Persist error state to database
+                _persist_session_to_db(current_session)
 
     background_tasks.add_task(_run_stage)
 
@@ -1153,8 +1162,8 @@ async def run_stage(
         "solution_design",
         "validation_plan",
     ],
+    background_tasks: BackgroundTasks,
     request: RunStageRequest = RunStageRequest(),
-    background_tasks: BackgroundTasks = None,
     user_id: str = Depends(get_current_user_id),
 ) -> dict[str, Any]:
     """
@@ -1178,6 +1187,13 @@ async def run_stage(
             detail="You don't have access to this session",
         )
 
+    # Validate stage exists in session
+    if stage not in session.stages:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Stage {stage} not initialized in session",
+        )
+
     # Check if stage is already complete and not forcing regenerate
     stage_state = session.stages.get(stage)
     if (
@@ -1197,13 +1213,12 @@ async def run_stage(
     session.updated_at = datetime.utcnow().isoformat()
 
     # Run stage in background
-    if background_tasks:
-        background_tasks.add_task(
-            _run_stage_task,
-            session_id,
-            stage,
-            request.user_context,
-        )
+    background_tasks.add_task(
+        _run_stage_task,
+        session_id,
+        stage,
+        request.user_context,
+    )
 
     return {
         "status": "started",
@@ -1975,7 +1990,7 @@ async def _run_stage_task(
         )
         # Mark stage as failed and expose error to frontend
         session = _active_sessions.get(session_id)
-        if session:
+        if session and stage in session.stages:
             session.stages[stage].status = StageStatus.NOT_STARTED
             session.stages[stage].error_message = str(e)
             session.stages[stage].last_error_at = datetime.utcnow().isoformat()

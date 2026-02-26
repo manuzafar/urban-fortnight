@@ -73,21 +73,29 @@ class DiscoveryEngineV4:
     def stage_runners(self):
         """Lazy load stage runners."""
         if self._stage_runners is None:
-            from agents.discovery_v4.stages import (
-                ProblemLoveStage,
-                CustomerTruthStage,
-                OpportunityMappingStage,
-                SolutionDesignStage,
-                ValidationPlanStage,
-            )
+            try:
+                from agents.discovery_v4.stages import (
+                    ProblemLoveStage,
+                    CustomerTruthStage,
+                    OpportunityMappingStage,
+                    SolutionDesignStage,
+                    ValidationPlanStage,
+                )
 
-            self._stage_runners = {
-                "problem_love": ProblemLoveStage(),
-                "customer_truth": CustomerTruthStage(),
-                "opportunity_mapping": OpportunityMappingStage(),
-                "solution_design": SolutionDesignStage(),
-                "validation_plan": ValidationPlanStage(),
-            }
+                self._stage_runners = {
+                    "problem_love": ProblemLoveStage(),
+                    "customer_truth": CustomerTruthStage(),
+                    "opportunity_mapping": OpportunityMappingStage(),
+                    "solution_design": SolutionDesignStage(),
+                    "validation_plan": ValidationPlanStage(),
+                }
+            except ImportError as e:
+                logger.error(
+                    "stage_import_failed",
+                    error=str(e),
+                    exc_info=True,
+                )
+                raise RuntimeError(f"Failed to import discovery stages: {e}")
         return self._stage_runners
 
     async def run_session(
