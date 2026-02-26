@@ -68,6 +68,64 @@ export interface SessionStatusResponse {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════════════════════════
+// V4 Discovery Journey Types
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface DiscoveryJourney {
+  // Problem Love Stage
+  problem_love: {
+    problem_statement: string;
+    problem_score?: number | null;
+    evidence_quality?: string;
+  };
+  // Customer Truth Stage
+  customer_truth: {
+    interview_count: number;
+    key_quotes: string[];
+    pain_patterns: Array<{ description?: string; severity?: string; frequency?: string } | string>;
+    trigger_patterns: string[];
+    outcome_patterns: string[];
+  };
+  // Opportunity Mapping Stage
+  opportunity_mapping: {
+    four_forces: {
+      push_factors?: string[];
+      pull_factors?: string[];
+      anxiety_factors?: string[];
+      habit_factors?: string[];
+    };
+    opportunity_tree?: Record<string, unknown>;
+    primary_opportunity?: string;
+  };
+  // Solution Design Stage
+  solution_design: {
+    solution_concept?: string;
+    dhm_score?: {
+      delight?: number | string;
+      hard_to_copy?: number | string;
+      margin?: number | string;
+    };
+    pre_mortem?: {
+      failure_scenarios?: string[];
+      mitigations?: string[];
+    };
+  };
+  // Validation Plan Stage
+  validation_plan: {
+    experiments: Array<{
+      name?: string;
+      hypothesis?: string;
+      method?: string;
+      success_criteria?: string;
+      effort_level?: string;
+    }>;
+  };
+  // Metadata
+  mode: 'quick' | 'guided' | 'deep' | 'unknown';
+  high_confidence: boolean;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
 // V3.0 New Section Types
 // ═══════════════════════════════════════════════════════════════════════════════
 
@@ -384,6 +442,9 @@ export interface CrossReferenceIndex {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export interface InceptionPack {
+  // V4 Discovery Journey (optional - only present for V4 sessions)
+  discovery_journey?: DiscoveryJourney | null;
+
   // Core sections (existing)
   executive_summary: ExecutiveSummary;
   customer_research: CustomerResearch;

@@ -326,11 +326,29 @@ def _transform_financial_model(
     quarterly = financial_model.get("quarterly_projections_year_2_3", []) or []
     projections = []
 
-    # First check if projections already exist (pass through)
-    existing_projections = financial_model.get("projections", [])
+    # First check if projections already exist
+    existing_projections = financial_model.get("projections")
     if existing_projections:
-        projections = existing_projections
-    else:
+        # If it's already a list, use it directly
+        if isinstance(existing_projections, list):
+            projections = existing_projections
+        # If it's a dict (year_1, year_2 format), convert to array
+        elif isinstance(existing_projections, dict):
+            for year_key in sorted(existing_projections.keys()):
+                year_data = existing_projections.get(year_key, {}) or {}
+                if year_data:
+                    # Format year_key: "year_1" -> "Year 1"
+                    period = year_key.replace("_", " ").title()
+                    projections.append({
+                        "period": period,
+                        "revenue": year_data.get("revenue", 0),
+                        "costs": year_data.get("costs", 0),
+                        "profit": year_data.get("profit", 0),
+                        "cumulative_profit": year_data.get("cumulative_profit", 0),
+                    })
+
+    # If no existing projections, build from monthly/quarterly data
+    if not projections:
         # Add key monthly milestones (months 1, 6, 12)
         cumulative = 0
         for month_data in monthly:
@@ -566,6 +584,70 @@ def _transform_wireframes(wireframes: dict[str, Any] | None) -> dict[str, Any] |
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# V4 DISCOVERY SECTION BUILDER
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+def _build_v4_discovery_section(state: dict[str, Any]) -> dict[str, Any] | None:
+    """
+    Build the V4 Discovery Journey section from state.
+
+    Extracts V4-specific fields that were set during V4 discovery.
+    Returns None if no V4 data is present.
+    """
+    # Check if this is a V4 session by looking for V4-specific fields
+    has_v4_data = any(
+        state.get(key)
+        for key in [
+            "_v4_problem_statement",
+            "_v4_pain_patterns",
+            "_v4_four_forces",
+            "_v4_solution_concept",
+            "_v4_validation_experiments",
+        ]
+    )
+
+    if not has_v4_data:
+        return None
+
+    return {
+        # Problem Love Stage
+        "problem_love": {
+            "problem_statement": state.get("_v4_problem_statement", ""),
+            "problem_score": state.get("_v4_problem_score"),
+            "evidence_quality": state.get("_discovery_evidence_tier", "E4"),
+        },
+        # Customer Truth Stage
+        "customer_truth": {
+            "interview_count": state.get("_v4_interview_count", 0),
+            "key_quotes": state.get("_v4_key_quotes", []),
+            "pain_patterns": state.get("_v4_pain_patterns", []),
+            "trigger_patterns": state.get("_v4_trigger_patterns", []),
+            "outcome_patterns": state.get("_v4_outcome_patterns", []),
+        },
+        # Opportunity Mapping Stage
+        "opportunity_mapping": {
+            "four_forces": state.get("_v4_four_forces", {}),
+            "opportunity_tree": state.get("_v4_opportunity_tree", {}),
+            "primary_opportunity": state.get("_v4_primary_opportunity", ""),
+        },
+        # Solution Design Stage
+        "solution_design": {
+            "solution_concept": state.get("_v4_solution_concept", ""),
+            "dhm_score": state.get("_v4_dhm_score", {}),
+            "pre_mortem": state.get("_v4_pre_mortem", {}),
+        },
+        # Validation Plan Stage
+        "validation_plan": {
+            "experiments": state.get("_v4_validation_experiments", []),
+        },
+        # Overall metadata
+        "mode": state.get("_v4_mode", "unknown"),
+        "high_confidence": state.get("_high_confidence_discovery", False),
+    }
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # INCEPTION PACK BUILDER
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -598,7 +680,12 @@ def build_inception_pack(state: dict[str, Any]) -> dict[str, Any]:
     if customer_research == {}:
         customer_research = None
 
+    # Build V4 Discovery Journey data if available in state
+    v4_discovery = _build_v4_discovery_section(state)
+
     pack = {
+        # V4 Discovery Journey (new top-level section)
+        "discovery_journey": v4_discovery,
         # Core sections (V1.0)
         "executive_summary": state.get("executive_summary", {}),
         "customer_research": customer_research or {},

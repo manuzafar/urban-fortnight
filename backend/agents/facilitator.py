@@ -1255,6 +1255,9 @@ class FacilitatorAgent:
             "errors": [],
         }
 
+        # Store V4 mode for discovery journey section
+        state["_v4_mode"] = v4_session.mode
+
         # Convert V4 discovery outputs to V3 state fields
         state = self._convert_v4_to_v3_state(state, v4_session)
 

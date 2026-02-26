@@ -4,7 +4,7 @@
  */
 
 import { useState } from 'react';
-import { Share2, Printer, Download, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Share2, Printer, Download, ChevronLeft, ChevronRight, Heart, Users, Map, Lightbulb, FlaskConical, Quote, AlertTriangle, CheckCircle } from 'lucide-react';
 import { QualityScore } from './QualityScore';
 import { SectionNav, type NavSection } from './SectionNav';
 import { EvidenceBadge, EvidenceLegend } from './EvidenceBadge';
@@ -19,24 +19,35 @@ interface PackViewerV4Props {
 }
 
 // Section definitions - IDs must match the switch cases in renderSectionContent
-const SECTIONS: NavSection[] = [
-  { id: 'executive_summary', number: '01', title: 'Executive Summary', phase: 'Overview', status: 'done' },
-  { id: 'customer_research', number: '02', title: 'Customer Research', phase: 'Discovery', status: 'done' },
-  { id: 'competitive_analysis', number: '03', title: 'Competitive Analysis', phase: 'Discovery', status: 'done' },
-  { id: 'personas', number: '04', title: 'Personas', phase: 'Discovery', status: 'done' },
-  { id: 'business_case', number: '05', title: 'Business Case', phase: 'Strategy', status: 'done' },
-  { id: 'gtm_strategy', number: '06', title: 'Go-to-Market', phase: 'Strategy', status: 'done' },
-  { id: 'financial_model', number: '07', title: 'Financial Model', phase: 'Strategy', status: 'warn' },
-  { id: 'product_requirements', number: '08', title: 'Product Requirements', phase: 'Delivery', status: 'done' },
-  { id: 'technical_architecture', number: '09', title: 'Tech Architecture', phase: 'Delivery', status: 'done' },
-  { id: 'legal_regulatory', number: '10', title: 'Legal & Regulatory', phase: 'Delivery', status: 'done' },
-  { id: 'risk_assessment', number: '11', title: 'Risk Assessment', phase: 'Delivery', status: 'warn' },
-  { id: 'wireframes', number: '12', title: 'Wireframes', phase: 'Design', status: 'done' },
-  { id: 'prototype', number: '13', title: 'Prototype', phase: 'Design', status: 'done' },
-  { id: 'stakeholder_views', number: '14', title: 'Stakeholder Views', phase: 'Synthesis', status: 'done' },
-  { id: 'validation_playbook', number: '15', title: 'Validation Playbook', phase: 'Synthesis', status: 'done' },
-  { id: 'quality_assessment', number: '16', title: 'Quality Assessment', phase: 'Quality', status: 'warn' },
-];
+// Build sections dynamically based on whether discovery_journey exists
+function buildSections(hasDiscoveryJourney: boolean): NavSection[] {
+  const baseSections: NavSection[] = [
+    { id: 'executive_summary', number: '01', title: 'Executive Summary', phase: 'Overview', status: 'done' },
+    { id: 'customer_research', number: '02', title: 'Customer Research', phase: 'Discovery', status: 'done' },
+    { id: 'competitive_analysis', number: '03', title: 'Competitive Analysis', phase: 'Discovery', status: 'done' },
+    { id: 'personas', number: '04', title: 'Personas', phase: 'Discovery', status: 'done' },
+    { id: 'business_case', number: '05', title: 'Business Case', phase: 'Strategy', status: 'done' },
+    { id: 'gtm_strategy', number: '06', title: 'Go-to-Market', phase: 'Strategy', status: 'done' },
+    { id: 'financial_model', number: '07', title: 'Financial Model', phase: 'Strategy', status: 'warn' },
+    { id: 'product_requirements', number: '08', title: 'Product Requirements', phase: 'Delivery', status: 'done' },
+    { id: 'technical_architecture', number: '09', title: 'Tech Architecture', phase: 'Delivery', status: 'done' },
+    { id: 'legal_regulatory', number: '10', title: 'Legal & Regulatory', phase: 'Delivery', status: 'done' },
+    { id: 'risk_assessment', number: '11', title: 'Risk Assessment', phase: 'Delivery', status: 'warn' },
+    { id: 'wireframes', number: '12', title: 'Wireframes', phase: 'Design', status: 'done' },
+    { id: 'prototype', number: '13', title: 'Prototype', phase: 'Design', status: 'done' },
+    { id: 'stakeholder_views', number: '14', title: 'Stakeholder Views', phase: 'Synthesis', status: 'done' },
+    { id: 'validation_playbook', number: '15', title: 'Validation Playbook', phase: 'Synthesis', status: 'done' },
+    { id: 'quality_assessment', number: '16', title: 'Quality Assessment', phase: 'Quality', status: 'warn' },
+  ];
+
+  if (hasDiscoveryJourney) {
+    return [
+      { id: 'discovery_journey', number: '00', title: 'Discovery Journey', phase: 'V4 Discovery', status: 'done' },
+      ...baseSections,
+    ];
+  }
+  return baseSections;
+}
 
 // Helper to normalize quality score to percentage (0-100)
 function normalizeScore(score: number | undefined | null): number {
@@ -48,15 +59,19 @@ function normalizeScore(score: number | undefined | null): number {
 }
 
 export function PackViewerV4({ pack, sessionId, onBack }: PackViewerV4Props) {
-  const [activeSection, setActiveSection] = useState('executive_summary');
+  // Build sections dynamically based on whether discovery_journey exists
+  const hasDiscoveryJourney = !!pack.discovery_journey;
+  const sections = buildSections(hasDiscoveryJourney);
+
+  const [activeSection, setActiveSection] = useState(hasDiscoveryJourney ? 'discovery_journey' : 'executive_summary');
   const [activeStakeholder, setActiveStakeholder] = useState('CFO');
 
   const qualityScore = normalizeScore(pack.metadata?.quality_score ?? pack.quality_assessment?.overall_score);
   const productName = pack.executive_summary?.product_name || 'Inception Pack';
 
-  const currentIndex = SECTIONS.findIndex((s) => s.id === activeSection);
-  const prevSection = currentIndex > 0 ? SECTIONS[currentIndex - 1] : null;
-  const nextSection = currentIndex < SECTIONS.length - 1 ? SECTIONS[currentIndex + 1] : null;
+  const currentIndex = sections.findIndex((s) => s.id === activeSection);
+  const prevSection = currentIndex > 0 ? sections[currentIndex - 1] : null;
+  const nextSection = currentIndex < sections.length - 1 ? sections[currentIndex + 1] : null;
 
   const handleExport = () => {
     // TODO: Implement export functionality
@@ -169,7 +184,7 @@ export function PackViewerV4({ pack, sessionId, onBack }: PackViewerV4Props) {
           }}
         >
           <QualityScore score={qualityScore} />
-          <SectionNav sections={SECTIONS} activeSection={activeSection} onSectionChange={setActiveSection} />
+          <SectionNav sections={sections} activeSection={activeSection} onSectionChange={setActiveSection} />
           <div style={{ margin: '16px' }}>
             <EvidenceLegend />
           </div>
@@ -192,7 +207,7 @@ export function PackViewerV4({ pack, sessionId, onBack }: PackViewerV4Props) {
               Inception Pack
             </button>
             {' / '}
-            {SECTIONS.find((s) => s.id === activeSection)?.title}
+            {sections.find((s) => s.id === activeSection)?.title}
           </div>
 
           {/* Page Header */}
@@ -207,10 +222,10 @@ export function PackViewerV4({ pack, sessionId, onBack }: PackViewerV4Props) {
                 marginBottom: '8px',
               }}
             >
-              {SECTIONS.find((s) => s.id === activeSection)?.phase}
+              {sections.find((s) => s.id === activeSection)?.phase}
             </div>
             <h1 style={{ fontSize: '28px', fontWeight: 600, letterSpacing: '-0.02em', marginBottom: '8px' }}>
-              {SECTIONS.find((s) => s.id === activeSection)?.title}
+              {sections.find((s) => s.id === activeSection)?.title}
             </h1>
             <div style={{ display: 'flex', gap: '20px', fontSize: '13px', color: 'var(--v4-text-muted)' }}>
               <span>Generated just now</span>
@@ -349,6 +364,8 @@ function renderSectionContent(
   setActiveStakeholder: (s: string) => void
 ): React.ReactNode {
   switch (sectionId) {
+    case 'discovery_journey':
+      return <DiscoveryJourneySection pack={pack} />;
     case 'executive_summary':
       return <ExecutiveSummarySection pack={pack} activeStakeholder={activeStakeholder} setActiveStakeholder={setActiveStakeholder} />;
     case 'customer_research':
@@ -382,6 +399,617 @@ function renderSectionContent(
     default:
       return <GenericSection sectionId={sectionId} pack={pack} />;
   }
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// V4 DISCOVERY JOURNEY SECTION
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function DiscoveryJourneySection({ pack }: { pack: InceptionPack }) {
+  const journey = pack.discovery_journey;
+
+  if (!journey) {
+    return (
+      <Card title="Discovery Journey">
+        <p style={{ color: 'var(--v4-text-muted)' }}>
+          No V4 Discovery data available for this session.
+        </p>
+      </Card>
+    );
+  }
+
+  const modeLabel = {
+    quick: 'Quick Discovery',
+    guided: 'Guided Discovery',
+    deep: 'Deep Discovery',
+    unknown: 'Discovery',
+  }[journey.mode] || 'Discovery';
+
+  const modeDescription = {
+    quick: 'AI-generated insights based on market analysis',
+    guided: 'AI-assisted discovery with user checkpoints',
+    deep: 'User-led discovery with real customer interviews',
+    unknown: 'Discovery insights',
+  }[journey.mode] || 'Discovery insights';
+
+  return (
+    <>
+      {/* Journey Overview */}
+      <Card title="Discovery Overview">
+        <div style={{ display: 'flex', gap: '24px', alignItems: 'center', marginBottom: '16px' }}>
+          <div style={{
+            padding: '8px 16px',
+            background: journey.high_confidence ? 'var(--v4-success-bg)' : 'var(--v4-warning-bg)',
+            borderRadius: '100px',
+            fontSize: '13px',
+            fontWeight: 600,
+            color: journey.high_confidence ? 'var(--v4-success)' : '#b45309',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+          }}>
+            {journey.high_confidence ? <CheckCircle size={14} /> : <AlertTriangle size={14} />}
+            {journey.high_confidence ? 'High Confidence' : 'Needs Validation'}
+          </div>
+          <div>
+            <div style={{ fontSize: '16px', fontWeight: 600 }}>{modeLabel}</div>
+            <div style={{ fontSize: '13px', color: 'var(--v4-text-muted)' }}>{modeDescription}</div>
+          </div>
+        </div>
+
+        {/* Stage Progress */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(5, 1fr)',
+          gap: '8px',
+          padding: '20px',
+          background: 'var(--v4-bg)',
+          borderRadius: 'var(--v4-radius)',
+        }}>
+          <StageIndicator
+            icon={<Heart size={18} />}
+            label="Problem Love"
+            complete={!!journey.problem_love?.problem_statement}
+            color="#ef4444"
+          />
+          <StageIndicator
+            icon={<Users size={18} />}
+            label="Customer Truth"
+            complete={journey.customer_truth?.interview_count > 0 || journey.customer_truth?.pain_patterns?.length > 0}
+            color="#3b82f6"
+          />
+          <StageIndicator
+            icon={<Map size={18} />}
+            label="Opportunity Map"
+            complete={!!journey.opportunity_mapping?.four_forces || !!journey.opportunity_mapping?.primary_opportunity}
+            color="#8b5cf6"
+          />
+          <StageIndicator
+            icon={<Lightbulb size={18} />}
+            label="Solution Design"
+            complete={!!journey.solution_design?.solution_concept}
+            color="#f59e0b"
+          />
+          <StageIndicator
+            icon={<FlaskConical size={18} />}
+            label="Validation"
+            complete={journey.validation_plan?.experiments?.length > 0}
+            color="#10b981"
+          />
+        </div>
+      </Card>
+
+      {/* Problem Love Stage */}
+      {journey.problem_love?.problem_statement && (
+        <Card title="Problem Love" icon={<Heart size={18} color="#ef4444" />}>
+          <div style={{ marginBottom: '16px' }}>
+            <h4 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)', marginBottom: '8px' }}>
+              Problem Statement
+            </h4>
+            <p style={{
+              fontSize: '16px',
+              lineHeight: 1.6,
+              color: 'var(--v4-text)',
+              padding: '16px',
+              background: '#fef2f2',
+              borderRadius: 'var(--v4-radius)',
+              borderLeft: '4px solid #ef4444',
+              margin: 0,
+            }}>
+              {journey.problem_love.problem_statement}
+            </p>
+          </div>
+          {journey.problem_love.problem_score !== undefined && journey.problem_love.problem_score !== null && (
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <div style={{ padding: '12px 16px', background: 'var(--v4-bg)', borderRadius: 'var(--v4-radius)' }}>
+                <div style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)' }}>Problem Score</div>
+                <div style={{ fontSize: '24px', fontWeight: 700, color: '#ef4444' }}>{journey.problem_love.problem_score}/10</div>
+              </div>
+              {journey.problem_love.evidence_quality && (
+                <div style={{ padding: '12px 16px', background: 'var(--v4-bg)', borderRadius: 'var(--v4-radius)' }}>
+                  <div style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)' }}>Evidence Tier</div>
+                  <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--v4-accent)' }}>{journey.problem_love.evidence_quality}</div>
+                </div>
+              )}
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* Customer Truth Stage */}
+      {(journey.customer_truth?.interview_count > 0 || journey.customer_truth?.key_quotes?.length > 0 || journey.customer_truth?.pain_patterns?.length > 0) && (
+        <Card title="Customer Truth" icon={<Users size={18} color="#3b82f6" />}>
+          {/* Interview Stats */}
+          {journey.customer_truth.interview_count > 0 && (
+            <div style={{
+              padding: '16px',
+              background: '#eff6ff',
+              borderRadius: 'var(--v4-radius)',
+              marginBottom: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '16px',
+            }}>
+              <div style={{
+                width: '48px',
+                height: '48px',
+                borderRadius: '50%',
+                background: '#3b82f6',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: '20px',
+                fontWeight: 700,
+              }}>
+                {journey.customer_truth.interview_count}
+              </div>
+              <div>
+                <div style={{ fontSize: '16px', fontWeight: 600 }}>Customer Interviews</div>
+                <div style={{ fontSize: '13px', color: 'var(--v4-text-muted)' }}>Direct customer evidence collected</div>
+              </div>
+            </div>
+          )}
+
+          {/* Key Quotes */}
+          {journey.customer_truth.key_quotes?.length > 0 && (
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)', marginBottom: '12px' }}>
+                Key Quotes
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {journey.customer_truth.key_quotes.slice(0, 5).map((quote, i) => (
+                  <div key={i} style={{
+                    padding: '16px',
+                    background: 'var(--v4-bg)',
+                    borderRadius: 'var(--v4-radius)',
+                    borderLeft: '3px solid #3b82f6',
+                    position: 'relative',
+                  }}>
+                    <Quote size={16} style={{ position: 'absolute', top: '12px', right: '12px', color: 'var(--v4-text-muted)', opacity: 0.3 }} />
+                    <p style={{ fontSize: '14px', fontStyle: 'italic', lineHeight: 1.6, margin: 0, color: 'var(--v4-text-secondary)' }}>
+                      "{quote}"
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Pain Patterns */}
+          {journey.customer_truth.pain_patterns?.length > 0 && (
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)', marginBottom: '12px' }}>
+                Pain Patterns
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {journey.customer_truth.pain_patterns.map((pain, i) => {
+                  const description = typeof pain === 'string' ? pain : pain.description || JSON.stringify(pain);
+                  const severity = typeof pain === 'object' && pain.severity ? pain.severity : null;
+                  return (
+                    <div key={i} style={{
+                      padding: '12px 16px',
+                      background: 'var(--v4-bg)',
+                      borderRadius: 'var(--v4-radius)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                    }}>
+                      <span style={{ fontSize: '14px' }}>{description}</span>
+                      {severity && (
+                        <span style={{
+                          padding: '4px 8px',
+                          fontSize: '11px',
+                          fontWeight: 600,
+                          textTransform: 'uppercase',
+                          borderRadius: '4px',
+                          background: severity === 'high' ? '#fef2f2' : severity === 'medium' ? '#fef9c3' : '#f0fdf4',
+                          color: severity === 'high' ? '#dc2626' : severity === 'medium' ? '#b45309' : '#16a34a',
+                        }}>
+                          {severity}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Trigger Patterns */}
+          {journey.customer_truth.trigger_patterns?.length > 0 && (
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)', marginBottom: '12px' }}>
+                Trigger Patterns
+              </h4>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                {journey.customer_truth.trigger_patterns.map((trigger, i) => (
+                  <span key={i} style={{
+                    padding: '6px 12px',
+                    background: '#dbeafe',
+                    color: '#1e40af',
+                    borderRadius: '100px',
+                    fontSize: '13px',
+                  }}>
+                    {trigger}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Outcome Patterns */}
+          {journey.customer_truth.outcome_patterns?.length > 0 && (
+            <div>
+              <h4 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)', marginBottom: '12px' }}>
+                Desired Outcomes
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {journey.customer_truth.outcome_patterns.map((outcome, i) => (
+                  <div key={i} style={{
+                    padding: '12px 16px',
+                    background: '#f0fdf4',
+                    borderRadius: 'var(--v4-radius)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                  }}>
+                    <CheckCircle size={16} color="#16a34a" />
+                    <span style={{ fontSize: '14px', color: '#166534' }}>{outcome}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* Opportunity Mapping Stage */}
+      {(journey.opportunity_mapping?.four_forces || journey.opportunity_mapping?.primary_opportunity) && (
+        <Card title="Opportunity Mapping" icon={<Map size={18} color="#8b5cf6" />}>
+          {/* Primary Opportunity */}
+          {journey.opportunity_mapping.primary_opportunity && (
+            <div style={{
+              padding: '20px',
+              background: 'linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%)',
+              borderRadius: 'var(--v4-radius)',
+              marginBottom: '20px',
+              borderLeft: '4px solid #8b5cf6',
+            }}>
+              <h4 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: '#6d28d9', marginBottom: '8px' }}>
+                Primary Opportunity
+              </h4>
+              <p style={{ fontSize: '16px', fontWeight: 500, lineHeight: 1.6, margin: 0, color: '#4c1d95' }}>
+                {journey.opportunity_mapping.primary_opportunity}
+              </p>
+            </div>
+          )}
+
+          {/* Four Forces */}
+          {journey.opportunity_mapping.four_forces && (
+            <div>
+              <h4 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)', marginBottom: '16px' }}>
+                Four Forces Analysis
+              </h4>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+                {/* Push Factors */}
+                <ForcesCard
+                  title="Push Factors"
+                  subtitle="Problems pushing away from current solution"
+                  items={journey.opportunity_mapping.four_forces.push_factors || []}
+                  color="#ef4444"
+                  bgColor="#fef2f2"
+                />
+                {/* Pull Factors */}
+                <ForcesCard
+                  title="Pull Factors"
+                  subtitle="Benefits pulling toward new solution"
+                  items={journey.opportunity_mapping.four_forces.pull_factors || []}
+                  color="#10b981"
+                  bgColor="#f0fdf4"
+                />
+                {/* Anxiety Factors */}
+                <ForcesCard
+                  title="Anxiety Factors"
+                  subtitle="Fears about switching"
+                  items={journey.opportunity_mapping.four_forces.anxiety_factors || []}
+                  color="#f59e0b"
+                  bgColor="#fef9c3"
+                />
+                {/* Habit Factors */}
+                <ForcesCard
+                  title="Habit Factors"
+                  subtitle="Comfort with current solution"
+                  items={journey.opportunity_mapping.four_forces.habit_factors || []}
+                  color="#6366f1"
+                  bgColor="#eef2ff"
+                />
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* Solution Design Stage */}
+      {journey.solution_design?.solution_concept && (
+        <Card title="Solution Design" icon={<Lightbulb size={18} color="#f59e0b" />}>
+          <div style={{
+            padding: '20px',
+            background: '#fffbeb',
+            borderRadius: 'var(--v4-radius)',
+            marginBottom: '20px',
+            borderLeft: '4px solid #f59e0b',
+          }}>
+            <h4 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: '#b45309', marginBottom: '8px' }}>
+              Solution Concept
+            </h4>
+            <p style={{ fontSize: '16px', lineHeight: 1.6, margin: 0, color: '#78350f' }}>
+              {journey.solution_design.solution_concept}
+            </p>
+          </div>
+
+          {/* DHM Score */}
+          {journey.solution_design.dhm_score && (
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)', marginBottom: '12px' }}>
+                DHM Score (Delight, Hard-to-copy, Margin)
+              </h4>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                <DHMScoreCard label="Delight" value={journey.solution_design.dhm_score.delight} color="#ef4444" />
+                <DHMScoreCard label="Hard to Copy" value={journey.solution_design.dhm_score.hard_to_copy} color="#3b82f6" />
+                <DHMScoreCard label="Margin" value={journey.solution_design.dhm_score.margin} color="#10b981" />
+              </div>
+            </div>
+          )}
+
+          {/* Pre-Mortem */}
+          {journey.solution_design.pre_mortem && ((journey.solution_design.pre_mortem.failure_scenarios?.length ?? 0) > 0 || (journey.solution_design.pre_mortem.mitigations?.length ?? 0) > 0) && (
+            <div>
+              <h4 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)', marginBottom: '12px' }}>
+                Pre-Mortem Analysis
+              </h4>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+                {journey.solution_design.pre_mortem.failure_scenarios && journey.solution_design.pre_mortem.failure_scenarios.length > 0 && (
+                  <div>
+                    <h5 style={{ fontSize: '11px', fontWeight: 600, color: '#dc2626', marginBottom: '8px' }}>Potential Failure Scenarios</h5>
+                    {journey.solution_design.pre_mortem.failure_scenarios.map((scenario, i) => (
+                      <div key={i} style={{ padding: '8px 12px', background: '#fef2f2', borderRadius: '6px', fontSize: '13px', marginBottom: '8px' }}>
+                        {scenario}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {journey.solution_design.pre_mortem.mitigations && journey.solution_design.pre_mortem.mitigations.length > 0 && (
+                  <div>
+                    <h5 style={{ fontSize: '11px', fontWeight: 600, color: '#16a34a', marginBottom: '8px' }}>Mitigations</h5>
+                    {journey.solution_design.pre_mortem.mitigations.map((mitigation, i) => (
+                      <div key={i} style={{ padding: '8px 12px', background: '#f0fdf4', borderRadius: '6px', fontSize: '13px', marginBottom: '8px' }}>
+                        {mitigation}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
+
+      {/* Validation Plan Stage */}
+      {journey.validation_plan?.experiments?.length > 0 && (
+        <Card title="Validation Plan" icon={<FlaskConical size={18} color="#10b981" />}>
+          <p style={{ fontSize: '14px', color: 'var(--v4-text-muted)', marginBottom: '20px' }}>
+            Experiments designed to validate key assumptions before full investment.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {journey.validation_plan.experiments.map((exp, i) => (
+              <div key={i} style={{
+                padding: '20px',
+                background: 'var(--v4-bg)',
+                borderRadius: 'var(--v4-radius)',
+                border: '1px solid var(--v4-border)',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <h4 style={{ fontSize: '15px', fontWeight: 600, margin: 0 }}>
+                    {exp.name || `Experiment ${i + 1}`}
+                  </h4>
+                  {exp.effort_level && (
+                    <span style={{
+                      padding: '4px 10px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      borderRadius: '100px',
+                      background: exp.effort_level === 'quick' ? '#f0fdf4' : exp.effort_level === 'moderate' ? '#fef9c3' : '#fef2f2',
+                      color: exp.effort_level === 'quick' ? '#16a34a' : exp.effort_level === 'moderate' ? '#b45309' : '#dc2626',
+                    }}>
+                      {exp.effort_level}
+                    </span>
+                  )}
+                </div>
+                {exp.hypothesis && (
+                  <div style={{ marginBottom: '12px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)' }}>Hypothesis</span>
+                    <p style={{ fontSize: '14px', margin: '4px 0 0', color: 'var(--v4-text-secondary)' }}>{exp.hypothesis}</p>
+                  </div>
+                )}
+                {exp.method && (
+                  <div style={{ marginBottom: '12px' }}>
+                    <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)' }}>Method</span>
+                    <p style={{ fontSize: '14px', margin: '4px 0 0', color: 'var(--v4-text-secondary)' }}>{exp.method}</p>
+                  </div>
+                )}
+                {exp.success_criteria && (
+                  <div style={{
+                    padding: '10px 14px',
+                    background: '#f0fdf4',
+                    borderRadius: '6px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                  }}>
+                    <CheckCircle size={14} color="#16a34a" />
+                    <span style={{ fontSize: '13px', color: '#166534' }}>
+                      <strong>Success:</strong> {exp.success_criteria}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+    </>
+  );
+}
+
+// Stage Indicator Component
+function StageIndicator({
+  icon,
+  label,
+  complete,
+  color,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  complete: boolean;
+  color: string;
+}) {
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '8px',
+      padding: '12px 8px',
+      borderRadius: 'var(--v4-radius)',
+      background: complete ? `${color}10` : 'transparent',
+      opacity: complete ? 1 : 0.5,
+    }}>
+      <div style={{
+        width: '40px',
+        height: '40px',
+        borderRadius: '50%',
+        background: complete ? color : 'var(--v4-border)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'white',
+      }}>
+        {icon}
+      </div>
+      <span style={{
+        fontSize: '11px',
+        fontWeight: 600,
+        textAlign: 'center',
+        color: complete ? 'var(--v4-text)' : 'var(--v4-text-muted)',
+      }}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
+// Forces Card Component
+function ForcesCard({
+  title,
+  subtitle,
+  items,
+  color,
+  bgColor,
+}: {
+  title: string;
+  subtitle: string;
+  items: string[];
+  color: string;
+  bgColor: string;
+}) {
+  return (
+    <div style={{
+      padding: '16px',
+      background: bgColor,
+      borderRadius: 'var(--v4-radius)',
+      borderTop: `3px solid ${color}`,
+    }}>
+      <h5 style={{ fontSize: '13px', fontWeight: 600, color, marginBottom: '4px' }}>{title}</h5>
+      <p style={{ fontSize: '11px', color: 'var(--v4-text-muted)', marginBottom: '12px' }}>{subtitle}</p>
+      {items.length > 0 ? (
+        <ul style={{ margin: 0, paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          {items.map((item, i) => (
+            <li key={i} style={{ fontSize: '13px', color: 'var(--v4-text-secondary)' }}>{item}</li>
+          ))}
+        </ul>
+      ) : (
+        <p style={{ fontSize: '13px', color: 'var(--v4-text-muted)', fontStyle: 'italic', margin: 0 }}>No data available</p>
+      )}
+    </div>
+  );
+}
+
+// DHM Score Card Component
+function DHMScoreCard({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: number | string | undefined;
+  color: string;
+}) {
+  const displayValue = value !== undefined && value !== null ? value : 'N/A';
+  const numericValue = typeof value === 'number' ? value : typeof value === 'string' ? parseFloat(value) : 0;
+  const percentage = numericValue > 0 && numericValue <= 10 ? numericValue * 10 : numericValue;
+
+  return (
+    <div style={{
+      padding: '16px',
+      background: 'var(--v4-bg)',
+      borderRadius: 'var(--v4-radius)',
+      textAlign: 'center',
+    }}>
+      <div style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)', marginBottom: '8px' }}>
+        {label}
+      </div>
+      <div style={{ fontSize: '28px', fontWeight: 700, color, marginBottom: '8px' }}>
+        {displayValue}
+      </div>
+      {typeof numericValue === 'number' && numericValue > 0 && (
+        <div style={{
+          height: '4px',
+          background: 'var(--v4-border)',
+          borderRadius: '2px',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            height: '100%',
+            width: `${Math.min(percentage, 100)}%`,
+            background: color,
+            borderRadius: '2px',
+          }} />
+        </div>
+      )}
+    </div>
+  );
 }
 
 // Executive Summary Section
@@ -3247,7 +3875,7 @@ function GenericSection({ sectionId, pack }: { sectionId: string; pack: Inceptio
 }
 
 // Helper Components
-function Card({ title, action, children }: { title: string; action?: string; children: React.ReactNode }) {
+function Card({ title, icon, action, children }: { title: string; icon?: React.ReactNode; action?: string; children: React.ReactNode }) {
   return (
     <section
       style={{
@@ -3266,7 +3894,10 @@ function Card({ title, action, children }: { title: string; action?: string; chi
           alignItems: 'center',
         }}
       >
-        <h3 style={{ fontSize: '15px', fontWeight: 600 }}>{title}</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {icon}
+          <h3 style={{ fontSize: '15px', fontWeight: 600, margin: 0 }}>{title}</h3>
+        </div>
         {action && (
           <span style={{ fontSize: '13px', color: 'var(--v4-text-secondary)', cursor: 'pointer' }}>{action} -&gt;</span>
         )}
