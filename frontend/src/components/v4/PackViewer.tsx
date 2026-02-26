@@ -643,17 +643,22 @@ function DiscoveryJourneySection({ pack }: { pack: InceptionPack }) {
                 Trigger Patterns
               </h4>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {journey.customer_truth.trigger_patterns.map((trigger, i) => (
-                  <span key={i} style={{
-                    padding: '6px 12px',
-                    background: '#dbeafe',
-                    color: '#1e40af',
-                    borderRadius: '100px',
-                    fontSize: '13px',
-                  }}>
-                    {trigger}
-                  </span>
-                ))}
+                {journey.customer_truth.trigger_patterns.map((trigger, i) => {
+                  // Handle both string and object triggers with description
+                  const triggerText = typeof trigger === 'string' ? trigger : (trigger as { description?: string })?.description || '';
+                  if (!triggerText) return null;
+                  return (
+                    <span key={i} style={{
+                      padding: '6px 12px',
+                      background: '#dbeafe',
+                      color: '#1e40af',
+                      borderRadius: '100px',
+                      fontSize: '13px',
+                    }}>
+                      {triggerText}
+                    </span>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -665,19 +670,24 @@ function DiscoveryJourneySection({ pack }: { pack: InceptionPack }) {
                 Desired Outcomes
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {journey.customer_truth.outcome_patterns.map((outcome, i) => (
-                  <div key={i} style={{
-                    padding: '12px 16px',
-                    background: '#f0fdf4',
-                    borderRadius: 'var(--v4-radius)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                  }}>
-                    <CheckCircle size={16} color="#16a34a" />
-                    <span style={{ fontSize: '14px', color: '#166534' }}>{outcome}</span>
-                  </div>
-                ))}
+                {journey.customer_truth.outcome_patterns.map((outcome, i) => {
+                  // Handle both string and object outcomes with description
+                  const outcomeText = typeof outcome === 'string' ? outcome : (outcome as { description?: string })?.description || '';
+                  if (!outcomeText) return null;
+                  return (
+                    <div key={i} style={{
+                      padding: '12px 16px',
+                      background: '#f0fdf4',
+                      borderRadius: 'var(--v4-radius)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '10px',
+                    }}>
+                      <CheckCircle size={16} color="#16a34a" />
+                      <span style={{ fontSize: '14px', color: '#166534' }}>{outcomeText}</span>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
