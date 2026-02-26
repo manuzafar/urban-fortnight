@@ -48,8 +48,17 @@ class SupabaseSessionStore:
             "error_message": data.get("error_message"),
             "errors": data.get("errors", []),
         }
-        self.client.table("discovery_sessions").insert(row).execute()
-        logger.info("session_created", session_id=session_id, user_id=user_id)
+        try:
+            self.client.table("discovery_sessions").insert(row).execute()
+            logger.info("session_created", session_id=session_id, user_id=user_id)
+        except Exception as e:
+            logger.error(
+                "session_create_failed",
+                session_id=session_id,
+                user_id=user_id,
+                error=str(e),
+            )
+            raise
 
     def get(self, session_id: str) -> Optional[dict[str, Any]]:
         """Get session data by ID."""
@@ -68,24 +77,43 @@ class SupabaseSessionStore:
 
     def update_status(self, session_id: str, updates: dict[str, Any]) -> bool:
         """Update session status fields."""
-        result = (
-            self.client.table("discovery_sessions")
-            .update(updates)
-            .eq("id", session_id)
-            .execute()
-        )
-        return len(result.data) > 0
+        try:
+            result = (
+                self.client.table("discovery_sessions")
+                .update(updates)
+                .eq("id", session_id)
+                .execute()
+            )
+            if result and result.data:
+                return len(result.data) > 0
+            return False
+        except Exception as e:
+            logger.warning(
+                "update_status_failed",
+                session_id=session_id,
+                error=str(e),
+            )
+            return False
 
     def save_inception_pack(
         self, session_id: str, user_id: str, pack: dict[str, Any]
     ) -> None:
         """Save inception pack to separate table."""
-        self.client.table("inception_packs").upsert({
-            "session_id": session_id,
-            "user_id": user_id,
-            "pack": pack,
-        }).execute()
-        logger.info("inception_pack_saved", session_id=session_id)
+        try:
+            self.client.table("inception_packs").upsert({
+                "session_id": session_id,
+                "user_id": user_id,
+                "pack": pack,
+            }).execute()
+            logger.info("inception_pack_saved", session_id=session_id)
+        except Exception as e:
+            logger.error(
+                "inception_pack_save_failed",
+                session_id=session_id,
+                user_id=user_id,
+                error=str(e),
+            )
+            raise
 
     def get_inception_pack(self, session_id: str) -> Optional[dict[str, Any]]:
         """Get inception pack for a session."""
@@ -106,46 +134,83 @@ class SupabaseSessionStore:
 
     def delete(self, session_id: str) -> bool:
         """Delete a session (cascade deletes inception_pack)."""
-        result = (
-            self.client.table("discovery_sessions")
-            .delete()
-            .eq("id", session_id)
-            .execute()
-        )
-        return len(result.data) > 0
+        try:
+            result = (
+                self.client.table("discovery_sessions")
+                .delete()
+                .eq("id", session_id)
+                .execute()
+            )
+            if result and result.data:
+                return len(result.data) > 0
+            return False
+        except Exception as e:
+            logger.warning(
+                "session_delete_failed",
+                session_id=session_id,
+                error=str(e),
+            )
+            return False
 
     def get_user_sessions(self, user_id: str) -> list[dict[str, Any]]:
         """Get all sessions for a user, ordered by creation date."""
-        result = (
-            self.client.table("discovery_sessions")
-            .select("id, status, product_idea, progress_percentage, created_at, updated_at")
-            .eq("user_id", user_id)
-            .order("created_at", desc=True)
-            .execute()
-        )
-        return result.data
+        try:
+            result = (
+                self.client.table("discovery_sessions")
+                .select("id, status, product_idea, progress_percentage, created_at, updated_at")
+                .eq("user_id", user_id)
+                .order("created_at", desc=True)
+                .execute()
+            )
+            if result and result.data:
+                return result.data
+            return []
+        except Exception as e:
+            logger.warning(
+                "get_user_sessions_failed",
+                user_id=user_id,
+                error=str(e),
+            )
+            return []
 
     def count_active(self) -> int:
         """Count active (non-terminal) sessions."""
-        result = (
-            self.client.table("discovery_sessions")
-            .select("id", count="exact")
-            .in_("status", ["pending", "in_progress"])
-            .execute()
-        )
-        return result.count or 0
+        try:
+            result = (
+                self.client.table("discovery_sessions")
+                .select("id", count="exact")
+                .in_("status", ["pending", "in_progress"])
+                .execute()
+            )
+            if result:
+                return result.count or 0
+            return 0
+        except Exception as e:
+            logger.warning("count_active_failed", error=str(e))
+            return 0
 
     def verify_ownership(self, session_id: str, user_id: str) -> bool:
         """Check that user_id owns session_id."""
-        result = (
-            self.client.table("discovery_sessions")
-            .select("id")
-            .eq("id", session_id)
-            .eq("user_id", user_id)
-            .maybe_single()
-            .execute()
-        )
-        return result.data is not None
+        try:
+            result = (
+                self.client.table("discovery_sessions")
+                .select("id")
+                .eq("id", session_id)
+                .eq("user_id", user_id)
+                .maybe_single()
+                .execute()
+            )
+            if result:
+                return result.data is not None
+            return False
+        except Exception as e:
+            logger.warning(
+                "verify_ownership_failed",
+                session_id=session_id,
+                user_id=user_id,
+                error=str(e),
+            )
+            return False
 
     # ═══════════════════════════════════════════════════════════════════════════════
     # DISCOVERY V4 METHODS
@@ -175,13 +240,22 @@ class SupabaseSessionStore:
             "iteration": 1,
             "progress_percentage": 0,
         }
-        self.client.table("discovery_sessions").insert(row).execute()
-        logger.info(
-            "v4_session_created",
-            session_id=session_id,
-            user_id=user_id,
-            mode=data.get("mode", "guided"),
-        )
+        try:
+            self.client.table("discovery_sessions").insert(row).execute()
+            logger.info(
+                "v4_session_created",
+                session_id=session_id,
+                user_id=user_id,
+                mode=data.get("mode", "guided"),
+            )
+        except Exception as e:
+            logger.error(
+                "v4_session_create_failed",
+                session_id=session_id,
+                user_id=user_id,
+                error=str(e),
+            )
+            raise
 
     def get_v4_session(self, session_id: str) -> Optional[dict[str, Any]]:
         """Get V4 session data including stage states."""
@@ -289,7 +363,9 @@ class SupabaseSessionStore:
                 .eq("stage_name", stage_name)
                 .execute()
             )
-            return len(result.data) > 0
+            if result and result.data:
+                return len(result.data) > 0
+            return False
         except Exception as e:
             logger.warning("approve_stage_failed", error=str(e))
             return False
@@ -377,7 +453,9 @@ class SupabaseSessionStore:
                 .eq("session_id", session_id)
                 .execute()
             )
-            return len(result.data) > 0
+            if result and result.data:
+                return len(result.data) > 0
+            return False
         except Exception as e:
             logger.warning("interview_delete_failed", error=str(e))
             return False
@@ -430,26 +508,37 @@ class SupabaseSessionStore:
         """Get all V4 sessions for a user."""
         import json
 
-        result = (
-            self.client.table("discovery_sessions")
-            .select("id, status, product_idea, additional_context, progress_percentage, created_at, updated_at")
-            .eq("user_id", user_id)
-            .order("created_at", desc=True)
-            .execute()
-        )
+        try:
+            result = (
+                self.client.table("discovery_sessions")
+                .select("id, status, product_idea, additional_context, progress_percentage, created_at, updated_at")
+                .eq("user_id", user_id)
+                .order("created_at", desc=True)
+                .execute()
+            )
 
-        # Filter to V4 sessions and extract mode from additional_context
-        v4_sessions = []
-        for session in result.data:
-            try:
-                ctx = json.loads(session.get("additional_context") or "{}")
-                if ctx.get("discovery_version") == "v4":
-                    session["mode"] = ctx.get("mode", "guided")
-                    v4_sessions.append(session)
-            except (json.JSONDecodeError, TypeError):
-                pass
+            if not result or not result.data:
+                return []
 
-        return v4_sessions
+            # Filter to V4 sessions and extract mode from additional_context
+            v4_sessions = []
+            for session in result.data:
+                try:
+                    ctx = json.loads(session.get("additional_context") or "{}")
+                    if ctx.get("discovery_version") == "v4":
+                        session["mode"] = ctx.get("mode", "guided")
+                        v4_sessions.append(session)
+                except (json.JSONDecodeError, TypeError):
+                    pass
+
+            return v4_sessions
+        except Exception as e:
+            logger.warning(
+                "get_user_v4_sessions_failed",
+                user_id=user_id,
+                error=str(e),
+            )
+            return []
 
     # ═══════════════════════════════════════════════════════════════════════════════
     # V4 SESSION PERSISTENCE (Full State)
@@ -505,7 +594,9 @@ class SupabaseSessionStore:
                 session_id=session_id,
                 progress=progress,
             )
-            return len(result.data) > 0
+            if result and result.data:
+                return len(result.data) > 0
+            return False
 
         except Exception as e:
             logger.error(
