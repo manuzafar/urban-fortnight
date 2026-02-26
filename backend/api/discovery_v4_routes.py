@@ -39,6 +39,49 @@ router = APIRouter(prefix="/api/discovery/v4", tags=["Discovery V4"])
 # Initialize session store
 session_store = SupabaseSessionStore()
 
+# Test user ID for development endpoints
+TEST_USER_ID = "00000000-0000-0000-0000-000000000001"
+TEST_USER_EMAIL = "test@seedform.dev"
+_test_user_ensured = False
+
+
+def _ensure_test_user_exists() -> bool:
+    """
+    Ensure the test user exists in Supabase auth.users table.
+    Uses admin API to create if not exists. Returns True if successful.
+    """
+    global _test_user_ensured
+    if _test_user_ensured:
+        return True
+
+    try:
+        from utils.supabase_client import get_supabase_client
+        client = get_supabase_client()
+
+        # Try to create test user via admin API
+        # If user already exists, this will fail gracefully
+        try:
+            client.auth.admin.create_user({
+                "id": TEST_USER_ID,
+                "email": TEST_USER_EMAIL,
+                "email_confirm": True,
+                "user_metadata": {"is_test_user": True},
+            })
+            logger.info("test_user_created", user_id=TEST_USER_ID)
+        except Exception as create_err:
+            # User likely already exists - that's fine
+            if "already been registered" in str(create_err) or "duplicate" in str(create_err).lower():
+                logger.debug("test_user_already_exists", user_id=TEST_USER_ID)
+            else:
+                logger.warning("test_user_create_warning", error=str(create_err))
+
+        _test_user_ensured = True
+        return True
+
+    except Exception as e:
+        logger.warning("ensure_test_user_failed", error=str(e))
+        return False
+
 
 # In-memory session state cache for active sessions
 # (Supplements database with fast access to running session state)
@@ -254,16 +297,15 @@ async def create_test_session(
     This endpoint is for testing purposes only.
     Now persists to database to survive deployments.
     """
+    # Ensure test user exists in auth.users (handles foreign key constraint)
+    _ensure_test_user_exists()
+
     session_id = generate_session_id()
-    # Use a fixed valid UUID for test users (bypasses foreign key constraint)
-    # This UUID is reserved for testing and doesn't need to exist in users table
-    # since Supabase RLS is bypassed with service role key
-    test_user_id = "00000000-0000-0000-0000-000000000001"
 
     now = datetime.utcnow().isoformat()
     session = DiscoverySessionV4(
         session_id=session_id,
-        user_id=test_user_id,
+        user_id=TEST_USER_ID,
         mode=request.mode,
         product_idea=request.product_idea,
         industry=request.industry,
@@ -277,7 +319,7 @@ async def create_test_session(
     try:
         session_store.create_v4_session(
             session_id=session_id,
-            user_id=test_user_id,
+            user_id=TEST_USER_ID,
             data={
                 "product_idea": request.product_idea,
                 "mode": request.mode.value,
@@ -609,11 +651,14 @@ async def continue_test_session_to_strategy(
             detail="Complete at least one discovery stage before continuing",
         )
 
+    # Ensure test user exists before running lifecycle
+    _ensure_test_user_exists()
+
     # Queue full lifecycle run with SSE streaming
     background_tasks.add_task(
         _run_full_lifecycle_with_v4,
         session_id,
-        "00000000-0000-0000-0000-000000000001",  # Fixed test user UUID
+        TEST_USER_ID,
     )
 
     return {
