@@ -1487,6 +1487,76 @@ def _integrate_validation_failures_into_revision(
     return state
 
 
+def _integrate_constraint_violations_into_revision(
+    state: DiscoveryState,
+) -> DiscoveryState:
+    """
+    Integrate constraint violations into the revision priority list.
+
+    This ensures that agents with constraint violations are prioritized
+    for revision alongside critique feedback.
+
+    Args:
+        state: Current workflow state
+
+    Returns:
+        Updated state with constraint violations integrated
+    """
+    try:
+        constraint_violations = state.get("constraint_violations") or {}
+        if not constraint_violations:
+            return state
+
+        # Get existing revision priority (handle None values)
+        quality = state.get("quality_assessment")
+        if quality is None:
+            quality = {}
+            state["quality_assessment"] = quality
+
+        revision_priority = quality.get("revision_priority") or []
+
+        # Map constraint violations to revision priority format
+        for agent_name, violations in constraint_violations.items():
+            if not violations:
+                continue
+            # Check if agent already in revision priority
+            existing = next(
+                (r for r in revision_priority if r.get("section", "").lower() == agent_name.lower()),
+                None
+            )
+
+            if existing:
+                # Add constraint violations to existing feedback
+                existing_feedback = existing.get("feedback") or []
+                existing["feedback"] = existing_feedback + [f"[CONSTRAINT] {v}" for v in violations[:5]]
+            else:
+                # Add new revision priority entry
+                revision_priority.append({
+                    "section": agent_name,
+                    "score": 0.3,  # Lower score = more urgent (constraints are important)
+                    "feedback": [f"[CONSTRAINT] {v}" for v in violations[:5]],
+                })
+
+        # Sort by score (lowest first = most urgent)
+        revision_priority.sort(key=lambda x: x.get("score", 1.0))
+
+        # Update state safely
+        if isinstance(state.get("quality_assessment"), dict):
+            state["quality_assessment"]["revision_priority"] = revision_priority
+
+    except Exception as e:
+        # Log but don't fail the workflow for constraint integration errors
+        import structlog
+        logger = structlog.get_logger(__name__)
+        logger.warning(
+            "constraint_integration_error",
+            error=str(e),
+            session_id=state.get("session_id"),
+        )
+
+    return state
+
+
 def _format_revision_context(
     previous_output: dict,
     feedback: list[str],
