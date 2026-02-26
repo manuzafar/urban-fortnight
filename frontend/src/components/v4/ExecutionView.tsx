@@ -7,7 +7,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { ArrowLeft, Radio, Clock, AlertCircle, Check } from 'lucide-react';
 import { useSSEV4 } from '../../hooks/useSSEV4';
-import { getInceptionPack } from '../../api/client';
+import { getInceptionPack, getV4TestInceptionPack } from '../../api/client';
 import { JourneyTimeline, type ExecutionPhase, type DiscoveryStage } from './JourneyTimeline';
 import { AgentCard } from './AgentCard';
 import { ConstraintFlow } from './ConstraintFlow';
@@ -94,9 +94,10 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
         onComplete(completedPack as unknown as InceptionPack);
         return;
       }
-      // Otherwise fetch from API (authenticated sessions)
+      // Otherwise fetch from API - use correct endpoint based on session type
       setFetchError(null);
-      getInceptionPack(sessionId)
+      const fetchPack = useTestEndpoint ? getV4TestInceptionPack : getInceptionPack;
+      fetchPack(sessionId)
         .then((pack: InceptionPack) => {
           onComplete(pack);
         })
@@ -109,7 +110,7 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
           );
         });
     }
-  }, [isComplete, completionStatus, completedPack, sessionId, onComplete]);
+  }, [isComplete, completionStatus, completedPack, sessionId, onComplete, useTestEndpoint]);
 
   // Get current agent insights
   const currentInsights = currentAgent ? insights[currentAgent] || [] : [];

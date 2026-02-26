@@ -117,6 +117,18 @@ export async function getInceptionPack(
 }
 
 /**
+ * Get the inception pack for a V4 test session (no auth required)
+ */
+export async function getV4TestInceptionPack(
+  sessionId: string
+): Promise<InceptionPack> {
+  const response = await fetchApi<{ pack: InceptionPack }>(
+    `/api/discovery/v4/test/sessions/${sessionId}/pack`
+  );
+  return response.pack;
+}
+
+/**
  * Delete a discovery session
  */
 export async function deleteSession(sessionId: string): Promise<void> {
