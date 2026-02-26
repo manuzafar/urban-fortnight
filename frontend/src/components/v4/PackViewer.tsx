@@ -1487,9 +1487,11 @@ function PersonasSection({ pack }: { pack: InceptionPack }) {
               <div>
                 <h5 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--v4-text-muted)', marginBottom: '8px' }}>Goals</h5>
                 <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '13px', color: 'var(--v4-text-secondary)' }}>
-                  {persona.goals.slice(0, 3).map((goal, j) => (
-                    <li key={j} style={{ marginBottom: '4px' }}>{goal}</li>
-                  ))}
+                  {persona.goals.slice(0, 3).map((goal, j) => {
+                    // Handle both string goals and object goals with description
+                    const goalText = typeof goal === 'string' ? goal : (goal as { description?: string })?.description || String(goal);
+                    return <li key={j} style={{ marginBottom: '4px' }}>{goalText}</li>;
+                  })}
                 </ul>
               </div>
             )}
@@ -1497,9 +1499,11 @@ function PersonasSection({ pack }: { pack: InceptionPack }) {
               <div>
                 <h5 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--v4-text-muted)', marginBottom: '8px' }}>Pain Points</h5>
                 <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '13px', color: 'var(--v4-text-secondary)' }}>
-                  {persona.pain_points.slice(0, 3).map((pain, j) => (
-                    <li key={j} style={{ marginBottom: '4px' }}>{pain}</li>
-                  ))}
+                  {persona.pain_points.slice(0, 3).map((pain, j) => {
+                    // Handle both string pain points and object pain points with description
+                    const painText = typeof pain === 'string' ? pain : (pain as { description?: string })?.description || String(pain);
+                    return <li key={j} style={{ marginBottom: '4px' }}>{painText}</li>;
+                  })}
                 </ul>
               </div>
             )}
