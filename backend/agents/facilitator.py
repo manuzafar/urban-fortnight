@@ -1309,7 +1309,11 @@ class FacilitatorAgent:
         """
         # Helper to safely get output from a stage (StageState is a Pydantic model)
         def get_stage_output(stage_name: str) -> dict | None:
-            stage = v4_session.stages.get(stage_name)
+            # Safely access stages - may be None or empty
+            stages = getattr(v4_session, 'stages', None)
+            if not stages:
+                return None
+            stage = stages.get(stage_name) if isinstance(stages, dict) else None
             if stage and hasattr(stage, 'output') and stage.output:
                 return stage.output
             return None
@@ -1334,10 +1338,11 @@ class FacilitatorAgent:
                 state["_v4_outcome_patterns"] = patterns.get("outcome_patterns", [])
 
             # Convert interviews to customer research format
-            if v4_session.interviews:
-                state["_v4_interview_count"] = len(v4_session.interviews)
+            interviews = getattr(v4_session, 'interviews', None) or []
+            if interviews:
+                state["_v4_interview_count"] = len(interviews)
                 state["_v4_key_quotes"] = [
-                    i.key_quote for i in v4_session.interviews if i.key_quote
+                    i.key_quote for i in interviews if hasattr(i, 'key_quote') and i.key_quote
                 ][:5]
 
         # Opportunity Mapping -> Competitive analysis and strategy
@@ -1407,12 +1412,21 @@ class FacilitatorAgent:
             + "\n".join(f"- {c}" for c in constraints)
         )
 
-    async def _emit_phase_start(self, phase: str) -> None:
+    async def _emit_phase_start(self, phase: str, agents: list[str] | None = None) -> None:
         """Emit a phase start event."""
         emitter = get_current_emitter()
         if emitter:
             try:
-                await emitter.emit_phase_start(phase)
+                # Map phase names to their agents
+                phase_agents = {
+                    "strategy": ["business_strategy", "gtm_strategy", "financial_modeling"],
+                    "delivery": ["product_requirements", "technical_architect", "legal_regulatory", "risk_assessment"],
+                    "design": ["wireframe_agent", "prototype_agent"],
+                    "quality": ["critique"],
+                    "synthesis": ["stakeholder_agent", "validation_agent", "executive_summary_agent"],
+                }
+                agent_list = agents or phase_agents.get(phase, [])
+                await emitter.emit_phase_start(phase, agent_list)
             except Exception as e:
                 self.logger.warning("emit_phase_start_error", phase=phase, error=str(e))
 
