@@ -19,7 +19,7 @@ interface SectionNavProps {
   onSectionChange: (sectionId: string) => void;
 }
 
-const phases = ['Overview', 'Discovery', 'Strategy', 'Delivery', 'Design', 'Synthesis', 'Quality'];
+const phases = ['V4 Discovery', 'Overview', 'Discovery', 'Strategy', 'Delivery', 'Design', 'Synthesis', 'Quality'];
 
 export function SectionNav({ sections, activeSection, onSectionChange }: SectionNavProps) {
   const sectionsByPhase = phases.reduce((acc, phase) => {

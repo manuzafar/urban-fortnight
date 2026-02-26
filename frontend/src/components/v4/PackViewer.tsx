@@ -1316,6 +1316,8 @@ function ExecutiveSummarySection({
 // Customer Research Section
 function CustomerResearchSection({ pack }: { pack: InceptionPack }) {
   const research = pack.customer_research;
+  const painSignals = research?.pain_signals || [];
+  const jtbd = research?.job_to_be_done;
 
   return (
     <>
@@ -1324,6 +1326,55 @@ function CustomerResearchSection({ pack }: { pack: InceptionPack }) {
           {research?.research_scope?.segments_examined?.join(', ') || 'Customer research findings will appear here.'}
         </div>
       </Card>
+
+      {/* Job to Be Done */}
+      {jtbd && (jtbd.trigger_situation || jtbd.underlying_goal || jtbd.success_definition) && (
+        <Card title="Job to Be Done">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {jtbd.trigger_situation && (
+              <div>
+                <h5 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)', marginBottom: '6px' }}>When...</h5>
+                <p style={{ fontSize: '14px', color: 'var(--v4-text-secondary)', margin: 0 }}>{jtbd.trigger_situation}</p>
+              </div>
+            )}
+            {jtbd.underlying_goal && (
+              <div>
+                <h5 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)', marginBottom: '6px' }}>I want to...</h5>
+                <p style={{ fontSize: '14px', color: 'var(--v4-text-secondary)', margin: 0 }}>{jtbd.underlying_goal}</p>
+              </div>
+            )}
+            {jtbd.success_definition && (
+              <div>
+                <h5 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)', marginBottom: '6px' }}>So that...</h5>
+                <p style={{ fontSize: '14px', color: 'var(--v4-text-secondary)', margin: 0 }}>{jtbd.success_definition}</p>
+              </div>
+            )}
+          </div>
+        </Card>
+      )}
+
+      {/* Pain Signals */}
+      {painSignals.length > 0 && (
+        <Card title="Pain Signals">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {painSignals.map((signal, i) => {
+              const desc = typeof signal === 'string' ? signal : (signal as { description?: string })?.description || '';
+              const severity = typeof signal === 'object' ? (signal as { severity?: string })?.severity : null;
+              if (!desc) return null;
+              return (
+                <div key={i} style={{
+                  padding: '14px 16px',
+                  background: 'var(--v4-bg)',
+                  borderRadius: 'var(--v4-radius)',
+                  borderLeft: `3px solid ${severity === 'high' ? 'var(--v4-error)' : 'var(--v4-accent)'}`,
+                }}>
+                  <p style={{ fontSize: '14px', color: 'var(--v4-text-secondary)', lineHeight: 1.5, margin: 0 }}>{desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </Card>
+      )}
 
       {research?.uncomfortable_insights && research.uncomfortable_insights.length > 0 && (
         <Card title="Uncomfortable Insights">
@@ -1337,8 +1388,8 @@ function CustomerResearchSection({ pack }: { pack: InceptionPack }) {
                   borderRadius: 'var(--v4-radius)',
                 }}
               >
-                <p style={{ fontSize: '14px', color: '#78350f', lineHeight: 1.5 }}>
-                  {insight.insight}
+                <p style={{ fontSize: '14px', color: '#78350f', lineHeight: 1.5, margin: 0 }}>
+                  {typeof insight === 'string' ? insight : insight.insight}
                 </p>
               </div>
             ))}
@@ -1354,6 +1405,9 @@ function CompetitiveAnalysisSection({ pack }: { pack: InceptionPack }) {
   const analysis = pack.competitive_analysis;
   const competitors: CompetitorDetail[] = analysis?.competitors || analysis?.direct_competitors || [];
 
+  // Get four forces from discovery journey as fallback
+  const fourForces = pack.discovery_journey?.opportunity_mapping?.four_forces;
+
   // Helper to get competitor description from available fields
   const getCompetitorInfo = (comp: CompetitorDetail): string => {
     if (comp.description) return comp.description;
@@ -1365,49 +1419,137 @@ function CompetitiveAnalysisSection({ pack }: { pack: InceptionPack }) {
     return 'Competitor identified';
   };
 
+  // Helper to extract text from force items
+  const getForceText = (item: unknown): string => {
+    if (typeof item === 'string') return item;
+    if (typeof item === 'object' && item !== null) {
+      return (item as { description?: string }).description || JSON.stringify(item);
+    }
+    return String(item);
+  };
+
   return (
     <>
-      <Card title="Competitive Landscape">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-          {competitors.slice(0, 4).map((comp: CompetitorDetail, i: number) => (
-            <div
-              key={i}
-              style={{
-                padding: '16px',
-                background: 'var(--v4-bg)',
-                borderRadius: 'var(--v4-radius)',
-              }}
-            >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                <h4 style={{ fontSize: '14px', fontWeight: 600 }}>{comp.name}</h4>
-                {comp.threat_level && (
-                  <span
-                    style={{
-                      fontSize: '10px',
-                      fontWeight: 600,
-                      textTransform: 'uppercase',
-                      padding: '2px 6px',
-                      borderRadius: '3px',
-                      background: comp.threat_level === 'high' ? 'var(--v4-error-bg)' : comp.threat_level === 'medium' ? 'var(--v4-warning-bg)' : 'var(--v4-success-bg)',
-                      color: comp.threat_level === 'high' ? 'var(--v4-error)' : comp.threat_level === 'medium' ? '#a16207' : 'var(--v4-success)',
-                    }}
-                  >
-                    {comp.threat_level}
-                  </span>
+      {/* Competitors - only show if we have any */}
+      {competitors.length > 0 && (
+        <Card title="Competitive Landscape">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+            {competitors.slice(0, 4).map((comp: CompetitorDetail, i: number) => (
+              <div
+                key={i}
+                style={{
+                  padding: '16px',
+                  background: 'var(--v4-bg)',
+                  borderRadius: 'var(--v4-radius)',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                  <h4 style={{ fontSize: '14px', fontWeight: 600 }}>{comp.name}</h4>
+                  {comp.threat_level && (
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        fontWeight: 600,
+                        textTransform: 'uppercase',
+                        padding: '2px 6px',
+                        borderRadius: '3px',
+                        background: comp.threat_level === 'high' ? 'var(--v4-error-bg)' : comp.threat_level === 'medium' ? 'var(--v4-warning-bg)' : 'var(--v4-success-bg)',
+                        color: comp.threat_level === 'high' ? 'var(--v4-error)' : comp.threat_level === 'medium' ? '#a16207' : 'var(--v4-success)',
+                      }}
+                    >
+                      {comp.threat_level}
+                    </span>
+                  )}
+                </div>
+                <p style={{ fontSize: '13px', color: 'var(--v4-text-secondary)', lineHeight: 1.5, marginBottom: comp.weaknesses?.length ? '8px' : 0 }}>
+                  {getCompetitorInfo(comp)}
+                </p>
+                {comp.weaknesses && comp.weaknesses.length > 0 && (
+                  <p style={{ fontSize: '12px', color: 'var(--v4-text-muted)', lineHeight: 1.4 }}>
+                    Weaknesses: {comp.weaknesses.slice(0, 2).join(', ')}
+                  </p>
                 )}
               </div>
-              <p style={{ fontSize: '13px', color: 'var(--v4-text-secondary)', lineHeight: 1.5, marginBottom: comp.weaknesses?.length ? '8px' : 0 }}>
-                {getCompetitorInfo(comp)}
-              </p>
-              {comp.weaknesses && comp.weaknesses.length > 0 && (
-                <p style={{ fontSize: '12px', color: 'var(--v4-text-muted)', lineHeight: 1.4 }}>
-                  Weaknesses: {comp.weaknesses.slice(0, 2).join(', ')}
-                </p>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      {/* Four Forces Analysis - show when no competitors exist */}
+      {competitors.length === 0 && fourForces && (() => {
+        // Handle both naming conventions: push/push_factors, pull/pull_factors, etc.
+        const ff = fourForces as Record<string, string[] | string | undefined>;
+        const pushItems = (ff.push || fourForces.push_factors || []) as string[];
+        const pullItems = (ff.pull || fourForces.pull_factors || []) as string[];
+        const anxietyItems = (ff.anxiety || fourForces.anxiety_factors || []) as string[];
+        const habitItems = (ff.habit || fourForces.habit_factors || []) as string[];
+        const keyInsight = ff.key_insight as string | undefined;
+
+        return (
+          <Card title="Market Forces Analysis">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+              {pushItems.length > 0 && (
+                <div style={{ padding: '14px', background: '#fef2f2', borderRadius: 'var(--v4-radius)' }}>
+                  <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#dc2626', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>Push Factors</span>
+                    <span style={{ fontSize: '11px', fontWeight: 400 }}>(Away from current)</span>
+                  </h4>
+                  <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '13px', color: '#991b1b' }}>
+                    {pushItems.slice(0, 3).map((f, i) => (
+                      <li key={i} style={{ marginBottom: '6px' }}>{getForceText(f)}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {pullItems.length > 0 && (
+                <div style={{ padding: '14px', background: '#f0fdf4', borderRadius: 'var(--v4-radius)' }}>
+                  <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#16a34a', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>Pull Factors</span>
+                    <span style={{ fontSize: '11px', fontWeight: 400 }}>(Toward new solution)</span>
+                  </h4>
+                  <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '13px', color: '#166534' }}>
+                    {pullItems.slice(0, 3).map((f, i) => (
+                      <li key={i} style={{ marginBottom: '6px' }}>{getForceText(f)}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {anxietyItems.length > 0 && (
+                <div style={{ padding: '14px', background: '#fef9c3', borderRadius: 'var(--v4-radius)' }}>
+                  <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#a16207', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>Anxiety Factors</span>
+                    <span style={{ fontSize: '11px', fontWeight: 400 }}>(Fears about change)</span>
+                  </h4>
+                  <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '13px', color: '#854d0e' }}>
+                    {anxietyItems.slice(0, 3).map((f, i) => (
+                      <li key={i} style={{ marginBottom: '6px' }}>{getForceText(f)}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {habitItems.length > 0 && (
+                <div style={{ padding: '14px', background: '#eff6ff', borderRadius: 'var(--v4-radius)' }}>
+                  <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#2563eb', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>Habit Factors</span>
+                    <span style={{ fontSize: '11px', fontWeight: 400 }}>(Current behaviors)</span>
+                  </h4>
+                  <ul style={{ margin: 0, paddingLeft: '16px', fontSize: '13px', color: '#1e40af' }}>
+                    {habitItems.slice(0, 3).map((f, i) => (
+                      <li key={i} style={{ marginBottom: '6px' }}>{getForceText(f)}</li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </div>
-          ))}
-        </div>
-      </Card>
+            {keyInsight && (
+              <div style={{ marginTop: '16px', padding: '12px 14px', background: 'var(--v4-bg)', borderRadius: 'var(--v4-radius)', borderLeft: '3px solid var(--v4-accent)' }}>
+                <h5 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)', marginBottom: '6px' }}>Key Insight</h5>
+                <p style={{ fontSize: '14px', color: 'var(--v4-text-secondary)', margin: 0 }}>{keyInsight}</p>
+              </div>
+            )}
+          </Card>
+        );
+      })()}
 
       {analysis?.market_gaps && analysis.market_gaps.length > 0 && (
         <Card title="Market Gaps">
@@ -2240,10 +2382,20 @@ function PRDSection({ pack }: { pack: InceptionPack }) {
 function TechArchitectureSection({ pack }: { pack: InceptionPack }) {
   const arch = pack.technical_architecture;
 
-  if (!arch) {
+  // Check if arch exists and has meaningful content
+  const hasContent = arch && (
+    arch.architecture_style ||
+    (arch.technology_stack && arch.technology_stack.length > 0) ||
+    (arch.system_components && arch.system_components.length > 0)
+  );
+
+  if (!hasContent) {
     return (
       <Card title="Technical Architecture">
-        <p style={{ fontSize: '14px', color: 'var(--v4-text-secondary)' }}>No technical architecture data available.</p>
+        <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--v4-text-muted)' }}>
+          <p style={{ fontSize: '14px', marginBottom: '8px' }}>Technical architecture data is not yet available.</p>
+          <p style={{ fontSize: '12px' }}>The system design will appear here once the Delivery phase completes.</p>
+        </div>
       </Card>
     );
   }
