@@ -18,7 +18,7 @@ interface PackViewerV4Props {
   onBack: () => void;
 }
 
-// Section definitions
+// Section definitions - IDs must match the switch cases in renderSectionContent
 const SECTIONS: NavSection[] = [
   { id: 'executive_summary', number: '01', title: 'Executive Summary', phase: 'Overview', status: 'done' },
   { id: 'customer_research', number: '02', title: 'Customer Research', phase: 'Discovery', status: 'done' },
@@ -28,7 +28,7 @@ const SECTIONS: NavSection[] = [
   { id: 'gtm_strategy', number: '06', title: 'Go-to-Market', phase: 'Strategy', status: 'done' },
   { id: 'financial_model', number: '07', title: 'Financial Model', phase: 'Strategy', status: 'warn' },
   { id: 'product_requirements', number: '08', title: 'Product Requirements', phase: 'Delivery', status: 'done' },
-  { id: 'tech_architecture', number: '09', title: 'Tech Architecture', phase: 'Delivery', status: 'done' },
+  { id: 'technical_architecture', number: '09', title: 'Tech Architecture', phase: 'Delivery', status: 'done' },
   { id: 'legal_regulatory', number: '10', title: 'Legal & Regulatory', phase: 'Delivery', status: 'done' },
   { id: 'risk_assessment', number: '11', title: 'Risk Assessment', phase: 'Delivery', status: 'warn' },
   { id: 'wireframes', number: '12', title: 'Wireframes', phase: 'Design', status: 'done' },
