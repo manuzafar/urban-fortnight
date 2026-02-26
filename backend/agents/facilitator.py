@@ -1258,6 +1258,10 @@ class FacilitatorAgent:
         # Convert V4 discovery outputs to V3 state fields
         state = self._convert_v4_to_v3_state(state, v4_session)
 
+        # Synthesize pack sections from V4 data (populates customer_research,
+        # competitive_analysis, detailed_personas)
+        state = self._synthesize_v4_pack_sections(state, v4_session)
+
         # Mark evidence tier for downstream agents
         if v4_session.overall_evidence_quality in (EvidenceQuality.E1, EvidenceQuality.E2):
             state["_discovery_evidence_tier"] = v4_session.overall_evidence_quality
@@ -1413,6 +1417,278 @@ class FacilitatorAgent:
             "Build on these constraints rather than generating conflicting data.\n\n"
             + "\n".join(f"- {c}" for c in constraints)
         )
+
+    def _synthesize_v4_pack_sections(
+        self,
+        state: DiscoveryState,
+        v4_session: Any,
+    ) -> DiscoveryState:
+        """
+        Synthesize pack sections from V4 discovery outputs.
+
+        This populates customer_research, competitive_analysis, and detailed_personas
+        from V4 stage outputs when the discovery swarm is skipped.
+        """
+        self.logger.info(
+            "synthesizing_v4_pack_sections",
+            session_id=state.get("session_id"),
+        )
+
+        # Helper to safely get output from a stage
+        def get_stage_output(stage_name: str) -> dict | None:
+            stages = getattr(v4_session, 'stages', None)
+            if not stages:
+                return None
+            stage = stages.get(stage_name) if isinstance(stages, dict) else None
+            if stage and hasattr(stage, 'output') and stage.output:
+                return stage.output
+            return None
+
+        # 1. Build customer_research from V4 problem_love + customer_truth
+        if not state.get("customer_research"):
+            state["customer_research"] = self._build_customer_research_from_v4(
+                get_stage_output("problem_love"),
+                get_stage_output("customer_truth"),
+                v4_session,
+            )
+            self.logger.info(
+                "v4_customer_research_synthesized",
+                session_id=state.get("session_id"),
+                has_pain_signals=bool(
+                    (state.get("customer_research") or {}).get("pain_signals")
+                ),
+            )
+
+        # 2. Build competitive_analysis from V4 opportunity_mapping + solution_design
+        if not state.get("competitive_analysis"):
+            state["competitive_analysis"] = self._build_competitive_analysis_from_v4(
+                get_stage_output("opportunity_mapping"),
+                get_stage_output("solution_design"),
+            )
+            self.logger.info(
+                "v4_competitive_analysis_synthesized",
+                session_id=state.get("session_id"),
+                has_competitors=bool(
+                    (state.get("competitive_analysis") or {}).get("competitors")
+                ),
+            )
+
+        # 3. Build detailed_personas from V4 customer_truth patterns
+        if not state.get("detailed_personas"):
+            state["detailed_personas"] = self._build_personas_from_v4(
+                get_stage_output("customer_truth"),
+                v4_session,
+            )
+            self.logger.info(
+                "v4_detailed_personas_synthesized",
+                session_id=state.get("session_id"),
+                persona_count=len(
+                    (state.get("detailed_personas") or {}).get("personas", [])
+                ),
+            )
+
+        return state
+
+    def _build_customer_research_from_v4(
+        self,
+        problem_love: dict | None,
+        customer_truth: dict | None,
+        v4_session: Any,
+    ) -> dict:
+        """Convert V4 problem_love + customer_truth → customer_research format."""
+        problem_love = problem_love or {}
+        customer_truth = customer_truth or {}
+
+        # Extract pain signals from problem_love
+        pain_signals = []
+        for pain in problem_love.get("pain_points", []):
+            if isinstance(pain, dict):
+                pain_signals.append({
+                    "description": pain.get("description", str(pain)),
+                    "evidence_tier": "E3",
+                    "evidence_detail": "Identified during V4 discovery",
+                    "impact": pain.get("impact", "Significant"),
+                    "severity": pain.get("severity", "high"),
+                    "challenges_solution": False,
+                })
+            else:
+                pain_signals.append({
+                    "description": str(pain),
+                    "evidence_tier": "E3",
+                    "evidence_detail": "Identified during V4 discovery",
+                    "impact": "Significant",
+                    "severity": "high",
+                    "challenges_solution": False,
+                })
+
+        # Extract uncomfortable insights from customer_truth
+        uncomfortable_insights = []
+        for insight in customer_truth.get("key_insights", []):
+            if isinstance(insight, dict):
+                uncomfortable_insights.append({
+                    "insight": insight.get("insight", str(insight)),
+                    "evidence_tier": "E2" if customer_truth.get("interviews") else "E3",
+                    "implication": insight.get("implication", ""),
+                })
+            else:
+                uncomfortable_insights.append({
+                    "insight": str(insight),
+                    "evidence_tier": "E3",
+                    "implication": "",
+                })
+
+        # Get interviews from v4_session if available
+        interviews = getattr(v4_session, 'interviews', None) or []
+        has_interviews = len(interviews) > 0
+
+        # Extract target segments
+        target_segments = problem_love.get("target_segments", [])
+        if not target_segments:
+            target_segments = [v4_session.target_market] if hasattr(v4_session, 'target_market') and v4_session.target_market else []
+
+        return {
+            "research_scope": {
+                "segments_examined": target_segments,
+                "observation_context": "V4 Discovery Process",
+                "known_gaps": ["Full market sizing requires validation"],
+                "confidence_level": "high" if has_interviews else "medium",
+            },
+            "job_to_be_done": {
+                "trigger_situation": problem_love.get("problem_statement", ""),
+                "underlying_goal": problem_love.get("desired_outcome", ""),
+                "success_definition": problem_love.get("success_criteria", ""),
+            },
+            "pain_signals": pain_signals,
+            "uncomfortable_insights": uncomfortable_insights,
+            "market_context": {
+                "total_addressable_market": "Requires validation",
+                "serviceable_addressable_market": "Requires validation",
+                "serviceable_obtainable_market": "Requires validation",
+                "uncertainty_factors": ["V4 discovery - market sizing pending"],
+                "market_trends": [],
+            },
+        }
+
+    def _build_competitive_analysis_from_v4(
+        self,
+        opportunity_mapping: dict | None,
+        solution_design: dict | None,
+    ) -> dict:
+        """Convert V4 opportunity_mapping + solution_design → competitive_analysis format."""
+        opportunity = opportunity_mapping or {}
+        solution = solution_design or {}
+
+        # Extract competitors from solution_design
+        competitors = []
+        for comp in solution.get("competitors", []):
+            if isinstance(comp, dict):
+                competitors.append({
+                    "name": comp.get("name", "Unknown"),
+                    "description": comp.get("description", ""),
+                    "strengths": comp.get("strengths", []),
+                    "weaknesses": comp.get("weaknesses", []),
+                    "threat_level": comp.get("threat_level", "medium"),
+                    "differentiation_opportunity": comp.get("gap", ""),
+                })
+            else:
+                competitors.append({
+                    "name": str(comp),
+                    "description": "",
+                    "strengths": [],
+                    "weaknesses": [],
+                    "threat_level": "medium",
+                    "differentiation_opportunity": "",
+                })
+
+        # Extract market gaps from four forces analysis
+        four_forces = opportunity.get("four_forces", {})
+        market_gaps = []
+        push_factors = four_forces.get("push_factors", [])
+        pull_factors = four_forces.get("pull_factors", [])
+
+        if push_factors:
+            for p in push_factors[:2]:
+                if isinstance(p, dict):
+                    market_gaps.append(f"Push: {p.get('description', str(p))}")
+                else:
+                    market_gaps.append(f"Push: {p}")
+        if pull_factors:
+            for p in pull_factors[:2]:
+                if isinstance(p, dict):
+                    market_gaps.append(f"Pull: {p.get('description', str(p))}")
+                else:
+                    market_gaps.append(f"Pull: {p}")
+
+        # Extract differentiation/moats
+        differentiation = solution.get("differentiation", [])
+        if not differentiation:
+            differentiation = solution.get("competitive_moats", [])
+
+        return {
+            "competitors": competitors,
+            "direct_competitors": competitors,
+            "market_gaps": market_gaps,
+            "competitive_moat": differentiation,
+            "competitive_moats": differentiation,
+        }
+
+    def _build_personas_from_v4(
+        self,
+        customer_truth: dict | None,
+        v4_session: Any,
+    ) -> dict:
+        """Convert V4 customer_truth patterns → detailed_personas format."""
+        customer_truth = customer_truth or {}
+        patterns = customer_truth.get("patterns", {})
+        interviews = getattr(v4_session, 'interviews', None) or []
+
+        personas = []
+
+        # Build primary persona from interview patterns
+        if patterns or interviews:
+            primary_persona = {
+                "name": "Primary User",
+                "role": patterns.get("common_role", "Target Customer"),
+                "archetype": "Early Adopter",
+                "tenure": "N/A",
+                "quote": "",
+                "jobs_to_be_done": [],
+                "frustrations": patterns.get("pain_patterns", []),
+                "goals": patterns.get("outcome_patterns", []),
+                "discovery_channels": [],
+                "evaluation_criteria": [],
+            }
+
+            # Add quotes from interviews
+            if interviews:
+                quotes = []
+                for i in interviews:
+                    key_quote = getattr(i, 'key_quote', None) if hasattr(i, 'key_quote') else i.get('key_quote') if isinstance(i, dict) else None
+                    if key_quote:
+                        quotes.append(key_quote)
+                if quotes:
+                    primary_persona["quote"] = quotes[0]
+
+            # Add jobs from trigger patterns
+            trigger_patterns = patterns.get("trigger_patterns", [])
+            for trigger in trigger_patterns[:3]:
+                if isinstance(trigger, dict):
+                    primary_persona["jobs_to_be_done"].append(trigger.get("description", str(trigger)))
+                else:
+                    primary_persona["jobs_to_be_done"].append(str(trigger))
+
+            personas.append(primary_persona)
+
+        # Build the detailed_personas structure that matches backend format
+        # (it will be transformed by _transform_detailed_personas in helpers.py)
+        return {
+            "primary_persona": personas[0] if personas else {},
+            "secondary_personas": [],
+            "anti_persona": {},
+            "persona_prioritisation": {
+                "primary_buyer": "Primary User" if personas else "",
+            },
+        }
 
     async def _emit_phase_start(self, phase: str, agents: list[str] | None = None) -> None:
         """Emit a phase start event."""

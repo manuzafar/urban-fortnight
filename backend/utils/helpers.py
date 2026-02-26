@@ -326,30 +326,56 @@ def _transform_financial_model(
     quarterly = financial_model.get("quarterly_projections_year_2_3", []) or []
     projections = []
 
-    # Add key monthly milestones (months 1, 6, 12)
-    for month_data in monthly:
-        month = month_data.get("month", 0)
-        if month in [1, 6, 12]:
+    # First check if projections already exist (pass through)
+    existing_projections = financial_model.get("projections", [])
+    if existing_projections:
+        projections = existing_projections
+    else:
+        # Add key monthly milestones (months 1, 6, 12)
+        cumulative = 0
+        for month_data in monthly:
+            month = month_data.get("month", 0)
+            profit = month_data.get("profit", 0)
+            cumulative += profit
+            if month in [1, 6, 12]:
+                projections.append({
+                    "period": f"Month {month}",
+                    "revenue": month_data.get("revenue", 0),
+                    "costs": month_data.get("costs", 0),
+                    "profit": profit,
+                    "cumulative_profit": cumulative,
+                })
+
+        # Add quarterly data
+        for q_data in quarterly:
+            q_profit = q_data.get("profit", 0)
+            cumulative += q_profit
             projections.append({
-                "period": f"Month {month}",
-                "revenue": month_data.get("revenue", 0),
-                "costs": month_data.get("costs", 0),
-                "profit": month_data.get("profit", 0),
-                "cumulative_profit": 0,  # Would need running calculation
+                "period": q_data.get("quarter", ""),
+                "revenue": q_data.get("revenue", 0),
+                "costs": q_data.get("costs", 0),
+                "profit": q_profit,
+                "cumulative_profit": cumulative,
             })
 
-    # Add quarterly data
-    for q_data in quarterly:
-        projections.append({
-            "period": q_data.get("quarter", ""),
-            "revenue": q_data.get("revenue", 0),
-            "costs": q_data.get("costs", 0),
-            "profit": q_data.get("profit", 0),
-            "cumulative_profit": 0,
-        })
+        # If still no projections, build minimal placeholder from five_year_projection
+        if not projections:
+            five_year = financial_model.get("five_year_projection", {}) or {}
+            if five_year:
+                for year_key in ["year_1", "year_2", "year_3", "year_4", "year_5"]:
+                    year_data = five_year.get(year_key, {}) or {}
+                    if year_data:
+                        year_num = year_key.replace("year_", "Year ")
+                        projections.append({
+                            "period": year_num,
+                            "revenue": year_data.get("revenue", 0),
+                            "costs": year_data.get("costs", 0),
+                            "profit": year_data.get("profit", 0),
+                            "cumulative_profit": 0,
+                        })
 
-    if projections:
-        transformed["projections"] = projections
+    # Always include projections (even if empty) so frontend doesn't fail
+    transformed["projections"] = projections if projections else []
 
     # Transform assumptions - may be a list or part of scenarios
     assumptions = financial_model.get("assumptions", [])
@@ -558,16 +584,24 @@ def build_inception_pack(state: dict[str, Any]) -> dict[str, Any]:
     Returns:
         dict: Complete InceptionPack structure.
     """
+    logger = structlog.get_logger(__name__)
+    session_id = state.get("session_id", "unknown")
+
     # Transform sections that have structural mismatches between backend and frontend
     gtm_strategy = _transform_gtm_plan(state.get("gtm_plan"))
     detailed_personas = _transform_detailed_personas(state.get("detailed_personas"))
     financial_model = _transform_financial_model(state.get("financial_model"))
     wireframes = _transform_wireframes(state.get("wireframes"))
 
+    # Get customer_research - ensure it's not empty {}
+    customer_research = state.get("customer_research")
+    if customer_research == {}:
+        customer_research = None
+
     pack = {
         # Core sections (V1.0)
         "executive_summary": state.get("executive_summary", {}),
-        "customer_research": state.get("customer_research", {}),
+        "customer_research": customer_research or {},
         "business_case": state.get("business_case", {}),
         "product_requirements_document": state.get("product_requirements", {}),
         "technical_architecture": state.get("technical_architecture", {}),
@@ -591,7 +625,7 @@ def build_inception_pack(state: dict[str, Any]) -> dict[str, Any]:
         "cross_reference_index": state.get("cross_reference_index"),
         # Metadata
         "metadata": {
-            "session_id": state.get("session_id", "unknown"),
+            "session_id": session_id,
             "generated_at": datetime.utcnow().isoformat(),
             "version": "3.0",
             "generator": "Product Discovery Multi-Agent System",
@@ -602,6 +636,28 @@ def build_inception_pack(state: dict[str, Any]) -> dict[str, Any]:
             "quality_passed": str(state.get("quality_passed", False)),
         },
     }
+
+    # Log warnings if discovery sections are empty/missing
+    if not pack.get("customer_research") or pack.get("customer_research") == {}:
+        logger.warning(
+            "pack_missing_customer_research",
+            session_id=session_id,
+        )
+    if not pack.get("competitive_analysis"):
+        logger.warning(
+            "pack_missing_competitive_analysis",
+            session_id=session_id,
+        )
+    if not pack.get("detailed_personas"):
+        logger.warning(
+            "pack_missing_detailed_personas",
+            session_id=session_id,
+        )
+    if not (financial_model or {}).get("projections"):
+        logger.warning(
+            "pack_missing_financial_projections",
+            session_id=session_id,
+        )
 
     # Remove None values to keep response clean
     return {k: v for k, v in pack.items() if v is not None}
