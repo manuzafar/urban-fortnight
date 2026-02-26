@@ -790,6 +790,52 @@ async def stream_test_session(session_id: str):
     return EventSourceResponse(event_stream())
 
 
+@router.get("/test/sessions/{session_id}/pack")
+async def get_test_session_pack(session_id: str) -> dict[str, Any]:
+    """
+    [DEVELOPMENT ONLY] Get the inception pack for a test session.
+    This endpoint allows retrieving the pack without authentication,
+    useful when SSE connection times out before receiving the done event.
+    """
+    # Try to get pack from database
+    pack = session_store.get_inception_pack(session_id)
+    if pack:
+        logger.info("test_session_pack_retrieved", session_id=session_id)
+        return {
+            "session_id": session_id,
+            "status": "completed",
+            "pack": pack,
+        }
+
+    # Check session status
+    session_data = session_store.get(session_id)
+    if not session_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Session {session_id} not found",
+        )
+
+    session_status = session_data.get("status", "unknown")
+    if session_status == "in_progress":
+        return {
+            "session_id": session_id,
+            "status": "in_progress",
+            "message": "Session is still running. Pack not yet available.",
+        }
+    elif session_status == "failed":
+        return {
+            "session_id": session_id,
+            "status": "failed",
+            "message": session_data.get("error_message", "Session failed"),
+        }
+    else:
+        return {
+            "session_id": session_id,
+            "status": session_status,
+            "message": "Pack not available",
+        }
+
+
 @router.get("/test/sessions/{session_id}/lifecycle-check")
 async def check_lifecycle_status(session_id: str) -> dict[str, Any]:
     """
