@@ -36,3 +36,4 @@ EXPOSE 3000
 
 # Use exec form with shell to expand PORT variable
 CMD sh -c "serve -s dist -l tcp://0.0.0.0:$PORT"
+# Cache buster: 1772189677
