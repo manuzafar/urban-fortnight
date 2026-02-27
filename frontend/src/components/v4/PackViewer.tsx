@@ -1,7 +1,12 @@
 /**
  * V4 Pack Viewer Component
  * Results display with 16-section navigation and stakeholder views
+ * Build version: 2.0.1
  */
+
+// Version string to force unique bundle hash
+const PACK_VIEWER_VERSION = '2.0.1-20260227';
+console.log('PackViewer version:', PACK_VIEWER_VERSION);
 
 import { useState } from 'react';
 import { Share2, Printer, Download, ChevronLeft, ChevronRight, Heart, Users, Map, Lightbulb, FlaskConical, Quote, AlertTriangle, CheckCircle } from 'lucide-react';

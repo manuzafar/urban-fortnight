@@ -10,7 +10,7 @@ RUN npm ci --legacy-peer-deps
 COPY . .
 
 # Force cache invalidation with timestamp
-RUN echo "Build timestamp: $(date +%s)"
+RUN echo "Build timestamp: $(date +%s)" && npm cache clean --force
 
 # Build with environment variable support
 ARG VITE_API_URL
