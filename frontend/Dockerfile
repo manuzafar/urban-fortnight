@@ -6,11 +6,11 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --legacy-peer-deps
 
-# Cache buster to force fresh build
-ARG CACHE_BUSTER=1772189999
-
 # Copy source and build
 COPY . .
+
+# Force cache invalidation with timestamp
+RUN echo "Build timestamp: $(date +%s)"
 
 # Build with environment variable support
 ARG VITE_API_URL
