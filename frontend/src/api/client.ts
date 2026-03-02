@@ -129,6 +129,34 @@ export async function getV4TestInceptionPack(
 }
 
 /**
+ * V4 Discovery session stage output structure
+ */
+export interface V4StageOutput {
+  status: 'not_started' | 'in_progress' | 'completed' | 'approved' | 'skipped';
+  output?: Record<string, unknown>;
+  score?: number;
+}
+
+export interface V4DiscoverySession {
+  session_id: string;
+  product_idea: string;
+  mode: 'quick' | 'guided' | 'deep';
+  stages: Record<string, V4StageOutput>;
+  status: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+/**
+ * Get a V4 test session with Discovery stage outputs (no auth required)
+ */
+export async function getV4TestSession(
+  sessionId: string
+): Promise<V4DiscoverySession> {
+  return fetchApi(`/api/discovery/v4/test/sessions/${sessionId}`);
+}
+
+/**
  * Delete a discovery session
  */
 export async function deleteSession(sessionId: string): Promise<void> {

@@ -91,6 +91,8 @@ interface JourneyTimelineProps {
   activeDiscoveryStage?: string;
   onDiscoveryStageClick?: (stageId: string) => void;
   discoveryComplete?: boolean;
+  /** Allow clicking on Discovery stages even in execution view (to view outputs) */
+  allowDiscoveryClick?: boolean;
 
   // Execution state
   executionPhases?: ExecutionPhase[];
@@ -106,6 +108,7 @@ export function JourneyTimeline({
   activeDiscoveryStage,
   onDiscoveryStageClick,
   discoveryComplete = false,
+  allowDiscoveryClick = false,
   executionPhases = [],
   currentExecutionPhase,
   onAgentClick,
@@ -166,9 +169,9 @@ export function JourneyTimeline({
               return (
                 <button
                   key={stage.id}
-                  className={`jt-stage ${isActive ? 'active' : ''} ${isComplete ? 'complete' : ''} ${status === 'in_progress' ? 'running' : ''}`}
+                  className={`jt-stage ${isActive ? 'active' : ''} ${isComplete ? 'complete' : ''} ${status === 'in_progress' ? 'running' : ''} ${allowDiscoveryClick ? 'clickable' : ''}`}
                   onClick={() => onDiscoveryStageClick?.(stage.id)}
-                  disabled={currentView !== 'discovery'}
+                  disabled={currentView !== 'discovery' && !allowDiscoveryClick}
                 >
                   <div className="jt-stage-icon">
                     {getStatusIcon(status, Icon)}
@@ -381,6 +384,15 @@ export function JourneyTimeline({
         .jt-stage:disabled {
           cursor: default;
           opacity: 0.6;
+        }
+
+        .jt-stage.clickable:disabled {
+          cursor: pointer;
+          opacity: 1;
+        }
+
+        .jt-stage.clickable:disabled:hover {
+          background: var(--v4-bg-subtle);
         }
 
         .jt-stage.active {

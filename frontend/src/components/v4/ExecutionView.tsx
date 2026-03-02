@@ -4,10 +4,10 @@
  * Shows unified journey with Discovery as completed phase
  */
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { ArrowLeft, Radio, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import { useSSEV4 } from '../../hooks/useSSEV4';
-import { getInceptionPack, getV4TestInceptionPack } from '../../api/client';
+import { getInceptionPack, getV4TestInceptionPack, getV4TestSession, type V4DiscoverySession, type V4StageOutput } from '../../api/client';
 import { JourneyTimeline, type ExecutionPhase, type DiscoveryStage } from './JourneyTimeline';
 import { AgentCard } from './AgentCard';
 import { ConstraintFlow } from './ConstraintFlow';
@@ -16,6 +16,7 @@ import { EvidenceBadge, type EvidenceTier } from './EvidenceBadge';
 import { ActivityIndicator } from './ActivityIndicator';
 import { MilestoneToast, ProgressMilestoneIndicator } from './MilestoneToast';
 import { InsightSkeleton, AgentSkeleton } from './LoadingSkeleton';
+import { DiscoveryOutputModal } from './DiscoveryOutputModal';
 import type { InceptionPack } from '../../types/api';
 import '../../styles/theme-v4.css';
 
@@ -81,15 +82,57 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
   } = useSSEV4(sessionId, authToken, true, useTestEndpoint);
 
   const [expandedAgent, setExpandedAgent] = useState<string | null>(null);
+  const [discoverySession, setDiscoverySession] = useState<V4DiscoverySession | null>(null);
+  const [selectedDiscoveryStage, setSelectedDiscoveryStage] = useState<string | null>(null);
 
-  // Create completed Discovery stages for JourneyTimeline
-  const completedDiscoveryStages: Record<string, DiscoveryStage> = useMemo(() => ({
-    problem_love: { id: 'problem_love', status: 'completed' },
-    customer_truth: { id: 'customer_truth', status: 'completed' },
-    opportunity_mapping: { id: 'opportunity_mapping', status: 'completed' },
-    solution_design: { id: 'solution_design', status: 'completed' },
-    validation_plan: { id: 'validation_plan', status: 'completed' },
-  }), []);
+  // Fetch Discovery V4 session data on mount
+  useEffect(() => {
+    if (useTestEndpoint) {
+      getV4TestSession(sessionId)
+        .then(setDiscoverySession)
+        .catch((err) => {
+          console.error('Failed to fetch Discovery session:', err);
+        });
+    }
+  }, [sessionId, useTestEndpoint]);
+
+  // Create Discovery stages from fetched session or fallback to completed
+  const completedDiscoveryStages: Record<string, DiscoveryStage> = useMemo(() => {
+    if (discoverySession?.stages) {
+      const stages: Record<string, DiscoveryStage> = {};
+      for (const [id, stage] of Object.entries(discoverySession.stages)) {
+        stages[id] = {
+          id,
+          status: stage.status,
+          score: stage.score,
+        };
+      }
+      return stages;
+    }
+    // Fallback if no session data
+    return {
+      problem_love: { id: 'problem_love', status: 'completed' },
+      customer_truth: { id: 'customer_truth', status: 'completed' },
+      opportunity_mapping: { id: 'opportunity_mapping', status: 'completed' },
+      solution_design: { id: 'solution_design', status: 'completed' },
+      validation_plan: { id: 'validation_plan', status: 'completed' },
+    };
+  }, [discoverySession]);
+
+  // Handle clicking on a Discovery stage
+  const handleDiscoveryStageClick = useCallback((stageId: string) => {
+    if (discoverySession?.stages?.[stageId]) {
+      setSelectedDiscoveryStage(stageId);
+    }
+  }, [discoverySession]);
+
+  // Get the selected stage output for the modal
+  const selectedStageOutput: V4StageOutput | null = useMemo(() => {
+    if (selectedDiscoveryStage && discoverySession?.stages?.[selectedDiscoveryStage]) {
+      return discoverySession.stages[selectedDiscoveryStage];
+    }
+    return null;
+  }, [selectedDiscoveryStage, discoverySession]);
 
   // Convert SSE phases to JourneyTimeline format
   const executionPhases: ExecutionPhase[] = useMemo(() => {
@@ -305,7 +348,9 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
             executionPhases={executionPhases}
             currentExecutionPhase={currentPhase || undefined}
             onAgentClick={(agentId) => setExpandedAgent(expandedAgent === agentId ? null : agentId)}
+            onDiscoveryStageClick={handleDiscoveryStageClick}
             currentView="execution"
+            allowDiscoveryClick={!!discoverySession}
           />
         </aside>
 
@@ -553,6 +598,15 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
           )}
         </main>
       </div>
+
+      {/* Discovery Output Modal */}
+      {selectedDiscoveryStage && selectedStageOutput && (
+        <DiscoveryOutputModal
+          stageId={selectedDiscoveryStage}
+          stageOutput={selectedStageOutput}
+          onClose={() => setSelectedDiscoveryStage(null)}
+        />
+      )}
 
       {/* Responsive styles */}
       <style>{`
