@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   ArrowLeft,
   Play,
@@ -428,6 +428,9 @@ export function DiscoveryViewV4({
   // Track when user starts a stage (client-side) to avoid false timeouts from stale server data
   const [clientStageStartTime, setClientStageStartTime] = useState<Record<string, number>>({});
 
+  // Track if we've set the initial stage for this session (to avoid overriding user selection)
+  const initialStageSetForSession = useRef<string | null>(null);
+
   // Edit mode handlers
   const handleStartEdit = () => {
     const currentOutput = session?.stages[activeStage]?.output;
@@ -462,9 +465,12 @@ export function DiscoveryViewV4({
     }
   };
 
-  // Set initial active stage based on session progress
+  // Set initial active stage based on session progress (only once per session)
   useEffect(() => {
-    if (session) {
+    if (session && initialStageSetForSession.current !== session.session_id) {
+      // Mark this session as having its initial stage set
+      initialStageSetForSession.current = session.session_id;
+
       // Find first incomplete stage
       const stages = ['problem_love', 'customer_truth', 'opportunity_mapping', 'solution_design', 'validation_plan'];
       for (const stage of stages) {
@@ -475,7 +481,7 @@ export function DiscoveryViewV4({
         }
       }
     }
-  }, [session?.session_id]);
+  }, [session]);
 
   if (loading) {
     return (
