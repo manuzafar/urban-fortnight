@@ -147,10 +147,36 @@ export function StageProgress({
     return state?.status === 'completed' || state?.status === 'approved' || state?.status === 'skipped';
   });
 
+  // Calculate completion stats
+  const completedStages = DISCOVERY_STAGES.filter((stage) => {
+    const state = session.stages[stage.id];
+    return state?.status === 'completed' || state?.status === 'approved';
+  }).length;
+
+  const progressPercentage = Math.round((completedStages / DISCOVERY_STAGES.length) * 100);
+
   return (
     <div className="stage-progress-container">
-      <div className="stage-progress-header">
-        <h3>Discovery</h3>
+      {/* Progress Summary */}
+      <div className="sp-progress">
+        <div className="sp-progress-header">
+          <span className="sp-progress-label">Discovery Progress</span>
+          <span className="sp-progress-value">{progressPercentage}%</span>
+        </div>
+        <div className="sp-progress-bar">
+          <div
+            className="sp-progress-fill"
+            style={{ width: `${progressPercentage}%` }}
+          />
+        </div>
+        <div className="sp-progress-count">
+          {completedStages} of {DISCOVERY_STAGES.length} stages complete
+        </div>
+      </div>
+
+      {/* Stage Header */}
+      <div className="sp-section-header">
+        <span className="sp-section-label">Discovery</span>
       </div>
 
       <div className="stage-progress-list">
@@ -171,17 +197,15 @@ export function StageProgress({
               disabled={!isClickable}
               style={{ '--stage-color': stage.color } as React.CSSProperties}
             >
-              {idx > 0 && <div className="stage-connector" />}
-
               <div className="stage-icon">
                 {isComplete ? (
-                  <Check size={18} />
+                  <Check size={16} />
                 ) : isInProgress ? (
-                  <Loader2 size={18} className="spin" />
+                  <Loader2 size={16} className="spin" />
                 ) : !isClickable ? (
-                  <Lock size={16} />
+                  <Lock size={14} />
                 ) : (
-                  <Icon size={18} />
+                  <Icon size={16} />
                 )}
               </div>
 
@@ -200,9 +224,9 @@ export function StageProgress({
 
       {/* Upcoming Phases Preview */}
       <div className="upcoming-phases-section">
-        <div className="upcoming-header">
-          <h4>Coming Up</h4>
-          <Lock size={14} className="lock-icon" />
+        <div className="sp-section-header upcoming">
+          <span className="sp-section-label">Coming Up</span>
+          <Lock size={12} className="lock-icon" />
         </div>
         <div className="upcoming-phases-list">
           {UPCOMING_PHASES.map((phase) => {
@@ -214,7 +238,7 @@ export function StageProgress({
                 title={allDiscoveryComplete ? 'Complete Discovery to unlock' : 'Locked - complete Discovery first'}
               >
                 <div className="upcoming-phase-icon">
-                  {allDiscoveryComplete ? <Icon size={16} /> : <Lock size={14} />}
+                  {allDiscoveryComplete ? <Icon size={14} /> : <Lock size={12} />}
                 </div>
                 <span className="upcoming-phase-name">{phase.name}</span>
               </div>
@@ -226,25 +250,84 @@ export function StageProgress({
       <style>{`
         .stage-progress-container {
           background: var(--v4-surface, white);
-          border-radius: 12px;
-          border: 1px solid var(--v4-border, #e5e7eb);
+        }
+
+        /* Progress Section */
+        .sp-progress {
+          padding: 16px 20px;
+          border-bottom: 1px solid var(--v4-border-subtle, #ebebeb);
+        }
+
+        .sp-progress-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 8px;
+        }
+
+        .sp-progress-label {
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: var(--v4-text-muted, #a3a3a3);
+        }
+
+        .sp-progress-value {
+          font-size: 13px;
+          font-weight: 600;
+          color: var(--v4-text, #171717);
+          font-family: var(--v4-font-display, 'Plus Jakarta Sans', sans-serif);
+        }
+
+        .sp-progress-bar {
+          height: 4px;
+          background: var(--v4-bg-subtle, #f5f5f5);
+          border-radius: 2px;
           overflow: hidden;
         }
 
-        .stage-progress-header {
-          padding: 16px 20px;
-          border-bottom: 1px solid var(--v4-border, #e5e7eb);
+        .sp-progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, var(--v4-success, #16a34a), var(--v4-success, #16a34a));
+          border-radius: 2px;
+          transition: width 0.5s ease;
         }
 
-        .stage-progress-header h3 {
-          margin: 0;
-          font-size: 14px;
+        .sp-progress-count {
+          font-size: 11px;
+          color: var(--v4-text-muted, #a3a3a3);
+          margin-top: 6px;
+        }
+
+        /* Section Header */
+        .sp-section-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 12px 20px;
+          background: var(--v4-bg-subtle, #f5f5f5);
+          border-bottom: 1px solid var(--v4-border-subtle, #ebebeb);
+        }
+
+        .sp-section-header.upcoming {
+          background: var(--v4-bg, #fafafa);
+          border-top: 1px solid var(--v4-border-subtle, #ebebeb);
+        }
+
+        .sp-section-label {
+          font-size: 11px;
           font-weight: 600;
-          color: var(--v4-text, #1a1a2e);
           text-transform: uppercase;
-          letter-spacing: 0.5px;
+          letter-spacing: 0.1em;
+          color: var(--v4-text-muted, #a3a3a3);
         }
 
+        .sp-section-header .lock-icon {
+          color: var(--v4-text-muted, #a3a3a3);
+        }
+
+        /* Stage List */
         .stage-progress-list {
           display: flex;
           flex-direction: column;
@@ -255,12 +338,13 @@ export function StageProgress({
           display: flex;
           align-items: center;
           gap: 12px;
-          padding: 16px 20px;
+          padding: 14px 20px;
           background: none;
           border: none;
-          border-bottom: 1px solid var(--v4-border, #e5e7eb);
+          border-bottom: 1px solid var(--v4-border-subtle, #ebebeb);
+          border-left: 3px solid transparent;
           cursor: pointer;
-          transition: all 0.2s ease;
+          transition: all 0.15s ease;
           text-align: left;
         }
 
@@ -269,30 +353,17 @@ export function StageProgress({
         }
 
         .stage-item:hover:not(.locked) {
-          background: var(--v4-bg, #f9fafb);
+          background: var(--v4-bg-subtle, #f5f5f5);
         }
 
         .stage-item.active {
-          background: color-mix(in srgb, var(--stage-color) 8%, white);
+          background: rgba(194, 65, 12, 0.06);
+          border-left-color: var(--v4-accent, #c2410c);
         }
 
         .stage-item.locked {
           opacity: 0.5;
           cursor: not-allowed;
-        }
-
-        .stage-connector {
-          position: absolute;
-          left: 30px;
-          top: -8px;
-          width: 2px;
-          height: 16px;
-          background: var(--v4-border, #e5e7eb);
-        }
-
-        .stage-item.complete .stage-connector,
-        .stage-item.in-progress .stage-connector {
-          background: var(--stage-color);
         }
 
         .stage-icon {
@@ -302,29 +373,30 @@ export function StageProgress({
           align-items: center;
           justify-content: center;
           border-radius: 50%;
-          background: var(--v4-bg, #f3f4f6);
-          color: var(--v4-text-secondary, #6b7280);
+          background: var(--v4-bg-subtle, #f5f5f5);
+          color: var(--v4-text-muted, #a3a3a3);
           flex-shrink: 0;
+          transition: all 0.15s ease;
         }
 
         .stage-item.active .stage-icon {
-          background: var(--stage-color);
+          background: var(--v4-accent, #c2410c);
           color: white;
         }
 
         .stage-item.complete .stage-icon {
-          background: var(--stage-color);
+          background: var(--v4-success, #16a34a);
           color: white;
         }
 
         .stage-item.in-progress .stage-icon {
-          background: color-mix(in srgb, var(--stage-color) 20%, white);
-          color: var(--stage-color);
+          background: var(--v4-accent-light, rgba(194, 65, 12, 0.08));
+          color: var(--v4-accent, #c2410c);
         }
 
         .stage-item.skipped .stage-icon {
-          background: var(--v4-bg, #f3f4f6);
-          color: var(--v4-text-muted, #9ca3af);
+          background: var(--v4-bg-subtle, #f5f5f5);
+          color: var(--v4-text-muted, #a3a3a3);
         }
 
         .stage-info {
@@ -334,32 +406,44 @@ export function StageProgress({
 
         .stage-name {
           display: block;
+          font-family: var(--v4-font-display, 'Plus Jakarta Sans', sans-serif);
           font-size: 14px;
           font-weight: 500;
-          color: var(--v4-text, #1a1a2e);
+          color: var(--v4-text-secondary, #525252);
+        }
+
+        .stage-item.active .stage-name {
+          color: var(--v4-text, #171717);
+          font-weight: 600;
+        }
+
+        .stage-item.complete .stage-name {
+          color: var(--v4-text, #171717);
         }
 
         .stage-item.skipped .stage-name {
           text-decoration: line-through;
-          color: var(--v4-text-muted, #9ca3af);
+          color: var(--v4-text-muted, #a3a3a3);
         }
 
         .stage-description {
           display: block;
           font-size: 12px;
-          color: var(--v4-text-secondary, #6b7280);
+          color: var(--v4-text-muted, #a3a3a3);
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
+          margin-top: 2px;
         }
 
         .stage-score {
-          padding: 4px 8px;
-          background: var(--stage-color);
+          padding: 4px 10px;
+          background: var(--v4-success, #16a34a);
           color: white;
           font-size: 11px;
           font-weight: 600;
           border-radius: 12px;
+          flex-shrink: 0;
         }
 
         .spin {
@@ -367,61 +451,29 @@ export function StageProgress({
         }
 
         @keyframes spin {
-          from {
-            transform: rotate(0deg);
-          }
-          to {
-            transform: rotate(360deg);
-          }
-        }
-
-        @media (max-width: 768px) {
-          .stage-description {
-            display: none;
-          }
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
         }
 
         /* Upcoming Phases Section */
         .upcoming-phases-section {
-          border-top: 1px solid var(--v4-border, #e5e7eb);
-          padding: 16px 20px;
-          background: var(--v4-bg, #f9fafb);
-        }
-
-        .upcoming-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          margin-bottom: 12px;
-        }
-
-        .upcoming-header h4 {
-          margin: 0;
-          font-size: 12px;
-          font-weight: 600;
-          color: var(--v4-text-muted, #9ca3af);
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .upcoming-header .lock-icon {
-          color: var(--v4-text-muted, #9ca3af);
+          background: var(--v4-bg, #fafafa);
         }
 
         .upcoming-phases-list {
           display: flex;
           flex-direction: column;
-          gap: 4px;
+          padding: 8px 12px;
         }
 
         .upcoming-phase-item {
           display: flex;
           align-items: center;
           gap: 10px;
-          padding: 8px 10px;
+          padding: 10px 12px;
           border-radius: 6px;
           opacity: 0.6;
-          transition: all 0.2s ease;
+          transition: all 0.15s ease;
         }
 
         .upcoming-phase-item.ready {
@@ -440,22 +492,39 @@ export function StageProgress({
           justify-content: center;
           border-radius: 50%;
           background: var(--v4-surface, white);
-          border: 1px dashed var(--v4-border, #e5e7eb);
-          color: var(--v4-text-muted, #9ca3af);
+          border: 1px dashed var(--v4-border, #e5e5e5);
+          color: var(--v4-text-muted, #a3a3a3);
+          flex-shrink: 0;
         }
 
         .upcoming-phase-item.ready .upcoming-phase-icon {
           border-color: var(--v4-accent, #c2410c);
           color: var(--v4-accent, #c2410c);
+          border-style: solid;
         }
 
         .upcoming-phase-name {
           font-size: 13px;
-          color: var(--v4-text-muted, #9ca3af);
+          color: var(--v4-text-muted, #a3a3a3);
         }
 
         .upcoming-phase-item.ready .upcoming-phase-name {
-          color: var(--v4-text-secondary, #6b7280);
+          color: var(--v4-text-secondary, #525252);
+        }
+
+        @media (max-width: 768px) {
+          .stage-description {
+            display: none;
+          }
+
+          .stage-item {
+            padding: 12px 16px;
+          }
+
+          .stage-icon {
+            width: 32px;
+            height: 32px;
+          }
         }
       `}</style>
     </div>

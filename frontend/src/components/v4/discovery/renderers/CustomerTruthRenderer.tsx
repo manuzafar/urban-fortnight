@@ -1,4 +1,4 @@
-import { Users, MessageSquare, TrendingUp, AlertCircle } from 'lucide-react';
+import { Users, MessageSquare, TrendingUp, AlertCircle, Calendar, Briefcase, Quote } from 'lucide-react';
 import './rendererStyles.css';
 
 interface Interview {
@@ -48,6 +48,17 @@ interface CustomerTruthRendererProps {
 export function CustomerTruthRenderer({ output }: CustomerTruthRendererProps) {
   const hasInterviews = output.interviews && output.interviews.length > 0;
   const hasPatterns = output.patterns && output.patterns.pain_patterns?.length > 0;
+  const interviewCount = output.interviews_completed || output.interviews?.length || 0;
+
+  const formatDate = (dateString: string) => {
+    if (!dateString) return '';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    } catch {
+      return dateString;
+    }
+  };
 
   return (
     <div className="stage-renderer customer-truth">
@@ -59,7 +70,7 @@ export function CustomerTruthRenderer({ output }: CustomerTruthRendererProps) {
           </div>
           <div className="interview-progress-summary">
             <Users size={16} />
-            {output.interviews_completed || output.interviews?.length || 0} / {output.interview_goal} interviews
+            {interviewCount} / {output.interview_goal} interviews
           </div>
         </div>
       </section>
@@ -74,27 +85,48 @@ export function CustomerTruthRenderer({ output }: CustomerTruthRendererProps) {
           <div className="interviews-list">
             {output.interviews.map((interview, i) => (
               <div key={interview.id || i} className="interview-card">
+                {/* Interview Header */}
                 <div className="interview-header">
+                  <div className="interview-number-badge">
+                    Interview #{i + 1}
+                  </div>
+                  {interview.interview_date && (
+                    <span className="interview-date">
+                      <Calendar size={12} />
+                      {formatDate(interview.interview_date)}
+                    </span>
+                  )}
+                </div>
+
+                {/* Interviewee Info */}
+                <div className="interview-meta-section">
                   <div className="interview-meta">
                     <span className="interview-name">{interview.interviewee_name}</span>
                     <span className="interview-role">
-                      {interview.interviewee_role} at {interview.company_type} ({interview.company_size})
+                      <Briefcase size={12} />
+                      {interview.interviewee_role}
+                      {interview.company_type && ` at ${interview.company_type}`}
+                      {interview.company_size && ` (${interview.company_size})`}
                     </span>
                   </div>
-                  <span className="interview-date">
-                    {interview.interview_date}
-                  </span>
                 </div>
+
+                {/* Key Quote */}
                 {interview.key_quote && (
                   <div className="interview-quote">
-                    "{interview.key_quote}"
+                    <Quote size={16} className="quote-icon" />
+                    {interview.key_quote}
                   </div>
                 )}
+
+                {/* Struggling Moment */}
                 {interview.struggling_moment && (
-                  <p className="struggling-moment-detail">
+                  <div className="struggling-moment-detail">
                     <strong>Struggling moment:</strong> {interview.struggling_moment}
-                  </p>
+                  </div>
                 )}
+
+                {/* Emotions */}
                 {interview.emotions && interview.emotions.length > 0 && (
                   <div className="emotions-tags">
                     {interview.emotions.map((emotion, j) => (
@@ -129,7 +161,7 @@ export function CustomerTruthRenderer({ output }: CustomerTruthRendererProps) {
                   </span>
                 </h5>
                 <span className="pattern-frequency">
-                  Mentioned by {pattern.frequency} interviewees
+                  Mentioned by {pattern.frequency} interviewee{pattern.frequency !== 1 ? 's' : ''}
                 </span>
               </div>
             ))}
@@ -191,6 +223,55 @@ export function CustomerTruthRenderer({ output }: CustomerTruthRendererProps) {
           </ul>
         </section>
       )}
+
+      <style>{`
+        .interview-number-badge {
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: var(--v4-text-muted, #a3a3a3);
+        }
+
+        .interview-date {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 12px;
+          color: var(--v4-text-muted, #a3a3a3);
+        }
+
+        .interview-meta-section {
+          padding: 14px 20px;
+          border-bottom: 1px solid var(--v4-border-subtle, #ebebeb);
+        }
+
+        .interview-role {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 13px;
+          color: var(--v4-text-secondary, #525252);
+          margin-top: 4px;
+        }
+
+        .interview-role svg {
+          color: var(--v4-text-muted, #a3a3a3);
+        }
+
+        .quote-icon {
+          position: absolute;
+          left: 16px;
+          top: 14px;
+          color: var(--v4-accent, #c2410c);
+          opacity: 0.5;
+        }
+
+        .interview-quote {
+          position: relative;
+          padding-left: 40px;
+        }
+      `}</style>
     </div>
   );
 }

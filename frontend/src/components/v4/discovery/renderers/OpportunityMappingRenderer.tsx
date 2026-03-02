@@ -1,4 +1,4 @@
-import { ArrowUp, ArrowDown, Lightbulb, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Lightbulb, Target, Zap, Shield } from 'lucide-react';
 import './rendererStyles.css';
 
 interface Force {
@@ -55,11 +55,11 @@ export function OpportunityMappingRenderer({ output }: OpportunityMappingRendere
         </h4>
 
         <div className="four-forces-grid">
-          {/* Push */}
+          {/* Push - What's pushing them away from current state */}
           <div className="force-card push">
             <div className="force-header">
               <h5>
-                <ArrowUp size={16} className="force-icon-push" />
+                <TrendingUp size={16} className="force-icon-push" />
                 Push (What's Broken)
               </h5>
               <span className="force-strength">{forces.push?.strength || 0}/10</span>
@@ -67,15 +67,15 @@ export function OpportunityMappingRenderer({ output }: OpportunityMappingRendere
             <ul className="force-items">
               {forces.push?.items?.map((item, i) => (
                 <li key={i}>{item}</li>
-              ))}
+              )) || <li className="empty-item">No push factors identified</li>}
             </ul>
           </div>
 
-          {/* Pull */}
+          {/* Pull - What's attractive about the new solution */}
           <div className="force-card pull">
             <div className="force-header">
               <h5>
-                <ArrowUp size={16} className="force-icon-pull" />
+                <Zap size={16} className="force-icon-pull" />
                 Pull (What's Attractive)
               </h5>
               <span className="force-strength">{forces.pull?.strength || 0}/10</span>
@@ -83,15 +83,15 @@ export function OpportunityMappingRenderer({ output }: OpportunityMappingRendere
             <ul className="force-items">
               {forces.pull?.items?.map((item, i) => (
                 <li key={i}>{item}</li>
-              ))}
+              )) || <li className="empty-item">No pull factors identified</li>}
             </ul>
           </div>
 
-          {/* Anxiety */}
+          {/* Anxiety - Fears about the new solution */}
           <div className="force-card anxiety">
             <div className="force-header">
               <h5>
-                <ArrowDown size={16} className="force-icon-anxiety" />
+                <Shield size={16} className="force-icon-anxiety" />
                 Anxiety (What Scares Them)
               </h5>
               <span className="force-strength">{forces.anxiety?.strength || 0}/10</span>
@@ -99,15 +99,15 @@ export function OpportunityMappingRenderer({ output }: OpportunityMappingRendere
             <ul className="force-items">
               {forces.anxiety?.items?.map((item, i) => (
                 <li key={i}>{item}</li>
-              ))}
+              )) || <li className="empty-item">No anxieties identified</li>}
             </ul>
           </div>
 
-          {/* Habit */}
+          {/* Habit - Comfort with current state */}
           <div className="force-card habit">
             <div className="force-header">
               <h5>
-                <ArrowDown size={16} className="force-icon-habit" />
+                <TrendingDown size={16} className="force-icon-habit" />
                 Habit (What's Comfortable)
               </h5>
               <span className="force-strength">{forces.habit?.strength || 0}/10</span>
@@ -115,7 +115,7 @@ export function OpportunityMappingRenderer({ output }: OpportunityMappingRendere
             <ul className="force-items">
               {forces.habit?.items?.map((item, i) => (
                 <li key={i}>{item}</li>
-              ))}
+              )) || <li className="empty-item">No habits identified</li>}
             </ul>
           </div>
         </div>
