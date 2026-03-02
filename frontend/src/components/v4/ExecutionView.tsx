@@ -5,7 +5,7 @@
  */
 
 import { useEffect, useState, useMemo } from 'react';
-import { ArrowLeft, Radio, Clock, AlertCircle, Check } from 'lucide-react';
+import { ArrowLeft, Radio, Clock, AlertCircle, Loader2 } from 'lucide-react';
 import { useSSEV4 } from '../../hooks/useSSEV4';
 import { getInceptionPack, getV4TestInceptionPack } from '../../api/client';
 import { JourneyTimeline, type ExecutionPhase, type DiscoveryStage } from './JourneyTimeline';
@@ -13,8 +13,45 @@ import { AgentCard } from './AgentCard';
 import { ConstraintFlow } from './ConstraintFlow';
 import { RevisionIndicator } from './RevisionIndicator';
 import { EvidenceBadge, type EvidenceTier } from './EvidenceBadge';
+import { ActivityIndicator } from './ActivityIndicator';
+import { MilestoneToast, ProgressMilestoneIndicator } from './MilestoneToast';
+import { InsightSkeleton, AgentSkeleton } from './LoadingSkeleton';
 import type { InceptionPack } from '../../types/api';
 import '../../styles/theme-v4.css';
+
+// Phase-specific activity messages
+const PHASE_MESSAGES: Record<string, string[]> = {
+  planning: [
+    'Analyzing domain characteristics...',
+    'Identifying key competitors...',
+    'Mapping regulatory landscape...',
+    'Setting research parameters...',
+  ],
+  discovery: [
+    'Researching total addressable market...',
+    'Analyzing customer segments...',
+    'Mapping pain points and needs...',
+    'Building competitive profiles...',
+  ],
+  strategy: [
+    'Building business model canvas...',
+    'Designing go-to-market strategy...',
+    'Projecting financial scenarios...',
+    'Calculating unit economics...',
+  ],
+  delivery: [
+    'Writing product requirements...',
+    'Designing system architecture...',
+    'Assessing compliance requirements...',
+    'Mapping technical dependencies...',
+  ],
+  quality: [
+    'Validating cross-section consistency...',
+    'Checking numerical accuracy...',
+    'Calibrating confidence scores...',
+    'Running final quality checks...',
+  ],
+};
 
 interface ExecutionViewV4Props {
   sessionId: string;
@@ -127,6 +164,15 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
     .slice(-10)
     .reverse();
 
+  // Determine if we're in early loading state (no insights yet)
+  const isEarlyLoading = progress < 15 && recentInsights.length === 0;
+
+  // Get current phase messages for activity indicator
+  const currentPhaseMessages = useMemo(() => {
+    const phase = currentPhase?.toLowerCase() || 'planning';
+    return PHASE_MESSAGES[phase] || PHASE_MESSAGES.planning;
+  }, [currentPhase]);
+
   return (
     <div className="v4-root" style={{ minHeight: '100vh' }}>
       {/* Header */}
@@ -192,31 +238,19 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
 
         {/* Journey Progress */}
         <div style={{ flex: 1, display: 'flex', justifyContent: 'center', padding: '0 24px' }}>
-          <div style={{ minWidth: '280px', maxWidth: '400px' }}>
-            <div style={{ fontSize: '12px', fontWeight: 500, color: 'var(--v4-text-secondary)', textAlign: 'center', marginBottom: '4px' }}>
-              Journey: {currentPhase || 'Strategy'} ({journeyProgress}%)
+          <div style={{ minWidth: '320px', maxWidth: '440px', width: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--v4-text)', fontFamily: 'var(--v4-font-display)' }}>
+                {currentPhase || 'Strategy'}
+              </span>
+              <span style={{ fontSize: '12px', color: 'var(--v4-text-muted)' }}>
+                {journeyProgress}% complete
+              </span>
             </div>
-            <div style={{ position: 'relative', height: '6px', background: 'var(--v4-bg)', borderRadius: '3px' }}>
-              <div
-                style={{
-                  height: '100%',
-                  background: 'var(--v4-accent)',
-                  borderRadius: '3px',
-                  width: `${journeyProgress}%`,
-                  transition: 'width 0.3s ease',
-                }}
-              />
-              {/* Phase markers */}
-              <div style={{ position: 'absolute', top: '-3px', left: '0%', transform: 'translateX(-50%)' }}>
-                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'var(--v4-success)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Check size={8} color="white" />
-                </div>
-              </div>
-              <div style={{ position: 'absolute', top: '-3px', left: '20%', transform: 'translateX(-50%)', width: '12px', height: '12px', borderRadius: '50%', background: journeyProgress >= 20 ? 'var(--v4-accent)' : 'var(--v4-surface)', border: '2px solid ' + (journeyProgress >= 20 ? 'var(--v4-accent)' : 'var(--v4-border)') }} />
-              <div style={{ position: 'absolute', top: '-3px', left: '45%', transform: 'translateX(-50%)', width: '12px', height: '12px', borderRadius: '50%', background: journeyProgress >= 45 ? 'var(--v4-accent)' : 'var(--v4-surface)', border: '2px solid ' + (journeyProgress >= 45 ? 'var(--v4-accent)' : 'var(--v4-border)') }} />
-              <div style={{ position: 'absolute', top: '-3px', left: '70%', transform: 'translateX(-50%)', width: '12px', height: '12px', borderRadius: '50%', background: journeyProgress >= 70 ? 'var(--v4-accent)' : 'var(--v4-surface)', border: '2px solid ' + (journeyProgress >= 70 ? 'var(--v4-accent)' : 'var(--v4-border)') }} />
-              <div style={{ position: 'absolute', top: '-3px', left: '90%', transform: 'translateX(-50%)', width: '12px', height: '12px', borderRadius: '50%', background: journeyProgress >= 90 ? 'var(--v4-accent)' : 'var(--v4-surface)', border: '2px solid ' + (journeyProgress >= 90 ? 'var(--v4-accent)' : 'var(--v4-border)') }} />
-            </div>
+            <ProgressMilestoneIndicator
+              progress={journeyProgress}
+              milestones={[20, 45, 70, 100]}
+            />
           </div>
         </div>
 
@@ -277,6 +311,32 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
 
         {/* Main Area */}
         <main style={{ padding: '24px', overflowY: 'auto' }}>
+          {/* Milestone Toast */}
+          <MilestoneToast progress={journeyProgress} />
+
+          {/* Activity Indicator */}
+          {!isComplete && (
+            <div
+              className="v4-animate-fade-in"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '12px 16px',
+                background: 'var(--v4-accent-lighter)',
+                borderRadius: 'var(--v4-radius-md)',
+                marginBottom: '20px',
+              }}
+            >
+              <Loader2 size={16} className="v4-spin" style={{ color: 'var(--v4-accent)' }} />
+              <ActivityIndicator
+                customMessages={currentPhaseMessages}
+                interval={3500}
+                showSpinner={false}
+              />
+            </div>
+          )}
+
           {/* Revision Indicator */}
           {revisionState && (
             <div style={{ marginBottom: '20px' }}>
@@ -284,9 +344,28 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
             </div>
           )}
 
+          {/* Early Loading State - Show skeleton */}
+          {isEarlyLoading && (
+            <div className="v4-animate-fade-in" style={{ marginBottom: '24px' }}>
+              <div
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  color: 'var(--v4-text-muted)',
+                  marginBottom: '12px',
+                }}
+              >
+                Initializing...
+              </div>
+              <AgentSkeleton showInsights={true} />
+            </div>
+          )}
+
           {/* Current Agent Card */}
-          {currentAgent && (
-            <div style={{ marginBottom: '24px' }}>
+          {currentAgent && !isEarlyLoading && (
+            <div className="v4-animate-slide-up" style={{ marginBottom: '24px' }}>
               <div
                 style={{
                   fontSize: '11px',
@@ -310,12 +389,13 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
                 }))}
                 isExpanded={expandedAgent === currentAgent}
                 onToggle={() => setExpandedAgent(expandedAgent === currentAgent ? null : currentAgent)}
+                showThinking={currentInsights.length === 0}
               />
             </div>
           )}
 
           {/* Key Insights Section */}
-          {recentInsights.length > 0 && (
+          {(recentInsights.length > 0 || isEarlyLoading) && (
             <div style={{ marginBottom: '24px' }}>
               <div
                 style={{
@@ -329,67 +409,71 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
               >
                 Key Insights
               </div>
-              <div
-                style={{
-                  background: 'var(--v4-surface)',
-                  border: '1px solid var(--v4-border)',
-                  borderRadius: 'var(--v4-radius)',
-                  overflow: 'hidden',
-                }}
-              >
-                {recentInsights.slice(0, 8).map((insight, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: '10px',
-                      padding: '12px 16px',
-                      borderBottom: i < Math.min(recentInsights.length, 8) - 1 ? '1px solid var(--v4-border)' : 'none',
-                    }}
-                  >
-                    <span
+              {isEarlyLoading ? (
+                <InsightSkeleton count={4} />
+              ) : (
+                <div
+                  className="v4-card"
+                  style={{
+                    overflow: 'hidden',
+                  }}
+                >
+                  {recentInsights.slice(0, 8).map((insight, i) => (
+                    <div
+                      key={i}
+                      className="v4-animate-slide-up"
                       style={{
-                        width: '6px',
-                        height: '6px',
-                        borderRadius: '50%',
-                        background: 'var(--v4-accent)',
-                        marginTop: '6px',
-                        flexShrink: 0,
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '10px',
+                        padding: '12px 16px',
+                        borderBottom: i < Math.min(recentInsights.length, 8) - 1 ? '1px solid var(--v4-border-subtle)' : 'none',
+                        animationDelay: `${i * 50}ms`,
                       }}
-                    />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div
+                    >
+                      <span
                         style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          marginBottom: '4px',
+                          width: '6px',
+                          height: '6px',
+                          borderRadius: '50%',
+                          background: 'var(--v4-accent)',
+                          marginTop: '6px',
+                          flexShrink: 0,
                         }}
-                      >
-                        <span style={{ fontSize: '12px', color: 'var(--v4-text-muted)' }}>{insight.agentName}</span>
-                        <span style={{ fontSize: '11px', color: 'var(--v4-text-muted)' }}>•</span>
-                        <span style={{ fontSize: '12px', color: 'var(--v4-text-secondary)' }}>{insight.key}</span>
-                      </div>
-                      <div
-                        style={{
-                          fontSize: '13px',
-                          color: 'var(--v4-text)',
-                          lineHeight: 1.5,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          display: '-webkit-box',
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: 'vertical',
-                        }}
-                      >
-                        {insight.value}
-                        {insight.tier && <EvidenceBadge tier={insight.tier as EvidenceTier} inline />}
+                      />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            marginBottom: '4px',
+                          }}
+                        >
+                          <span style={{ fontSize: '12px', color: 'var(--v4-text-muted)' }}>{insight.agentName}</span>
+                          <span style={{ fontSize: '11px', color: 'var(--v4-text-muted)' }}>•</span>
+                          <span style={{ fontSize: '12px', color: 'var(--v4-text-secondary)' }}>{insight.key}</span>
+                        </div>
+                        <div
+                          style={{
+                            fontSize: '13px',
+                            color: 'var(--v4-text)',
+                            lineHeight: 1.5,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            display: '-webkit-box',
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical',
+                          }}
+                        >
+                          {insight.value}
+                          {insight.tier && <EvidenceBadge tier={insight.tier as EvidenceTier} inline />}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

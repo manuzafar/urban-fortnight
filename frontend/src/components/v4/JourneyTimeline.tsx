@@ -238,14 +238,15 @@ export function JourneyTimeline({
           display: flex;
           flex-direction: column;
           background: var(--v4-surface);
-          border: 1px solid var(--v4-border);
-          border-radius: var(--v4-radius-lg, 8px);
+          border: 1px solid var(--v4-border-subtle);
+          border-radius: var(--v4-radius-lg);
           overflow: hidden;
+          box-shadow: var(--v4-shadow-xs);
         }
 
         .jt-header {
           padding: 16px 20px;
-          border-bottom: 1px solid var(--v4-border);
+          border-bottom: 1px solid var(--v4-border-subtle);
         }
 
         .jt-header h3 {
@@ -255,10 +256,12 @@ export function JourneyTimeline({
           text-transform: uppercase;
           letter-spacing: 0.1em;
           color: var(--v4-text-muted);
+          font-family: var(--v4-font-body);
         }
 
         .jt-section {
-          border-bottom: 1px solid var(--v4-border);
+          border-bottom: 1px solid var(--v4-border-subtle);
+          transition: background 0.2s ease;
         }
 
         .jt-section:last-child {
@@ -270,15 +273,15 @@ export function JourneyTimeline({
         }
 
         .jt-section.active {
-          background: rgba(194, 65, 12, 0.03);
+          background: var(--v4-accent-lighter);
         }
 
         .jt-section-header {
           display: flex;
           align-items: center;
-          gap: 10px;
+          gap: 12px;
           width: 100%;
-          padding: 12px 16px;
+          padding: 14px 16px;
           background: none;
           border: none;
           cursor: pointer;
@@ -287,7 +290,7 @@ export function JourneyTimeline({
         }
 
         .jt-section-header:hover:not(:disabled) {
-          background: var(--v4-bg);
+          background: var(--v4-bg-subtle);
         }
 
         .jt-section.locked .jt-section-header {
@@ -295,19 +298,21 @@ export function JourneyTimeline({
         }
 
         .jt-section-icon {
-          width: 24px;
-          height: 24px;
+          width: 28px;
+          height: 28px;
           display: flex;
           align-items: center;
           justify-content: center;
           border-radius: 50%;
-          background: var(--v4-bg);
+          background: var(--v4-bg-subtle);
           color: var(--v4-text-secondary);
+          transition: all 0.2s ease;
         }
 
         .jt-section.active .jt-section-icon {
           background: var(--v4-accent);
           color: white;
+          box-shadow: 0 2px 8px rgba(194, 65, 12, 0.25);
         }
 
         .jt-section.complete .jt-section-icon {
@@ -320,6 +325,7 @@ export function JourneyTimeline({
           font-size: 13px;
           font-weight: 500;
           color: var(--v4-text);
+          font-family: var(--v4-font-display);
         }
 
         .jt-section.locked .jt-section-name {
@@ -327,12 +333,12 @@ export function JourneyTimeline({
         }
 
         .jt-badge-complete {
-          padding: 2px 8px;
+          padding: 3px 10px;
           font-size: 10px;
-          font-weight: 500;
+          font-weight: 600;
           color: var(--v4-success);
-          background: var(--v4-success-bg);
-          border-radius: 10px;
+          background: var(--v4-success-light);
+          border-radius: var(--v4-radius-full);
         }
 
         .jt-lock-badge {
@@ -342,27 +348,34 @@ export function JourneyTimeline({
         .jt-stages,
         .jt-agents {
           padding: 0 12px 12px 12px;
+          animation: jt-expand 0.2s ease;
+        }
+
+        @keyframes jt-expand {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         .jt-stage,
         .jt-agent {
           display: flex;
           align-items: center;
-          gap: 8px;
-          width: 100%;
-          padding: 8px 12px;
-          margin-left: 16px;
+          gap: 10px;
+          width: calc(100% - 20px);
+          padding: 10px 12px;
+          margin-left: 20px;
           background: none;
           border: none;
-          border-left: 2px solid var(--v4-border);
+          border-left: 2px solid var(--v4-border-subtle);
           cursor: pointer;
           text-align: left;
           transition: all 0.15s ease;
+          border-radius: 0 var(--v4-radius-sm) var(--v4-radius-sm) 0;
         }
 
         .jt-stage:hover:not(:disabled),
         .jt-agent:hover {
-          background: var(--v4-bg);
+          background: var(--v4-bg-subtle);
         }
 
         .jt-stage:disabled {
@@ -384,8 +397,8 @@ export function JourneyTimeline({
         }
 
         .jt-stage-icon {
-          width: 20px;
-          height: 20px;
+          width: 22px;
+          height: 22px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -420,20 +433,22 @@ export function JourneyTimeline({
           font-size: 10px;
           font-weight: 600;
           color: var(--v4-success);
-          background: var(--v4-success-bg);
-          padding: 2px 6px;
-          border-radius: 8px;
+          background: var(--v4-success-light);
+          padding: 3px 8px;
+          border-radius: var(--v4-radius-full);
         }
 
         .jt-agent-dot {
-          width: 6px;
-          height: 6px;
+          width: 8px;
+          height: 8px;
           border-radius: 50%;
           background: var(--v4-text-muted);
+          transition: all 0.2s ease;
         }
 
         .jt-agent-dot.running {
           background: var(--v4-accent);
+          box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.15);
           animation: jt-pulse 1.5s ease-in-out infinite;
         }
 
@@ -455,8 +470,8 @@ export function JourneyTimeline({
         }
 
         @keyframes jt-pulse {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.5; }
+          0%, 100% { opacity: 1; box-shadow: 0 0 0 3px rgba(194, 65, 12, 0.15); }
+          50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(194, 65, 12, 0.1); }
         }
       `}</style>
     </div>

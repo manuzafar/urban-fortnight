@@ -5,6 +5,7 @@
 
 import { Check, Loader2, AlertCircle } from 'lucide-react';
 import { EvidenceBadge, type EvidenceTier } from './EvidenceBadge';
+import { ThinkingDots } from './ActivityIndicator';
 import '../../styles/theme-v4.css';
 
 export interface AgentInsight {
@@ -20,6 +21,7 @@ interface AgentCardProps {
   insights?: AgentInsight[];
   isExpanded?: boolean;
   onToggle?: () => void;
+  showThinking?: boolean;
 }
 
 export function AgentCard({
@@ -29,6 +31,7 @@ export function AgentCard({
   insights = [],
   isExpanded = false,
   onToggle,
+  showThinking = false,
 }: AgentCardProps) {
   const getStatusColor = () => {
     switch (status) {
@@ -56,13 +59,14 @@ export function AgentCard({
     }
   };
 
+  const shouldShowThinking = showThinking && status === 'running' && insights.length === 0;
+
   return (
     <div
+      className="v4-card"
       style={{
-        background: 'var(--v4-surface)',
-        border: '1px solid var(--v4-border)',
-        borderRadius: 'var(--v4-radius)',
         overflow: 'hidden',
+        transition: 'all var(--v4-transition)',
       }}
     >
       {/* Header */}
@@ -74,16 +78,24 @@ export function AgentCard({
           gap: '12px',
           padding: '14px 16px',
           cursor: onToggle ? 'pointer' : 'default',
-          borderBottom: isExpanded && insights.length > 0 ? '1px solid var(--v4-border)' : 'none',
+          borderBottom: (isExpanded && insights.length > 0) || shouldShowThinking ? '1px solid var(--v4-border-subtle)' : 'none',
+          transition: 'background var(--v4-transition-fast)',
+        }}
+        onMouseEnter={(e) => {
+          if (onToggle) e.currentTarget.style.background = 'var(--v4-bg-subtle)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = 'transparent';
         }}
       >
-        <span style={{ color: getStatusColor() }}>{getStatusIcon()}</span>
+        <span style={{ color: getStatusColor(), display: 'flex', alignItems: 'center' }}>{getStatusIcon()}</span>
         <div style={{ flex: 1 }}>
           <div
             style={{
               fontSize: '14px',
               fontWeight: 500,
               color: status === 'pending' ? 'var(--v4-text-muted)' : 'var(--v4-text)',
+              fontFamily: 'var(--v4-font-display)',
             }}
           >
             {name}
@@ -99,9 +111,10 @@ export function AgentCard({
             style={{
               fontSize: '12px',
               color: 'var(--v4-text-muted)',
-              background: 'var(--v4-bg)',
-              padding: '2px 8px',
-              borderRadius: '4px',
+              background: 'var(--v4-bg-subtle)',
+              padding: '3px 10px',
+              borderRadius: 'var(--v4-radius-full)',
+              fontWeight: 500,
             }}
           >
             {insights.length} insights
@@ -109,39 +122,57 @@ export function AgentCard({
         )}
       </div>
 
+      {/* Thinking State */}
+      {shouldShowThinking && (
+        <div
+          className="v4-animate-fade-in"
+          style={{
+            padding: '16px',
+            background: 'var(--v4-bg-subtle)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <ThinkingDots text="Analyzing" />
+        </div>
+      )}
+
       {/* Insights */}
       {isExpanded && insights.length > 0 && (
-        <div style={{ padding: '12px 16px', background: 'var(--v4-bg)' }}>
+        <div style={{ padding: '12px 16px', background: 'var(--v4-bg-subtle)' }}>
           {insights.slice(0, 5).map((insight, i) => (
             <div
               key={i}
+              className="v4-animate-slide-up"
               style={{
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: '8px',
                 padding: '8px 0',
-                borderBottom: i < insights.length - 1 ? '1px solid var(--v4-border)' : 'none',
+                borderBottom: i < Math.min(insights.length, 5) - 1 ? '1px solid var(--v4-border-subtle)' : 'none',
+                animationDelay: `${i * 50}ms`,
               }}
             >
               <span
                 style={{
-                  width: '4px',
-                  height: '4px',
+                  width: '5px',
+                  height: '5px',
                   borderRadius: '50%',
                   background: 'var(--v4-accent)',
-                  marginTop: '8px',
+                  marginTop: '7px',
                   flexShrink: 0,
                 }}
               />
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '12px', color: 'var(--v4-text-muted)', marginBottom: '2px' }}>
+                <div style={{ fontSize: '12px', color: 'var(--v4-text-muted)', marginBottom: '3px', fontWeight: 500 }}>
                   {insight.key}
                 </div>
                 <div
                   style={{
                     fontSize: '13px',
                     color: 'var(--v4-text-secondary)',
-                    lineHeight: 1.4,
+                    lineHeight: 1.5,
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
                     display: '-webkit-box',
@@ -156,7 +187,7 @@ export function AgentCard({
             </div>
           ))}
           {insights.length > 5 && (
-            <div style={{ fontSize: '12px', color: 'var(--v4-text-muted)', paddingTop: '8px' }}>
+            <div style={{ fontSize: '12px', color: 'var(--v4-text-muted)', paddingTop: '8px', fontWeight: 500 }}>
               +{insights.length - 5} more insights
             </div>
           )}

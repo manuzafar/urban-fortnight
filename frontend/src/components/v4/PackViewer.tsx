@@ -88,15 +88,16 @@ export function PackViewerV4({ pack, sessionId, onBack }: PackViewerV4Props) {
       {/* Header */}
       <header
         style={{
-          padding: '12px 24px',
+          padding: '14px 24px',
           background: 'var(--v4-surface)',
-          borderBottom: '1px solid var(--v4-border)',
+          borderBottom: '1px solid var(--v4-border-subtle)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           position: 'sticky',
           top: 0,
           zIndex: 100,
+          boxShadow: 'var(--v4-shadow-xs)',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
@@ -109,9 +110,10 @@ export function PackViewerV4({ pack, sessionId, onBack }: PackViewerV4Props) {
               background: 'none',
               border: 'none',
               cursor: 'pointer',
+              fontFamily: 'var(--v4-font-display)',
             }}
           >
-            Seedcraft
+            Seedform
           </button>
           <span
             style={{
@@ -123,19 +125,7 @@ export function PackViewerV4({ pack, sessionId, onBack }: PackViewerV4Props) {
           >
             {productName}
           </span>
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '4px 10px',
-              background: 'var(--v4-success-bg)',
-              borderRadius: '100px',
-              fontSize: '12px',
-              fontWeight: 500,
-              color: 'var(--v4-success)',
-            }}
-          >
+          <span className="v4-badge v4-badge-success">
             <span
               style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--v4-success)' }}
             />
@@ -148,20 +138,8 @@ export function PackViewerV4({ pack, sessionId, onBack }: PackViewerV4Props) {
           <IconButton icon={<Printer size={18} />} title="Print" />
           <button
             onClick={handleExport}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '8px 16px',
-              background: 'var(--v4-text)',
-              color: 'white',
-              fontSize: '13px',
-              fontWeight: 500,
-              border: 'none',
-              borderRadius: 'var(--v4-radius)',
-              cursor: 'pointer',
-              marginLeft: '4px',
-            }}
+            className="v4-btn v4-btn-dark v4-btn-sm"
+            style={{ marginLeft: '4px' }}
           >
             <Download size={14} />
             Export
@@ -173,7 +151,7 @@ export function PackViewerV4({ pack, sessionId, onBack }: PackViewerV4Props) {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '260px 1fr',
+          gridTemplateColumns: '280px 1fr',
           minHeight: 'calc(100vh - 61px)',
         }}
       >
@@ -181,7 +159,7 @@ export function PackViewerV4({ pack, sessionId, onBack }: PackViewerV4Props) {
         <aside
           style={{
             background: 'var(--v4-surface)',
-            borderRight: '1px solid var(--v4-border)',
+            borderRight: '1px solid var(--v4-border-subtle)',
             position: 'sticky',
             top: '61px',
             height: 'calc(100vh - 61px)',
@@ -196,9 +174,9 @@ export function PackViewerV4({ pack, sessionId, onBack }: PackViewerV4Props) {
         </aside>
 
         {/* Main Content */}
-        <main style={{ padding: '32px 48px 80px', maxWidth: '840px' }}>
+        <main style={{ padding: '40px 56px 96px', maxWidth: '960px' }}>
           {/* Breadcrumb */}
-          <div style={{ fontSize: '13px', color: 'var(--v4-text-muted)', marginBottom: '16px' }}>
+          <div style={{ fontSize: '13px', color: 'var(--v4-text-muted)', marginBottom: '20px' }}>
             <button
               onClick={onBack}
               style={{
@@ -207,34 +185,40 @@ export function PackViewerV4({ pack, sessionId, onBack }: PackViewerV4Props) {
                 border: 'none',
                 cursor: 'pointer',
                 fontSize: '13px',
+                padding: 0,
               }}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--v4-text)'}
+              onMouseLeave={(e) => e.currentTarget.style.color = 'var(--v4-text-secondary)'}
             >
               Inception Pack
             </button>
-            {' / '}
-            {sections.find((s) => s.id === activeSection)?.title}
+            <span style={{ margin: '0 8px', color: 'var(--v4-border)' }}>/</span>
+            <span>{sections.find((s) => s.id === activeSection)?.title}</span>
           </div>
 
           {/* Page Header */}
-          <header style={{ marginBottom: '32px' }}>
+          <header style={{ marginBottom: '48px' }}>
             <div
+              className="v4-label"
               style={{
-                fontSize: '11px',
-                fontWeight: 600,
-                textTransform: 'uppercase',
-                letterSpacing: '0.1em',
                 color: 'var(--v4-accent)',
-                marginBottom: '8px',
+                marginBottom: '12px',
               }}
             >
               {sections.find((s) => s.id === activeSection)?.phase}
             </div>
-            <h1 style={{ fontSize: '28px', fontWeight: 600, letterSpacing: '-0.02em', marginBottom: '8px' }}>
+            <h1
+              className="v4-display-2"
+              style={{ marginBottom: '12px' }}
+            >
               {sections.find((s) => s.id === activeSection)?.title}
             </h1>
-            <div style={{ display: 'flex', gap: '20px', fontSize: '13px', color: 'var(--v4-text-muted)' }}>
+            <div style={{ display: 'flex', gap: '24px', fontSize: '13px', color: 'var(--v4-text-muted)' }}>
               <span>Generated just now</span>
-              <span>Critique validated</span>
+              <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--v4-success)' }} />
+                Critique validated
+              </span>
             </div>
           </header>
 
@@ -243,34 +227,23 @@ export function PackViewerV4({ pack, sessionId, onBack }: PackViewerV4Props) {
 
           {/* Footer Navigation */}
           <div
+            className="v4-card-elevated"
             style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               padding: '20px 24px',
-              background: 'var(--v4-surface)',
-              border: '1px solid var(--v4-border)',
-              borderRadius: 'var(--v4-radius)',
-              marginTop: '32px',
+              marginTop: '48px',
             }}
           >
-            <div style={{ display: 'flex', gap: '10px' }}>
+            <div style={{ display: 'flex', gap: '12px' }}>
               <button
                 onClick={() => prevSection && setActiveSection(prevSection.id)}
                 disabled={!prevSection}
+                className="v4-btn v4-btn-secondary v4-btn-sm"
                 style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '10px 18px',
-                  fontSize: '13px',
-                  fontWeight: 500,
-                  color: prevSection ? 'var(--v4-text-secondary)' : 'var(--v4-text-muted)',
-                  background: 'var(--v4-bg)',
-                  border: 'none',
-                  borderRadius: 'var(--v4-radius)',
-                  cursor: prevSection ? 'pointer' : 'not-allowed',
                   opacity: prevSection ? 1 : 0.4,
+                  cursor: prevSection ? 'pointer' : 'not-allowed',
                 }}
               >
                 <ChevronLeft size={16} />
@@ -279,19 +252,10 @@ export function PackViewerV4({ pack, sessionId, onBack }: PackViewerV4Props) {
               <button
                 onClick={() => nextSection && setActiveSection(nextSection.id)}
                 disabled={!nextSection}
+                className="v4-btn v4-btn-secondary v4-btn-sm"
                 style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '10px 18px',
-                  fontSize: '13px',
-                  fontWeight: 500,
-                  color: nextSection ? 'var(--v4-text-secondary)' : 'var(--v4-text-muted)',
-                  background: 'var(--v4-bg)',
-                  border: 'none',
-                  borderRadius: 'var(--v4-radius)',
-                  cursor: nextSection ? 'pointer' : 'not-allowed',
                   opacity: nextSection ? 1 : 0.4,
+                  cursor: nextSection ? 'pointer' : 'not-allowed',
                 }}
               >
                 Next: {nextSection?.title || ''}
@@ -300,19 +264,7 @@ export function PackViewerV4({ pack, sessionId, onBack }: PackViewerV4Props) {
             </div>
             <button
               onClick={handleExport}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 20px',
-                background: 'var(--v4-accent)',
-                color: 'white',
-                fontSize: '14px',
-                fontWeight: 500,
-                border: 'none',
-                borderRadius: 'var(--v4-radius)',
-                cursor: 'pointer',
-              }}
+              className="v4-btn v4-btn-primary"
             >
               <Download size={16} />
               Export Full Pack
@@ -475,13 +427,13 @@ function DiscoveryJourneySection({ pack }: { pack: InceptionPack }) {
             icon={<Heart size={18} />}
             label="Problem Love"
             complete={!!journey.problem_love?.problem_statement}
-            color="#ef4444"
+            color="var(--v4-error)"
           />
           <StageIndicator
             icon={<Users size={18} />}
             label="Customer Truth"
             complete={journey.customer_truth?.interview_count > 0 || journey.customer_truth?.pain_patterns?.length > 0}
-            color="#3b82f6"
+            color="var(--v4-info)"
           />
           <StageIndicator
             icon={<Map size={18} />}
@@ -506,7 +458,7 @@ function DiscoveryJourneySection({ pack }: { pack: InceptionPack }) {
 
       {/* Problem Love Stage */}
       {journey.problem_love?.problem_statement && (
-        <Card title="Problem Love" icon={<Heart size={18} color="#ef4444" />}>
+        <Card title="Problem Love" icon={<Heart size={18} color="var(--v4-error)" />}>
           <div style={{ marginBottom: '16px' }}>
             <h4 style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: 'var(--v4-text-muted)', marginBottom: '8px' }}>
               Problem Statement
@@ -516,7 +468,7 @@ function DiscoveryJourneySection({ pack }: { pack: InceptionPack }) {
               lineHeight: 1.6,
               color: 'var(--v4-text)',
               padding: '16px',
-              background: '#fef2f2',
+              background: 'var(--v4-error-light)',
               borderRadius: 'var(--v4-radius)',
               borderLeft: '4px solid #ef4444',
               margin: 0,
@@ -543,12 +495,12 @@ function DiscoveryJourneySection({ pack }: { pack: InceptionPack }) {
 
       {/* Customer Truth Stage */}
       {(journey.customer_truth?.interview_count > 0 || journey.customer_truth?.key_quotes?.length > 0 || journey.customer_truth?.pain_patterns?.length > 0) && (
-        <Card title="Customer Truth" icon={<Users size={18} color="#3b82f6" />}>
+        <Card title="Customer Truth" icon={<Users size={18} color="var(--v4-info)" />}>
           {/* Interview Stats */}
           {journey.customer_truth.interview_count > 0 && (
             <div style={{
               padding: '16px',
-              background: '#eff6ff',
+              background: 'var(--v4-info-light)',
               borderRadius: 'var(--v4-radius)',
               marginBottom: '20px',
               display: 'flex',
@@ -628,7 +580,7 @@ function DiscoveryJourneySection({ pack }: { pack: InceptionPack }) {
                           fontWeight: 600,
                           textTransform: 'uppercase',
                           borderRadius: '4px',
-                          background: severity === 'high' ? '#fef2f2' : severity === 'medium' ? '#fef9c3' : '#f0fdf4',
+                          background: severity === 'high' ? 'var(--v4-error-light)' : severity === 'medium' ? '#fef9c3' : '#f0fdf4',
                           color: severity === 'high' ? '#dc2626' : severity === 'medium' ? '#b45309' : '#16a34a',
                         }}>
                           {severity}
@@ -732,8 +684,8 @@ function DiscoveryJourneySection({ pack }: { pack: InceptionPack }) {
                   title="Push Factors"
                   subtitle="Problems pushing away from current solution"
                   items={journey.opportunity_mapping.four_forces.push_factors || []}
-                  color="#ef4444"
-                  bgColor="#fef2f2"
+                  color="var(--v4-error)"
+                  bgColor="var(--v4-error-light)"
                 />
                 {/* Pull Factors */}
                 <ForcesCard
@@ -790,8 +742,8 @@ function DiscoveryJourneySection({ pack }: { pack: InceptionPack }) {
                 DHM Score (Delight, Hard-to-copy, Margin)
               </h4>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-                <DHMScoreCard label="Delight" value={journey.solution_design.dhm_score.delight} color="#ef4444" />
-                <DHMScoreCard label="Hard to Copy" value={journey.solution_design.dhm_score.hard_to_copy} color="#3b82f6" />
+                <DHMScoreCard label="Delight" value={journey.solution_design.dhm_score.delight} color="var(--v4-error)" />
+                <DHMScoreCard label="Hard to Copy" value={journey.solution_design.dhm_score.hard_to_copy} color="var(--v4-info)" />
                 <DHMScoreCard label="Margin" value={journey.solution_design.dhm_score.margin} color="#10b981" />
               </div>
             </div>
@@ -808,7 +760,7 @@ function DiscoveryJourneySection({ pack }: { pack: InceptionPack }) {
                   <div>
                     <h5 style={{ fontSize: '11px', fontWeight: 600, color: '#dc2626', marginBottom: '8px' }}>Potential Failure Scenarios</h5>
                     {journey.solution_design.pre_mortem.failure_scenarios.map((scenario, i) => (
-                      <div key={i} style={{ padding: '8px 12px', background: '#fef2f2', borderRadius: '6px', fontSize: '13px', marginBottom: '8px' }}>
+                      <div key={i} style={{ padding: '8px 12px', background: 'var(--v4-error-light)', borderRadius: '6px', fontSize: '13px', marginBottom: '8px' }}>
                         {scenario}
                       </div>
                     ))}
@@ -855,7 +807,7 @@ function DiscoveryJourneySection({ pack }: { pack: InceptionPack }) {
                       fontWeight: 600,
                       textTransform: 'uppercase',
                       borderRadius: '100px',
-                      background: exp.effort_level === 'quick' ? '#f0fdf4' : exp.effort_level === 'moderate' ? '#fef9c3' : '#fef2f2',
+                      background: exp.effort_level === 'quick' ? '#f0fdf4' : exp.effort_level === 'moderate' ? '#fef9c3' : 'var(--v4-error-light)',
                       color: exp.effort_level === 'quick' ? '#16a34a' : exp.effort_level === 'moderate' ? '#b45309' : '#dc2626',
                     }}>
                       {exp.effort_level}
@@ -1494,7 +1446,7 @@ function CompetitiveAnalysisSection({ pack }: { pack: InceptionPack }) {
           <Card title="Market Forces Analysis">
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
               {pushItems.length > 0 && (
-                <div style={{ padding: '14px', background: '#fef2f2', borderRadius: 'var(--v4-radius)' }}>
+                <div style={{ padding: '14px', background: 'var(--v4-error-light)', borderRadius: 'var(--v4-radius)' }}>
                   <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#dc2626', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span>Push Factors</span>
                     <span style={{ fontSize: '11px', fontWeight: 400 }}>(Away from current)</span>
@@ -1533,7 +1485,7 @@ function CompetitiveAnalysisSection({ pack }: { pack: InceptionPack }) {
                 </div>
               )}
               {habitItems.length > 0 && (
-                <div style={{ padding: '14px', background: '#eff6ff', borderRadius: 'var(--v4-radius)' }}>
+                <div style={{ padding: '14px', background: 'var(--v4-info-light)', borderRadius: 'var(--v4-radius)' }}>
                   <h4 style={{ fontSize: '13px', fontWeight: 600, color: '#2563eb', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                     <span>Habit Factors</span>
                     <span style={{ fontSize: '11px', fontWeight: 400 }}>(Current behaviors)</span>
@@ -4049,17 +4001,15 @@ function GenericSection({ sectionId, pack }: { sectionId: string; pack: Inceptio
 function Card({ title, icon, action, children }: { title: string; icon?: React.ReactNode; action?: string; children: React.ReactNode }) {
   return (
     <section
+      className="v4-card"
       style={{
-        background: 'var(--v4-surface)',
-        border: '1px solid var(--v4-border)',
-        borderRadius: 'var(--v4-radius)',
-        marginBottom: '20px',
+        marginBottom: 'var(--v4-space-6)',
       }}
     >
       <div
         style={{
-          padding: '16px 20px',
-          borderBottom: '1px solid var(--v4-border)',
+          padding: 'var(--v4-space-4) var(--v4-space-5)',
+          borderBottom: '1px solid var(--v4-border-subtle)',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -4067,13 +4017,13 @@ function Card({ title, icon, action, children }: { title: string; icon?: React.R
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {icon}
-          <h3 style={{ fontSize: '15px', fontWeight: 600, margin: 0 }}>{title}</h3>
+          <h3 className="v4-heading-3" style={{ margin: 0 }}>{title}</h3>
         </div>
         {action && (
-          <span style={{ fontSize: '13px', color: 'var(--v4-text-secondary)', cursor: 'pointer' }}>{action} -&gt;</span>
+          <span style={{ fontSize: '13px', color: 'var(--v4-text-secondary)', cursor: 'pointer' }}>{action} &rarr;</span>
         )}
       </div>
-      <div style={{ padding: '20px' }}>{children}</div>
+      <div style={{ padding: 'var(--v4-space-5)' }}>{children}</div>
     </section>
   );
 }
@@ -4081,16 +4031,14 @@ function Card({ title, icon, action, children }: { title: string; icon?: React.R
 function StatCard({ value, label }: { value: string; label: string }) {
   return (
     <div
+      className="v4-card"
       style={{
-        padding: '20px',
-        background: 'var(--v4-surface)',
-        border: '1px solid var(--v4-border)',
-        borderRadius: 'var(--v4-radius)',
+        padding: 'var(--v4-space-5)',
         textAlign: 'center',
       }}
     >
-      <div style={{ fontSize: '24px', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '4px' }}>{value}</div>
-      <div style={{ fontSize: '12px', color: 'var(--v4-text-muted)' }}>{label}</div>
+      <div style={{ fontSize: '28px', fontWeight: 700, letterSpacing: '-0.02em', marginBottom: '6px', fontFamily: 'var(--v4-font-display)' }}>{value}</div>
+      <div className="v4-label">{label}</div>
     </div>
   );
 }
@@ -4099,13 +4047,13 @@ function MetricCard({ value, label }: { value: string; label: string }) {
   return (
     <div
       style={{
-        padding: '16px',
-        background: 'var(--v4-bg)',
-        borderRadius: 'var(--v4-radius)',
+        padding: 'var(--v4-space-4)',
+        background: 'var(--v4-bg-subtle)',
+        borderRadius: 'var(--v4-radius-md)',
         textAlign: 'center',
       }}
     >
-      <div style={{ fontSize: '20px', fontWeight: 700, color: 'var(--v4-accent)', marginBottom: '4px' }}>{value}</div>
+      <div style={{ fontSize: '22px', fontWeight: 700, color: 'var(--v4-accent)', marginBottom: '4px', fontFamily: 'var(--v4-font-display)' }}>{value}</div>
       <div style={{ fontSize: '12px', color: 'var(--v4-text-secondary)' }}>{label}</div>
     </div>
   );
