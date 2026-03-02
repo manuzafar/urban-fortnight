@@ -181,50 +181,8 @@
   letter-spacing: 0.05em;
 }
 
-/* Section Navigation */
-.section-nav {
-  display: flex;
-  justify-content: center;
-  gap: var(--space-1);
-  padding: var(--space-4) var(--space-6);
-  background: var(--color-bg-1);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  position: sticky;
-  top: 56px;
-  z-index: 99;
-}
-
-.section-tab {
-  padding: var(--space-2) var(--space-4);
-  background: none;
-  border: none;
-  color: var(--color-muted);
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  border-radius: var(--radius-sm);
-  transition: color 0.15s ease, background 0.15s ease;
-}
-
-.section-tab:hover {
-  color: var(--color-text);
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.section-tab.active {
-  color: var(--color-accent);
-  background: rgba(109, 94, 252, 0.1);
-}
-
-.section-tab.disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.section-tab.disabled:hover {
-  background: none;
-  color: var(--color-muted);
-}
+/* Section Navigation - REMOVED: Now using V4 SectionNav component */
+/* Old .section-nav styles removed to avoid conflicts with SectionNav.tsx */
 
 /* Section Content */
 .section-content {
@@ -1531,11 +1489,7 @@
     max-width: 280px;
   }
 
-  .section-nav {
-    overflow-x: auto;
-    justify-content: flex-start;
-    padding: var(--space-2) var(--space-4);
-  }
+  /* .section-nav responsive styles removed - using V4 SectionNav component */
 
   .score-bar-item {
     grid-template-columns: 1fr;
