@@ -246,7 +246,7 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
 
         {/* Main Form */}
         <main style={{ padding: '48px 64px 140px', maxWidth: '680px' }}>
-          <h1 style={{ fontSize: '28px', fontWeight: 600, letterSpacing: '-0.02em', marginBottom: '8px' }}>
+          <h1 style={{ fontFamily: 'var(--v4-font-display)', fontSize: '28px', fontWeight: 600, letterSpacing: '-0.02em', marginBottom: '8px' }}>
             Define your initiative
           </h1>
           <p style={{ fontSize: '15px', color: 'var(--v4-text-secondary)', marginBottom: '48px' }}>
@@ -272,7 +272,7 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
                         padding: '16px',
                         border: isSelected ? '2px solid var(--v4-accent)' : '1px solid var(--v4-border)',
                         borderRadius: '12px',
-                        background: isSelected ? 'rgba(99, 102, 241, 0.05)' : 'var(--v4-surface)',
+                        background: isSelected ? 'var(--v4-accent-light)' : 'var(--v4-surface)',
                         cursor: 'pointer',
                         textAlign: 'left',
                         position: 'relative',
@@ -578,7 +578,7 @@ function FormSection({ label, title, children }: { label: string; title: string;
         <div className="v4-eyebrow" style={{ marginBottom: '8px' }}>
           {label}
         </div>
-        <h2 style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.01em' }}>{title}</h2>
+        <h2 style={{ fontFamily: 'var(--v4-font-display)', fontSize: '17px', fontWeight: 600, letterSpacing: '-0.01em' }}>{title}</h2>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>{children}</div>
     </section>

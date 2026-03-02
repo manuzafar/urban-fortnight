@@ -100,7 +100,7 @@ export function LandingPageV4({ onStart, user, onSessionsClick, onSignOut }: Lan
                 cursor: 'pointer',
                 transition: 'background 0.15s ease',
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = '#404040')}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--v4-text-secondary)')}
               onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--v4-text)')}
             >
               Get Started
@@ -114,6 +114,7 @@ export function LandingPageV4({ onStart, user, onSessionsClick, onSignOut }: Lan
         <div className="v4-container">
           <h1
             style={{
+              fontFamily: 'var(--v4-font-display)',
               fontSize: 'var(--v4-font-size-hero)',
               fontWeight: 600,
               letterSpacing: '-0.035em',
@@ -187,6 +188,7 @@ export function LandingPageV4({ onStart, user, onSessionsClick, onSignOut }: Lan
             </p>
             <h2
               style={{
+                fontFamily: 'var(--v4-font-display)',
                 fontSize: '36px',
                 fontWeight: 600,
                 letterSpacing: '-0.025em',
@@ -232,6 +234,7 @@ export function LandingPageV4({ onStart, user, onSessionsClick, onSignOut }: Lan
         <div className="v4-container">
           <h2
             style={{
+              fontFamily: 'var(--v4-font-display)',
               fontSize: '36px',
               fontWeight: 600,
               letterSpacing: '-0.025em',
@@ -271,7 +274,7 @@ export function LandingPageV4({ onStart, user, onSessionsClick, onSignOut }: Lan
               marginBottom: '48px',
             }}
           >
-            <h2 style={{ fontSize: '36px', fontWeight: 600, letterSpacing: '-0.025em' }}>What you get</h2>
+            <h2 style={{ fontFamily: 'var(--v4-font-display)', fontSize: '36px', fontWeight: 600, letterSpacing: '-0.025em' }}>What you get</h2>
             <p style={{ fontSize: '15px', color: 'var(--v4-text-secondary)' }}>16 sections, validated and cross-referenced</p>
           </div>
           <div
@@ -308,7 +311,7 @@ export function LandingPageV4({ onStart, user, onSessionsClick, onSignOut }: Lan
       {/* Trust Section */}
       <section style={{ padding: '100px 0', borderTop: '1px solid var(--v4-border)' }}>
         <div className="v4-container">
-          <h2 style={{ fontSize: '36px', fontWeight: 600, letterSpacing: '-0.025em', marginBottom: '48px' }}>
+          <h2 style={{ fontFamily: 'var(--v4-font-display)', fontSize: '36px', fontWeight: 600, letterSpacing: '-0.025em', marginBottom: '48px' }}>
             Built for scrutiny
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '32px' }}>
@@ -335,7 +338,7 @@ export function LandingPageV4({ onStart, user, onSessionsClick, onSignOut }: Lan
       {/* Final CTA */}
       <section style={{ padding: '100px 0', borderTop: '1px solid var(--v4-border)', textAlign: 'center' }}>
         <div className="v4-container">
-          <h2 style={{ fontSize: '40px', fontWeight: 600, letterSpacing: '-0.025em', marginBottom: '16px' }}>
+          <h2 style={{ fontFamily: 'var(--v4-font-display)', fontSize: '40px', fontWeight: 600, letterSpacing: '-0.025em', marginBottom: '16px' }}>
             Stop waiting for discovery.
           </h2>
           <p style={{ fontSize: '17px', color: 'var(--v4-text-secondary)', marginBottom: '32px' }}>
@@ -421,7 +424,7 @@ function HowStep({ number, title, description }: { number: string; title: string
   return (
     <div>
       <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--v4-text-muted)', marginBottom: '16px' }}>{number}</div>
-      <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '12px', letterSpacing: '-0.01em' }}>{title}</h3>
+      <h3 style={{ fontFamily: 'var(--v4-font-display)', fontSize: '18px', fontWeight: 600, marginBottom: '12px', letterSpacing: '-0.01em' }}>{title}</h3>
       <p style={{ fontSize: '15px', color: 'var(--v4-text-secondary)', lineHeight: 1.65 }}>{description}</p>
     </div>
   );
@@ -449,7 +452,7 @@ function SectionItem({ category, title }: { category: string; title: string }) {
 function TrustItem({ title, description }: { title: string; description: string }) {
   return (
     <div>
-      <h3 style={{ fontSize: '15px', fontWeight: 600, marginBottom: '8px' }}>{title}</h3>
+      <h3 style={{ fontFamily: 'var(--v4-font-display)', fontSize: '15px', fontWeight: 600, marginBottom: '8px' }}>{title}</h3>
       <p style={{ fontSize: '14px', color: 'var(--v4-text-secondary)', lineHeight: 1.6 }}>{description}</p>
     </div>
   );
