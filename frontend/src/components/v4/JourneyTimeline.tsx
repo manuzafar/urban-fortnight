@@ -20,6 +20,7 @@ import {
   Award,
   ChevronDown,
   ChevronRight,
+  Eye,
 } from 'lucide-react';
 import '../../styles/theme-v4.css';
 
@@ -114,12 +115,17 @@ export function JourneyTimeline({
   onAgentClick,
   currentView,
 }: JourneyTimelineProps) {
-  const [isDiscoveryExpanded, setIsDiscoveryExpanded] = React.useState(currentView === 'discovery');
+  // Keep Discovery expanded if in discovery view OR if discovery is complete (in execution view)
+  const [isDiscoveryExpanded, setIsDiscoveryExpanded] = React.useState(
+    currentView === 'discovery' || discoveryComplete
+  );
 
-  // Auto-collapse discovery when switching to execution view
+  // Auto-expand when discovery is complete or we're in discovery view
   React.useEffect(() => {
-    setIsDiscoveryExpanded(currentView === 'discovery');
-  }, [currentView]);
+    if (currentView === 'discovery' || discoveryComplete) {
+      setIsDiscoveryExpanded(true);
+    }
+  }, [currentView, discoveryComplete]);
 
   const getDiscoveryStatus = (stageId: string): DiscoveryStage['status'] => {
     return discoveryStages[stageId]?.status || 'not_started';
@@ -179,6 +185,12 @@ export function JourneyTimeline({
                   <span className="jt-stage-name">{stage.name}</span>
                   {discoveryStages[stage.id]?.score !== undefined && (
                     <span className="jt-stage-score">{discoveryStages[stage.id]?.score}/10</span>
+                  )}
+                  {/* View indicator when clickable in execution view */}
+                  {allowDiscoveryClick && isComplete && (
+                    <span className="jt-view-indicator" title="View stage output">
+                      <Eye size={14} />
+                    </span>
                   )}
                 </button>
               );
@@ -448,6 +460,36 @@ export function JourneyTimeline({
           background: var(--v4-success-light);
           padding: 3px 8px;
           border-radius: var(--v4-radius-full);
+        }
+
+        .jt-view-indicator {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 24px;
+          height: 24px;
+          border-radius: 4px;
+          color: var(--v4-text-muted);
+          transition: all 0.15s ease;
+          flex-shrink: 0;
+        }
+
+        .jt-stage:hover .jt-view-indicator {
+          color: var(--v4-accent);
+          background: var(--v4-accent-lighter);
+        }
+
+        /* Enhanced hover for clickable stages */
+        .jt-stage.clickable {
+          cursor: pointer;
+        }
+
+        .jt-stage.clickable:hover {
+          background: var(--v4-bg-subtle);
+        }
+
+        .jt-stage.clickable:hover .jt-stage-name {
+          color: var(--v4-text);
         }
 
         .jt-agent-dot {
