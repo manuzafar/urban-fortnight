@@ -36,10 +36,10 @@ interface DiscoveryViewV4Props {
 // Evidence quality badge component
 function EvidenceBadge({ quality }: { quality: string }) {
   const colors: Record<string, { bg: string; text: string; label: string }> = {
-    E1: { bg: '#dcfce7', text: '#166534', label: 'E1 - Direct Evidence' },
-    E2: { bg: '#dbeafe', text: '#1e40af', label: 'E2 - Survey Data' },
-    E3: { bg: '#fef3c7', text: '#92400e', label: 'E3 - Expert Analysis' },
-    E4: { bg: '#f3f4f6', text: '#6b7280', label: 'E4 - AI Generated' },
+    E1: { bg: 'var(--v4-success-light)', text: 'var(--v4-success)', label: 'E1 - Direct Evidence' },
+    E2: { bg: 'var(--v4-info-light)', text: 'var(--v4-info)', label: 'E2 - Survey Data' },
+    E3: { bg: 'var(--v4-warning-light)', text: 'var(--v4-warning)', label: 'E3 - Expert Analysis' },
+    E4: { bg: 'var(--v4-bg-subtle)', text: 'var(--v4-text-secondary)', label: 'E4 - AI Generated' },
   };
   const style = colors[quality] || colors.E4;
 
@@ -953,8 +953,8 @@ export function DiscoveryViewV4({
         }
 
         .mode-deep {
-          background: #fef3c7;
-          color: #92400e;
+          background: var(--v4-warning-light);
+          color: var(--v4-warning);
         }
 
         .quality-badge {
@@ -1183,7 +1183,7 @@ export function DiscoveryViewV4({
         }
 
         .stage-error .retry-btn:hover:not(:disabled) {
-          background: #b91c1c;
+          background: var(--v4-error-hover);
         }
 
         .stage-error .retry-btn:disabled {
@@ -1437,7 +1437,7 @@ export function DiscoveryViewV4({
 
         .discovery-complete p {
           margin: 0 0 20px 0;
-          color: #15803d;
+          color: var(--v4-success);
         }
 
         .continue-strategy-btn {

@@ -89,6 +89,7 @@
 
 .header-titles h1 {
   margin: 0;
+  font-family: var(--v4-font-display);
   font-size: 20px;
   font-weight: 600;
   color: var(--v4-text);
@@ -125,8 +126,8 @@
 }
 
 .mode-deep {
-  background: #fef3c7;
-  color: #92400e;
+  background: var(--v4-warning-light);
+  color: var(--v4-warning);
 }
 
 .quality-badge {
@@ -293,15 +294,15 @@
 }
 
 .stage-error {
-  color: #dc2626;
+  color: var(--v4-error);
 }
 
 .stage-error svg {
-  color: #dc2626;
+  color: var(--v4-error);
 }
 
 .stage-error .error-message {
-  color: #991b1b;
+  color: var(--v4-error);
   max-width: 400px;
 }
 
@@ -315,7 +316,7 @@
 }
 
 .stage-error.stale h3 {
-  color: #92400e;
+  color: var(--v4-warning);
 }
 
 .stage-loading .elapsed-time {
@@ -367,6 +368,7 @@
 
 .stage-output .output-header h3 {
   margin: 0;
+  font-family: var(--v4-font-display);
   font-size: 18px;
   font-weight: 600;
   color: var(--v4-text);
@@ -403,12 +405,12 @@
 }
 
 .icon-btn.cancel-edit {
-  border-color: #fca5a5;
-  color: #dc2626;
+  border-color: var(--v4-error-light);
+  color: var(--v4-error);
 }
 
 .icon-btn.cancel-edit:hover {
-  background: #fef2f2;
+  background: var(--v4-error-light);
 }
 
 .output-content {
@@ -542,7 +544,7 @@
 
 /* Discovery Complete */
 .discovery-complete {
-  background: linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%);
+  background: var(--v4-success-light);
   border-radius: 12px;
   padding: 32px;
   text-align: center;
@@ -551,12 +553,13 @@
 .discovery-complete h3 {
   margin: 0 0 8px 0;
   font-size: 20px;
-  color: #166534;
+  font-family: var(--v4-font-display);
+  color: var(--v4-success);
 }
 
 .discovery-complete p {
   margin: 0 0 20px 0;
-  color: #15803d;
+  color: var(--v4-success);
 }
 
 .lifecycle-error {
@@ -565,9 +568,9 @@
   justify-content: center;
   gap: 8px;
   padding: 12px;
-  background: #fef2f2;
+  background: var(--v4-error-light);
   border-radius: 8px;
-  color: #dc2626;
+  color: var(--v4-error);
   margin-bottom: 16px;
   font-size: 14px;
 }
@@ -577,7 +580,7 @@
   align-items: center;
   gap: 10px;
   padding: 14px 28px;
-  background: #166534;
+  background: var(--v4-success);
   color: white;
   border: none;
   border-radius: 10px;
@@ -588,7 +591,7 @@
 }
 
 .continue-strategy-btn:hover {
-  background: #15803d;
+  background: var(--v4-success-hover, #15803d);
 }
 
 .continue-strategy-btn:disabled {
