@@ -98,6 +98,12 @@ Product LifeCycle/
 │   │   └── discovery_v4/        # V4 hybrid discovery
 │   │       ├── engine.py
 │   │       └── stages/          # 5 discovery stages
+│   │           ├── problem_love.py
+│   │           ├── customer_truth.py
+│   │           ├── opportunity_mapping.py
+│   │           ├── solution_design.py
+│   │           ├── validation_plan.py
+│   │           └── mini_critique.py  # Stage-specific critique
 │   │
 │   ├── services/                # Cross-run learning
 │   │   ├── embeddings.py        # Vector embeddings
@@ -211,6 +217,527 @@ END
 | Context Builder | `context_builder.py` | Evidence-aware context for agents |
 | Two-Stage Reasoning | `two_stage_reasoning.py` | Research then structure pattern |
 
+---
+
+## Agentic Design Patterns (Andrew Ng Framework)
+
+This system implements all four of Andrew Ng's agentic design patterns with production-grade sophistication.
+
+### 1. Reflection Pattern (Grade: B+)
+
+True Generate→Critique→Refine loops, not just post-hoc review.
+
+#### Implementation Locations
+
+| Component | File:Lines | Description |
+|-----------|-----------|-------------|
+| Core Reflection | `base_agent.py:733-936` | `call_llm_with_reflection()` - configurable iterations |
+| V4 Stage Loops | `discovery_v4/stages/*.py` | All 5 stages with quality-gated iteration |
+| Mini-Critique | `mini_critique.py:255-333` | Stage-specific dimensions + evidence boosting |
+| Two-Stage Reasoning | `two_stage_reasoning.py:60-255` | Research (grounded) → Structure (JSON) |
+| PRD Loop | `prd_subgraph.py:117-163` | Generator→Critic→Formatter with conditional loop |
+| Pack Critique | `critique.py:31-275` | Full pack quality gate with revision decision |
+
+#### Core Reflection Implementation (`base_agent.py:733-936`)
+
+```python
+async def call_llm_with_reflection(
+    prompt: str,
+    agent_name: str,
+    max_reflection_rounds: int = 1,
+) -> dict[str, Any]:
+    """
+    Generate → Self-Critique → Refine loop.
+
+    Reflection checks 5 categories:
+    1. Logical errors or contradictions
+    2. Missing important information
+    3. Unsupported claims (assertions without evidence)
+    4. Vague or generic statements
+    5. Constraint alignment violations
+    """
+```
+
+**Return metadata includes:**
+- `reflection_rounds`: Number of iterations completed
+- `issues_found`: All issues discovered during reflection
+- `was_revised`: Whether output was modified
+
+#### V4 Stage Reflection Configuration
+
+All 5 V4 Discovery stages implement identical reflection pattern:
+
+| Setting | Value |
+|---------|-------|
+| Max Iterations | 2 |
+| Quality Threshold | 7.0 (out of 10) |
+| Early Exit | Yes (if score >= 7.0) |
+| Evidence Boost | E1-E2 scores get +10% |
+
+**Stage Critique Dimensions:**
+
+| Stage | Dimensions Evaluated |
+|-------|---------------------|
+| Problem Love | Specificity, Real People, Frequency, Tarpit Awareness |
+| Customer Truth | Interview Quality, Pattern Recognition, Evidence Grounding, Gap ID |
+| Opportunity Mapping | Four Forces Balance, Tree Quality, Evidence Linkage, Primary Selection |
+| Solution Design | DHM Scoring, Pre-Mortem Quality, Solution-Fit, Differentiation |
+| Validation Plan | Experiment Design, Rung Progression, Success Criteria, Feasibility |
+
+---
+
+### 2. Tool Use Pattern (Grade: C+)
+
+#### Implementation
+
+| Tool | File | Description |
+|------|------|-------------|
+| Google Search Grounding | `base_agent.py:208-354` | `call_llm_with_grounding()` via Gemini native tool |
+| Agent Model Routing | `config.py:345-447` | 30+ agent→model mappings (Flash vs Pro) |
+| Memory Augmentation | `base_agent.py:599-695` | pgvector similarity search for past runs |
+| Two-Stage Grounded | `two_stage_reasoning.py` | Separates grounded research from JSON structuring |
+
+#### Agent Model Configuration
+
+```python
+# config.py:352-433 - AGENT_MODEL_CONFIG
+{
+    # Flash (2.0) - Speed/cost optimized
+    "customer_research": "gemini-2.0-flash",
+    "prd_generator": "gemini-2.0-flash",
+    "wireframe_designer": "gemini-2.0-flash",
+
+    # Pro (2.5) - Reasoning depth
+    "business_strategy": "gemini-2.5-pro",
+    "prd_critic": "gemini-2.5-pro",
+    "legal_regulatory": "gemini-2.5-pro",
+    "critique": "gemini-2.5-pro",
+    "prototype_generator": "gemini-2.5-pro",
+}
+```
+
+#### Token Budgets per Agent
+
+| Agent | Max Tokens | Reason |
+|-------|-----------|--------|
+| Prototype Generator | 16,384 | React code generation |
+| Wireframe Designer | 12,288 | UI code |
+| Standard agents | 8,192 | Default |
+
+**Limitation:** No external function calling beyond Google Search grounding.
+
+---
+
+### 3. Planning Pattern (Grade: B)
+
+#### Dynamic Planning Components
+
+| Component | When | Adaptive? | File |
+|-----------|------|-----------|------|
+| Planner Agent | Start | No (static plan) | `planner.py:29-145` |
+| Constraint Broadcasting | Pre-phase | Yes (based on prior work) | `constraint_broadcaster.py:114-163` |
+| Targeted Revision | Post-critique | Yes (routes to failing agent) | `orchestrator.py:962-1022` |
+| Contradiction Detection | Post-phase | Yes (triggers re-runs) | `facilitator.py:1006-1161` |
+| Evidence-Aware Context | Per-agent | Yes (tiered by E1-E5) | `context_builder.py:42-265` |
+
+#### Constraint Types (`constraint_broadcaster.py`)
+
+| Type | Enforcement | Example |
+|------|-------------|---------|
+| `must_use` | Exact value required | Market size must be $3.2B |
+| `must_align` | Directionally consistent | Pricing must be premium |
+| `must_reference` | Must cite the value | Must mention competitor X |
+| `must_not_exceed` | Numeric upper bound | CAC must not exceed $50 |
+
+#### Constraint Flow
+
+```
+Discovery Phase Outputs
+        ↓
+Constraint Broadcaster extracts E1-E3 claims
+        ↓
+Constraints injected into Strategy phase prompts
+        ↓
+Strategy outputs validated against constraints
+        ↓
+Violations trigger targeted revision
+```
+
+#### Contradiction Detection (`facilitator.py:1006-1161`)
+
+Checks for cross-agent consistency:
+- **Market size**: Customer Research TAM vs Business Case TAM
+- **Pricing**: Business Case revenue streams vs Financial Model pricing
+- **Target customer**: CR segments vs GTM initial_segment
+
+HIGH severity contradictions trigger automatic re-run of second agent.
+
+---
+
+### 4. Multi-Agent Collaboration (Grade: B+)
+
+#### Swarm Parallel Execution
+
+| Swarm | Agents | Pattern |
+|-------|--------|---------|
+| Discovery | 3 agents | Full parallel via `asyncio.gather()` |
+| Strategy | 3 agents | Full parallel |
+| Delivery | 4 agents | Parallel (Risk runs after others) |
+| Synthesis | 3 agents | Stakeholder+Validation parallel, then ExecSummary |
+
+#### State Coordination (`state.py`)
+
+70+ fields with custom reducers for parallel-safe merging:
+
+```python
+# Immutable (latest wins)
+session_id: Annotated[str, keep_last]
+
+# One-time (first non-None wins)
+customer_research: Annotated[Optional[dict], keep_first_non_none]
+
+# Accumulating (append)
+revision_history: Annotated[list[dict], add]
+
+# Complex (custom merge)
+cross_reference_index: Annotated[Optional[dict], merge_cross_references]
+```
+
+#### Cross-Reference Index Merging (`state.py:56-117`)
+
+```python
+def merge_cross_references(current, new):
+    """
+    Intelligent claim merging:
+    1. Deduplicate by claim_id
+    2. Recalculate tier_distribution (E1-E5 counts)
+    3. Recalculate evidence_score (weighted average)
+    4. Track unresolved dependencies
+    """
+```
+
+**Evidence Score Weights:**
+- E1: 1.0 (primary research)
+- E2: 0.85 (verified source)
+- E3: 0.6 (industry data)
+- E4: 0.3 (hypothesis)
+- E5: 0.1 (assumption)
+
+---
+
+## Swarm Architecture
+
+### Base Swarm Architecture (`swarms/base.py`)
+
+**Key Methods:**
+
+| Method | Lines | Purpose |
+|--------|-------|---------|
+| `run()` | 96-163 | Orchestrates parallel execution with constraint injection |
+| `_prepare_agent_state()` | 44-79 | Injects constraints and revision context into state copies |
+| `_merge_results()` | 165-230 | Intelligent merging with field mapping |
+| `_merge_cross_references()` | 260-316 | Claim deduplication with evidence scoring |
+
+### Swarm Execution Pattern
+
+```python
+async def run(self, state: dict) -> dict:
+    # 1. Prepare isolated state copies with constraints
+    agent_states = [
+        self._prepare_agent_state(state, agent)
+        for agent in self.agents
+    ]
+
+    # 2. Execute in parallel with fault tolerance
+    results = await asyncio.gather(
+        *[agent.run(s) for agent, s in zip(self.agents, agent_states)],
+        return_exceptions=True
+    )
+
+    # 3. Merge results with custom reducers
+    return self._merge_results(results)
+```
+
+### Discovery Swarm
+- Customer Research Agent
+- Competitive Intelligence
+- Persona Development
+- Executes in parallel, results merged via state reducers
+
+### Strategy Swarm
+- Business Strategy Agent (reads: customer_research)
+- GTM Strategy Agent (reads: customer_research)
+- Financial Model Agent (reads: business_case)
+- Parallel execution, ~30-40% latency reduction
+
+### Delivery Swarm
+- PRD Generator/Critic/Formatter (sub-graph)
+- Technical Architect
+- Legal/Regulatory
+- Risk Assessment (reads: CR, BC, TA - runs after others)
+- Parallel with dependency ordering
+
+---
+
+## State Management
+
+### LangGraph TypedDict with Reducers
+
+**File:** `agents/state.py` (468 lines)
+
+The shared state uses `Annotated` types with custom reducers for parallel-safe merging across 70+ fields in 13 categories:
+
+#### State Field Categories
+
+| Category | Fields | Reducer |
+|----------|--------|---------|
+| Input | session_id, product_idea, constraints | `keep_last` |
+| Processing | current_phase, iteration | `keep_last` |
+| Agent Outputs | customer_research, business_case, etc. | `keep_first_non_none` |
+| Quality | quality_assessment, critique_feedback | `keep_first_non_none` |
+| Tracking | errors, revision_history | `merge_errors`, `add` |
+| Cross-Reference | cross_reference_index | `merge_cross_references` |
+
+#### Reducer Functions (`state.py:31-117`)
+
+```python
+def keep_last(current, new):
+    """Use latest non-None value (immutable fields)"""
+    return new if new is not None else current
+
+def keep_first_non_none(current, new):
+    """First non-None wins (one-time assignments)"""
+    return current if current is not None else new
+
+def merge_errors(current, new):
+    """Accumulate errors with deduplication"""
+    return list(set(current or []) | set(new or []))
+
+def merge_cross_references(current, new):
+    """
+    Complex merge: deduplicate claims, recalculate scores
+    - Deduplicates by claim_id
+    - Recalculates tier_distribution
+    - Recalculates weighted evidence_score
+    - Tracks unresolved dependencies
+    """
+```
+
+### Cross-Reference Index Structure
+
+```python
+{
+    "claims": [
+        {
+            "claim_id": "MI-3",
+            "statement": "Market size is $3.2B",
+            "evidence_tier": "E2",
+            "confidence": 0.85,
+            "source": "https://...",
+            "depends_on": ["MI-1"],
+            "validation_method": "Industry report",
+        }
+    ],
+    "tier_distribution": {"E1": 5, "E2": 12, "E3": 8, "E4": 15, "E5": 3},
+    "evidence_score": 0.67,
+    "unresolved_dependencies": ["MI-99"],
+}
+```
+
+---
+
+## Quality System
+
+### 8-Component Framework (Detailed)
+
+#### 1. Evidence-Aware Context (`context_builder.py:42-265`)
+
+Preserves E1-E5 tier markers when passing context between agents:
+
+```
+## VERIFIED FACTS (E1-E2)
+- [E2] Market size is $3.2B (MI-3) [source: url]
+
+## INDUSTRY DATA (E3)
+- [E3] Industry growing 5% annually (MI-12)
+
+## HYPOTHESES (E4-E5)
+- [E4] Price sensitivity is high (MI-15) - NEEDS VALIDATION
+```
+
+#### 2. Constraint Broadcasting (`constraint_broadcaster.py`)
+
+Pre-execution constraints prevent post-hoc corrections:
+
+```python
+def generate_phase_constraints(state, target_phase):
+    """
+    Extract E1-E3 claims from upstream outputs as constraints.
+    Strategy phase receives Discovery constraints.
+    Delivery phase receives Discovery + Strategy constraints.
+    """
+```
+
+#### 3. Two-Stage Reasoning (`two_stage_reasoning.py:60-255`)
+
+Separates research from structuring due to Gemini API limitation:
+
+- **Stage 1 (Research):** Grounded Google Search, free-form text with citations
+- **Stage 2 (Structure):** Non-grounded JSON-enforced call
+
+**Why:** Grounding incompatible with `response_mime_type="application/json"`
+
+#### 4. Self-Reflection (`base_agent.py:733-936`)
+
+`call_llm_with_reflection()` with configurable iterations:
+
+- **Reflection Prompt Checks:**
+  1. Logical errors or contradictions
+  2. Missing important information
+  3. Unsupported claims
+  4. Vague or generic statements
+  5. Constraint violations
+
+#### 5. Confidence Calibration (`confidence_calibrator.py`)
+
+Formula: `calibrated = raw_confidence * tier_weight + source_bonus`
+
+| Tier | Weight | With Source |
+|------|--------|-------------|
+| E1 | 1.0 | 1.0 (capped) |
+| E2 | 0.85 | 0.95 |
+| E3 | 0.6 | 0.7 |
+| E4 | 0.3 | 0.4 |
+| E5 | 0.1 | 0.2 |
+
+#### 6. Output Validation (`output_validator.py` - 700+ Rules)
+
+Rules by agent:
+
+| Agent | Key Rules | Example Checks |
+|-------|-----------|----------------|
+| Customer Research | 8 rules | 3+ pain_signals, JTBD trigger/goal/success |
+| Business Strategy | 10 rules | Lean Canvas fields, revenue streams, Y1&Y3 projections |
+| Financial Model | 9 rules | 12-month projections, profit math, LTV:CAC ratio |
+| PRD | 9 rules | 3+ epics, 5+ stories, 80%+ proper format |
+| Technical Architect | 9 rules | 70%+ real technologies, security/scalability text |
+| Legal | 8 rules | 50%+ real regulations (GDPR, HIPAA), mitigations |
+
+#### 7. Structured Revisions (`orchestrator.py:962-1022`)
+
+Targeted revision routing based on section scores:
+
+```python
+def route_revision(state):
+    """
+    Analyzes section_scores from quality_assessment.
+    Routes to FIRST section below threshold.
+    Falls back to customer_research if unclear.
+    """
+```
+
+#### 8. Claim Extraction (`claim_extractor.py`)
+
+Minimum claims enforced per section:
+
+| Section | Minimum Claims |
+|---------|---------------|
+| Market Intelligence | 5 |
+| Competitive Landscape | 4 |
+| Customer Personas | 3 |
+| Business Case | 5 |
+| Product Requirements | 5 |
+| Technical Architecture | 4 |
+| Risk Assessment | 3 |
+
+### Evidence Tiers
+
+| Tier | Description | Confidence | Example |
+|------|-------------|------------|---------|
+| E1 | Direct customer quote | ~1.0 | User interview verbatim |
+| E2 | Industry report/study | ~0.85 | Gartner, McKinsey report |
+| E3 | Expert opinion | ~0.6 | Analyst estimate |
+| E4 | Market inference | ~0.3 | Reasoned hypothesis |
+| E5 | AI hypothesis | ~0.1 | Unvalidated assumption |
+
+---
+
+## V4 Discovery System
+
+### Three Modes
+
+| Mode | Description | Time | Evidence |
+|------|-------------|------|----------|
+| Quick | AI generates everything | 3-5 min | E3-E4 |
+| Guided | AI + checkpoints | 5-8 min | E2-E4 |
+| Deep | User interviews + AI synthesis | Days | E1-E2 |
+
+### 5 Stages
+
+1. **Problem Love** - Problem validation (Uri Levine framework)
+2. **Customer Truth** - Interview synthesis (Teresa Torres)
+3. **Opportunity Mapping** - Four Forces model
+4. **Solution Design** - DHM scoring (Delight, Hard-to-copy, Margin)
+5. **Validation Plan** - Experiment ladder
+
+### Reflection Loops (All 5 Stages)
+
+Each V4 stage implements Generate→Critique→Refine:
+
+**Configuration:**
+- Max Iterations: 2
+- Quality Threshold: 7.0 (out of 10)
+- Evidence Tier Boost: E1-E2 scores get +10%
+
+**Flow:**
+```python
+async def _generate_with_reflection(self, context):
+    iteration = 0
+    while iteration < MAX_REFLECTION_ITERATIONS:
+        output = await self._generate_full(context) if not critique_feedback \
+                 else await self._generate_with_feedback(context, critique_feedback)
+
+        critique = await critique_stage_output(stage_name, output, evidence_tier="E4")
+
+        if critique["overall_score"] >= MIN_QUALITY_THRESHOLD:
+            break  # Early exit on quality pass
+
+        critique_feedback = {...}
+        iteration += 1
+```
+
+### Interview Count → Evidence Tier
+
+| Interviews | Evidence Tier |
+|------------|---------------|
+| 5+ | E1 (primary research) |
+| 3-4 | E2 (verified source) |
+| 1-2 | E3 (expert opinion) |
+| 0 | E4 (hypothesis) |
+
+### V4 API Flow
+
+```bash
+# 1. Create session
+POST /api/discovery/v4/test/sessions
+{"product_idea": "...", "mode": "guided"}
+
+# 2. Run stages (each with reflection loop)
+POST /api/discovery/v4/test/sessions/{id}/stages/problem_love/run
+POST /api/discovery/v4/test/sessions/{id}/stages/customer_truth/run
+POST /api/discovery/v4/test/sessions/{id}/stages/opportunity_mapping/run
+POST /api/discovery/v4/test/sessions/{id}/stages/solution_design/run
+POST /api/discovery/v4/test/sessions/{id}/stages/validation_plan/run
+
+# 3. Continue to full lifecycle
+POST /api/discovery/v4/test/sessions/{id}/continue-to-strategy
+
+# 4. Get final state
+GET /api/discovery/v4/test/sessions/{id}
+```
+
+---
+
 ## API Endpoints
 
 ### Discovery (V3 - Full Pipeline)
@@ -270,6 +797,8 @@ GET    /api/discovery/session/{id}/export/pdf   # Export PDF
 GET    /api/discovery/session/{id}/export/docx  # Export DOCX
 GET    /api/discovery/session/{id}/pack         # Get JSON pack
 ```
+
+---
 
 ## Database Schema
 
@@ -349,6 +878,30 @@ pattern_synthesis (
 )
 ```
 
+---
+
+## Services Layer
+
+### Memory Augmentation
+
+**Files:**
+- `services/embeddings.py` - Vector embeddings (Gemini text-embedding-004, 768 dimensions)
+- `services/memory_pipeline.py` - Cross-run learning from past sessions
+
+**Flow:**
+1. After successful completion (quality >= 0.8), extract agent outputs
+2. Compress to summary via `compress_to_summary()`
+3. Generate 768-dimensional embedding
+4. Store in pgvector with metadata (domain_type, quality_score)
+5. On new runs, retrieve similar past outputs via similarity search
+
+**Configuration:**
+- `ENABLE_MEMORY_AUGMENTATION=true`
+- Similarity threshold: 0.7
+- Non-blocking: graceful degradation on errors
+
+---
+
 ## Environment Variables
 
 ### Required
@@ -389,59 +942,7 @@ FOUNDER_EMAIL=
 CORS_ORIGINS=http://localhost:3000,http://localhost:5173
 ```
 
-## Swarm Architecture
-
-Parallel agent execution groups for improved performance:
-
-### Discovery Swarm
-- Customer Research Agent
-- Competitive Intelligence
-- Persona Development
-- Executes in parallel, results merged via state reducers
-
-### Strategy Swarm
-- Business Strategy Agent
-- GTM Strategy Agent
-- Financial Model Agent
-- Parallel execution, ~30-40% latency reduction
-
-### Delivery Swarm
-- PRD Generator/Critic/Formatter
-- Technical Architect
-- Legal/Regulatory
-- Risk Assessment
-- Parallel with dependency ordering
-
-## Services Layer
-
-### Memory Augmentation
-- `services/embeddings.py` - Vector embeddings for similarity search
-- `services/memory_pipeline.py` - Cross-run learning from past sessions
-- Uses pgvector for efficient similarity queries
-- Retrieves relevant past insights before agent execution
-
-## Quality System
-
-### 8-Component Framework
-
-1. **Evidence-Aware Context** - E1-E5 tier markers preserved
-2. **Constraint Broadcasting** - Pre-execution constraints
-3. **Two-Stage Reasoning** - Research then structure
-4. **Self-Reflection** - Agent self-critique
-5. **Confidence Calibration** - Evidence-weighted scores
-6. **Output Validation** - 700+ rules in `output_validator.py`
-7. **Structured Revisions** - Re-run failing sections
-8. **Claim Extraction** - Minimum claims per section
-
-### Evidence Tiers
-
-| Tier | Description | Confidence |
-|------|-------------|------------|
-| E1 | Direct customer quote | ~1.0 |
-| E2 | Industry report/study | ~0.85 |
-| E3 | Expert opinion | ~0.7 |
-| E4 | Market inference | ~0.5 |
-| E5 | AI hypothesis | ~0.1 |
+---
 
 ## Evaluation System (22 Evals)
 
@@ -469,6 +970,8 @@ python -m evals.cli run state.json -t llm_judge
 | customer_research_eval | agent | 3+ pain points check |
 | prd_eval | agent | Epic/story requirements |
 
+---
+
 ## Testing
 
 ```bash
@@ -483,6 +986,8 @@ pytest tests/unit -v
 # Run with coverage
 pytest tests/ --cov=utils --cov-report=term
 ```
+
+---
 
 ## Deployment
 
@@ -521,39 +1026,7 @@ npm install
 npm run dev
 ```
 
-## V4 Discovery System
-
-### Three Modes
-
-| Mode | Description | Time | Evidence |
-|------|-------------|------|----------|
-| Quick | AI generates everything | 3-5 min | E3-E4 |
-| Guided | AI + checkpoints | 5-8 min | E2-E4 |
-| Deep | User interviews + AI synthesis | Days | E1-E2 |
-
-### 5 Stages
-
-1. **Problem Love** - Problem validation (Uri Levine)
-2. **Customer Truth** - Interview synthesis (Teresa Torres)
-3. **Opportunity Mapping** - Four Forces model
-4. **Solution Design** - DHM scoring
-5. **Validation Plan** - Experiment ladder
-
-### V4 API Flow
-
-```bash
-# 1. Create session
-POST /api/discovery/v4/test/sessions
-{"product_idea": "...", "mode": "guided"}
-
-# 2. Run stages
-POST /api/discovery/v4/test/sessions/{id}/stages/problem_love/run
-POST /api/discovery/v4/test/sessions/{id}/stages/customer_truth/run
-# ... etc
-
-# 3. Get state
-GET /api/discovery/v4/test/sessions/{id}
-```
+---
 
 ## Key Files Reference
 
@@ -561,14 +1034,22 @@ GET /api/discovery/v4/test/sessions/{id}
 |------|---------|
 | `backend/main.py` | FastAPI app, all endpoints |
 | `backend/agents/orchestrator.py` | LangGraph workflow |
+| `backend/agents/state.py` | State definition with reducers |
+| `backend/agents/facilitator.py` | 7-phase orchestration |
+| `backend/agents/base_agent.py` | LLM calls, reflection, grounding |
 | `backend/agents/prompts.py` | All agent prompts |
-| `backend/agents/state.py` | State definition |
+| `backend/agents/constraint_broadcaster.py` | Pre-execution constraints |
+| `backend/agents/output_validator.py` | 700+ validation rules |
+| `backend/agents/two_stage_reasoning.py` | Grounded research pattern |
+| `backend/agents/discovery_v4/stages/mini_critique.py` | V4 stage reflection |
 | `backend/models/schemas.py` | Pydantic models |
 | `backend/utils/db.py` | Supabase session store |
 | `backend/utils/sse.py` | Real-time streaming |
 | `backend/config.py` | Settings & env vars |
 | `frontend/src/App.tsx` | Main React app |
 | `frontend/src/api/client.ts` | API client |
+
+---
 
 ## Common Commands
 
@@ -595,6 +1076,8 @@ railway logs                           # View logs
 railway variables                      # View env vars
 ```
 
+---
+
 ## Troubleshooting
 
 ### Session Stuck
@@ -610,11 +1093,17 @@ railway variables                      # View env vars
 - Check CORS in `config.py`
 - Verify `VITE_API_URL` points to backend
 
+---
+
 ## Architecture Decisions
 
 1. **LangGraph over LangChain** - Better state management for multi-agent workflows
-2. **Swarm Pattern** - Parallel execution for speed
+2. **Swarm Pattern** - Parallel execution with custom state reducers for ~30-40% latency reduction
 3. **SSE over WebSockets** - Simpler, works through proxies
-4. **Supabase** - Auth + DB + realtime in one
-5. **Evidence Tiers** - Explicit confidence tracking
-6. **Output Checklists** - Mandatory requirements in prompts
+4. **Supabase** - Auth + DB + pgvector in one
+5. **Evidence Tiers** - Explicit E1-E5 confidence tracking throughout
+6. **Output Checklists** - Mandatory requirements in prompts (700+ rules)
+7. **Constraint Broadcasting** - Pre-execution alignment prevents post-hoc corrections
+8. **Two-Stage Reasoning** - Separates grounded research from JSON structuring
+9. **Reflection Loops** - Quality-gated iteration in V4 stages and PRD workflow
+10. **Cross-Reference Index** - Claim tracking with dependency resolution
