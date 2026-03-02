@@ -86,9 +86,9 @@ export function CoachingPanel({
 
       <style>{`
         .coaching-panel {
-          background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-          border: 1px solid #fbbf24;
-          border-radius: 12px;
+          background: var(--v4-warning-light, rgba(202, 138, 4, 0.08));
+          border: 1px solid var(--v4-warning, #ca8a04);
+          border-radius: var(--v4-radius-lg, 12px);
           overflow: hidden;
         }
 
@@ -97,8 +97,8 @@ export function CoachingPanel({
           align-items: center;
           justify-content: space-between;
           padding: 12px 16px;
-          background: rgba(251, 191, 36, 0.3);
-          border-bottom: 1px solid rgba(251, 191, 36, 0.5);
+          background: rgba(202, 138, 4, 0.15);
+          border-bottom: 1px solid rgba(202, 138, 4, 0.3);
         }
 
         .coaching-title {
@@ -107,16 +107,16 @@ export function CoachingPanel({
           gap: 8px;
           font-size: 13px;
           font-weight: 600;
-          color: #92400e;
+          color: var(--v4-warning, #ca8a04);
         }
 
         .dismiss-btn {
           padding: 4px;
           background: none;
           border: none;
-          border-radius: 4px;
+          border-radius: var(--v4-radius-sm, 4px);
           cursor: pointer;
-          color: #92400e;
+          color: var(--v4-warning, #ca8a04);
           opacity: 0.7;
           transition: all 0.2s;
         }
@@ -146,7 +146,7 @@ export function CoachingPanel({
         .loading-dots span {
           width: 8px;
           height: 8px;
-          background: #92400e;
+          background: var(--v4-warning, #ca8a04);
           border-radius: 50%;
           animation: bounce 1.4s ease-in-out infinite;
         }
@@ -175,14 +175,14 @@ export function CoachingPanel({
         .coaching-loading p {
           margin: 0;
           font-size: 13px;
-          color: #92400e;
+          color: var(--v4-warning, #ca8a04);
         }
 
         .coaching-message {
           display: flex;
           gap: 12px;
           padding: 10px 0;
-          border-bottom: 1px solid rgba(251, 191, 36, 0.3);
+          border-bottom: 1px solid rgba(202, 138, 4, 0.2);
         }
 
         .coaching-message:last-child {
@@ -195,9 +195,9 @@ export function CoachingPanel({
           display: flex;
           align-items: center;
           justify-content: center;
-          background: rgba(146, 64, 14, 0.1);
-          border-radius: 6px;
-          color: #92400e;
+          background: rgba(202, 138, 4, 0.15);
+          border-radius: var(--v4-radius, 6px);
+          color: var(--v4-warning, #ca8a04);
           font-size: 12px;
           font-weight: 700;
           flex-shrink: 0;
@@ -207,19 +207,19 @@ export function CoachingPanel({
           margin: 0;
           font-size: 13px;
           line-height: 1.5;
-          color: #78350f;
+          color: var(--v4-text, #171717);
         }
 
         .coaching-message.warning .message-icon {
-          background: #fecaca;
-          color: #dc2626;
+          background: var(--v4-error-light, rgba(220, 38, 38, 0.08));
+          color: var(--v4-error, #dc2626);
         }
 
         .coaching-suggestion {
           margin-top: 12px;
           padding: 16px;
-          background: rgba(255, 255, 255, 0.6);
-          border-radius: 8px;
+          background: var(--v4-surface, white);
+          border-radius: var(--v4-radius-md, 8px);
         }
 
         .suggestion-label {
@@ -228,17 +228,17 @@ export function CoachingPanel({
           font-weight: 600;
           text-transform: uppercase;
           letter-spacing: 0.5px;
-          color: #92400e;
+          color: var(--v4-warning, #ca8a04);
         }
 
         .suggestion-text {
           margin: 0 0 16px 0;
           padding: 12px;
-          background: white;
-          border-radius: 6px;
+          background: var(--v4-bg-subtle, #f5f5f5);
+          border-radius: var(--v4-radius, 6px);
           font-size: 14px;
           line-height: 1.5;
-          color: #1a1a2e;
+          color: var(--v4-text, #171717);
         }
 
         .suggestion-actions {
@@ -252,7 +252,7 @@ export function CoachingPanel({
           align-items: center;
           gap: 6px;
           padding: 8px 14px;
-          border-radius: 6px;
+          border-radius: var(--v4-radius, 6px);
           font-size: 13px;
           font-weight: 500;
           cursor: pointer;
@@ -260,23 +260,23 @@ export function CoachingPanel({
         }
 
         .apply-btn {
-          background: #92400e;
+          background: var(--v4-accent, #c2410c);
           border: none;
           color: white;
         }
 
         .apply-btn:hover {
-          background: #78350f;
+          background: var(--v4-accent-hover, #9a3412);
         }
 
         .keep-btn {
           background: transparent;
-          border: 1px solid rgba(146, 64, 14, 0.3);
-          color: #92400e;
+          border: 1px solid var(--v4-border, #e5e5e5);
+          color: var(--v4-text-secondary, #525252);
         }
 
         .keep-btn:hover {
-          background: rgba(146, 64, 14, 0.1);
+          background: var(--v4-bg-subtle, #f5f5f5);
         }
       `}</style>
     </div>

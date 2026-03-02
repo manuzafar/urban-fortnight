@@ -59,7 +59,7 @@ export function OpportunityMappingRenderer({ output }: OpportunityMappingRendere
           <div className="force-card push">
             <div className="force-header">
               <h5>
-                <ArrowUp size={16} style={{ color: '#dc2626' }} />
+                <ArrowUp size={16} className="force-icon-push" />
                 Push (What's Broken)
               </h5>
               <span className="force-strength">{forces.push?.strength || 0}/10</span>
@@ -75,7 +75,7 @@ export function OpportunityMappingRenderer({ output }: OpportunityMappingRendere
           <div className="force-card pull">
             <div className="force-header">
               <h5>
-                <ArrowUp size={16} style={{ color: '#16a34a' }} />
+                <ArrowUp size={16} className="force-icon-pull" />
                 Pull (What's Attractive)
               </h5>
               <span className="force-strength">{forces.pull?.strength || 0}/10</span>
@@ -91,7 +91,7 @@ export function OpportunityMappingRenderer({ output }: OpportunityMappingRendere
           <div className="force-card anxiety">
             <div className="force-header">
               <h5>
-                <ArrowDown size={16} style={{ color: '#f59e0b' }} />
+                <ArrowDown size={16} className="force-icon-anxiety" />
                 Anxiety (What Scares Them)
               </h5>
               <span className="force-strength">{forces.anxiety?.strength || 0}/10</span>
@@ -107,7 +107,7 @@ export function OpportunityMappingRenderer({ output }: OpportunityMappingRendere
           <div className="force-card habit">
             <div className="force-header">
               <h5>
-                <ArrowDown size={16} style={{ color: '#6b7280' }} />
+                <ArrowDown size={16} className="force-icon-habit" />
                 Habit (What's Comfortable)
               </h5>
               <span className="force-strength">{forces.habit?.strength || 0}/10</span>
@@ -138,7 +138,7 @@ export function OpportunityMappingRenderer({ output }: OpportunityMappingRendere
         {/* Key Insight */}
         {forces.key_insight && (
           <div className="key-insight">
-            <h5 style={{ margin: '0 0 8px 0', fontSize: '13px' }}>Key Insight</h5>
+            <h5 className="key-insight-title">Key Insight</h5>
             <p>{forces.key_insight}</p>
           </div>
         )}
@@ -168,7 +168,7 @@ export function OpportunityMappingRenderer({ output }: OpportunityMappingRendere
                   <div>
                     <span className="opportunity-name">{opp.description}</span>
                     {opp.interview_count > 0 && (
-                      <span className="interview-evidence" style={{ fontSize: '12px', color: '#6b7280', marginLeft: '8px' }}>
+                      <span className="interview-evidence">
                         ({opp.interview_count} interviews)
                       </span>
                     )}

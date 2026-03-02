@@ -46,13 +46,13 @@ export function ValidationPlanRenderer({ output }: ValidationPlanRendererProps) 
     switch (status) {
       case 'completed':
       case 'passed':
-        return <CheckCircle size={16} style={{ color: '#16a34a' }} />;
+        return <CheckCircle size={16} className="status-icon-success" />;
       case 'failed':
-        return <XCircle size={16} style={{ color: '#dc2626' }} />;
+        return <XCircle size={16} className="status-icon-error" />;
       case 'in_progress':
-        return <PlayCircle size={16} style={{ color: '#2563eb' }} />;
+        return <PlayCircle size={16} className="status-icon-info" />;
       default:
-        return <Clock size={16} style={{ color: '#6b7280' }} />;
+        return <Clock size={16} className="status-icon-muted" />;
     }
   };
 
@@ -121,15 +121,9 @@ export function ValidationPlanRenderer({ output }: ValidationPlanRendererProps) 
             const isPastRung = rung < output.current_rung;
 
             return (
-              <div key={rung} className="rung-section">
+              <div key={rung} className={`rung-section ${isCurrentRung ? 'current' : ''} ${isPastRung ? 'past' : ''}`}>
                 <div className="rung-header">
-                  <span
-                    className="rung-number"
-                    style={{
-                      background: isCurrentRung ? '#c2410c' : isPastRung ? '#16a34a' : '#e5e7eb',
-                      color: isCurrentRung || isPastRung ? 'white' : '#6b7280'
-                    }}
-                  >
+                  <span className="rung-number">
                     {rung}
                   </span>
                   <span className="rung-title">{RUNG_NAMES[rung]}</span>
@@ -144,7 +138,7 @@ export function ValidationPlanRenderer({ output }: ValidationPlanRendererProps) 
                       <div className="experiment-header">
                         <span className="experiment-name">
                           {getStatusIcon(exp.status)}
-                          <span style={{ marginLeft: '8px' }}>{exp.name}</span>
+                          <span className="experiment-name-text">{exp.name}</span>
                         </span>
                         <span className={`experiment-status status-${exp.status}`}>
                           {exp.status.replace('_', ' ')}
@@ -171,7 +165,7 @@ export function ValidationPlanRenderer({ output }: ValidationPlanRendererProps) 
                     </div>
                   ))
                 ) : (
-                  <p className="empty-state" style={{ marginLeft: '44px' }}>
+                  <p className="empty-state rung-empty-state">
                     No experiments planned for this rung yet
                   </p>
                 )}
@@ -185,7 +179,7 @@ export function ValidationPlanRenderer({ output }: ValidationPlanRendererProps) 
       {output.validation_summary && (
         <section className="renderer-section coaching-section">
           <h4>Validation Strategy Summary</h4>
-          <p className="analysis-text" style={{ color: 'var(--text-info, #1d4ed8)' }}>
+          <p className="analysis-text validation-summary-text">
             {output.validation_summary}
           </p>
         </section>

@@ -39,7 +39,7 @@ const DISCOVERY_STAGES = [
     shortName: 'Problem',
     icon: Heart,
     description: 'Validate the problem is worth solving',
-    color: '#ef4444', // red
+    color: 'var(--v4-error, #dc2626)',
   },
   {
     id: 'customer_truth',
@@ -47,7 +47,7 @@ const DISCOVERY_STAGES = [
     shortName: 'Customers',
     icon: Users,
     description: 'Understand real customer needs',
-    color: '#f59e0b', // amber
+    color: 'var(--v4-warning, #ca8a04)',
   },
   {
     id: 'opportunity_mapping',
@@ -55,7 +55,7 @@ const DISCOVERY_STAGES = [
     shortName: 'Opportunities',
     icon: Map,
     description: 'Map opportunities to solutions',
-    color: '#10b981', // emerald
+    color: 'var(--v4-success, #16a34a)',
   },
   {
     id: 'solution_design',
@@ -63,7 +63,7 @@ const DISCOVERY_STAGES = [
     shortName: 'Solution',
     icon: Lightbulb,
     description: 'Design and evaluate the solution',
-    color: '#c2410c', // terracotta (V4 accent)
+    color: 'var(--v4-accent, #c2410c)',
   },
   {
     id: 'validation_plan',
@@ -71,7 +71,7 @@ const DISCOVERY_STAGES = [
     shortName: 'Validation',
     icon: CheckCircle,
     description: 'Plan validation experiments',
-    color: '#8b5cf6', // purple
+    color: 'var(--v4-info, #2563eb)',
   },
 ];
 

@@ -55,7 +55,7 @@ export function SolutionDesignRenderer({ output }: SolutionDesignRendererProps) 
           {output.solution_concept}
         </div>
         {output.solution_description && (
-          <p className="analysis-text" style={{ marginTop: '12px' }}>
+          <p className="analysis-text solution-description">
             {output.solution_description}
           </p>
         )}
@@ -93,7 +93,7 @@ export function SolutionDesignRenderer({ output }: SolutionDesignRendererProps) 
         <div className="dhm-grid">
           {/* Delight */}
           <div className="dhm-card">
-            <Sparkles size={24} style={{ color: '#f59e0b', marginBottom: '8px' }} />
+            <Sparkles size={24} className="dhm-icon dhm-icon-delight" />
             <div className="dhm-score">{dhm.delight}</div>
             <div className="dhm-label">Delight</div>
             <p className="dhm-reasoning">{dhm.delight_reasoning}</p>
@@ -101,12 +101,12 @@ export function SolutionDesignRenderer({ output }: SolutionDesignRendererProps) 
 
           {/* Hard to Copy */}
           <div className="dhm-card">
-            <Shield size={24} style={{ color: '#8b5cf6', marginBottom: '8px' }} />
+            <Shield size={24} className="dhm-icon dhm-icon-moat" />
             <div className="dhm-score">{dhm.hard_to_copy}</div>
             <div className="dhm-label">Hard to Copy</div>
             <p className="dhm-reasoning">{dhm.hard_to_copy_reasoning}</p>
             {dhm.moat_type && (
-              <span className="score-badge" style={{ marginTop: '8px' }}>
+              <span className="score-badge moat-badge">
                 {dhm.moat_type}
               </span>
             )}
@@ -114,7 +114,7 @@ export function SolutionDesignRenderer({ output }: SolutionDesignRendererProps) 
 
           {/* Margin */}
           <div className="dhm-card">
-            <DollarSign size={24} style={{ color: '#16a34a', marginBottom: '8px' }} />
+            <DollarSign size={24} className="dhm-icon dhm-icon-margin" />
             <div className="dhm-score">{dhm.margin}</div>
             <div className="dhm-label">Margin</div>
             <p className="dhm-reasoning">{dhm.margin_reasoning}</p>
@@ -128,12 +128,12 @@ export function SolutionDesignRenderer({ output }: SolutionDesignRendererProps) 
           <div className={`dhm-threshold ${dhm.passes_threshold ? 'passes' : 'fails'}`}>
             {dhm.passes_threshold ? (
               <>
-                <CheckCircle size={16} style={{ marginRight: '4px' }} />
+                <CheckCircle size={16} className="threshold-icon" />
                 Passes threshold (≥20)
               </>
             ) : (
               <>
-                <AlertTriangle size={16} style={{ marginRight: '4px' }} />
+                <AlertTriangle size={16} className="threshold-icon" />
                 Below threshold (&lt;20)
               </>
             )}
@@ -152,15 +152,15 @@ export function SolutionDesignRenderer({ output }: SolutionDesignRendererProps) 
         {premortem.tigers && premortem.tigers.length > 0 && (
           <div className="premortem-section tigers">
             <h5>
-              <AlertTriangle size={16} style={{ color: '#dc2626' }} />
+              <AlertTriangle size={16} className="premortem-icon-tigers" />
               Tigers (Real Threats)
             </h5>
             <div className="premortem-items">
               {premortem.tigers.map((item, i) => (
                 <div key={i} className="premortem-item">
-                  <p style={{ margin: 0 }}>{item.description}</p>
+                  <p className="premortem-description">{item.description}</p>
                   {item.mitigation && (
-                    <p style={{ margin: '8px 0 0', fontSize: '13px', color: '#6b7280' }}>
+                    <p className="premortem-mitigation">
                       <strong>Mitigation:</strong> {item.mitigation}
                     </p>
                   )}
@@ -174,15 +174,15 @@ export function SolutionDesignRenderer({ output }: SolutionDesignRendererProps) 
         {premortem.paper_tigers && premortem.paper_tigers.length > 0 && (
           <div className="premortem-section paper-tigers">
             <h5>
-              <Ghost size={16} style={{ color: '#f59e0b' }} />
+              <Ghost size={16} className="premortem-icon-paper-tigers" />
               Paper Tigers (Seem Scary But Aren't)
             </h5>
             <div className="premortem-items">
               {premortem.paper_tigers.map((item, i) => (
                 <div key={i} className="premortem-item">
-                  <p style={{ margin: 0 }}>{item.description}</p>
+                  <p className="premortem-description">{item.description}</p>
                   {item.mitigation && (
-                    <p style={{ margin: '8px 0 0', fontSize: '13px', color: '#6b7280' }}>
+                    <p className="premortem-mitigation">
                       <strong>Why it's not a real threat:</strong> {item.mitigation}
                     </p>
                   )}
@@ -196,15 +196,15 @@ export function SolutionDesignRenderer({ output }: SolutionDesignRendererProps) 
         {premortem.elephants && premortem.elephants.length > 0 && (
           <div className="premortem-section elephants">
             <h5>
-              <Eye size={16} style={{ color: '#6b7280' }} />
+              <Eye size={16} className="premortem-icon-elephants" />
               Elephants (Things No One Talks About)
             </h5>
             <div className="premortem-items">
               {premortem.elephants.map((item, i) => (
                 <div key={i} className="premortem-item">
-                  <p style={{ margin: 0 }}>{item.description}</p>
+                  <p className="premortem-description">{item.description}</p>
                   {item.mitigation && (
-                    <p style={{ margin: '8px 0 0', fontSize: '13px', color: '#6b7280' }}>
+                    <p className="premortem-mitigation">
                       <strong>How to address:</strong> {item.mitigation}
                     </p>
                   )}
