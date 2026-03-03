@@ -1,8 +1,8 @@
-# Seedform - AI-Powered Multi-Agent Product Discovery System
+# Seedcraft - AI-Powered Multi-Agent Product Discovery System
 
 ## Project Overview
 
-Seedform transforms product ideas into comprehensive inception packs using a multi-agent AI system. It generates market research, business strategy, PRD, technical architecture, and more in under 15 minutes.
+Seedcraft transforms product ideas into comprehensive inception packs using a multi-agent AI system. It generates market research, business strategy, PRD, technical architecture, and more in under 15 minutes.
 
 **Live URLs:**
 - Frontend: https://mindful-luck-production.up.railway.app

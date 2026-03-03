@@ -41,7 +41,7 @@ session_store = SupabaseSessionStore()
 
 # Test user ID for development endpoints
 TEST_USER_ID = "00000000-0000-0000-0000-000000000001"
-TEST_USER_EMAIL = "test@seedform.dev"
+TEST_USER_EMAIL = "test@seedcraft.dev"
 _test_user_ensured = False
 
 

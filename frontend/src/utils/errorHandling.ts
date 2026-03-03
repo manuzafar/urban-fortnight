@@ -1,5 +1,5 @@
 /**
- * Error Handling Utilities for Seedform
+ * Error Handling Utilities for Seedcraft
  * Provides error classification, formatting, and retry logic
  */
 

@@ -253,7 +253,7 @@ export function ExecutionViewV4({ sessionId, authToken, onComplete, onBack, useT
           </button>
           <div>
             <h1 style={{ fontSize: '16px', fontWeight: 500, color: 'var(--v4-text)', margin: 0 }}>
-              Seedform
+              Seedcraft
             </h1>
             <p style={{ fontSize: '12px', color: 'var(--v4-text-secondary)', margin: '2px 0 0' }}>
               {currentPhase ? `Strategy & Delivery` : 'Generating inception pack...'}

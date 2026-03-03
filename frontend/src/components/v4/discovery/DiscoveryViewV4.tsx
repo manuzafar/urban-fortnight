@@ -594,7 +594,7 @@ export function DiscoveryViewV4({
             </button>
           )}
           <div className="header-titles">
-            <h1>Seedform</h1>
+            <h1>Seedcraft</h1>
             <p className="product-idea">
               {session.product_idea.slice(0, 50)}
               {session.product_idea.length > 50 ? '...' : ''}

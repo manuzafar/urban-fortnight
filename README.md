@@ -1,7 +1,7 @@
-# Seedform - AI-Powered Multi-Agent Product Discovery System
+# Seedcraft - AI-Powered Multi-Agent Product Discovery System
 
 <p align="center">
-  <img src="docs/logo.svg" alt="Seedform Logo" width="120" height="120">
+  <img src="docs/logo.svg" alt="Seedcraft Logo" width="120" height="120">
 </p>
 
 <p align="center">
@@ -28,7 +28,7 @@
 
 ## Overview
 
-Seedform is an AI-powered product discovery system that compresses weeks of discovery work into a single, structured inception pack. It uses a **swarm-based multi-agent architecture** built on **LangGraph** and powered by **Google Gemini**, orchestrating 16+ specialized agents organized into parallel swarms.
+Seedcraft is an AI-powered product discovery system that compresses weeks of discovery work into a single, structured inception pack. It uses a **swarm-based multi-agent architecture** built on **LangGraph** and powered by **Google Gemini**, orchestrating 16+ specialized agents organized into parallel swarms.
 
 **Live URLs:**
 - 🌐 Frontend: https://mindful-luck-production.up.railway.app
@@ -556,7 +556,7 @@ For frontend visualization, the following structured data is available:
 ## Project Structure
 
 ```
-seedform/
+seedcraft/
 ├── backend/
 │   ├── main.py                       # FastAPI application entry point
 │   ├── config.py                     # Settings + AGENT_MODEL_CONFIG routing

@@ -1,5 +1,5 @@
 """
-Comprehensive API integration tests for the Seedform backend.
+Comprehensive API integration tests for the Seedcraft backend.
 
 Tests all API endpoints including:
 - Discovery endpoints (main.py)

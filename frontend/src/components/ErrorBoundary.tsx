@@ -1,5 +1,5 @@
 /**
- * Error Boundary Component for Seedform
+ * Error Boundary Component for Seedcraft
  * Catches render errors and displays user-friendly recovery UI
  */
 

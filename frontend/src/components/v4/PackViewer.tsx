@@ -113,7 +113,7 @@ export function PackViewerV4({ pack, sessionId, onBack }: PackViewerV4Props) {
               fontFamily: 'var(--v4-font-display)',
             }}
           >
-            Seedform
+            Seedcraft
           </button>
           <span
             style={{
