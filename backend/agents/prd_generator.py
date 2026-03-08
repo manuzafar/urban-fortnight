@@ -13,7 +13,7 @@ from typing import Any
 
 import structlog
 
-from agents.base_agent import call_llm
+from agents.base_agent import call_llm, prepend_constraints_to_prompt
 from agents.prompts import PRD_GENERATOR_PROMPT
 from agents.state import DiscoveryState
 
@@ -72,6 +72,10 @@ Focus on the specific improvements requested by the critic.
         task_context = "INITIAL GENERATION: Create a comprehensive PRD from scratch."
         revision_instructions = ""
 
+    # Get constraints from state
+    upstream_constraints = state.get("constraints_prompt") or state.get("_injected_constraints")
+    enterprise_context_prompt = state.get("enterprise_context_prompt")
+
     # Format the prompt
     prompt = PRD_GENERATOR_PROMPT.format(
         task_context=task_context,
@@ -81,6 +85,13 @@ Focus on the specific improvements requested by the critic.
         customer_research=json.dumps(state.get("customer_research", {}), indent=2),
         business_case=json.dumps(state.get("business_case", {}), indent=2),
         revision_instructions=revision_instructions,
+    )
+
+    # Prepend constraints at the TOP of the prompt for maximum visibility
+    prompt = prepend_constraints_to_prompt(
+        prompt=prompt,
+        constraints_prompt=upstream_constraints,
+        enterprise_context_prompt=enterprise_context_prompt,
     )
 
     # Call the LLM

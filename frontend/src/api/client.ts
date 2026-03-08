@@ -300,3 +300,156 @@ export async function exportDocx(
 
   return response.blob();
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ENTERPRISE CONTEXT API
+// ═══════════════════════════════════════════════════════════════════════════════
+
+import type {
+  EnterpriseContext,
+  EnterpriseContextCreate,
+  EnterpriseContextListResponse,
+  EnterpriseContextUpdate,
+  ContextUploadResponse,
+  MergedContextPreview,
+  SessionContextAttach,
+  SessionContextResponse,
+  ContextType,
+  ContextScope,
+} from '../types/enterpriseContext';
+
+/**
+ * Create a new enterprise context
+ */
+export async function createEnterpriseContext(
+  request: EnterpriseContextCreate
+): Promise<EnterpriseContext> {
+  return fetchApi('/api/contexts', {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+}
+
+/**
+ * Upload a context file (markdown or YAML)
+ */
+export async function uploadContextFile(
+  file: File,
+  name?: string,
+  contextType?: ContextType,
+  scope?: ContextScope
+): Promise<ContextUploadResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+  if (name) formData.append('name', name);
+  if (contextType) formData.append('context_type', contextType);
+  if (scope) formData.append('scope', scope);
+
+  const url = `${API_BASE_URL}/api/contexts/upload`;
+  const headers: Record<string, string> = {};
+  if (_authToken) {
+    headers['Authorization'] = `Bearer ${_authToken}`;
+  }
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new ApiError(
+      response.status,
+      response.statusText,
+      errorData.detail || errorData.message || 'Failed to upload context'
+    );
+  }
+
+  return response.json();
+}
+
+/**
+ * List enterprise contexts for the current user
+ */
+export async function listEnterpriseContexts(
+  contextType?: ContextType
+): Promise<EnterpriseContextListResponse> {
+  const params = contextType ? `?context_type=${contextType}` : '';
+  return fetchApi(`/api/contexts${params}`);
+}
+
+/**
+ * Get a single enterprise context by ID
+ */
+export async function getEnterpriseContext(
+  contextId: string
+): Promise<EnterpriseContext> {
+  return fetchApi(`/api/contexts/${contextId}`);
+}
+
+/**
+ * Update an enterprise context
+ */
+export async function updateEnterpriseContext(
+  contextId: string,
+  request: EnterpriseContextUpdate
+): Promise<EnterpriseContext> {
+  return fetchApi(`/api/contexts/${contextId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(request),
+  });
+}
+
+/**
+ * Delete an enterprise context
+ */
+export async function deleteEnterpriseContext(
+  contextId: string
+): Promise<void> {
+  await fetchApi(`/api/contexts/${contextId}`, {
+    method: 'DELETE',
+  });
+}
+
+/**
+ * Preview merged context for a given context ID
+ */
+export async function previewMergedContext(
+  contextId: string
+): Promise<MergedContextPreview> {
+  return fetchApi(`/api/contexts/${contextId}/preview`);
+}
+
+/**
+ * Attach enterprise contexts to a session
+ */
+export async function attachContextsToSession(
+  sessionId: string,
+  request: SessionContextAttach
+): Promise<SessionContextResponse> {
+  return fetchApi(`/api/contexts/sessions/${sessionId}/attach`, {
+    method: 'POST',
+    body: JSON.stringify(request),
+  });
+}
+
+/**
+ * Get enterprise contexts attached to a session
+ */
+export async function getSessionContexts(
+  sessionId: string
+): Promise<SessionContextResponse> {
+  return fetchApi(`/api/contexts/sessions/${sessionId}/contexts`);
+}
+
+/**
+ * Detach all enterprise contexts from a session
+ */
+export async function detachContextsFromSession(
+  sessionId: string
+): Promise<void> {
+  await fetchApi(`/api/contexts/sessions/${sessionId}/contexts`, {
+    method: 'DELETE',
+  });
+}

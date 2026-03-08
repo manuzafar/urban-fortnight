@@ -1,0 +1,33 @@
+schema: enterprise-context/v1/team
+team: Payments Platform Team
+parent_division: Platform Engineering
+
+strategy:
+  strategic_priorities:
+    - PCI compliance for all payment flows
+    - Real-time payment processing
+    - Fraud detection integration
+  strategic_constraints:
+    - Must use approved payment processors only (Stripe, Adyen)
+    - No storing of raw card numbers
+    - All changes require security review
+
+technology:
+  primary_languages:
+    - Python
+    - TypeScript
+  databases:
+    - PostgreSQL with encryption at rest
+  technical_constraints:
+    - Payment data must be tokenized
+    - All transactions must be idempotent
+    - Audit logging for all payment operations
+    - PCI-DSS Level 1 compliance required
+
+regulatory:
+  frameworks:
+    - PCI-DSS Level 1
+  specific_requirements:
+    - Quarterly penetration testing
+    - Annual PCI audit
+    - Card data encryption in transit and at rest

@@ -219,6 +219,17 @@ class DiscoveryState(TypedDict, total=False):
     additional_context: Annotated[Optional[str], keep_last]
 
     # ═══════════════════════════════════════════════════════════════════════════
+    # ENTERPRISE CONTEXT (organizational guidelines for agents)
+    # ═══════════════════════════════════════════════════════════════════════════
+
+    # IDs of attached enterprise context files
+    enterprise_context_ids: Annotated[Optional[list[str]], keep_last]
+    # Merged enterprise context (company <- division <- team)
+    enterprise_context: Annotated[Optional[dict[str, Any]], keep_last]
+    # Formatted enterprise context prompt for injection
+    enterprise_context_prompt: Annotated[Optional[str], keep_last]
+
+    # ═══════════════════════════════════════════════════════════════════════════
     # PROCESSING FIELDS (use keep_last for parallel merging)
     # ═══════════════════════════════════════════════════════════════════════════
 
@@ -334,6 +345,9 @@ def create_initial_state(
     target_market: Optional[str] = None,
     constraints: Optional[list[str]] = None,
     additional_context: Optional[str] = None,
+    enterprise_context_ids: Optional[list[str]] = None,
+    enterprise_context: Optional[dict[str, Any]] = None,
+    enterprise_context_prompt: Optional[str] = None,
 ) -> DiscoveryState:
     """
     Create the initial state for a new discovery session.
@@ -345,6 +359,9 @@ def create_initial_state(
         target_market: Optional target market specification.
         constraints: Optional business/technical constraints.
         additional_context: Any additional context.
+        enterprise_context_ids: Optional list of enterprise context IDs.
+        enterprise_context: Optional merged enterprise context dict.
+        enterprise_context_prompt: Optional formatted prompt for enterprise context.
 
     Returns:
         DiscoveryState: Initialized state ready for the workflow.
@@ -359,6 +376,10 @@ def create_initial_state(
         target_market=target_market,
         constraints=constraints,
         additional_context=additional_context,
+        # Enterprise context
+        enterprise_context_ids=enterprise_context_ids,
+        enterprise_context=enterprise_context,
+        enterprise_context_prompt=enterprise_context_prompt,
         # Processing fields
         status=SessionStatus.PENDING,
         current_agent="",

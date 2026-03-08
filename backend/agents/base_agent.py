@@ -65,6 +65,51 @@ def get_client() -> genai.Client:
     return _client
 
 
+def prepend_constraints_to_prompt(
+    prompt: str,
+    constraints_prompt: str | None,
+    enterprise_context_prompt: str | None = None,
+) -> str:
+    """
+    Prepend constraints and enterprise context to the TOP of a prompt.
+
+    This ensures constraints are the FIRST thing the LLM sees, maximizing
+    the likelihood of compliance.
+
+    Args:
+        prompt: The original prompt
+        constraints_prompt: Formatted constraints from constraint_broadcaster
+        enterprise_context_prompt: Formatted enterprise context
+
+    Returns:
+        Prompt with constraints prepended at the top
+    """
+    prefix_parts = []
+
+    # Enterprise context first (organizational guidelines)
+    if enterprise_context_prompt and enterprise_context_prompt.strip():
+        prefix_parts.append(enterprise_context_prompt.strip())
+
+    # Then execution constraints (specific values to use)
+    if constraints_prompt and constraints_prompt.strip():
+        prefix_parts.append(constraints_prompt.strip())
+
+    if not prefix_parts:
+        return prompt
+
+    # Join with clear separator
+    prefix = "\n\n".join(prefix_parts)
+
+    # Add a clear transition to the main prompt
+    return f"""{prefix}
+
+═══════════════════════════════════════════════════════════════════════════════
+MAIN TASK INSTRUCTIONS (Apply constraints above to all outputs below)
+═══════════════════════════════════════════════════════════════════════════════
+
+{prompt}"""
+
+
 @retry(
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=2, max=30),

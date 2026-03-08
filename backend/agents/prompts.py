@@ -493,6 +493,19 @@ You MUST respond with ONLY a valid JSON object. No markdown, no explanations, no
       }}
     ],
     "insight": "string - key insight from competitive positioning analysis"
+  }},
+
+  "constraint_compliance": {{
+    "items": [
+      {{
+        "constraint": "string - the specific constraint from organizational context",
+        "status": "compliant|deviated|not_applicable",
+        "explanation": "string - how addressed or why deviation necessary",
+        "urgency": "required|preferred|guidance"
+      }}
+    ],
+    "overall_compliance": "fully_compliant|partial|has_deviations",
+    "deviation_justifications": ["string - justification for any required/preferred deviations"]
   }}
 }}
 
@@ -547,6 +560,10 @@ CRITICAL REQUIREMENTS:
 - All x_score and y_score values must be between 0 and 10
 - Mark exactly one competitor with is_target_product: true (representing our product)
 - Choose axes relevant to the market (price vs features, ease vs power, etc.)
+- CONSTRAINT COMPLIANCE: If organizational constraints provided in context:
+    - List all constraints in constraint_compliance.items with status
+    - Set overall_compliance based on adherence
+    - Justify any deviations from required/preferred constraints
 '''
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -588,6 +605,30 @@ For EVERY financial projection, pricing decision, or metric:
 - Note: [BENCHMARKED] for cited data, [MODELED] for calculated projections, [ASSUMED] for estimates
 
 - When citing search results, prioritize recent and authoritative sources
+
+### EVIDENCE QUALITY REQUIREMENTS (CRITICAL)
+Your financial projections MUST be grounded in real data, not assumptions:
+
+**CAC (Customer Acquisition Cost):**
+- MUST cite at least 2 industry benchmarks from search results
+- MUST specify channel-by-channel CAC breakdown
+- Evidence tier MUST be E2 or E3 (not E4/E5)
+- Example: "CAC of $85 based on Clearbit's 2024 B2B SaaS benchmark showing $50-120 range for SMB SaaS"
+
+**LTV (Lifetime Value):**
+- MUST derive from competitor churn data found via search
+- MUST cite source for churn rate assumption
+- Evidence tier MUST be E2 or E3
+
+**Pricing:**
+- MUST be based on competitor pricing found via search
+- MUST cite at least 2 competitor pricing pages
+- NOT allowed: Pricing pulled from thin air
+
+**Gross Margin:**
+- MUST cite industry benchmark (e.g., "SaaS gross margins typically 70-85% per KeyBanc 2024")
+
+If you cannot find grounding data, explicitly state "UNGROUNDED ASSUMPTION - validation required" and set evidence_tier to E5.
 
 ## YOUR TASK
 
@@ -782,6 +823,19 @@ You MUST respond with ONLY a valid JSON object. No markdown, no explanations, no
       "string - key assumption 3 (e.g., 'CAC: $50 via paid channels')"
     ],
     "sensitivity_notes": "string - notes on what would change projections (e.g., 'If CAC increases 50%, break-even extends to month 9')"
+  }},
+
+  "constraint_compliance": {{
+    "items": [
+      {{
+        "constraint": "string - the specific constraint from organizational context",
+        "status": "compliant|deviated|not_applicable",
+        "explanation": "string - how addressed or why deviation necessary",
+        "urgency": "required|preferred|guidance"
+      }}
+    ],
+    "overall_compliance": "fully_compliant|partial|has_deviations",
+    "deviation_justifications": ["string - justification for any required/preferred deviations"]
   }}
 }}
 
@@ -803,12 +857,32 @@ Before finalizing your response, verify ALL of the following:
 [ ] GTM STRATEGY: 20+ char go-to-market overview
 [ ] UNIT ECONOMICS: CAC and LTV defined with derivations
 [ ] SENSITIVITY ANALYSIS: base_case, optimistic_case, pessimistic_case
+[ ] CONSTRAINT COMPLIANCE: If organizational constraints provided:
+    - constraint_compliance.items: List all constraints with status
+    - overall_compliance: Assess overall compliance
+    - deviation_justifications: Justify any deviations from required constraints
+
+## EVIDENCE QUALITY CHECKLIST (CRITICAL - Quality score depends on this)
+[ ] CAC GROUNDING: unit_economics.cac MUST include:
+    - evidence_tier: E2 or E3 (NOT E4 or E5)
+    - derivation: Cite specific benchmark source with company/report name
+    - Example: "Based on Clearbit 2024 benchmark: SMB SaaS CAC $50-120"
+[ ] LTV GROUNDING: unit_economics.ltv MUST include:
+    - evidence_tier: E2 or E3
+    - monthly_churn_assumption: Cite industry benchmark source
+    - Example: "5% monthly churn based on Recurly 2024 SaaS benchmark"
+[ ] PRICING GROUNDING: revenue_streams pricing MUST cite competitor pricing
+    - Include competitor name and pricing tier found via search
+[ ] NO CIRCULAR LOGIC: CAC derivation must NOT assume conversion rates without evidence
+[ ] INTERNAL CONSISTENCY: CAC value here MUST match what GTM/Financial Model will use
+    - If you state CAC=$85, other agents will be validated against this
 
 IMPORTANT:
 - Respond with ONLY the JSON object
 - Use realistic financial projections based on market data
 - Ensure revenue and cost projections are internally consistent
 - Make the business case compelling but honest about risks
+- QUALITY SCORE PENALTY: Outputs with E4/E5 evidence on CAC/LTV will score below 0.7
 - financial_projection MUST include all 12 months of data
 - All revenue/costs/profit/mrr values must be numbers (not strings)
 - users must be integer counts
@@ -1685,8 +1759,27 @@ sequenceDiagram
 For each technology choice, provide:
 - Category: Frontend, Backend, Database, Cache, Queue, etc.
 - Selected Technology: The specific technology chosen
-- Rationale: Why this technology was selected
+- Rationale: Why this technology was selected (MUST BE SPECIFIC - see below)
 - Alternatives Considered: Other options evaluated
+
+**RATIONALE REQUIREMENTS (Quality score depends on this):**
+Your rationale MUST NOT be generic. Each rationale must include at least TWO of:
+1. **Specific business requirement**: Link to a PRD requirement or NFR (e.g., "Supports NFR-003: 99.9% uptime SLA")
+2. **Specific compliance need**: Link to regulatory requirement (e.g., "PCI-DSS requires encryption at rest, PostgreSQL provides this natively")
+3. **Quantified capability**: Include numbers (e.g., "Handles 10K concurrent connections per instance")
+4. **Team capability**: Reference team expertise (e.g., "Team has 3 years production experience")
+5. **Cost justification**: Include pricing (e.g., "AWS Lambda: ~$0.20 per 1M requests vs EC2 baseline cost")
+
+**GENERIC RATIONALE EXAMPLES (NOT ALLOWED):**
+- ❌ "Industry standard solution"
+- ❌ "Comprehensive suite of services"
+- ❌ "Good ecosystem and community"
+- ❌ "Widely adopted and proven"
+
+**SPECIFIC RATIONALE EXAMPLES (REQUIRED):**
+- ✓ "PostgreSQL selected for PCI-DSS encryption compliance and JSONB support for semi-structured payment data (FR-005)"
+- ✓ "React chosen for team's 4-year experience; alternative Vue.js rejected due to smaller enterprise component library"
+- ✓ "AWS over Azure due to existing enterprise agreement (15% discount) and established FinOps practices"
 
 **Categories to cover:**
 - Frontend Framework
@@ -1814,7 +1907,20 @@ You MUST respond with ONLY a valid JSON object. No markdown, no explanations, no
       "risk": "string - risk description",
       "mitigation": "string - mitigation strategy"
     }}
-  ]
+  ],
+
+  "constraint_compliance": {{
+    "items": [
+      {{
+        "constraint": "string - the specific constraint from organizational context",
+        "status": "compliant|deviated|not_applicable",
+        "explanation": "string - how addressed or why deviation necessary",
+        "urgency": "required|preferred|guidance"
+      }}
+    ],
+    "overall_compliance": "fully_compliant|partial|has_deviations",
+    "deviation_justifications": ["string - justification for any required/preferred deviations"]
+  }}
 }}
 
 ## OUTPUT CHECKLIST (MANDATORY)
@@ -1834,6 +1940,10 @@ Before finalizing your response, verify ALL of the following:
 [ ] INFRASTRUCTURE REQUIREMENTS: 1+ infrastructure item specified
 [ ] ARCHITECTURE DIAGRAM: architecture_diagram_mermaid with valid Mermaid code
 [ ] TECHNICAL RISKS: 2+ risks identified with mitigation strategies
+[ ] CONSTRAINT COMPLIANCE: If organizational constraints provided:
+    - constraint_compliance.items: List all constraints with status
+    - overall_compliance: Assess overall compliance
+    - deviation_justifications: Justify any deviations from required constraints
 
 IMPORTANT:
 - Respond with ONLY the JSON object
@@ -2077,7 +2187,20 @@ The JSON structure must be:
     "Recommended next step 2",
     "Recommended next step 3",
     "At minimum 3 specific, actionable steps"
-  ]
+  ],
+
+  "constraint_compliance": {{
+    "items": [
+      {{
+        "constraint": "string - the specific constraint from organizational context",
+        "status": "compliant|deviated|not_applicable",
+        "explanation": "string - how addressed or why deviation necessary",
+        "urgency": "required|preferred|guidance"
+      }}
+    ],
+    "overall_compliance": "fully_compliant|partial|has_deviations",
+    "deviation_justifications": ["string - justification for any required/preferred deviations"]
+  }}
 }}
 
 ## GUIDELINES
@@ -2125,6 +2248,10 @@ Before finalizing your response, verify ALL of the following:
 [ ] LEGAL RISKS: 2+ risks, 70%+ with mitigation_strategies
 [ ] OVERALL RISK ASSESSMENT: risk_level field populated (high/medium/low)
 [ ] NEXT STEPS: 2+ actionable next steps with specifics
+[ ] CONSTRAINT COMPLIANCE: If organizational constraints provided:
+    - constraint_compliance.items: List all constraints with status
+    - overall_compliance: Assess overall compliance
+    - deviation_justifications: Justify any deviations from required constraints
 
 IMPORTANT:
 - Respond with ONLY the JSON object
@@ -2585,19 +2712,33 @@ def _format_upstream_constraints(constraints: str | None) -> str:
 
     These constraints come from the constraint_broadcaster and represent
     established facts from upstream phases that this agent must align with.
+    The constraints are already formatted with visual prominence by
+    format_constraints_for_prompt(), so we just wrap them with additional context.
     """
     if not constraints:
         return ""
 
-    return f"""
-## UPSTREAM CONSTRAINTS (MANDATORY)
+    # If constraints already have the box drawing header, don't wrap again
+    if "══════" in constraints or "MANDATORY" in constraints:
+        return f"""
+{constraints}
+"""
 
-The following constraints have been established by upstream agents and MUST be respected in your output.
-Do NOT contradict these values. If you believe a constraint is incorrect, note it explicitly but still align your output.
+    # Legacy format - wrap with prominence
+    return f"""
+╔══════════════════════════════════════════════════════════════════════════════╗
+║  UPSTREAM CONSTRAINTS (MANDATORY)                                             ║
+║  These constraints MUST be respected. Violations trigger revision.            ║
+╚══════════════════════════════════════════════════════════════════════════════╝
 
 {constraints}
 
-Failure to align with these constraints will result in consistency errors and required revisions.
+────────────────────────────────────────────────────────────────────────────────
+**COMPLIANCE REQUIREMENTS:**
+1. You MUST comply with all listed constraints.
+2. If deviating, provide explicit justification with E1-E2 evidence.
+3. Include a 'Constraint Compliance' section in your output.
+────────────────────────────────────────────────────────────────────────────────
 """
 
 

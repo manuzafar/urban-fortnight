@@ -1,0 +1,75 @@
+schema: enterprise-context/v1/company
+company: Acme Financial Services
+industry: Financial Services
+
+strategy:
+  time_horizon: "3-5 years"
+  strategic_priorities:
+    - Digital transformation of core banking
+    - Customer experience excellence
+    - Operational efficiency through automation
+    - Risk management modernization
+  strategic_constraints:
+    - No acquisitions until Q3 2025
+    - 15% cost reduction target by end of year
+    - All new products must achieve break-even within 18 months
+  innovation_stance: "fast follower"
+  investment_thesis: "Focus on modernizing core platform before expansion"
+
+technology:
+  cloud: AWS
+  primary_languages:
+    - Python
+    - TypeScript
+    - Java
+  databases:
+    - PostgreSQL
+    - Redis
+    - DynamoDB
+  infrastructure:
+    - Kubernetes
+    - Terraform
+    - GitHub Actions
+  deprecated_technologies:
+    - Oracle Database
+    - COBOL
+    - On-premise data centers
+  technical_constraints:
+    - All services must be containerized
+    - Zero-downtime deployments required
+    - Data must not leave US region
+    - All APIs must be REST or GraphQL
+
+regulatory:
+  frameworks:
+    - SOC2 Type II
+    - PCI-DSS
+    - GDPR
+    - CCPA
+    - GLBA
+  jurisdictions:
+    - United States
+    - European Union
+  data_residency: "US-only for financial data, EU for EU customer PII"
+  audit_requirements:
+    - Annual SOC2 audit
+    - Quarterly PCI compliance scan
+    - Monthly vulnerability assessments
+
+risk_management:
+  risk_appetite: "moderate"
+  risk_categories:
+    - Operational Risk
+    - Compliance Risk
+    - Technology Risk
+    - Reputational Risk
+  mitigation_requirements:
+    - All high-risk changes require security review
+    - Disaster recovery testing quarterly
+    - 99.9% uptime SLA for critical systems
+
+organization:
+  delivery_model: "agile"
+  decision_authority: "Product Council for strategic, Team leads for tactical"
+  budget_cycle: "quarterly"
+  approval_process: "Product Council review for >$50k spend"

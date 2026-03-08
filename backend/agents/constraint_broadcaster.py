@@ -47,6 +47,10 @@ class ExecutionConstraint:
             - "must_reference": Agent must cite/reference this claim
         evidence_tier: The evidence tier of the source claim (E1-E5)
         confidence: Confidence level of the constraint (0.0-1.0)
+        urgency: Enforcement level:
+            - "required": Non-negotiable, violations trigger revision
+            - "preferred": Should follow unless compelling reason to deviate
+            - "guidance": Informational, agent can use judgment
     """
     field: str
     value: Any
@@ -55,6 +59,7 @@ class ExecutionConstraint:
     constraint_type: str
     evidence_tier: str = "E2"  # Upgraded from E4 for stronger constraint enforcement
     confidence: float = 0.7  # Upgraded from 0.5 for stronger constraint enforcement
+    urgency: str = "preferred"  # "required" | "preferred" | "guidance"
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -111,6 +116,163 @@ def _extract_value_safely(data: dict, *keys: str, default: Any = None) -> Any:
     return current
 
 
+def generate_enterprise_constraints(state: dict[str, Any]) -> list[ExecutionConstraint]:
+    """
+    Generate constraints from enterprise context.
+
+    Enterprise context provides organizational guidelines that all agents
+    should respect. These constraints are prepended to phase constraints.
+
+    Args:
+        state: Current workflow state with enterprise_context field
+
+    Returns:
+        List of ExecutionConstraint objects from enterprise context
+    """
+    constraints: list[ExecutionConstraint] = []
+    enterprise_context = state.get("enterprise_context", {})
+
+    if not enterprise_context:
+        return constraints
+
+    claim_counter = 1
+
+    # Regulatory constraints (E1, REQUIRED - non-negotiable)
+    regulatory = enterprise_context.get("regulatory", {})
+    if regulatory.get("frameworks"):
+        for framework in regulatory["frameworks"]:
+            constraints.append(ExecutionConstraint(
+                field="compliance_framework",
+                value=framework,
+                source_section="enterprise_context",
+                source_claim_id=f"EC-REG-{claim_counter}",
+                constraint_type="must_use",
+                evidence_tier="E1",
+                confidence=1.0,
+                urgency="required",  # Non-negotiable
+            ))
+            claim_counter += 1
+
+    if regulatory.get("data_residency"):
+        constraints.append(ExecutionConstraint(
+            field="data_residency",
+            value=regulatory["data_residency"],
+            source_section="enterprise_context",
+            source_claim_id=f"EC-REG-{claim_counter}",
+            constraint_type="must_use",
+            evidence_tier="E1",
+            confidence=1.0,
+            urgency="required",  # Non-negotiable
+        ))
+        claim_counter += 1
+
+    # Strategy constraints (E1, REQUIRED)
+    strategy = enterprise_context.get("strategy", {})
+    if strategy.get("strategic_constraints"):
+        for sc in strategy["strategic_constraints"]:
+            constraints.append(ExecutionConstraint(
+                field="strategic_alignment",
+                value=sc,
+                source_section="enterprise_context",
+                source_claim_id=f"EC-STR-{claim_counter}",
+                constraint_type="must_align",
+                evidence_tier="E1",
+                confidence=0.95,
+                urgency="required",  # Strategic constraints are required
+            ))
+            claim_counter += 1
+
+    if strategy.get("strategic_priorities"):
+        constraints.append(ExecutionConstraint(
+            field="strategic_priorities",
+            value=", ".join(strategy["strategic_priorities"]),
+            source_section="enterprise_context",
+            source_claim_id=f"EC-STR-{claim_counter}",
+            constraint_type="must_align",
+            evidence_tier="E1",
+            confidence=0.95,
+            urgency="required",  # Strategic priorities are required
+        ))
+        claim_counter += 1
+
+    # Technology constraints (E1-E2, PREFERRED - can deviate with justification)
+    tech = enterprise_context.get("technology", {})
+    if tech.get("cloud"):
+        constraints.append(ExecutionConstraint(
+            field="cloud_platform",
+            value=tech["cloud"],
+            source_section="enterprise_context",
+            source_claim_id=f"EC-TECH-{claim_counter}",
+            constraint_type="must_use",
+            evidence_tier="E1",
+            confidence=0.95,
+            urgency="preferred",  # Tech can be deviated with justification
+        ))
+        claim_counter += 1
+
+    if tech.get("primary_languages"):
+        constraints.append(ExecutionConstraint(
+            field="programming_languages",
+            value=", ".join(tech["primary_languages"]),
+            source_section="enterprise_context",
+            source_claim_id=f"EC-TECH-{claim_counter}",
+            constraint_type="must_use",
+            evidence_tier="E1",
+            confidence=0.9,
+            urgency="preferred",
+        ))
+        claim_counter += 1
+
+    if tech.get("databases"):
+        constraints.append(ExecutionConstraint(
+            field="database_technologies",
+            value=", ".join(tech["databases"]),
+            source_section="enterprise_context",
+            source_claim_id=f"EC-TECH-{claim_counter}",
+            constraint_type="must_use",
+            evidence_tier="E1",
+            confidence=0.9,
+            urgency="preferred",
+        ))
+        claim_counter += 1
+
+    if tech.get("deprecated_technologies"):
+        constraints.append(ExecutionConstraint(
+            field="deprecated_technologies",
+            value=", ".join(tech["deprecated_technologies"]),
+            source_section="enterprise_context",
+            source_claim_id=f"EC-TECH-{claim_counter}",
+            constraint_type="must_not_exceed",  # Using as "must_not_use"
+            evidence_tier="E1",
+            confidence=0.95,
+            urgency="required",  # Deprecated tech is non-negotiable
+        ))
+        claim_counter += 1
+
+    # Risk management constraints (E1, REQUIRED)
+    risk = enterprise_context.get("risk_management", {})
+    if risk.get("risk_appetite"):
+        constraints.append(ExecutionConstraint(
+            field="risk_appetite",
+            value=risk["risk_appetite"],
+            source_section="enterprise_context",
+            source_claim_id=f"EC-RISK-{claim_counter}",
+            constraint_type="must_align",
+            evidence_tier="E1",
+            confidence=0.95,
+            urgency="required",  # Risk appetite is required
+        ))
+        claim_counter += 1
+
+    logger.info(
+        "enterprise_constraints_generated",
+        session_id=state.get("session_id"),
+        constraint_count=len(constraints),
+    )
+
+    return constraints
+
+
 async def generate_phase_constraints(
     state: dict[str, Any],
     target_phase: str,
@@ -121,6 +283,9 @@ async def generate_phase_constraints(
     This function analyzes outputs from prior phases and extracts key facts
     that downstream agents must align with. Constraints are only generated
     from high-confidence, well-evidenced claims (E1-E3).
+
+    Enterprise context constraints are prepended to ensure organizational
+    guidelines are always considered first.
 
     Args:
         state: Current workflow state with completed agent outputs
@@ -136,6 +301,9 @@ async def generate_phase_constraints(
         target_phase=target_phase,
         session_id=state.get("session_id"),
     )
+
+    # Prepend enterprise context constraints (organizational guidelines)
+    constraints.extend(generate_enterprise_constraints(state))
 
     if target_phase == "strategy":
         # Strategy phase receives constraints from Discovery outputs
@@ -399,8 +567,8 @@ def format_constraints_for_prompt(constraints: list[ExecutionConstraint]) -> str
     """
     Format constraints for injection into agent prompts.
 
-    Creates a clear, structured block that agents can understand and follow.
-    Emphasizes that constraints are MANDATORY for consistency.
+    Creates a visually prominent, structured block that agents MUST follow.
+    Uses box drawing characters for maximum visibility.
 
     Args:
         constraints: List of ExecutionConstraint objects
@@ -411,58 +579,64 @@ def format_constraints_for_prompt(constraints: list[ExecutionConstraint]) -> str
     if not constraints:
         return ""
 
+    # Separate by urgency
+    required = [c for c in constraints if c.urgency == "required"]
+    preferred = [c for c in constraints if c.urgency == "preferred"]
+    guidance = [c for c in constraints if c.urgency == "guidance"]
+
     lines = [
-        "## EXECUTION CONSTRAINTS (CRITICAL - DO NOT OVERRIDE)",
-        "",
-        "**WARNING: These constraints are LOCKED from upstream agents.**",
-        "",
-        "You MUST align your output with these established constraints from upstream agents.",
-        "These ensure consistency across the discovery pack. DO NOT contradict these values.",
-        "**Violating these constraints will cause cross-section inconsistencies.**",
+        "╔══════════════════════════════════════════════════════════════════════════════╗",
+        "║  MANDATORY ORGANIZATIONAL & EXECUTION CONSTRAINTS                             ║",
+        "║  You MUST respect these. Violations will trigger revision.                    ║",
+        "╚══════════════════════════════════════════════════════════════════════════════╝",
         "",
     ]
 
-    # Group constraints by type for clarity
-    must_use = [c for c in constraints if c.constraint_type == "must_use"]
-    must_align = [c for c in constraints if c.constraint_type == "must_align"]
-    must_reference = [c for c in constraints if c.constraint_type == "must_reference"]
-    must_not_exceed = [c for c in constraints if c.constraint_type == "must_not_exceed"]
-
-    if must_use:
-        lines.append("### MUST USE (exact values)")
-        for c in must_use:
-            lines.append(f"- **{c.field}**: {c.value}")
-            lines.append(f"  Source: {c.source_section} ({c.source_claim_id}) [{c.evidence_tier}]")
+    # REQUIRED constraints (non-negotiable)
+    if required:
+        lines.append("### 🔴 REQUIRED (Non-negotiable - violations trigger revision)")
+        lines.append("")
+        for c in required:
+            urgency_icon = "⛔" if c.constraint_type in ["must_use", "must_not_exceed"] else "⚠️"
+            lines.append(f"{urgency_icon} **{c.field}**: {c.value}")
+            lines.append(f"   └─ Type: {c.constraint_type} | Source: {c.source_section} ({c.source_claim_id}) [{c.evidence_tier}]")
         lines.append("")
 
-    if must_align:
-        lines.append("### MUST ALIGN WITH (directional consistency)")
-        for c in must_align:
-            lines.append(f"- **{c.field}**: {c.value}")
-            lines.append(f"  Source: {c.source_section} ({c.source_claim_id}) [{c.evidence_tier}]")
+    # PREFERRED constraints (should follow, can deviate with justification)
+    if preferred:
+        lines.append("### 🟡 PREFERRED (Follow unless compelling reason to deviate)")
+        lines.append("")
+        for c in preferred:
+            lines.append(f"📌 **{c.field}**: {c.value}")
+            lines.append(f"   └─ Type: {c.constraint_type} | Source: {c.source_section} ({c.source_claim_id}) [{c.evidence_tier}]")
         lines.append("")
 
-    if must_reference:
-        lines.append("### MUST REFERENCE (cite in output)")
-        for c in must_reference:
-            lines.append(f"- **{c.field}**: {c.value}")
-            lines.append(f"  Source: {c.source_section} ({c.source_claim_id}) [{c.evidence_tier}]")
+    # GUIDANCE constraints (informational)
+    if guidance:
+        lines.append("### 🟢 GUIDANCE (Informational, use judgment)")
+        lines.append("")
+        for c in guidance:
+            lines.append(f"💡 **{c.field}**: {c.value}")
+            lines.append(f"   └─ Source: {c.source_section} ({c.source_claim_id})")
         lines.append("")
 
-    if must_not_exceed:
-        lines.append("### MUST NOT EXCEED (upper bounds)")
-        for c in must_not_exceed:
-            lines.append(f"- **{c.field}**: {c.value}")
-            lines.append(f"  Source: {c.source_section} ({c.source_claim_id}) [{c.evidence_tier}]")
-        lines.append("")
-
-    lines.append("**IMPORTANT:** If you believe a constraint should be revised based on new information,")
-    lines.append("you must:")
-    lines.append("1. Explicitly note this in your output with detailed justification")
-    lines.append("2. Provide E1-E2 evidence (direct research, citations, or data) to override")
-    lines.append("3. Explain why the original constraint was incorrect")
-    lines.append("")
-    lines.append("**Failing to follow constraints without proper justification will cause eval failures.**")
+    lines.extend([
+        "────────────────────────────────────────────────────────────────────────────────",
+        "",
+        "**COMPLIANCE REQUIREMENTS:**",
+        "1. For REQUIRED constraints: You MUST comply. No exceptions.",
+        "2. For PREFERRED constraints: Comply unless you have E1-E2 evidence to deviate.",
+        "3. If deviating: Explicitly state the constraint, your deviation, and justification.",
+        "",
+        "**In your output, include a 'Constraint Compliance' section:**",
+        "```",
+        "## Constraint Compliance",
+        "- ✓ [constraint_field]: Compliant - [how addressed]",
+        "- ⚠ [constraint_field]: Deviation - [justification with evidence]",
+        "```",
+        "",
+        "────────────────────────────────────────────────────────────────────────────────",
+    ])
 
     return "\n".join(lines)
 

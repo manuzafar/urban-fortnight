@@ -1,0 +1,39 @@
+schema: enterprise-context/v1/division
+division: Platform Engineering
+parent_company: Acme Financial Services
+
+strategy:
+  strategic_priorities:
+    - Platform reliability and SLA compliance
+    - Developer experience improvement
+    - API standardization across products
+    - Observability and monitoring maturity
+  strategic_constraints:
+    - Cannot hire more than 5 engineers this quarter
+    - Must maintain current headcount efficiency
+    - All projects must show ROI within 12 months
+
+technology:
+  primary_languages:
+    - Python
+    - Go
+    - TypeScript
+  databases:
+    - PostgreSQL
+    - TimescaleDB
+    - Redis
+  infrastructure:
+    - Kubernetes
+    - ArgoCD
+    - Prometheus
+    - Grafana
+  technical_constraints:
+    - All services must support horizontal scaling
+    - Maximum P99 latency of 200ms for APIs
+    - All deployments via GitOps
+    - Service mesh required for inter-service communication
+
+organization:
+  delivery_model: "agile with Scrum"
+  team_topology: "platform team supporting stream-aligned product teams"
+  decision_authority: "Engineering Manager for team decisions, VP for cross-team"

@@ -1083,6 +1083,89 @@ class FacilitatorAgent:
                         "severity": "medium",
                     })
 
+        # Check 4: CAC consistency between Business Case and GTM
+        if business_case and gtm_plan and isinstance(gtm_plan, dict):
+            bc_unit_econ = business_case.get("unit_economics") or {}
+            if isinstance(bc_unit_econ, dict):
+                bc_cac = bc_unit_econ.get("cac", {})
+                bc_cac_value = self._extract_price_from_string(
+                    bc_cac.get("value", "") if isinstance(bc_cac, dict) else str(bc_cac)
+                )
+
+                gtm_channels = gtm_plan.get("channel_strategy") or []
+                gtm_cac_values = []
+                for channel in gtm_channels:
+                    if not isinstance(channel, dict):
+                        continue
+                    expected_cac = channel.get("expected_cac", "")
+                    if expected_cac:
+                        cac_val = self._extract_price_from_string(str(expected_cac))
+                        if cac_val:
+                            gtm_cac_values.append(cac_val)
+
+                if bc_cac_value and gtm_cac_values:
+                    avg_gtm_cac = sum(gtm_cac_values) / len(gtm_cac_values)
+                    # CAC should be within 50% between Business Case and GTM average
+                    if abs(bc_cac_value - avg_gtm_cac) / max(bc_cac_value, avg_gtm_cac) > 0.5:
+                        contradictions.append({
+                            "type": "cac_mismatch",
+                            "agents": ["business_strategy", "gtm_strategy"],
+                            "field": "CAC",
+                            "values": {"business_case": bc_cac_value, "gtm_avg": avg_gtm_cac},
+                            "severity": "high",
+                        })
+
+        # Check 5: CAC consistency between Business Case and Financial Model
+        if business_case and financial_model and isinstance(financial_model, dict):
+            bc_unit_econ = business_case.get("unit_economics") or {}
+            if isinstance(bc_unit_econ, dict):
+                bc_cac = bc_unit_econ.get("cac", {})
+                bc_cac_value = self._extract_price_from_string(
+                    bc_cac.get("value", "") if isinstance(bc_cac, dict) else str(bc_cac)
+                )
+
+                fm_unit_econ = financial_model.get("unit_economics") or {}
+                if isinstance(fm_unit_econ, dict):
+                    fm_cac = fm_unit_econ.get("cac_breakdown", {})
+                    fm_cac_total = fm_cac.get("total_cac") if isinstance(fm_cac, dict) else None
+                    fm_cac_value = self._extract_price_from_string(str(fm_cac_total)) if fm_cac_total else None
+
+                    if bc_cac_value and fm_cac_value:
+                        # CAC should be within 30% between Business Case and Financial Model
+                        if abs(bc_cac_value - fm_cac_value) / max(bc_cac_value, fm_cac_value) > 0.3:
+                            contradictions.append({
+                                "type": "cac_mismatch",
+                                "agents": ["business_strategy", "financial_modeling"],
+                                "field": "CAC",
+                                "values": {"business_case": bc_cac_value, "financial_model": fm_cac_value},
+                                "severity": "high",
+                            })
+
+        # Check 6: LTV consistency
+        if business_case and financial_model and isinstance(financial_model, dict):
+            bc_unit_econ = business_case.get("unit_economics") or {}
+            if isinstance(bc_unit_econ, dict):
+                bc_ltv = bc_unit_econ.get("ltv", {})
+                bc_ltv_value = self._extract_price_from_string(
+                    bc_ltv.get("value", "") if isinstance(bc_ltv, dict) else str(bc_ltv)
+                )
+
+                fm_unit_econ = financial_model.get("unit_economics") or {}
+                if isinstance(fm_unit_econ, dict):
+                    fm_ltv = fm_unit_econ.get("ltv")
+                    fm_ltv_value = self._extract_price_from_string(str(fm_ltv)) if fm_ltv else None
+
+                    if bc_ltv_value and fm_ltv_value:
+                        # LTV should be within 30%
+                        if abs(bc_ltv_value - fm_ltv_value) / max(bc_ltv_value, fm_ltv_value) > 0.3:
+                            contradictions.append({
+                                "type": "ltv_mismatch",
+                                "agents": ["business_strategy", "financial_modeling"],
+                                "field": "LTV",
+                                "values": {"business_case": bc_ltv_value, "financial_model": fm_ltv_value},
+                                "severity": "high",
+                            })
+
         if contradictions:
             self.logger.warning(
                 "contradictions_detected",
@@ -1213,6 +1296,29 @@ class FacilitatorAgent:
                     match = re.search(r"(\d+(?:\.\d+)?)", str(price))
                     if match:
                         return float(match.group(1))
+        return None
+
+    def _extract_price_from_string(self, price_str: str) -> float | None:
+        """Extract a numeric price from a string like '$50', '$50-100', '50 dollars'."""
+        if not price_str:
+            return None
+
+        import re
+
+        price_str = str(price_str).lower().replace(",", "").replace("$", "")
+
+        # Handle ranges like "50-100" by taking the midpoint
+        range_match = re.search(r"(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)", price_str)
+        if range_match:
+            low = float(range_match.group(1))
+            high = float(range_match.group(2))
+            return (low + high) / 2
+
+        # Handle single values
+        match = re.search(r"(\d+(?:\.\d+)?)", price_str)
+        if match:
+            return float(match.group(1))
+
         return None
 
     # ═══════════════════════════════════════════════════════════════════════════════
@@ -1789,7 +1895,8 @@ def _integrate_constraint_violations_into_revision(
     Integrate constraint violations into the revision priority list.
 
     This ensures that agents with constraint violations are prioritized
-    for revision alongside critique feedback.
+    for revision alongside critique feedback. Violations are formatted
+    with full details including field, expected value, and urgency.
 
     Args:
         state: Current workflow state
@@ -1810,10 +1917,31 @@ def _integrate_constraint_violations_into_revision(
 
         revision_priority = quality.get("revision_priority") or []
 
+        # Get active constraints for detailed violation messages
+        active_constraints = state.get("active_constraints") or []
+
         # Map constraint violations to revision priority format
         for agent_name, violations in constraint_violations.items():
             if not violations:
                 continue
+
+            # Format violations with constraint details
+            formatted_violations = []
+            for v in violations[:5]:
+                if isinstance(v, dict):
+                    # Violation is a dict with details
+                    field = v.get("field", "unknown")
+                    expected = v.get("expected", "")
+                    actual = v.get("actual", "")
+                    urgency = v.get("urgency", "required")
+                    formatted_violations.append(
+                        f"[CONSTRAINT] Field '{field}' must be '{expected}' "
+                        f"(found: '{actual}') [urgency: {urgency}]"
+                    )
+                else:
+                    # Violation is a string
+                    formatted_violations.append(f"[CONSTRAINT] {v}")
+
             # Check if agent already in revision priority
             existing = next(
                 (r for r in revision_priority if r.get("section", "").lower() == agent_name.lower()),
@@ -1821,15 +1949,17 @@ def _integrate_constraint_violations_into_revision(
             )
 
             if existing:
-                # Add constraint violations to existing feedback
+                # Add constraint violations to existing feedback (at front for priority)
                 existing_feedback = existing.get("feedback") or []
-                existing["feedback"] = existing_feedback + [f"[CONSTRAINT] {v}" for v in violations[:5]]
+                existing["feedback"] = formatted_violations + existing_feedback
+                # Lower the score since constraints are critical
+                existing["score"] = min(existing.get("score", 0.5), 0.3)
             else:
                 # Add new revision priority entry
                 revision_priority.append({
                     "section": agent_name,
-                    "score": 0.3,  # Lower score = more urgent (constraints are important)
-                    "feedback": [f"[CONSTRAINT] {v}" for v in violations[:5]],
+                    "score": 0.2,  # Very low score = highest urgency (constraints)
+                    "feedback": formatted_violations,
                 })
 
         # Sort by score (lowest first = most urgent)
@@ -1838,6 +1968,15 @@ def _integrate_constraint_violations_into_revision(
         # Update state safely
         if isinstance(state.get("quality_assessment"), dict):
             state["quality_assessment"]["revision_priority"] = revision_priority
+
+        # Also inject constraint fix instructions into state
+        if "constraint_fix_instructions" in state:
+            # Merge any existing fix instructions
+            fix_instructions = state.get("constraint_fix_instructions", {})
+            if fix_instructions:
+                state["_injected_revision_context"] = _format_constraint_fix_instructions(
+                    fix_instructions
+                )
 
     except Exception as e:
         # Log but don't fail the workflow for constraint integration errors
@@ -1852,11 +1991,48 @@ def _integrate_constraint_violations_into_revision(
     return state
 
 
+def _format_constraint_fix_instructions(fix_instructions: dict[str, str]) -> str:
+    """
+    Format constraint fix instructions for injection into agent prompts.
+
+    Args:
+        fix_instructions: Dict mapping agent name to fix instructions
+
+    Returns:
+        Formatted string with visual prominence
+    """
+    if not fix_instructions:
+        return ""
+
+    lines = [
+        "",
+        "╔══════════════════════════════════════════════════════════════════════════════╗",
+        "║  ⛔ CONSTRAINT VIOLATIONS DETECTED - MUST FIX                                 ║",
+        "╚══════════════════════════════════════════════════════════════════════════════╝",
+        "",
+    ]
+
+    for agent, instructions in fix_instructions.items():
+        lines.append(f"### {agent}:")
+        lines.append(instructions)
+        lines.append("")
+
+    lines.extend([
+        "────────────────────────────────────────────────────────────────────────────────",
+        "**You MUST fix ALL constraint violations before proceeding.**",
+        "**Include 'Constraint Compliance' section showing compliance for each field.**",
+        "────────────────────────────────────────────────────────────────────────────────",
+    ])
+
+    return "\n".join(lines)
+
+
 def _format_revision_context(
     previous_output: dict,
     feedback: list[str],
     revision_history: list[dict],
     section_name: str,
+    constraint_violations: list[str] | None = None,
 ) -> str:
     """
     Format revision context for agent prompt.
@@ -1865,12 +2041,14 @@ def _format_revision_context(
     - Previous attempt history (to avoid repeating mistakes)
     - Current feedback to address
     - Score trajectory
+    - Constraint violation details (if any)
 
     Args:
         previous_output: The previous output being revised
         feedback: List of feedback items to address
         revision_history: History of revision attempts
         section_name: Name of the section being revised
+        constraint_violations: Optional list of constraint violations to fix
 
     Returns:
         Formatted string for prompt injection
@@ -1882,6 +2060,31 @@ def _format_revision_context(
         "Review the feedback carefully and address ALL issues.",
         "",
     ]
+
+    # CONSTRAINT VIOLATIONS (highest priority)
+    constraint_issues = [fb for fb in (feedback or []) if "[CONSTRAINT]" in fb]
+    if constraint_issues or constraint_violations:
+        lines.extend([
+            "╔══════════════════════════════════════════════════════════════════════════════╗",
+            "║  ⛔ CONSTRAINT VIOLATIONS (MUST FIX)                                          ║",
+            "║  These are non-negotiable. Fix ALL violations before addressing other issues.║",
+            "╚══════════════════════════════════════════════════════════════════════════════╝",
+            "",
+        ])
+
+        all_violations = constraint_issues + (constraint_violations or [])
+        for i, violation in enumerate(all_violations[:10], 1):
+            # Clean up the violation text
+            clean_violation = violation.replace("[CONSTRAINT]", "").strip()
+            lines.append(f"  {i}. ⛔ {clean_violation}")
+        lines.extend([
+            "",
+            "**For each violation above:**",
+            "1. Identify the constrained field",
+            "2. Update your output to comply with the constraint value",
+            "3. If you absolutely cannot comply, provide E1-E2 evidence for deviation",
+            "",
+        ])
 
     # Previous attempts for this section
     section_history = [
@@ -1901,10 +2104,11 @@ def _format_revision_context(
         lines.append("**DO NOT repeat mistakes from previous attempts.**")
         lines.append("")
 
-    # Current feedback to address
-    if feedback:
-        lines.append("### Issues to Address NOW:")
-        for i, fb in enumerate(feedback[:10], 1):  # Top 10 issues
+    # Non-constraint feedback to address
+    regular_feedback = [fb for fb in (feedback or []) if "[CONSTRAINT]" not in fb]
+    if regular_feedback:
+        lines.append("### Other Issues to Address:")
+        for i, fb in enumerate(regular_feedback[:10], 1):  # Top 10 issues
             lines.append(f"{i}. {fb}")
         lines.append("")
 
@@ -1915,7 +2119,12 @@ def _format_revision_context(
         lines.append(f"### Previous Output Sections: {', '.join(output_keys)}")
         lines.append("")
 
-    lines.append("**Address ALL issues listed above. Be specific and data-driven.**")
+    lines.extend([
+        "────────────────────────────────────────────────────────────────────────────────",
+        "**REQUIRED: Address ALL constraint violations first, then other issues.**",
+        "**Include a 'Constraint Compliance' section in your output.**",
+        "────────────────────────────────────────────────────────────────────────────────",
+    ])
 
     return "\n".join(lines)
 

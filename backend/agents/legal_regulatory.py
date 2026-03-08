@@ -15,7 +15,7 @@ from datetime import datetime
 import structlog
 from pydantic import ValidationError
 
-from agents.base_agent import call_llm, call_llm_with_grounding, extract_feedback_for_agent
+from agents.base_agent import call_llm, call_llm_with_grounding, extract_feedback_for_agent, prepend_constraints_to_prompt
 from agents.claim_extractor import extract_and_store_claims
 from agents.prompts import LEGAL_REGULATORY_PROMPT, LEGAL_PRELIMINARY_PROMPT, format_prompt
 from agents.state import DiscoveryState
@@ -157,7 +157,10 @@ async def run_legal_regulatory_agent(state: DiscoveryState) -> DiscoveryState:
     # Get upstream constraints from constraint broadcaster
     upstream_constraints = state.get("constraints_prompt") or state.get("_injected_constraints")
 
-    # Format prompt with context
+    # Get enterprise context prompt
+    enterprise_context_prompt = state.get("enterprise_context_prompt")
+
+    # Format prompt with context (without constraints - we'll prepend them)
     prompt = format_prompt(
         template=LEGAL_REGULATORY_PROMPT,
         product_idea=state["product_idea"],
@@ -171,7 +174,14 @@ async def run_legal_regulatory_agent(state: DiscoveryState) -> DiscoveryState:
         technical_architecture=tech_arch_json,
         revision_context=revision_feedback,
         iteration=state.get("iteration", 1),
-        upstream_constraints=upstream_constraints,
+        upstream_constraints="",  # Don't include here - prepend at top instead
+    )
+
+    # Prepend constraints at the TOP of the prompt for maximum visibility
+    prompt = prepend_constraints_to_prompt(
+        prompt=prompt,
+        constraints_prompt=upstream_constraints,
+        enterprise_context_prompt=enterprise_context_prompt,
     )
 
     # Call LLM with Google Search grounding for current regulations and compliance requirements

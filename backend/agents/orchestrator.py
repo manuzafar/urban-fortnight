@@ -1147,6 +1147,9 @@ async def run_discovery_workflow(
     additional_context: str | None = None,
     event_emitter: Optional["SessionEventEmitter"] = None,
     use_v3_facilitator: bool = True,
+    enterprise_context_ids: list[str] | None = None,
+    enterprise_context: dict | None = None,
+    enterprise_context_prompt: str | None = None,
 ) -> DiscoveryState:
     """
     Execute the complete product discovery workflow.
@@ -1163,6 +1166,9 @@ async def run_discovery_workflow(
         additional_context: Any additional context.
         event_emitter: Optional SSE event emitter for real-time streaming.
         use_v3_facilitator: If True, use the v3.0 7-phase facilitator pipeline.
+        enterprise_context_ids: Optional list of enterprise context IDs.
+        enterprise_context: Optional merged enterprise context dict.
+        enterprise_context_prompt: Optional formatted prompt for enterprise context.
 
     Returns:
         DiscoveryState: Final state with complete inception pack.
@@ -1181,6 +1187,7 @@ async def run_discovery_workflow(
         target_market=target_market,
         has_emitter=event_emitter is not None,
         use_v3_facilitator=use_v3_facilitator,
+        has_enterprise_context=enterprise_context is not None,
     )
 
     # Configure Gemini API
@@ -1194,6 +1201,9 @@ async def run_discovery_workflow(
         target_market=target_market,
         constraints=constraints,
         additional_context=additional_context,
+        enterprise_context_ids=enterprise_context_ids,
+        enterprise_context=enterprise_context,
+        enterprise_context_prompt=enterprise_context_prompt,
     )
 
     try:

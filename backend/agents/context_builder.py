@@ -691,3 +691,209 @@ def _format_value(key: str, value: Any) -> str:
         return json.dumps(value, indent=2, default=str)
 
     return str(value)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ENTERPRISE CONTEXT PROMPT BUILDING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+def build_enterprise_context_prompt(
+    enterprise_context: dict[str, Any],
+    max_chars: int = 4000,
+) -> str:
+    """
+    Format enterprise context as soft guidance for agents.
+
+    This creates a structured prompt section that agents can understand
+    and follow, while making clear these are organizational guidelines
+    that can be deviated from with justification.
+
+    Args:
+        enterprise_context: Merged enterprise context dict
+        max_chars: Maximum characters for the prompt
+
+    Returns:
+        Formatted string ready for prompt injection
+    """
+    if not enterprise_context:
+        return ""
+
+    lines = [
+        "╔══════════════════════════════════════════════════════════════════════════════╗",
+        "║  ORGANIZATIONAL CONTEXT (Guidelines from Enterprise Context)                 ║",
+        "║  Align with these unless there's a compelling reason to deviate.             ║",
+        "╚══════════════════════════════════════════════════════════════════════════════╝",
+        "",
+    ]
+
+    # Add company info
+    company = enterprise_context.get("company")
+    if company:
+        lines.append(f"**Company:** {company}")
+        industry = enterprise_context.get("industry")
+        if industry:
+            lines.append(f"**Industry:** {industry}")
+        lines.append("")
+
+    # Regulatory section (non-negotiable)
+    regulatory = enterprise_context.get("regulatory", {})
+    if regulatory:
+        has_content = False
+        reg_lines = ["### Compliance Requirements (Non-negotiable)"]
+
+        if regulatory.get("frameworks"):
+            reg_lines.append(f"- **Frameworks:** {', '.join(regulatory['frameworks'])}")
+            has_content = True
+        if regulatory.get("jurisdictions"):
+            reg_lines.append(f"- **Jurisdictions:** {', '.join(regulatory['jurisdictions'])}")
+            has_content = True
+        if regulatory.get("data_residency"):
+            reg_lines.append(f"- **Data Residency:** {regulatory['data_residency']}")
+            has_content = True
+
+        if has_content:
+            lines.extend(reg_lines)
+            lines.append("")
+
+    # Strategy section
+    strategy = enterprise_context.get("strategy", {})
+    if strategy:
+        has_content = False
+        strat_lines = ["### Strategic Alignment"]
+
+        if strategy.get("strategic_priorities"):
+            strat_lines.append(f"- **Priorities:** {', '.join(strategy['strategic_priorities'])}")
+            has_content = True
+        if strategy.get("strategic_constraints"):
+            for sc in strategy["strategic_constraints"]:
+                strat_lines.append(f"- **Constraint:** {sc}")
+            has_content = True
+        if strategy.get("innovation_stance"):
+            strat_lines.append(f"- **Innovation Stance:** {strategy['innovation_stance']}")
+            has_content = True
+        if strategy.get("investment_thesis"):
+            strat_lines.append(f"- **Investment Thesis:** {strategy['investment_thesis']}")
+            has_content = True
+
+        if has_content:
+            lines.extend(strat_lines)
+            lines.append("")
+
+    # Technology section
+    tech = enterprise_context.get("technology", {})
+    if tech:
+        has_content = False
+        tech_lines = ["### Technology Standards"]
+
+        if tech.get("cloud"):
+            tech_lines.append(f"- **Cloud Platform:** {tech['cloud']}")
+            has_content = True
+        if tech.get("primary_languages"):
+            tech_lines.append(f"- **Languages:** {', '.join(tech['primary_languages'])}")
+            has_content = True
+        if tech.get("databases"):
+            tech_lines.append(f"- **Databases:** {', '.join(tech['databases'])}")
+            has_content = True
+        if tech.get("infrastructure"):
+            tech_lines.append(f"- **Infrastructure:** {', '.join(tech['infrastructure'])}")
+            has_content = True
+        if tech.get("deprecated_technologies"):
+            tech_lines.append(f"- **Deprecated (avoid):** {', '.join(tech['deprecated_technologies'])}")
+            has_content = True
+        if tech.get("technical_constraints"):
+            for tc in tech["technical_constraints"]:
+                tech_lines.append(f"- **Tech Constraint:** {tc}")
+            has_content = True
+
+        if has_content:
+            lines.extend(tech_lines)
+            lines.append("")
+
+    # Risk management section
+    risk = enterprise_context.get("risk_management", {})
+    if risk:
+        has_content = False
+        risk_lines = ["### Risk Management"]
+
+        if risk.get("risk_appetite"):
+            risk_lines.append(f"- **Risk Appetite:** {risk['risk_appetite']}")
+            has_content = True
+        if risk.get("risk_categories"):
+            risk_lines.append(f"- **Key Risk Categories:** {', '.join(risk['risk_categories'])}")
+            has_content = True
+
+        if has_content:
+            lines.extend(risk_lines)
+            lines.append("")
+
+    # Organization section
+    org = enterprise_context.get("organization", {})
+    if org:
+        has_content = False
+        org_lines = ["### Organizational Context"]
+
+        if org.get("delivery_model"):
+            org_lines.append(f"- **Delivery Model:** {org['delivery_model']}")
+            has_content = True
+        if org.get("budget_cycle"):
+            org_lines.append(f"- **Budget Cycle:** {org['budget_cycle']}")
+            has_content = True
+        if org.get("approval_process"):
+            org_lines.append(f"- **Approval Process:** {org['approval_process']}")
+            has_content = True
+
+        if has_content:
+            lines.extend(org_lines)
+            lines.append("")
+
+    # Add compliance footer
+    lines.extend([
+        "────────────────────────────────────────────────────────────────────────────────",
+        "",
+        "**COMPLIANCE REQUIREMENTS:**",
+        "1. 🔴 Regulatory requirements (frameworks, jurisdictions, data residency) are NON-NEGOTIABLE",
+        "2. 🟡 Strategic constraints should be followed unless you have strong evidence to deviate",
+        "3. 🟢 Technology standards are preferred but can be justified if needed",
+        "",
+        "**In your output, acknowledge compliance:**",
+        "```",
+        "## Organizational Alignment",
+        "- ✓ [requirement]: Compliant - [how addressed]",
+        "- ⚠ [requirement]: Deviation - [justification]",
+        "```",
+        "────────────────────────────────────────────────────────────────────────────────",
+    ])
+
+    result = "\n".join(lines)
+    if len(result) > max_chars:
+        return result[:max_chars - 30] + "\n\n... [truncated]"
+    return result
+
+
+def get_enterprise_context_for_agent(
+    state: dict[str, Any],
+    agent_name: str,
+) -> str:
+    """
+    Get the enterprise context prompt for a specific agent.
+
+    Uses pre-formatted prompt if available in state, otherwise builds one.
+
+    Args:
+        state: Current workflow state
+        agent_name: Name of the agent requesting context
+
+    Returns:
+        Formatted enterprise context prompt
+    """
+    # Use pre-formatted prompt if available
+    if state.get("enterprise_context_prompt"):
+        return state["enterprise_context_prompt"]
+
+    # Otherwise build from enterprise_context
+    enterprise_context = state.get("enterprise_context", {})
+    if not enterprise_context:
+        return ""
+
+    return build_enterprise_context_prompt(enterprise_context)

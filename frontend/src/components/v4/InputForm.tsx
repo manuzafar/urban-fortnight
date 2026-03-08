@@ -4,10 +4,12 @@
  */
 
 import { useState, type FormEvent, type ChangeEvent } from 'react';
-import { Zap, Compass, Microscope, Clock, Shield } from 'lucide-react';
+import { Zap, Compass, Microscope, Clock, Shield, Building2, Plus } from 'lucide-react';
 import { ChipInput, ChipSelect } from './ChipInput';
+import { ContextLibrary } from './ContextLibrary';
 import '../../styles/theme-v4.css';
 import type { DiscoveryRequest } from '../../types/api';
+import type { ContextSelectionState } from '../../types/enterpriseContext';
 
 type DiscoveryMode = 'quick' | 'guided' | 'deep';
 
@@ -90,6 +92,8 @@ const MODE_OPTIONS: Array<{
 
 export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4Props) {
   const [selectedMode, setSelectedMode] = useState<DiscoveryMode>('quick');
+  const [contextLibraryOpen, setContextLibraryOpen] = useState(false);
+  const [selectedContexts, setSelectedContexts] = useState<ContextSelectionState>({});
   const [formData, setFormData] = useState({
     productName: '',
     productDescription: '',
@@ -135,12 +139,20 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
       .filter(Boolean)
       .join('. ');
 
+    // Collect enterprise context IDs
+    const enterpriseContextIds = [
+      selectedContexts.company?.id,
+      selectedContexts.division?.id,
+      selectedContexts.team?.id,
+    ].filter((id): id is string => Boolean(id));
+
     const request: DiscoveryRequest = {
       product_idea: `${formData.productName}\n\n${formData.productDescription}`,
       target_market: formData.targetCustomer || `${formData.marketType} - ${formData.geography}`,
       constraints: constraintsList,
       industry: formData.industry,
       additional_context: additionalContext || undefined,
+      enterprise_context_ids: enterpriseContextIds.length > 0 ? enterpriseContextIds : undefined,
     };
 
     onSubmit(request, selectedMode);
@@ -312,6 +324,92 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
                   );
                 })}
               </div>
+            </FormSection>
+
+            <div className="v4-divider" />
+
+            {/* Enterprise Context Section */}
+            <FormSection label="Optional" title="Enterprise Context">
+              <p style={{ fontSize: '14px', color: 'var(--v4-text-secondary)', marginBottom: '16px' }}>
+                Attach organizational guidelines to inform AI agents about your company's standards, regulations, and technology stack.
+              </p>
+              {Object.keys(selectedContexts).length > 0 ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {selectedContexts.company && (
+                    <ContextChip
+                      type="Company"
+                      name={selectedContexts.company.name}
+                      onRemove={() => {
+                        const next = { ...selectedContexts };
+                        delete next.company;
+                        setSelectedContexts(next);
+                      }}
+                    />
+                  )}
+                  {selectedContexts.division && (
+                    <ContextChip
+                      type="Division"
+                      name={selectedContexts.division.name}
+                      onRemove={() => {
+                        const next = { ...selectedContexts };
+                        delete next.division;
+                        setSelectedContexts(next);
+                      }}
+                    />
+                  )}
+                  {selectedContexts.team && (
+                    <ContextChip
+                      type="Team"
+                      name={selectedContexts.team.name}
+                      onRemove={() => {
+                        const next = { ...selectedContexts };
+                        delete next.team;
+                        setSelectedContexts(next);
+                      }}
+                    />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setContextLibraryOpen(true)}
+                    style={{
+                      padding: '8px 16px',
+                      border: '1px dashed var(--v4-border)',
+                      borderRadius: '8px',
+                      background: 'transparent',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      color: 'var(--v4-text-muted)',
+                      fontSize: '13px',
+                    }}
+                  >
+                    <Plus size={14} /> Add more contexts
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setContextLibraryOpen(true)}
+                  style={{
+                    width: '100%',
+                    padding: '20px',
+                    border: '2px dashed var(--v4-border)',
+                    borderRadius: '12px',
+                    background: 'var(--v4-background)',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '12px',
+                  }}
+                >
+                  <Building2 size={20} style={{ color: 'var(--v4-text-muted)' }} />
+                  <span style={{ fontSize: '14px', color: 'var(--v4-text-secondary)' }}>
+                    Add enterprise context
+                  </span>
+                </button>
+              )}
             </FormSection>
 
             <div className="v4-divider" />
@@ -543,6 +641,14 @@ export function InputFormV4({ onSubmit, onBack, isLoading = false }: InputFormV4
         </div>
       </footer>
 
+      {/* Context Library Modal */}
+      <ContextLibrary
+        isOpen={contextLibraryOpen}
+        onClose={() => setContextLibraryOpen(false)}
+        selectedContexts={selectedContexts}
+        onSelectionChange={setSelectedContexts}
+      />
+
       {/* Responsive styles */}
       <style>{`
         @media (max-width: 900px) {
@@ -624,6 +730,54 @@ function ProgressStep({ label, status }: { label: string; status: 'done' | 'acti
 
 function ProgressLine() {
   return <div style={{ width: '24px', height: '1px', background: 'var(--v4-border)' }} />;
+}
+
+function ContextChip({ type, name, onRemove }: { type: string; name: string; onRemove: () => void }) {
+  const colorMap: Record<string, string> = {
+    Company: 'var(--v4-accent)',
+    Division: 'var(--v4-info)',
+    Team: 'var(--v4-success)',
+  };
+  const color = colorMap[type] || 'var(--v4-text-muted)';
+
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '10px 14px',
+        border: `1px solid ${color}`,
+        borderRadius: '8px',
+        background: 'var(--v4-surface)',
+      }}
+    >
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <Building2 size={16} style={{ color }} />
+        <div>
+          <span style={{ fontSize: '11px', fontWeight: 600, color, textTransform: 'uppercase' }}>
+            {type}
+          </span>
+          <span style={{ fontSize: '14px', marginLeft: '8px', color: 'var(--v4-text)' }}>
+            {name}
+          </span>
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={onRemove}
+        style={{
+          background: 'none',
+          border: 'none',
+          cursor: 'pointer',
+          padding: '4px',
+          color: 'var(--v4-text-muted)',
+        }}
+      >
+        &times;
+      </button>
+    </div>
+  );
 }
 
 export default InputFormV4;

@@ -51,6 +51,7 @@ from utils.sse import (
     StreamEventType,
 )
 from api.discovery_v4_routes import router as discovery_v4_router
+from api.enterprise_context_routes import router as enterprise_context_router
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # INITIALIZATION
@@ -111,6 +112,9 @@ app.add_middleware(
 # Include Discovery V4 routes
 app.include_router(discovery_v4_router)
 
+# Include Enterprise Context routes
+app.include_router(enterprise_context_router)
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # EXCEPTION HANDLERS
@@ -148,6 +152,9 @@ async def run_discovery_task(
     target_market: str | None,
     constraints: list[str] | None,
     additional_context: str | None,
+    enterprise_context_ids: list[str] | None = None,
+    enterprise_context: dict[str, Any] | None = None,
+    enterprise_context_prompt: str | None = None,
 ) -> None:
     """
     Background task to run the discovery workflow.
@@ -163,6 +170,9 @@ async def run_discovery_task(
         target_market: Optional target market.
         constraints: Optional constraints.
         additional_context: Optional additional context.
+        enterprise_context_ids: Optional list of enterprise context IDs.
+        enterprise_context: Optional merged enterprise context dict.
+        enterprise_context_prompt: Optional formatted prompt for enterprise context.
     """
     logger.info("discovery_task_started", session_id=session_id, user_id=user_id)
 
@@ -190,6 +200,9 @@ async def run_discovery_task(
             constraints=constraints,
             additional_context=additional_context,
             event_emitter=emitter,
+            enterprise_context_ids=enterprise_context_ids,
+            enterprise_context=enterprise_context,
+            enterprise_context_prompt=enterprise_context_prompt,
         )
 
         # Build the inception pack
@@ -355,6 +368,56 @@ async def start_discovery(
         sanitize_input(request.additional_context) if request.additional_context else None
     )
 
+    # Fetch and merge enterprise contexts if provided
+    enterprise_context = None
+    enterprise_context_prompt = None
+    enterprise_context_ids = request.enterprise_context_ids
+
+    if enterprise_context_ids:
+        try:
+            from services.enterprise_context_service import enterprise_context_service
+            from utils.supabase_client import get_supabase_client
+
+            client = get_supabase_client()
+            contexts_by_type: dict[str, dict[str, Any]] = {}
+
+            for ctx_id in enterprise_context_ids:
+                result = (
+                    client.table("enterprise_contexts")
+                    .select("context_type, parsed_content")
+                    .eq("id", ctx_id)
+                    .maybe_single()
+                    .execute()
+                )
+                if result.data:
+                    ctx_type = result.data["context_type"]
+                    contexts_by_type[ctx_type] = result.data["parsed_content"]
+
+            # Merge contexts
+            enterprise_context = enterprise_context_service.merge_hierarchy(
+                company=contexts_by_type.get("company"),
+                division=contexts_by_type.get("division"),
+                team=contexts_by_type.get("team"),
+            )
+
+            # Generate prompt
+            from agents.context_builder import build_enterprise_context_prompt
+            enterprise_context_prompt = build_enterprise_context_prompt(enterprise_context)
+
+            logger.info(
+                "enterprise_context_loaded",
+                session_id=session_id,
+                context_ids=enterprise_context_ids,
+                sources=enterprise_context.get("_sources", []),
+            )
+        except Exception as e:
+            logger.warning(
+                "enterprise_context_load_failed",
+                session_id=session_id,
+                error=str(e),
+            )
+            # Continue without enterprise context
+
     # Create session in database
     created_at = datetime.utcnow()
     session_store.create(
@@ -367,6 +430,7 @@ async def start_discovery(
             "target_market": target_market,
             "constraints": constraints,
             "additional_context": additional_context,
+            "enterprise_context_ids": enterprise_context_ids,
             "current_agent": None,
             "iteration": 1,
             "progress_percentage": 0,
@@ -380,6 +444,7 @@ async def start_discovery(
         session_id=session_id,
         product_idea=product_idea[:100],
         industry=industry,
+        has_enterprise_context=enterprise_context is not None,
     )
 
     # Launch background task
@@ -392,6 +457,9 @@ async def start_discovery(
         target_market=target_market,
         constraints=constraints,
         additional_context=additional_context,
+        enterprise_context_ids=enterprise_context_ids,
+        enterprise_context=enterprise_context,
+        enterprise_context_prompt=enterprise_context_prompt,
     )
 
     return DiscoveryResponse(

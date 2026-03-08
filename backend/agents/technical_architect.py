@@ -11,7 +11,7 @@ from datetime import datetime
 import structlog
 from pydantic import ValidationError
 
-from agents.base_agent import call_llm, extract_feedback_for_agent
+from agents.base_agent import call_llm, extract_feedback_for_agent, prepend_constraints_to_prompt
 from agents.business_strategy import get_business_case_summary
 from agents.claim_extractor import extract_and_store_claims
 from agents.product_requirements import get_product_requirements_summary
@@ -75,7 +75,10 @@ async def run_technical_architect_agent(state: DiscoveryState) -> DiscoveryState
     # Get upstream constraints from constraint broadcaster
     upstream_constraints = state.get("constraints_prompt") or state.get("_injected_constraints")
 
-    # Format the prompt with all context
+    # Get enterprise context prompt
+    enterprise_context_prompt = state.get("enterprise_context_prompt")
+
+    # Format the prompt with all context (without constraints - we'll prepend them)
     prompt = format_prompt(
         template=TECHNICAL_ARCHITECT_PROMPT,
         product_idea=state["product_idea"],
@@ -87,7 +90,14 @@ async def run_technical_architect_agent(state: DiscoveryState) -> DiscoveryState
         product_requirements=product_requirements_json,
         revision_context=revision_feedback,
         iteration=state.get("iteration", 1),
-        upstream_constraints=upstream_constraints,
+        upstream_constraints="",  # Don't include here - prepend at top instead
+    )
+
+    # Prepend constraints at the TOP of the prompt for maximum visibility
+    prompt = prepend_constraints_to_prompt(
+        prompt=prompt,
+        constraints_prompt=upstream_constraints,
+        enterprise_context_prompt=enterprise_context_prompt,
     )
 
     # Call the LLM

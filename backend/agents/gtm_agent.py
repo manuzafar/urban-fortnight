@@ -11,7 +11,7 @@ from datetime import datetime
 import structlog
 from pydantic import ValidationError
 
-from agents.base_agent import call_llm_with_grounding
+from agents.base_agent import call_llm_with_grounding, prepend_constraints_to_prompt
 from agents.claim_extractor import extract_and_store_claims
 from agents.context_builder import build_context_summary
 from agents.state import DiscoveryState
@@ -190,7 +190,20 @@ Respond with ONLY valid JSON:
     "if_incumbent_enters": "string - what we do if major player adds this capability",
     "moat_deepening_tactics": ["string - actions that make us harder to displace"]
   }},
-  "total_gtm_budget_estimate": "string - rough budget range for first 12 months"
+  "total_gtm_budget_estimate": "string - rough budget range for first 12 months",
+
+  "constraint_compliance": {{
+    "items": [
+      {{
+        "constraint": "string - the specific constraint from organizational context",
+        "status": "compliant|deviated|not_applicable",
+        "explanation": "string - how addressed or why deviation necessary",
+        "urgency": "required|preferred|guidance"
+      }}
+    ],
+    "overall_compliance": "fully_compliant|partial|has_deviations",
+    "deviation_justifications": ["string - justification for any required/preferred deviations"]
+  }}
 }}
 
 ## OUTPUT CHECKLIST (MANDATORY)
@@ -209,6 +222,10 @@ Before finalizing your response, verify ALL of the following:
 [ ] TOTAL GTM BUDGET: Specific budget estimate (not "TBD" or placeholder)
 [ ] GTM RISKS: 2+ go-to-market risks with mitigation strategies
 [ ] MARKET ENTRY STRATEGY: beachhead_market and expansion_path defined
+[ ] CONSTRAINT COMPLIANCE: If organizational constraints provided:
+    - constraint_compliance.items: List all constraints with status
+    - overall_compliance: Assess overall compliance
+    - deviation_justifications: Justify any deviations from required constraints
 
 CRITICAL: Be specific with company names, dollar amounts, and timelines. No generic advice.
 """
@@ -244,12 +261,23 @@ async def run_gtm_agent(state: DiscoveryState) -> DiscoveryState:
     business_case_summary = build_context_summary(state, "business_case", 3000)
     competitive_landscape_summary = build_context_summary(state, "competitive_analysis", 2000)
 
+    # Get constraints from state
+    upstream_constraints = state.get("constraints_prompt") or state.get("_injected_constraints")
+    enterprise_context_prompt = state.get("enterprise_context_prompt")
+
     prompt = GTM_STRATEGY_PROMPT.format(
         product_idea=state["product_idea"],
         industry=state.get("industry", "Not specified"),
         personas_summary=personas_summary,
         business_case_summary=business_case_summary,
         competitive_landscape_summary=competitive_landscape_summary,
+    )
+
+    # Prepend constraints at the TOP of the prompt for maximum visibility
+    prompt = prepend_constraints_to_prompt(
+        prompt=prompt,
+        constraints_prompt=upstream_constraints,
+        enterprise_context_prompt=enterprise_context_prompt,
     )
 
     result = await call_llm_with_grounding(prompt, AGENT_NAME)

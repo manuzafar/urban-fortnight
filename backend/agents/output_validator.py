@@ -107,6 +107,46 @@ CUSTOMER_RESEARCH_RULES = {
 # BUSINESS STRATEGY AGENT RULES
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _check_evidence_tier_quality(unit_econ: dict, field: str) -> bool:
+    """Check that CAC/LTV has evidence tier E2 or E3 (not E4/E5)."""
+    if not unit_econ:
+        return False
+    field_data = unit_econ.get(field, {})
+    if not isinstance(field_data, dict):
+        return True  # Backward compatibility
+    evidence_tier = field_data.get("evidence_tier", "E5")
+    # Accept E1, E2, E3 as good evidence
+    return evidence_tier in ("E1", "E2", "E3")
+
+
+def _check_cac_has_derivation(output: dict) -> bool:
+    """Check that CAC has a non-placeholder derivation citing a source."""
+    cac = _safe_get(output, "unit_economics", "cac", default={})
+    if not isinstance(cac, dict):
+        return True  # Backward compatibility
+    derivation = cac.get("derivation", "")
+    if not derivation or len(derivation) < 30:
+        return False
+    # Check for benchmark citation
+    benchmark_keywords = ["benchmark", "based on", "according to", "per ", "source:", "report"]
+    return any(kw in derivation.lower() for kw in benchmark_keywords)
+
+
+def _check_ltv_has_churn_source(output: dict) -> bool:
+    """Check that LTV derivation cites a source for churn rate."""
+    ltv = _safe_get(output, "unit_economics", "ltv", default={})
+    if not isinstance(ltv, dict):
+        return True  # Backward compatibility
+    churn_assumption = ltv.get("monthly_churn_assumption", "")
+    derivation = ltv.get("derivation", "")
+    # Check if churn is cited with evidence
+    if not churn_assumption and not derivation:
+        return False
+    combined = f"{churn_assumption} {derivation}".lower()
+    source_keywords = ["benchmark", "based on", "industry", "report", "study", "source"]
+    return any(kw in combined for kw in source_keywords)
+
+
 BUSINESS_STRATEGY_RULES = {
     "lean_canvas_problem": lambda o: _check_length(
         _safe_get(o, "lean_canvas", "problem"), 1
@@ -128,6 +168,23 @@ BUSINESS_STRATEGY_RULES = {
     ),
     "unit_economics_cac": lambda o: bool(_safe_get(o, "unit_economics", "cac")),
     "unit_economics_ltv": lambda o: bool(_safe_get(o, "unit_economics", "ltv")),
+    # Evidence quality rules (warnings, not hard failures)
+    "cac_evidence_quality": lambda o: _check_evidence_tier_quality(
+        _safe_get(o, "unit_economics", default={}), "cac"
+    ),
+    "ltv_evidence_quality": lambda o: _check_evidence_tier_quality(
+        _safe_get(o, "unit_economics", default={}), "ltv"
+    ),
+    "cac_derivation_cited": lambda o: _check_cac_has_derivation(o),
+    "ltv_churn_cited": lambda o: _check_ltv_has_churn_source(o),
+}
+
+# Rules that are warnings (not hard failures)
+BUSINESS_STRATEGY_WARNINGS = {
+    "cac_evidence_quality",
+    "ltv_evidence_quality",
+    "cac_derivation_cited",
+    "ltv_churn_cited",
 }
 
 
@@ -686,6 +743,12 @@ AGENT_VALIDATION_RULES: dict[str, dict[str, Callable[[dict], bool]]] = {
     "Prototype Generator": PROTOTYPE_RULES,
 }
 
+# Rules that generate warnings instead of errors (quality issues, not hard failures)
+AGENT_WARNING_RULES: dict[str, set[str]] = {
+    "business_strategy": BUSINESS_STRATEGY_WARNINGS,
+    "Business Strategy Agent": BUSINESS_STRATEGY_WARNINGS,
+}
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # VALIDATION FUNCTIONS
@@ -719,10 +782,17 @@ def validate_agent_output(
     errors = []
     warnings = []
 
+    # Get warning rule names for this agent
+    warning_rule_names = AGENT_WARNING_RULES.get(agent_name, set())
+
     for rule_name, check_fn in rules.items():
         try:
             if not check_fn(output):
-                errors.append(f"FAILED: {rule_name}")
+                # Check if this rule is a warning or error
+                if rule_name in warning_rule_names:
+                    warnings.append(f"QUALITY WARNING: {rule_name}")
+                else:
+                    errors.append(f"FAILED: {rule_name}")
         except Exception as e:
             warnings.append(f"Could not check {rule_name}: {str(e)}")
 
@@ -788,6 +858,11 @@ def _generate_fix_instructions(agent_name: str, errors: list[str]) -> str:
         "screens_have_react_code": "Add react_code (80+ chars) to 70%+ of screens",
         "react_code_valid": "React code must have function/const, JSX, and useState",
         "no_placeholders": "Remove placeholder text (Lorem ipsum, TODO, TBD, Item 1)",
+        # Evidence quality guidance (for warnings)
+        "cac_evidence_quality": "QUALITY: CAC must have evidence_tier E2 or E3, not E4/E5. Cite a benchmark.",
+        "ltv_evidence_quality": "QUALITY: LTV must have evidence_tier E2 or E3, not E4/E5. Cite churn benchmark.",
+        "cac_derivation_cited": "QUALITY: CAC derivation must cite a specific benchmark source (e.g., 'Based on Clearbit 2024...')",
+        "ltv_churn_cited": "QUALITY: LTV must cite source for churn rate assumption (e.g., 'per Recurly SaaS benchmark')",
     }
 
     for error in errors:

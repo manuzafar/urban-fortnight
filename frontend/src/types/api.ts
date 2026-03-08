@@ -42,6 +42,7 @@ export interface DiscoveryRequest {
   target_market?: string;
   constraints?: string[];
   additional_context?: string;
+  enterprise_context_ids?: string[];
 }
 
 export interface DiscoveryResponse {

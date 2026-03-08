@@ -68,6 +68,51 @@ class RiskLevel(str, Enum):
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# CONSTRAINT COMPLIANCE TRACKING
+# ═══════════════════════════════════════════════════════════════════════════════
+
+
+class ConstraintComplianceItem(BaseModel):
+    """Individual constraint compliance status."""
+
+    constraint: str = Field(..., description="The constraint requirement")
+    status: str = Field(
+        ...,
+        description="Compliance status: 'compliant', 'deviated', or 'not_applicable'"
+    )
+    explanation: str = Field(
+        ...,
+        description="How the constraint was addressed or why deviation was necessary"
+    )
+    urgency: str = Field(
+        default="preferred",
+        description="Constraint urgency: 'required', 'preferred', or 'guidance'"
+    )
+
+
+class ConstraintCompliance(BaseModel):
+    """
+    Tracks how agent output addresses organizational constraints.
+
+    This provides explicit acknowledgment of enterprise context constraints,
+    ensuring agents consciously consider and document their compliance.
+    """
+
+    items: list[ConstraintComplianceItem] = Field(
+        default_factory=list,
+        description="List of constraint compliance items"
+    )
+    overall_compliance: str = Field(
+        default="fully_compliant",
+        description="Overall compliance: 'fully_compliant', 'partial', or 'has_deviations'"
+    )
+    deviation_justifications: list[str] = Field(
+        default_factory=list,
+        description="Justifications for any deviations from required constraints"
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
 # API REQUEST/RESPONSE MODELS
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -114,6 +159,12 @@ class DiscoveryRequest(BaseModel):
         default=None,
         max_length=1000,
         description="Additional context or requirements",
+    )
+
+    enterprise_context_ids: Optional[list[str]] = Field(
+        default=None,
+        max_length=3,
+        description="Enterprise context IDs to attach (company, division, team)",
     )
 
 
@@ -419,6 +470,11 @@ class CustomerResearch(BaseModel):
         default=None,
         description="Structured competitive positioning data for quadrant visualization",
     )
+    # Constraint compliance tracking
+    constraint_compliance: Optional[ConstraintCompliance] = Field(
+        default=None,
+        description="How this output addresses enterprise context constraints",
+    )
 
 
 # Legacy models for backward compatibility
@@ -548,6 +604,11 @@ class BusinessCase(BaseModel):
     lean_canvas_visual: Optional[dict[str, Any]] = Field(
         default=None,
         description="Structured lean canvas data for visual rendering",
+    )
+    # Constraint compliance tracking
+    constraint_compliance: Optional[ConstraintCompliance] = Field(
+        default=None,
+        description="How this output addresses enterprise context constraints",
     )
 
 
@@ -825,6 +886,11 @@ class TechnicalArchitecture(BaseModel):
     infrastructure_requirements: list[str] = Field(..., min_length=1, description="Infrastructure needs")
     development_approach: str = Field(..., description="Development methodology")
     technical_risks: list[dict[str, str]] = Field(..., description="Risk/mitigation pairs")
+    # Constraint compliance tracking
+    constraint_compliance: Optional[ConstraintCompliance] = Field(
+        default=None,
+        description="How this output addresses enterprise context constraints",
+    )
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -987,6 +1053,11 @@ class LegalRegulatoryReview(BaseModel):
         default_factory=OverallRiskAssessment, description="Overall risk assessment"
     )
     next_steps: list[str] = Field(default_factory=list, description="Recommended next steps")
+    # Constraint compliance tracking
+    constraint_compliance: Optional[ConstraintCompliance] = Field(
+        default=None,
+        description="How this output addresses enterprise context constraints",
+    )
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -1128,6 +1199,11 @@ class GoToMarket(BaseModel):
     )
     total_gtm_budget_estimate: Optional[str] = Field(
         default=None, description="Estimated total GTM budget for first 12 months"
+    )
+    # Constraint compliance tracking
+    constraint_compliance: Optional[ConstraintCompliance] = Field(
+        default=None,
+        description="How this output addresses enterprise context constraints",
     )
 
 
