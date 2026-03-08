@@ -5,7 +5,7 @@
  * that provide organizational guidelines for AI agents.
  */
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Building2,
   Layers,
