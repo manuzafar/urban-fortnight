@@ -77,3 +77,4 @@ dmypy.json
 
 # Claude Code
 .claude/
+.gh_token

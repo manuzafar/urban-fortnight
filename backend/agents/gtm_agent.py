@@ -13,7 +13,7 @@ from pydantic import ValidationError
 
 from agents.base_agent import call_llm_with_grounding, prepend_constraints_to_prompt
 from agents.claim_extractor import extract_and_store_claims
-from agents.context_builder import build_context_summary
+from agents.context_builder import build_context_summary, get_enterprise_context_for_agent
 from agents.state import DiscoveryState
 from models.schemas import GoToMarket, SessionStatus
 
@@ -263,7 +263,8 @@ async def run_gtm_agent(state: DiscoveryState) -> DiscoveryState:
 
     # Get constraints from state
     upstream_constraints = state.get("constraints_prompt") or state.get("_injected_constraints")
-    enterprise_context_prompt = state.get("enterprise_context_prompt")
+    # Get enterprise context prompt (filtered for this agent's domain)
+    enterprise_context_prompt = get_enterprise_context_for_agent(state, AGENT_NAME)
 
     prompt = GTM_STRATEGY_PROMPT.format(
         product_idea=state["product_idea"],

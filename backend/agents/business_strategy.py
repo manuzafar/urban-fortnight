@@ -15,6 +15,7 @@ from pydantic import ValidationError
 
 from agents.base_agent import call_llm_with_grounding, extract_feedback_for_agent, prepend_constraints_to_prompt
 from agents.claim_extractor import extract_and_store_claims
+from agents.context_builder import get_enterprise_context_for_agent
 from agents.customer_research import get_customer_research_summary
 from agents.prompts import BUSINESS_STRATEGY_PROMPT, format_prompt
 from agents.state import DiscoveryState
@@ -76,8 +77,8 @@ async def run_business_strategy_agent(state: DiscoveryState) -> DiscoveryState:
     # Get upstream constraints from constraint broadcaster
     upstream_constraints = state.get("constraints_prompt") or state.get("_injected_constraints")
 
-    # Get enterprise context prompt
-    enterprise_context_prompt = state.get("enterprise_context_prompt")
+    # Get enterprise context prompt (filtered for this agent's domain)
+    enterprise_context_prompt = get_enterprise_context_for_agent(state, AGENT_NAME)
 
     # Format the prompt with all context (without constraints - we'll prepend them)
     prompt = format_prompt(

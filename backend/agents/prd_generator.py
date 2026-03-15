@@ -14,6 +14,7 @@ from typing import Any
 import structlog
 
 from agents.base_agent import call_llm, prepend_constraints_to_prompt
+from agents.context_builder import get_enterprise_context_for_agent
 from agents.prompts import PRD_GENERATOR_PROMPT
 from agents.state import DiscoveryState
 
@@ -74,7 +75,8 @@ Focus on the specific improvements requested by the critic.
 
     # Get constraints from state
     upstream_constraints = state.get("constraints_prompt") or state.get("_injected_constraints")
-    enterprise_context_prompt = state.get("enterprise_context_prompt")
+    # Get enterprise context prompt (filtered for this agent's domain)
+    enterprise_context_prompt = get_enterprise_context_for_agent(state, "PRD Generator")
 
     # Format the prompt
     prompt = PRD_GENERATOR_PROMPT.format(

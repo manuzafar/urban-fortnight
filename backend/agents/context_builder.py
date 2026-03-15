@@ -697,10 +697,63 @@ def _format_value(key: str, value: Any) -> str:
 # ENTERPRISE CONTEXT PROMPT BUILDING
 # ═══════════════════════════════════════════════════════════════════════════════
 
+# Agent-specific context section mapping
+# Each agent only receives the sections relevant to their domain
+AGENT_CONTEXT_SECTIONS: dict[str, set[str]] = {
+    # Technical agents need technology stack, compliance for architecture decisions
+    "Technical Architect": {"technology", "regulatory", "risk_management"},
+    "Technical Architect Agent": {"technology", "regulatory", "risk_management"},
+    "technical_architect": {"technology", "regulatory", "risk_management"},
+
+    # Business/strategy agents need strategy, org structure, risk appetite
+    "Business Strategy Agent": {"strategy", "organization", "risk_management"},
+    "business_strategy": {"strategy", "organization", "risk_management"},
+
+    # Financial agents need strategy (for investment thesis), org (budget), risk
+    "Financial Model Agent": {"strategy", "organization", "risk_management"},
+    "financial_model": {"strategy", "organization", "risk_management"},
+
+    # GTM needs strategy (priorities), organization (delivery model)
+    "Go-to-Market": {"strategy", "organization"},
+    "gtm": {"strategy", "organization"},
+
+    # Legal/Regulatory needs compliance frameworks, risk, org (approval processes)
+    "Legal/Regulatory Agent": {"regulatory", "risk_management", "organization"},
+    "Legal & Regulatory Review": {"regulatory", "risk_management", "organization"},
+    "legal_regulatory": {"regulatory", "risk_management", "organization"},
+
+    # Customer/Market research needs strategy (to understand priorities), org context
+    "Customer Research Agent": {"strategy", "organization"},
+    "Market Hypothesis Generator": {"strategy", "organization"},
+    "customer_research": {"strategy", "organization"},
+
+    # PRD agents need technology (for technical constraints), strategy
+    "PRD Generator": {"technology", "strategy", "regulatory"},
+    "prd_generator": {"technology", "strategy", "regulatory"},
+    "PRD Critic": {"technology", "strategy", "regulatory"},
+    "prd_critic": {"technology", "strategy", "regulatory"},
+
+    # Facilitator/orchestrator gets everything for oversight
+    "Facilitator": {"regulatory", "strategy", "technology", "risk_management", "organization"},
+    "facilitator": {"regulatory", "strategy", "technology", "risk_management", "organization"},
+
+    # Critique agent gets everything to validate compliance
+    "Critique Agent": {"regulatory", "strategy", "technology", "risk_management", "organization"},
+    "critique": {"regulatory", "strategy", "technology", "risk_management", "organization"},
+
+    # Executive summary needs strategy and org for decision context
+    "Executive Summary Agent": {"strategy", "organization", "risk_management"},
+    "executive_summary": {"strategy", "organization", "risk_management"},
+}
+
+# Default sections if agent not in mapping (conservative - include all)
+DEFAULT_CONTEXT_SECTIONS = {"regulatory", "strategy", "technology", "risk_management", "organization"}
+
 
 def build_enterprise_context_prompt(
     enterprise_context: dict[str, Any],
     max_chars: int = 4000,
+    sections: set[str] | None = None,
 ) -> str:
     """
     Format enterprise context as soft guidance for agents.
@@ -709,9 +762,17 @@ def build_enterprise_context_prompt(
     and follow, while making clear these are organizational guidelines
     that can be deviated from with justification.
 
+    Supports targeted section filtering so each agent only sees relevant context:
+    - Technical Architect: technology, regulatory, risk_management
+    - Business Strategy: strategy, organization, risk_management
+    - Legal/Regulatory: regulatory, risk_management, organization
+    - etc.
+
     Args:
         enterprise_context: Merged enterprise context dict
         max_chars: Maximum characters for the prompt
+        sections: Optional set of sections to include. If None, includes all.
+                  Valid sections: regulatory, strategy, technology, risk_management, organization
 
     Returns:
         Formatted string ready for prompt injection
@@ -719,15 +780,30 @@ def build_enterprise_context_prompt(
     if not enterprise_context:
         return ""
 
+    # Default to all sections if not specified
+    if sections is None:
+        sections = DEFAULT_CONTEXT_SECTIONS
+
+    # Determine which sections are being shown for the header
+    section_names = {
+        "regulatory": "Compliance",
+        "strategy": "Strategy",
+        "technology": "Technology",
+        "risk_management": "Risk",
+        "organization": "Organization",
+    }
+    active_sections = [section_names.get(s, s) for s in sections if s in section_names]
+
     lines = [
         "╔══════════════════════════════════════════════════════════════════════════════╗",
         "║  ORGANIZATIONAL CONTEXT (Guidelines from Enterprise Context)                 ║",
+        f"║  Sections: {', '.join(sorted(active_sections)):<58} ║",
         "║  Align with these unless there's a compelling reason to deviate.             ║",
         "╚══════════════════════════════════════════════════════════════════════════════╝",
         "",
     ]
 
-    # Add company info
+    # Add company info (always included)
     company = enterprise_context.get("company")
     if company:
         lines.append(f"**Company:** {company}")
@@ -736,8 +812,8 @@ def build_enterprise_context_prompt(
             lines.append(f"**Industry:** {industry}")
         lines.append("")
 
-    # Regulatory section (non-negotiable)
-    regulatory = enterprise_context.get("regulatory", {})
+    # Regulatory section (non-negotiable) - only if requested
+    regulatory = enterprise_context.get("regulatory", {}) if "regulatory" in sections else {}
     if regulatory:
         has_content = False
         reg_lines = ["### Compliance Requirements (Non-negotiable)"]
@@ -756,8 +832,8 @@ def build_enterprise_context_prompt(
             lines.extend(reg_lines)
             lines.append("")
 
-    # Strategy section
-    strategy = enterprise_context.get("strategy", {})
+    # Strategy section - only if requested
+    strategy = enterprise_context.get("strategy", {}) if "strategy" in sections else {}
     if strategy:
         has_content = False
         strat_lines = ["### Strategic Alignment"]
@@ -780,8 +856,8 @@ def build_enterprise_context_prompt(
             lines.extend(strat_lines)
             lines.append("")
 
-    # Technology section
-    tech = enterprise_context.get("technology", {})
+    # Technology section - only if requested
+    tech = enterprise_context.get("technology", {}) if "technology" in sections else {}
     if tech:
         has_content = False
         tech_lines = ["### Technology Standards"]
@@ -810,8 +886,8 @@ def build_enterprise_context_prompt(
             lines.extend(tech_lines)
             lines.append("")
 
-    # Risk management section
-    risk = enterprise_context.get("risk_management", {})
+    # Risk management section - only if requested
+    risk = enterprise_context.get("risk_management", {}) if "risk_management" in sections else {}
     if risk:
         has_content = False
         risk_lines = ["### Risk Management"]
@@ -827,8 +903,8 @@ def build_enterprise_context_prompt(
             lines.extend(risk_lines)
             lines.append("")
 
-    # Organization section
-    org = enterprise_context.get("organization", {})
+    # Organization section - only if requested
+    org = enterprise_context.get("organization", {}) if "organization" in sections else {}
     if org:
         has_content = False
         org_lines = ["### Organizational Context"]
@@ -878,22 +954,31 @@ def get_enterprise_context_for_agent(
     """
     Get the enterprise context prompt for a specific agent.
 
-    Uses pre-formatted prompt if available in state, otherwise builds one.
+    Uses agent-specific section filtering to only include relevant context.
+    For example:
+    - Technical Architect gets: technology, regulatory, risk_management
+    - Business Strategy gets: strategy, organization, risk_management
+    - GTM gets: strategy, organization
 
     Args:
         state: Current workflow state
         agent_name: Name of the agent requesting context
 
     Returns:
-        Formatted enterprise context prompt
+        Formatted enterprise context prompt with only relevant sections
     """
-    # Use pre-formatted prompt if available
-    if state.get("enterprise_context_prompt"):
-        return state["enterprise_context_prompt"]
-
-    # Otherwise build from enterprise_context
+    # Get enterprise context from state
     enterprise_context = state.get("enterprise_context", {})
     if not enterprise_context:
         return ""
 
-    return build_enterprise_context_prompt(enterprise_context)
+    # Look up agent-specific sections
+    sections = AGENT_CONTEXT_SECTIONS.get(agent_name, DEFAULT_CONTEXT_SECTIONS)
+
+    logger.debug(
+        "enterprise_context_filtering",
+        agent=agent_name,
+        sections=list(sections),
+    )
+
+    return build_enterprise_context_prompt(enterprise_context, sections=sections)
