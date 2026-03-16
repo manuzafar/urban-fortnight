@@ -41,6 +41,7 @@ Seedcraft is an AI-powered product discovery system that compresses weeks of dis
 | **V4 Staged Discovery** | 5-stage guided discovery with Problem Love, Customer Truth, Opportunity Mapping, Solution Design, and Validation Plan |
 | **Three Discovery Modes** | Quick (AI-only), Guided (AI + checkpoints), Deep (customer interviews + AI synthesis) |
 | **16+ Specialized Agents** | Organized into Discovery, Strategy, and Delivery swarms with parallel execution |
+| **Enterprise Context** | Upload organizational policies, tech standards, and compliance requirements as soft constraints for agents |
 | **Evidence Tiers (E1-E5)** | Explicit confidence tracking from customer quotes (E1) to AI hypotheses (E5) |
 | **Real-time SSE Streaming** | Live progress updates with 20+ event types for granular UI feedback |
 | **Cross-Run Learning** | High-quality outputs stored with pgvector embeddings for future retrieval |
@@ -143,7 +144,63 @@ Inspired by product thought leaders (Marty Cagan, Teresa Torres):
 - Uncomfortable insights and "what customers don't care about" sections challenge assumptions
 - Validation reminders embedded throughout outputs
 
-### Agent Quality Improvement System (NEW)
+### Enterprise Context Integration (NEW)
+
+Upload organizational context files (company, division, team) to guide AI agents with soft constraints representing your organization's policies, technology standards, and strategic priorities.
+
+| Feature | Description |
+|---------|-------------|
+| **Hierarchical Context** | Company → Division → Team inheritance with override support |
+| **Agent-Specific Filtering** | Each agent receives only relevant context sections (e.g., Technical Architect gets technology + regulatory, GTM gets strategy + organization) |
+| **Soft Constraints** | Agents are guided by constraints but can deviate with justification |
+| **Context Types** | Regulatory frameworks, strategic priorities, technology standards, risk appetite, organizational policies |
+| **File Upload** | Supports YAML and Markdown with YAML frontmatter |
+
+**Context Section Mapping:**
+
+| Agent | Context Sections Received |
+|-------|---------------------------|
+| Technical Architect | technology, regulatory, risk_management |
+| Business Strategy | strategy, organization, risk_management |
+| Legal/Regulatory | regulatory, risk_management, organization |
+| GTM Strategy | strategy, organization |
+| Customer Research | strategy, organization |
+| PRD Generator | technology, strategy, regulatory |
+| Facilitator/Critique | ALL sections (for oversight) |
+
+**Example Enterprise Context (YAML):**
+```yaml
+schema: company
+version: "1.0"
+company: "Acme Corporation"
+industry: "Financial Services"
+
+regulatory:
+  frameworks: ["GDPR", "SOC2 Type II", "PCI-DSS"]
+  data_residency: "EU"
+  jurisdictions: ["EU", "UK", "US"]
+
+strategy:
+  strategic_priorities: ["Digital transformation", "Customer experience"]
+  strategic_constraints: ["No acquisitions in 2024", "10% cost reduction target"]
+  innovation_stance: "fast follower"
+
+technology:
+  cloud: "Azure"
+  programming_languages: ["Python", "TypeScript", "Go"]
+  databases: ["PostgreSQL", "Redis"]
+  deprecated_technologies: ["Oracle", "jQuery"]
+
+risk_management:
+  risk_appetite: "moderate"
+  key_risk_categories: ["Operational", "Compliance", "Technology"]
+
+organization:
+  delivery_model: "agile"
+  budget_cycle: "quarterly"
+```
+
+### Agent Quality Improvement System
 A comprehensive system to improve output quality by 25-35% through better evidence tracking and consistency enforcement:
 
 | Component | Description |
@@ -208,6 +265,19 @@ Enhanced SSE events for granular progress tracking:
 +---------------------------------------------------------------+
 |                     Backend (FastAPI)                           |
 |  +----------------------------------------------------------+ |
+|  |                ENTERPRISE CONTEXT LAYER (NEW)             | |
+|  |  +----------------+  +----------------+  +-------------+  | |
+|  |  |    Company     |->|   Division     |->|    Team     |  | |
+|  |  |    Context     |  |    Context     |  |   Context   |  | |
+|  |  +----------------+  +----------------+  +-------------+  | |
+|  |          |                                                | |
+|  |          v  Agent-Specific Filtering                      | |
+|  |  Tech Arch: technology, regulatory, risk_management       | |
+|  |  Business:  strategy, organization, risk_management       | |
+|  |  Legal:     regulatory, risk_management, organization     | |
+|  +----------------------------------------------------------+ |
+|                              |                                 |
+|  +---------------------------v------------------------------+ |
 |  |                   FACILITATOR AGENT                       | |
 |  |         (Coordinates swarms, detects contradictions)      | |
 |  +---------------------------+------------------------------+ |
@@ -447,6 +517,21 @@ work offline and sync when connectivity is restored.
 | `GET` | `/api/discovery/session/{id}/export/pdf` | Export pack as PDF |
 | `GET` | `/api/discovery/session/{id}/export/docx` | Export pack as DOCX |
 
+### Enterprise Context Endpoints (NEW)
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/contexts` | Create context from content |
+| `POST` | `/api/contexts/upload` | Upload context file (YAML/MD) |
+| `GET` | `/api/contexts` | List user's contexts |
+| `GET` | `/api/contexts/{id}` | Get single context |
+| `GET` | `/api/contexts/{id}/preview` | Preview merged hierarchy |
+| `PUT` | `/api/contexts/{id}` | Update context |
+| `DELETE` | `/api/contexts/{id}` | Delete context |
+| `POST` | `/api/contexts/sessions/{id}/attach` | Attach contexts to session |
+| `GET` | `/api/contexts/sessions/{id}/contexts` | Get session's attached contexts |
+| `DELETE` | `/api/contexts/sessions/{id}/detach` | Detach contexts from session |
+
 ### V4 Discovery Endpoints
 
 | Method | Endpoint | Description |
@@ -573,7 +658,8 @@ seedcraft/
 │   │   ├── wireframe_agent.py        # UI wireframes
 │   │   ├── prototype_agent.py        # Interactive prototype
 │   │   ├── critique.py               # Quality scoring [Pro]
-│   │   ├── constraint_broadcaster.py # Constraint validation
+│   │   ├── constraint_broadcaster.py # Constraint validation + enterprise constraints
+│   │   ├── context_builder.py        # Agent-specific context filtering
 │   │   ├── output_validator.py       # 700+ validation rules
 │   │   │
 │   │   └── discovery_v4/             # V4 Staged Discovery
@@ -586,12 +672,17 @@ seedcraft/
 │   │           └── validation_plan.py
 │   │
 │   ├── api/
-│   │   └── discovery_v4_routes.py    # V4 REST endpoints
+│   │   ├── discovery_v4_routes.py    # V4 REST endpoints
+│   │   └── enterprise_context_routes.py # Enterprise context CRUD
+│   │
+│   ├── services/
+│   │   └── enterprise_context_service.py # Context parsing, merging, constraints
 │   │
 │   ├── models/
 │   │   ├── schemas.py                # 60+ Pydantic models
 │   │   ├── discovery_v4_schemas.py   # V4 stage schemas
-│   │   └── constraint_schemas.py     # Constraint validation
+│   │   ├── constraint_schemas.py     # Constraint validation
+│   │   └── enterprise_context_schemas.py # Enterprise context models
 │   │
 │   ├── utils/
 │   │   ├── db.py                     # Supabase session store
@@ -615,10 +706,21 @@ seedcraft/
 │   │   └── integration/              # 82 API tests
 │   │       └── test_api_endpoints.py
 │   │
+│   ├── tests/
+│   │   ├── unit/
+│   │   │   ├── test_enterprise_context_service.py  # 30 tests
+│   │   │   ├── test_enterprise_context_builder.py  # 33 tests
+│   │   │   └── test_enterprise_constraints.py      # 28 tests
+│   │   ├── integration/
+│   │   │   └── test_enterprise_context_api.py      # 30 tests
+│   │   └── e2e/
+│   │       └── test_enterprise_context_e2e.py      # 5 workflow tests
+│   │
 │   └── migrations/
 │       ├── 002_add_run_memories.sql
 │       ├── 003_add_discovery_v4_tables.sql
-│       └── 004_add_revision_archive.sql
+│       ├── 004_add_revision_archive.sql
+│       └── 004_add_enterprise_context_tables.sql   # Context library + session attachment
 │
 ├── frontend/
 │   └── src/
@@ -627,7 +729,8 @@ seedcraft/
 │       │
 │       ├── components/v4/            # V4 UI Components
 │       │   ├── LandingPageV4.tsx
-│       │   ├── InputFormV4.tsx
+│       │   ├── InputFormV4.tsx       # Enterprise context selection
+│       │   ├── ContextLibrary.tsx    # Context upload and management
 │       │   ├── ExecutionViewV4.tsx
 │       │   ├── PackViewerV4.tsx
 │       │   ├── JourneyTimeline.tsx   # Unified sidebar
@@ -647,7 +750,10 @@ seedcraft/
 │       │   ├── useAuth.ts            # Supabase auth
 │       │   └── useDiscoveryV4.ts     # V4 session hook
 │       │
-│       └── api/client.ts             # API client with SSE
+│       ├── types/
+│       │   └── enterpriseContext.ts  # Enterprise context TypeScript types
+│       │
+│       └── api/client.ts             # API client with SSE + context endpoints
 │
 ├── docs/
 ├── CLAUDE.md                         # AI assistant instructions
@@ -710,9 +816,16 @@ High-quality outputs are stored with embeddings for future retrieval:
 
 **Database Setup:**
 ```sql
--- Run the migration in Supabase
+-- Run migrations in Supabase SQL Editor
+
+-- 1. Vector extension for cross-run learning
 -- backend/migrations/002_add_run_memories.sql
 CREATE EXTENSION IF NOT EXISTS vector;
+
+-- 2. Enterprise Context tables (NEW)
+-- backend/migrations/004_add_enterprise_context_tables.sql
+-- Creates: enterprise_contexts (context library)
+--          session_contexts (session-context associations)
 ```
 
 **Environment Variables:**
@@ -967,12 +1080,20 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
   - V4 discovery engine tests (17 tests)
   - Frontend accessibility improvements (ARIA labels, focus indicators, semantic HTML)
   - Golden set regression testing framework
+- [x] **Phase 12**: Enterprise Context Integration
+  - Hierarchical context model (Company → Division → Team) with inheritance
+  - Context file upload (YAML/Markdown) with validation
+  - Agent-specific context filtering (each agent sees only relevant sections)
+  - Constraint extraction from enterprise context (regulatory, strategic, technology)
+  - Context Library UI for managing organizational contexts
+  - Session-context attachment for discovery workflows
+  - 126 tests covering service, builder, constraints, API, and E2E workflows
 
 ### Current Focus
 
-- [ ] End-to-end testing and verification
 - [ ] Performance optimization for large sessions
 - [ ] Mobile-responsive V4 UI improvements
+- [ ] Additional context types (product, project)
 
 ---
 
