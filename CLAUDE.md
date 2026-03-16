@@ -105,15 +105,18 @@ Product LifeCycle/
 │   │           ├── validation_plan.py
 │   │           └── mini_critique.py  # Stage-specific critique
 │   │
-│   ├── services/                # Cross-run learning
+│   ├── services/                # Cross-run learning + enterprise context
 │   │   ├── embeddings.py        # Vector embeddings
-│   │   └── memory_pipeline.py   # Memory augmentation
+│   │   ├── memory_pipeline.py   # Memory augmentation
+│   │   └── enterprise_context_service.py  # Context parsing, validation, merging
 │   │
 │   ├── api/
-│   │   └── discovery_v4_routes.py  # V4 API (30+ endpoints)
+│   │   ├── discovery_v4_routes.py  # V4 API (30+ endpoints)
+│   │   └── enterprise_context_routes.py  # Context CRUD + session attachment
 │   ├── models/
 │   │   ├── schemas.py           # 60+ Pydantic models
-│   │   └── discovery_v4_schemas.py
+│   │   ├── discovery_v4_schemas.py
+│   │   └── enterprise_context_schemas.py  # Context models
 │   ├── utils/
 │   │   ├── db.py                # Supabase session store
 │   │   ├── sse.py               # Server-Sent Events
@@ -211,11 +214,12 @@ END
 #### Support Modules
 | Module | File | Purpose |
 |--------|------|---------|
-| Constraint Broadcaster | `constraint_broadcaster.py` | Pre-execution constraints between phases |
+| Constraint Broadcaster | `constraint_broadcaster.py` | Pre-execution constraints between phases + enterprise constraints |
 | Output Validator | `output_validator.py` | 700+ validation rules, placeholder detection |
 | Confidence Calibrator | `confidence_calibrator.py` | Evidence-weighted confidence scoring |
-| Context Builder | `context_builder.py` | Evidence-aware context for agents |
+| Context Builder | `context_builder.py` | Evidence-aware context + agent-specific enterprise context filtering |
 | Two-Stage Reasoning | `two_stage_reasoning.py` | Research then structure pattern |
+| Enterprise Context Service | `services/enterprise_context_service.py` | Context parsing, validation, merging, constraint extraction |
 
 ---
 
@@ -422,6 +426,56 @@ def merge_cross_references(current, new):
 - E3: 0.6 (industry data)
 - E4: 0.3 (hypothesis)
 - E5: 0.1 (assumption)
+
+---
+
+## Enterprise Context Integration
+
+Enterprise Context allows organizations to inject company policies, technology standards, and compliance requirements as soft constraints that guide AI agents.
+
+### Context Hierarchy
+
+```
+Company Context (organization-wide)
+    └── Division Context (business unit)
+        └── Team Context (team-specific)
+```
+
+Contexts are merged with team overriding division, and division overriding company.
+
+### Agent-Specific Filtering
+
+Each agent receives only the context sections relevant to their domain:
+
+| Agent | Sections |
+|-------|----------|
+| Technical Architect | `technology`, `regulatory`, `risk_management` |
+| Business Strategy | `strategy`, `organization`, `risk_management` |
+| Legal/Regulatory | `regulatory`, `risk_management`, `organization` |
+| GTM Strategy | `strategy`, `organization` |
+| Customer Research | `strategy`, `organization` |
+| PRD Generator | `technology`, `strategy`, `regulatory` |
+| Facilitator/Critique | ALL sections |
+
+### Key Files
+
+| File | Purpose |
+|------|---------|
+| `services/enterprise_context_service.py` | Context parsing, validation, merging |
+| `agents/context_builder.py:702-985` | Agent-specific filtering, prompt generation |
+| `agents/constraint_broadcaster.py` | Enterprise constraint extraction |
+| `api/enterprise_context_routes.py` | REST API endpoints |
+| `models/enterprise_context_schemas.py` | Pydantic models |
+
+### Context Sections
+
+| Section | Fields | Used By |
+|---------|--------|---------|
+| `regulatory` | frameworks, data_residency, jurisdictions | Tech, Legal, PRD |
+| `strategy` | priorities, constraints, innovation_stance | Business, GTM, Customer |
+| `technology` | cloud, languages, databases, deprecated | Tech, PRD |
+| `risk_management` | risk_appetite, categories | Tech, Business, Legal |
+| `organization` | delivery_model, budget_cycle, approvals | Business, GTM, Legal |
 
 ---
 
