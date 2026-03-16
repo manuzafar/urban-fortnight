@@ -11,9 +11,28 @@ This module defines all data models for the V4 Discovery system including:
 
 from datetime import date, datetime
 from enum import Enum
-from typing import Any, Literal, Optional
+from typing import Annotated, Any, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, BeforeValidator, Field
+
+
+# Helper to coerce floats to ints (LLM sometimes returns 7.5 instead of 7 or 8)
+def coerce_to_int(v: Any) -> int:
+    """Coerce numeric values to integers, rounding floats."""
+    if v is None:
+        return 0
+    if isinstance(v, float):
+        return round(v)
+    if isinstance(v, str):
+        try:
+            return round(float(v))
+        except ValueError:
+            return 0
+    return int(v)
+
+
+# Type alias for integer fields that should accept floats from LLM
+CoercedInt = Annotated[int, BeforeValidator(coerce_to_int)]
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -124,7 +143,7 @@ class ProblemLoveOutput(BaseModel):
     problem_statement_refined: Optional[str] = Field(
         default=None, description="AI-refined version of the problem statement"
     )
-    specificity_score: int = Field(
+    specificity_score: CoercedInt = Field(
         ..., ge=1, le=10, description="How specific the problem is (1-10)"
     )
 
@@ -158,7 +177,7 @@ class ProblemLoveOutput(BaseModel):
     )
 
     # Overall assessment
-    overall_score: int = Field(
+    overall_score: CoercedInt = Field(
         ..., ge=1, le=10, description="Overall problem love score (1-10)"
     )
     ai_coaching_notes: list[str] = Field(
@@ -331,7 +350,7 @@ class Force(BaseModel):
     evidence: list[dict[str, Any]] = Field(
         default_factory=list, description="Evidence for each item"
     )
-    strength: int = Field(
+    strength: CoercedInt = Field(
         ..., ge=1, le=10, description="Strength of this force (1-10)"
     )
 
@@ -348,7 +367,7 @@ class FourForcesModel(BaseModel):
         ..., description="Habit: What's comfortable about status quo"
     )
 
-    force_balance: int = Field(
+    force_balance: CoercedInt = Field(
         ..., description="Net force: (push + pull) - (anxiety + habit)"
     )
     change_likely: bool = Field(
@@ -362,7 +381,7 @@ class Opportunity(BaseModel):
 
     id: str = Field(..., description="Unique opportunity identifier")
     description: str = Field(..., description="Opportunity description")
-    interview_count: int = Field(
+    interview_count: CoercedInt = Field(
         ..., ge=0, description="Number of interviews supporting this"
     )
     evidence: list[dict[str, Any]] = Field(
@@ -371,7 +390,7 @@ class Opportunity(BaseModel):
     solutions: list[str] = Field(
         default_factory=list, description="Potential solutions for this opportunity"
     )
-    priority: int = Field(..., ge=1, le=5, description="Priority (1 = highest)")
+    priority: CoercedInt = Field(..., ge=1, le=5, description="Priority (1 = highest)")
 
 
 class OpportunitySolutionTree(BaseModel):
@@ -403,10 +422,10 @@ class OpportunityMappingOutput(BaseModel):
 class DHMScore(BaseModel):
     """Delight, Hard-to-copy, Margin scoring model."""
 
-    delight: int = Field(..., ge=1, le=10, description="Delight score (1-10)")
+    delight: CoercedInt = Field(..., ge=1, le=10, description="Delight score (1-10)")
     delight_reasoning: str = Field(..., description="Why this delights users")
 
-    hard_to_copy: int = Field(
+    hard_to_copy: CoercedInt = Field(
         ..., ge=1, le=10, description="Hard-to-copy score (1-10)"
     )
     hard_to_copy_reasoning: str = Field(
@@ -416,10 +435,10 @@ class DHMScore(BaseModel):
         default=None, description="Type of competitive moat"
     )
 
-    margin: int = Field(..., ge=1, le=10, description="Margin score (1-10)")
+    margin: CoercedInt = Field(..., ge=1, le=10, description="Margin score (1-10)")
     margin_reasoning: str = Field(..., description="Margin potential reasoning")
 
-    total: int = Field(..., ge=3, le=30, description="Total DHM score")
+    total: CoercedInt = Field(..., ge=3, le=30, description="Total DHM score")
     passes_threshold: bool = Field(
         ..., description="Whether total >= 20 (threshold for good ideas)"
     )
@@ -478,7 +497,7 @@ class SolutionDesignOutput(BaseModel):
 class ValidationExperiment(BaseModel):
     """A validation experiment on the validation ladder."""
 
-    rung: int = Field(..., ge=1, le=5, description="Validation ladder rung (1-5)")
+    rung: CoercedInt = Field(..., ge=1, le=5, description="Validation ladder rung (1-5)")
     name: str = Field(..., description="Experiment name")
     hypothesis: str = Field(..., description="What we're testing")
     success_criteria: str = Field(..., description="What counts as success")
@@ -494,7 +513,7 @@ class ValidationExperiment(BaseModel):
 class ValidationPlanOutput(BaseModel):
     """Output from Stage 5: Validation Plan."""
 
-    current_rung: int = Field(
+    current_rung: CoercedInt = Field(
         ..., ge=0, le=5, description="Current rung on the validation ladder"
     )
     experiments: list[ValidationExperiment] = Field(
@@ -613,7 +632,7 @@ class DiscoverySessionV4(BaseModel):
     overall_evidence_quality: EvidenceQuality = Field(
         default=EvidenceQuality.E4, description="Overall evidence quality"
     )
-    quality_score: int = Field(
+    quality_score: CoercedInt = Field(
         default=0, ge=0, le=100, description="Overall quality score"
     )
 
@@ -677,13 +696,13 @@ class SessionStatusV4Response(BaseModel):
     stages: dict[str, dict[str, Any]] = Field(
         ..., description="Status of each stage"
     )
-    overall_progress: int = Field(
+    overall_progress: CoercedInt = Field(
         ..., ge=0, le=100, description="Overall progress percentage"
     )
     evidence_quality: EvidenceQuality = Field(
         ..., description="Evidence quality tier"
     )
-    quality_score: int = Field(..., ge=0, le=100, description="Quality score")
+    quality_score: CoercedInt = Field(..., ge=0, le=100, description="Quality score")
 
 
 class RunStageRequest(BaseModel):
