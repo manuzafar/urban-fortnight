@@ -229,12 +229,14 @@ class TestBuildEnterpriseContextPrompt:
 class TestGetEnterpriseContextForAgent:
     """Tests for get_enterprise_context_for_agent function."""
 
-    def test_uses_preformatted_prompt(self, state_with_preformatted_prompt):
-        """Test that pre-formatted prompt is used when available."""
-        result = get_enterprise_context_for_agent(
-            state_with_preformatted_prompt, "customer_research"
-        )
-        assert result == "## PRE-FORMATTED CONTEXT\n\nThis is a pre-formatted prompt."
+    def test_builds_filtered_prompt_for_agent(self, state_with_context):
+        """Test that prompt is built with agent-specific filtering."""
+        result = get_enterprise_context_for_agent(state_with_context, "customer_research")
+        assert "ORGANIZATIONAL CONTEXT" in result
+        assert "Acme Corporation" in result
+        # Customer research gets strategy and organization sections
+        assert "Strategy" in result
+        assert "Organization" in result
 
     def test_builds_prompt_from_context(self, state_with_context):
         """Test that prompt is built from context when no pre-formatted."""
@@ -247,13 +249,35 @@ class TestGetEnterpriseContextForAgent:
         result = get_enterprise_context_for_agent(state_without_context, "customer_research")
         assert result == ""
 
-    def test_same_result_for_different_agents(self, state_with_context):
-        """Test that all agents get the same enterprise context."""
-        result1 = get_enterprise_context_for_agent(state_with_context, "customer_research")
-        result2 = get_enterprise_context_for_agent(state_with_context, "business_strategy")
-        result3 = get_enterprise_context_for_agent(state_with_context, "technical_architect")
+    def test_different_sections_for_different_agents(self, state_with_context):
+        """Test that different agents get different filtered context."""
+        # Customer research gets: strategy, organization
+        cr_result = get_enterprise_context_for_agent(state_with_context, "Customer Research Agent")
+        # Technical architect gets: technology, regulatory, risk_management
+        ta_result = get_enterprise_context_for_agent(state_with_context, "Technical Architect")
+        # Business strategy gets: strategy, organization, risk_management
+        bs_result = get_enterprise_context_for_agent(state_with_context, "Business Strategy Agent")
 
-        assert result1 == result2 == result3
+        # All should have company info
+        assert "Acme Corporation" in cr_result
+        assert "Acme Corporation" in ta_result
+        assert "Acme Corporation" in bs_result
+
+        # Technical Architect should have technology section, customer research should not
+        assert "### Technology Standards" in ta_result
+        # Customer Research should NOT have technology section
+        assert "### Technology Standards" not in cr_result
+
+        # Business Strategy should have Risk Management section
+        assert "Risk" in bs_result
+
+    def test_unknown_agent_gets_all_sections(self, state_with_context):
+        """Test that unknown agents get all sections (default behavior)."""
+        result = get_enterprise_context_for_agent(state_with_context, "Unknown Agent")
+        # Should have all sections
+        assert "Strategy" in result
+        assert "Organization" in result
+        assert "Acme Corporation" in result
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
